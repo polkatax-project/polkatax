@@ -6,7 +6,7 @@ import { BigNumber } from "bignumber.js";
 import { Transaction } from "../model/transaction";
 import { RequestHelper } from "../../../../common/util/request.helper";
 import { RuntimeMetaData } from "../model/runtime-meta-data";
-import { SubscanEvent } from "../model/subscan-event";
+import { EventDetails, SubscanEvent } from "../model/subscan-event";
 import {
   RawEvmTransferDto,
   RawSubstrateTransferDto,
@@ -14,6 +14,7 @@ import {
 import { logger } from "../../../logger/logger";
 import { apiThrottleQueue } from "./request-queue";
 import { HttpError } from "../../../../common/error/HttpError";
+import { RawXcmMessage } from "../model/xcm-transfer";
 
 export class SubscanApi {
   private requestHelper: RequestHelper;
@@ -89,12 +90,29 @@ export class SubscanApi {
     );
     const data = (response.data?.events ?? []).map((e) => ({
       ...e,
-      block_timestamp: e.block_timestamp * 1000,
+      timestamp: e.block_timestamp * 1000,
     }));
     return {
       list: data,
-      hasNext:
-        data.length >= 100 && data[data.length - 1].block_timestamp >= minDate,
+      hasNext: data.length >= 100 && data[data.length - 1].timestamp >= minDate,
+    };
+  }
+
+  async fetchEventDetails(
+    chainName: string,
+    event_index: string,
+  ): Promise<EventDetails> {
+    const response = await this.request(
+      `https://${chainName}.api.subscan.io/api/scan/event`,
+      `post`,
+      { event_index },
+    );
+    return {
+      ...response.data,
+      extrinsic_index:
+        response.data.event_index.split("-")[0] +
+        "-" +
+        response.data.extrinsic_idx,
     };
   }
 
@@ -189,19 +207,27 @@ export class SubscanApi {
       : response.data;
   }
 
-  async fetchBlockList(chainName: string, page = 0, row = 1): Promise<Block[]> {
+  async fetchBlockList(
+    chainName: string,
+    page = 0,
+    minDate: number,
+  ): Promise<{ list: Block[]; hasNext: boolean }> {
     const response = await this.request(
       `https://${chainName}.api.subscan.io/api/v2/scan/blocks`,
       `post`,
       {
         page,
-        row,
+        row: 100,
       },
     );
-    return response.data.blocks.map((b) => ({
-      ...b,
-      block_timestamp: b.block_timestamp * 1000,
+    const list = response.data.blocks.map((b) => ({
+      block_num: b.block_num,
+      timestamp: b.block_timestamp * 1000,
     }));
+    return {
+      list,
+      hasNext: list.length >= 100 && list[list.length - 1].timestamp >= minDate,
+    };
   }
 
   private mapStakingRewards(
@@ -214,6 +240,8 @@ export class SubscanApi {
         timestamp: entry.block_timestamp * 1000, // convert from sec to ms
         block: entry.extrinsic_index.split("-")[0],
         hash: entry.extrinsic_hash,
+        extrinsic_index: entry.extrinsic_index,
+        event_index: entry.event_index,
       };
     });
   }
@@ -254,12 +282,66 @@ export class SubscanApi {
     return (json?.data?.list ?? []).map((entry) => entry.address);
   }
 
+  async fetchBalanceHistory(
+    address: string,
+    chainName: string,
+    token_unique_id?: string,
+    start?: string,
+    end?: string,
+  ): Promise<{ block?: number; date?: string; balance: string }[]> {
+    const json = await this.request(
+      `https://${chainName}.api.subscan.io/api/scan/account/balance_history`,
+      `post`,
+      {
+        address,
+        recent_block: 10000,
+        token_unique_id,
+        start,
+        end,
+      },
+    );
+    return json?.data?.history;
+  }
+
+  async fetchXcmList(
+    chainName: string,
+    address: string,
+    page: number = 0,
+    filter_para_id: number,
+    minDate: number,
+  ): Promise<{ list: RawXcmMessage[]; hasNext: boolean }> {
+    const json = await this.request(
+      `https://${chainName}.api.subscan.io/api/scan/xcm/list`,
+      `post`,
+      {
+        row: 100,
+        page,
+        address,
+        filter_para_id,
+        status: "success",
+      },
+    );
+    const list = (json?.data?.list || []).map((xcm) => {
+      return {
+        ...xcm,
+        origin_block_timestamp: xcm.origin_block_timestamp * 1000,
+        relayed_block_timestamp: xcm.relayed_block_timestamp * 1000,
+        confirm_block_timestamp: xcm.confirm_block_timestamp * 1000,
+      };
+    });
+    return {
+      list,
+      hasNext:
+        list.length >= 100 &&
+        list[list.length - 1].origin_block_timestamp >= minDate,
+    };
+  }
+
   async fetchExtrinsics(
     chainName: string,
     address: string,
     page: number = 0,
-    block_min?: number,
-    block_max?: number,
+    minDate: number,
     evm = false,
   ): Promise<{ list: Transaction[]; hasNext: boolean }> {
     const endpoint = evm
@@ -272,49 +354,48 @@ export class SubscanApi {
         row: 100,
         page,
         address,
-        success: true,
-        block_range:
-          block_min !== undefined && block_max !== undefined
-            ? `${block_min}-${block_max}`
-            : undefined,
       },
     );
-    return {
-      list: (
-        responseBody.data?.extrinsics ||
-        responseBody.data?.list ||
-        []
-      ).map((entry) => {
-        if (evm) {
-          entry = {
-            ...entry,
-            account_display: {
-              address: entry.from,
-            },
-            functionName: entry.method,
-            callModule: entry.contract_name,
-            extrinsic_hash: entry.hash,
-            value: entry.value,
-          };
-        }
-        return {
-          hash: entry.extrinsic_hash,
-          from: entry.account_display.address,
-          to: entry.to,
-          timestamp: entry.block_timestamp * 1000, // sec -> ms
-          block_num: entry.block_num,
-          label: entry.call_module ?? "" + entry.call_module_function ?? "",
-          amount: entry.value ? Number(entry.value) : 0,
-          extrinsic_index: entry.extrinsic_index,
+    const resultList = (
+      responseBody.data?.extrinsics ||
+      responseBody.data?.list ||
+      []
+    ).map((entry) => {
+      if (evm) {
+        entry = {
+          ...entry,
+          account_display: {
+            address: entry.from,
+          },
+          callModule: entry.contract || entry.contract_name,
+          callModuleFunction: entry.method,
+          extrinsic_hash: entry.hash,
+          value: entry.value,
         };
-      }),
+      }
+      return {
+        hash: entry.extrinsic_hash,
+        from: entry.account_display.address,
+        to: entry.to,
+        timestamp: entry.block_timestamp * 1000, // sec -> ms
+        block: entry.block_num,
+        callModule: entry.call_module,
+        callModuleFunction: entry.call_module_function,
+        amount: entry.value ? Number(entry.value) : 0,
+        extrinsic_index: entry.extrinsic_index,
+        feeUsed: entry.fee_used ? Number(entry.fee_used) : undefined,
+        tip: entry.fee_used ? Number(entry.tip) : undefined,
+      };
+    });
+    return {
+      list: resultList,
       hasNext:
-        (responseBody.data?.extrinsics || responseBody.data?.list || [])
-          .length >= 100,
+        resultList.length >= 100 &&
+        resultList[resultList.length - 1].timestamp >= minDate,
     };
   }
 
-  async fetchTransfersFrom(
+  async fetchTransfers(
     chainName: string,
     account: string,
     page: number = 0,
@@ -349,49 +430,6 @@ export class SubscanApi {
     return {
       list,
       hasNext: list.length >= 100 && list[list.length - 1].timestamp >= minDate,
-    };
-  }
-
-  async fetchTransfers(
-    chainName: string,
-    account: string,
-    page: number = 0,
-    block_min?: number,
-    block_max?: number,
-    evm = false,
-  ): Promise<{
-    list: (RawSubstrateTransferDto &
-      RawEvmTransferDto & { timestamp: number })[];
-    hasNext: boolean;
-  }> {
-    const endpoint = evm
-      ? "api/scan/evm/token/transfer"
-      : "api/v2/scan/transfers";
-    const responseBody = await this.request(
-      `https://${chainName}.api.subscan.io/${endpoint}`,
-      `post`,
-      {
-        row: 100,
-        page,
-        address: account,
-        success: true,
-        block_range:
-          block_min !== undefined && block_max !== undefined
-            ? `${block_min}-${block_max}`
-            : undefined,
-      },
-    );
-    const list = (
-      responseBody.data?.transfers ||
-      responseBody.data?.list ||
-      []
-    ).map((t) => ({
-      ...t,
-      timestamp: (t.block_timestamp || t.create_at) * 1000,
-    }));
-    return {
-      list,
-      hasNext: list.length >= 100,
     };
   }
 }

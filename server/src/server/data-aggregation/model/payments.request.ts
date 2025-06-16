@@ -1,7 +1,11 @@
 export interface PaymentsRequest {
-  chainName: string;
+  chain: {
+    domain: string;
+    label: string;
+    token: string;
+  };
   address: string;
   currency: string;
-  startDay: Date;
-  endDay?: Date;
+  minDate: number;
+  maxDate?: number;
 }

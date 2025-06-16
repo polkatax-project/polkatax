@@ -6,6 +6,8 @@ export interface RawStakingReward {
   timestamp: number;
   block: number;
   hash: string;
+  event_index: string;
+  extrinsic_index: string;
 }
 
 export interface StakingReward {
@@ -13,4 +15,8 @@ export interface StakingReward {
   timestamp: number;
   block: number;
   hash: string;
+  event_index: string;
+  extrinsic_index: string;
+  price?: number;
+  fiatValue?: number;
 }

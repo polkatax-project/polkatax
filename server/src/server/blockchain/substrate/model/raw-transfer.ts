@@ -52,9 +52,12 @@ export interface Transfer {
   amount: number;
   from: string;
   to: string;
-  label?: string;
+  module?: string;
   block?: number;
   timestamp: number;
-  hash: string;
+  hash?: string;
   extrinsic_index?: string;
+  price?: number;
+  fiatValue?: number;
+  asset_type?: string;
 }

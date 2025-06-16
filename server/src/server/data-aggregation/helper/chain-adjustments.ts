@@ -1,7 +1,7 @@
-import { Swap } from "../model/swap";
+import { Payment } from "../model/payment";
 
 export class ChainAdjustments {
-  handleHydration(swaps: Swap[]) {
+  handleHydration(swaps: Payment[]) {
     swaps.forEach((s) => {
       if (s.transfers.length > 2) {
         const sold = s.transfers

@@ -46,6 +46,7 @@
   "devDependencies": {
     "@jest/globals": "^29.6.2",
     "@jest/types": "^29.6.3",
+    "@polkadot/api": "^16.2.1",
     "@types/jest": "^29.5.14",
     "@types/node": "^20.1.5",
     "@types/pg": "^8.15.2",

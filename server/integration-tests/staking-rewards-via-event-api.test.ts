@@ -6,7 +6,6 @@ import { startStub as startFiatStub } from "../src/fiat-exchange-rates/stub";
 import { FastifyInstance } from "fastify";
 import { passThroughHandlers } from "./util/pass-through-handlers";
 import { scanTokenHandler } from "./util/scan-token-handler";
-import { SubscanEvent } from "../src/server/blockchain/substrate/model/subscan-event";
 import { RawSubstrateTransferDto } from "../src/server/blockchain/substrate/model/raw-transfer";
 import { createPaginatedMockResponseHandler } from "./util/create-paginated-mock-response-handler";
 import { createMockResponseHandler } from "./util/create-mock-response-handler";
@@ -45,7 +44,7 @@ describe("fetch staking rewards via the events API", () => {
   });
 
   test("simple example with only 1 reward", async () => {
-    const mockEvents: SubscanEvent[] = [
+    const mockEvents: any[] = [
       {
         id: 1,
         block_timestamp: new Date(`${year}-04-04 00:00:00`).getTime() / 1000,
@@ -142,9 +141,10 @@ describe("fetch staking rewards via the events API", () => {
           data: {
             values: [
               {
-                block: 1000,
                 timestamp: mockTransfers[0].block_timestamp * 1000,
                 amount: 450,
+                event_index: "45",
+                extrinsic_index: "1000-6",
                 hash: "0x_reward_hash",
                 price: 10,
                 fiatValue: 4500,
@@ -163,7 +163,7 @@ describe("fetch staking rewards via the events API", () => {
   test("filter by date", async () => {
     const year = 2024;
 
-    const mockEvents: SubscanEvent[] = [
+    const mockEvents: any[] = [
       {
         id: 2,
         block_timestamp: new Date(`${year}-01-04 00:00:00`).getTime() / 1000,
@@ -250,9 +250,10 @@ describe("fetch staking rewards via the events API", () => {
     expect(msg[2].payload[0].data).toEqual({
       values: [
         {
-          block: 1000,
           timestamp: mockTransfers[0].block_timestamp * 1000,
           amount: 450,
+          event_index: "30",
+          extrinsic_index: "1000-6",
           hash: "0x_reward_hash1",
           price: 10,
           fiatValue: 4500,

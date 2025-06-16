@@ -1,6 +1,5 @@
 import coingeckoTokens from "../../../../res/coingecko-tokens.json";
 import { Transfer } from "../../blockchain/substrate/model/raw-transfer";
-import { PricedTransfer } from "../model/priced-transfer";
 
 interface CoingeckoToken {
   id: string;
@@ -12,7 +11,7 @@ interface CoingeckoToken {
 }
 
 export class CoingeckoIdLookupService {
-  addCoingeckoIds(transfers: PricedTransfer[]): string[] {
+  addCoingeckoIds(transfers: Transfer[]): string[] {
     const tokenIdToCoingeckoIdMap: {
       [tokenId: string]: { id: string | undefined };
     } = {};
@@ -22,7 +21,7 @@ export class CoingeckoIdLookupService {
           id: this.findCoingeckoId(t),
         };
       }
-      t.coingeckoId = tokenIdToCoingeckoIdMap[t.tokenId].id;
+      // TODO: t.coingeckoId = tokenIdToCoingeckoIdMap[t.tokenId].id;
     });
     return Object.values(tokenIdToCoingeckoIdMap)
       .filter((v) => v.id)

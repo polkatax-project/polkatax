@@ -32,7 +32,9 @@ export class EvmSwapsAndPaymentsService {
       to: tx.to,
       timestamp: Number(tx.timeStamp),
       block: Number(tx.blockNumber),
-      label: tx.functionName,
+      callModuleFunction: tx.functionName,
+      callModule: tx.functionName, // TODO: what value corresponds to functionName of substrate tx?
+      extrinsic_index: tx.hash,
       amount: Number(
         new BigNumber(tx.value).dividedBy(Math.pow(10, Number(18))),
       ),
@@ -42,15 +44,15 @@ export class EvmSwapsAndPaymentsService {
   async fetchSwapsAndPayments(data: {
     chainName;
     address: string;
-    startDay: Date;
-    endDay?: Date;
+    minDate: number;
+    maxDate?: number;
   }): Promise<{ transactions: Transaction[]; transfersList: Transfer[] }> {
     logger.info(`Enter fetchSwapsAndPayments for ${data.chainName}`);
     const { tx, transfers } = await this.evmTxService.fetchTxAndTransfers(
       data.chainName,
       data.address,
-      data.startDay,
-      data.endDay,
+      new Date(data.minDate),
+      data.maxDate ? new Date(data.maxDate) : undefined,
     );
     logger.info(`Exit fetchSwapsAndPayments for ${data.chainName}`);
     return {

@@ -37,7 +37,7 @@ export class JobConsumer {
           chain,
           address: job.wallet,
           currency: job.currency,
-          startDate: job.syncFromDate,
+          minDate: job.syncFromDate,
         });
       if (job.data) {
         const previouslySyncedValues = (
