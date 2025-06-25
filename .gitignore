@@ -18,6 +18,7 @@ node_modules
 *.iml
 server/public
 server/.env
+server/.env.*
 server/dist
 
 server/res/gen/fiat-currencies-quotes/*.json

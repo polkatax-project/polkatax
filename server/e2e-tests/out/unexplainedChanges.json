@@ -1,0 +1,43 @@
+[
+  {
+    "block": 25188005,
+    "balance": 748.9562508589,
+    "diff": -0.03229327999997622,
+    "extrinsic_index": "25188005-2",
+    "expectedBalanceChange": -0.0165661287,
+    "deviationFromExpectation": -0.015727151299976223,
+    "label": "transfer"
+  },
+  {
+    "block": 25268204,
+    "balance": 748.9322762084,
+    "diff": 0.10000000000002274,
+    "expectedBalanceChange": 0,
+    "deviationFromExpectation": 0.10000000000002274
+  },
+  {
+    "block": 25277563,
+    "balance": 748.8322762084,
+    "diff": -0.10000000000002274,
+    "expectedBalanceChange": 0,
+    "deviationFromExpectation": -0.10000000000002274
+  },
+  {
+    "block": 25875903,
+    "balance": 1412.5239832211,
+    "diff": -200.0585870739999,
+    "extrinsic_index": "25875903-2",
+    "expectedBalanceChange": -200.018687074,
+    "deviationFromExpectation": -0.039899999999875035,
+    "label": "transfer"
+  },
+  {
+    "block": 26091309,
+    "balance": 901.9678039718,
+    "diff": -10.06530384680002,
+    "extrinsic_index": "26091309-2",
+    "expectedBalanceChange": -10.0256038468,
+    "deviationFromExpectation": -0.03970000000002116,
+    "label": "transfer"
+  }
+]
