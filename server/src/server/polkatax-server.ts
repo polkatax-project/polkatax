@@ -45,7 +45,7 @@ export const polkataxServer = {
         );
         reply.status(error.statusCode).send(error.message);
       } else {
-        logger.warn(`Error: ${error.message}`, error);
+        logger.warn(`Error: ${error.message}`);
         if (error.stack) {
           logger.error(error.stack);
         }
