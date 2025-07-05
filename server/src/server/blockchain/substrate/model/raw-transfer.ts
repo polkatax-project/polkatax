@@ -47,6 +47,7 @@ export interface RawEvmTransferDto {
 }
 
 export interface Transfer {
+  id?: string
   symbol: string;
   tokenId: string;
   amount: number;

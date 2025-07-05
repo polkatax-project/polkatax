@@ -19,11 +19,12 @@ export interface EventDetails {
   event_id: string;
   extrinsic_index?: string;
   timestamp?: number;
+  original_event_index?: string;
   params: [
     {
       type: string;
       type_name: string;
-      value: string;
+      value: any;
       name: string;
     },
   ];

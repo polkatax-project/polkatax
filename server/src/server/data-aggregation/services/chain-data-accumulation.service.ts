@@ -84,7 +84,11 @@ export class ChainDataAccumulationService {
       context.address,
     );
     for (let stakingReward of stakingRewardPayments) {
-      indexedPayments[stakingReward.extrinsic_index] = stakingReward;
+      if (!indexedPayments[stakingReward.extrinsic_index]) {
+        indexedPayments[stakingReward.extrinsic_index] = stakingReward;
+      } else {
+        indexedPayments[stakingReward.extrinsic_index].transfers.push(...stakingReward.transfers)
+      }
     }
 
     const otherTransactions = this.enrichTxWithEvents(

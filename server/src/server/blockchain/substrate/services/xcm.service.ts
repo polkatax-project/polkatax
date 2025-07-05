@@ -114,12 +114,21 @@ export class XcmService {
           ? xcm.extrinsic_index
           : xcm.dest_extrinsic_index;
 
+        /*if (destChain === data.chainName) {
+          return undefined // TODO:
+        }*/
+
+        if ((fromChain === data.chainName && from !== data.address) || (destChain === data.chainName && to !== data.address)) {
+          // transfer NOT TO requested address and NOT FROM the addresses (for requested chain).
+          return
+        }
+
         return {
           timestamp,
           block:
             xcm.block_num !== 0
               ? xcm.block_num
-              : Number(xcm.extrinsic_index.split("-")[0]),
+              : undefined,
           fee:
             xcm.used_fee && fromChain === data.chainName
               ? Number(xcm.used_fee) / Math.pow(10, token.token_decimals)
@@ -153,7 +162,7 @@ export class XcmService {
           }),
         };
       });
-    const filtered = this.filterOnDate(xcmList, data.minDate, data.maxDate);
+    const filtered = this.filterOnDate(xcmList.filter(x => !!x), data.minDate, data.maxDate);
     logger.info(
       `Exit Fetching XcmTransfers. Found ${filtered.length} cross-chain messages.`,
     );

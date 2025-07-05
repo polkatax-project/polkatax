@@ -1,4 +1,4 @@
-import { Token } from "../model/token";
+import { Token, TokenInfo } from "../model/token";
 import { Transaction } from "../model/transaction";
 import { RawStakingReward } from "../model/staking-reward";
 import { SubscanApi } from "./subscan.api";
@@ -11,6 +11,8 @@ import {
 } from "../model/raw-transfer";
 import { RawXcmMessage } from "../model/xcm-transfer";
 import { Block } from "../model/block";
+import { ForeignAsset } from "../model/foreign-asset";
+import { Asset } from "../model/asset";
 
 export class SubscanService {
   constructor(private subscanApi: SubscanApi) {}
@@ -49,8 +51,11 @@ export class SubscanService {
     minDate: number;
     maxDate?: number;
   }): Promise<SubscanEvent[]> {
-    return this.filterOnDate(
-      await this.iterateOverPagesParallel<SubscanEvent>((page) =>
+    logger.info(
+      `Enter searchAllEvents for chain ${chainName} and account ${address}`,
+    );
+    const result = await this.filterOnDate(
+      await this.iterateOverPagesParallel<SubscanEvent>((page, after_id) =>
         this.subscanApi.searchEvents(
           chainName,
           address,
@@ -58,38 +63,25 @@ export class SubscanService {
           event_id,
           page,
           minDate,
+          after_id
         ),
+        { withAfterId: true }
       ),
       minDate,
       maxDate,
     );
-  }
-
-  async searchAllExtrinsics(
-    chainName: string,
-    address: string,
-    module: string,
-    call: string,
-    block_min?: number,
-    block_max?: number,
-  ): Promise<Transaction[]> {
-    return this.iterateOverPagesParallel<Transaction>((page) =>
-      this.subscanApi.searchExtrinsics(
-        chainName,
-        address,
-        module,
-        call,
-        page,
-        block_min,
-        block_max,
-      ),
+    logger.info(
+      `Exit searchAllEvents for chain ${chainName} and account ${address}`,
     );
+    return result
   }
 
   private async iterateOverPagesParallel<T>(
-    fetchPages: (page) => Promise<{ list: T[]; hasNext: boolean }>,
-    count = 5,
+    fetchPages: (page, after_id?) => Promise<{ list: T[]; hasNext: boolean }>,
+    options?: { count?: number, withAfterId?: boolean }
   ): Promise<T[]> {
+    const count = options?.count ?? 5
+    const withAfterId = options?.withAfterId ?? false
     const parallelFn = [...Array(count).keys()].map(
       (offset) => (page) => fetchPages(page + offset),
     );
@@ -105,8 +97,34 @@ export class SubscanService {
       );
       hasNext = intermediate_results[intermediate_results.length - 1].hasNext;
       page += count;
+      if (page >= 100 && withAfterId) {
+        const lowestId = result.reduce((curr, next) => { return Math.min(curr, next.id)}, Number.MAX_SAFE_INTEGER)
+        logger.info(`Found more than ${result.length} entries. Fetching remaining values via after_id from ${lowestId}`)
+        const remaining = await this.fetchWithAfterId(fetchPages, lowestId)
+        remaining.forEach(r => result.push(r))
+        logger.info(`Found ${result.length} entries.`)
+        return result
+      }
     } while (hasNext);
     return result;
+  }
+
+  private async fetchWithAfterId<T extends { id?: number }>(
+    fetchPages: (page, afterId?) => Promise<{ list: T[]; hasNext: boolean }>,
+    after_id: number,
+  ): Promise<T[]> {
+    const result = [];
+    let intermediate_result: { hasNext: boolean, list: T []};
+    do {
+      intermediate_result = await fetchPages(0, after_id)
+      intermediate_result.list.forEach(entry => result.push(entry))
+      after_id = Math.min(...intermediate_result.list.map(e => e.id))
+      if (result.length >= 250000) {
+        logger.info(`Found more than ${result.length} entries. Aborting...`)
+        return result
+      }
+    } while (intermediate_result.hasNext);
+    return result
   }
 
   private filterOnDate<T extends { timestamp: number }>(
@@ -141,7 +159,7 @@ export class SubscanService {
           page,
           true,
           minDate,
-        ),
+        )
       ),
       minDate,
       maxDate,
@@ -188,6 +206,7 @@ export class SubscanService {
     );
     for (let idx = 0; idx < results.length; idx++) {
       results[idx].timestamp = events[idx].timestamp;
+      results[idx].original_event_index = events[idx].event_id
     }
     logger.info(`Exit fetchEventDetails`);
     return results;
@@ -224,8 +243,9 @@ export class SubscanService {
       `fetchAllExtrinsics for ${chainName} and address ${address} from ${new Date(minDate).toUTCString()}. Evm ${evm}`,
     );
     const result = this.filterOnDate(
-      await this.iterateOverPagesParallel<Transaction>((page) =>
-        this.subscanApi.fetchExtrinsics(chainName, address, page, minDate, evm),
+      await this.iterateOverPagesParallel<Transaction>((page, after_id) =>
+        this.subscanApi.fetchExtrinsics(chainName, address, page, minDate, after_id, evm),
+        { withAfterId: true }
       ),
       minDate,
       maxDate,
@@ -254,8 +274,9 @@ export class SubscanService {
     );
     const result = await this.iterateOverPagesParallel<
       RawSubstrateTransferDto & RawEvmTransferDto & { timestamp: number }
-    >((page) =>
-      this.subscanApi.fetchTransfers(chainName, address, page, minDate, evm),
+    >((page, after_id) =>
+      this.subscanApi.fetchTransfers(chainName, address, page, minDate, after_id ? [after_id] : [], evm),
+      { withAfterId: true }
     );
     const filtered = this.filterOnDate(result, minDate, maxDate);
     const mapped = filtered.map((transfer) => {
@@ -289,4 +310,21 @@ export class SubscanService {
   async fetchAccounts(address: string, chainName: string): Promise<string[]> {
     return this.subscanApi.fetchAccounts(address, chainName);
   }
+
+  async fetchForeignAssets(chainName: string): Promise<ForeignAsset[]> {
+    return this.iterateOverPagesParallel<ForeignAsset>((page) =>
+        this.subscanApi.fetchForeignAssets(chainName, page)
+      )
+  }
+
+  async scanTokens(chainName: string): Promise<TokenInfo[]> {
+    return this.subscanApi.scanTokens(chainName)
+  }
+  
+  async scanAssets(chainName: string): Promise<Asset[]> {
+    return this.iterateOverPagesParallel<Asset>((page) =>
+      this.subscanApi.scanAssets(chainName, page)
+    )
+  }
+
 }

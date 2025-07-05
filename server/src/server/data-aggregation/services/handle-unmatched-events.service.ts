@@ -49,9 +49,8 @@ export class HandleUnmatchedEventsService {
         !payments.find(
           (p) =>
             (p.transfers.length > 0 &&
-              p.extrinsic_index === e.extrinsic_index) ||
-            p.transfers.some((t) => t.extrinsic_index === e.extrinsic_index),
-        ),
+              (p.extrinsic_index === e.extrinsic_index ||
+            p.transfers.some((t) => t.extrinsic_index === e.extrinsic_index))))
     );
   }
 

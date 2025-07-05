@@ -1,179 +1,30 @@
 [
   {
-    "id": 711579200002,
-    "hash": "0xc76484f2683d25da34506a1a24ea825b14068293addf9e1ab6fb9088f3874395",
-    "from": "131d4YS25qpuXiHrfJibuFYXwZrzwxpvU1ahvr3TJFNYcmfk",
-    "timestamp": 1741679748000,
-    "block": 7115792,
-    "callModule": "dca",
-    "callModuleFunction": "schedule",
-    "amount": 0,
-    "extrinsic_index": "7115792-2",
-    "feeUsed": 0.609638015986,
-    "tip": 0,
-    "provenance": "tx",
-    "events": [
-      {
-        "moduleId": "transactionpayment",
-        "eventId": "TransactionFeePaid"
-      },
-      {
-        "moduleId": "dca",
-        "eventId": "Scheduled"
-      },
-      {
-        "moduleId": "dca",
-        "eventId": "ExecutionPlanned"
-      },
-      {
-        "moduleId": "tokens",
-        "eventId": "Reserved"
-      },
-      {
-        "moduleId": "currencies",
-        "eventId": "Withdrawn"
-      },
-      {
-        "moduleId": "tokens",
-        "eventId": "Withdrawn"
-      }
-    ],
-    "transfers": [],
-    "feeUsedFiat": 6.09638015986,
-    "label": "transfer"
-  },
-  {
+    "timestamp": 1727362680000,
+    "block": 22705561,
+    "fee": 0,
+    "extrinsic_index": "6069420-3",
     "transfers": [
       {
-        "symbol": "USDT",
-        "amount": 1583.561845,
-        "from": "13thwzDrKVmQNCJesAaFeaePhu79xwY746iUW4P9TB2NX6Py",
-        "to": "131d4YS25qpuXiHrfJibuFYXwZrzwxpvU1ahvr3TJFNYcmfk",
-        "module": "tokens",
-        "block": 7115791,
-        "timestamp": 1741679736000,
-        "hash": "0x118b0138ef63afcff39897795024bf89fdf9b1dc5815afa31af0a3fa46d47def",
-        "tokenId": "asset_registry/47ab9979443fb7ed1c193d06773333ba7876094f",
-        "extrinsic_index": "7115791-0",
-        "fiatValue": 1583.561845,
-        "price": 1
-      },
-      {
-        "symbol": "2-Pool",
-        "amount": 1567.8291823079396,
-        "from": "13UVJyLnPLowAMzbZewu9zwEGiSMQKniJ2cp4vM4ru2nci9N",
-        "to": "131d4YS25qpuXiHrfJibuFYXwZrzwxpvU1ahvr3TJFNYcmfk",
-        "module": "tokens",
-        "block": 7115791,
-        "timestamp": 1741679736000,
-        "hash": "0x118b0138ef63afcff39897795024bf89fdf9b1dc5815afa31af0a3fa46d47def",
-        "tokenId": "asset_registry/f47de373dc275d4aae9591071d845541606a178d",
-        "extrinsic_index": "7115791-0",
-        "fiatValue": 0,
-        "price": 0
-      },
-      {
-        "symbol": "WETH",
-        "amount": -0.8333321536104703,
-        "from": "131d4YS25qpuXiHrfJibuFYXwZrzwxpvU1ahvr3TJFNYcmfk",
-        "to": "13UVJyLnbVp9RBZYFwFGyDvVd1y27Tt8tkntv6Q7JVPhFsTB",
-        "module": "tokens",
-        "block": 7115791,
-        "timestamp": 1741679736000,
-        "hash": "0x118b0138ef63afcff39897795024bf89fdf9b1dc5815afa31af0a3fa46d47def",
-        "tokenId": "asset_registry/f38e1bcab2b7a9b4ea5fa8403af6f8891d5d1115",
-        "extrinsic_index": "7115791-0",
-        "fiatValue": 0,
-        "price": 0
+        "symbol": "BNC",
+        "tokenId": "asset_registry/c24c173dae0e230c94ab301f276b5ad1366e71c1",
+        "amount": -308.743945542944,
+        "from": "5DdcCSDvWJZHyNEk3BhZuiHoLDBm9dRTdYNWLJLYx3Euxn2G",
+        "to": "5CFwQqMnG61MkaSS96tW9vU2JiaV2YPHve2EtFA5SgY4SAts",
+        "module": "xcm",
+        "timestamp": 1727362680000,
+        "extrinsic_index": "6069420-3",
+        "price": null,
+        "fiatValue": null,
+        "fromChain": "hydration",
+        "destChain": "bifrost"
       }
     ],
-    "events": [
-      {
-        "moduleId": "dca",
-        "eventId": "ExecutionPlanned"
-      },
-      {
-        "moduleId": "dca",
-        "eventId": "TradeExecuted"
-      },
-      {
-        "moduleId": "broadcast",
-        "eventId": "Swapped"
-      },
-      {
-        "moduleId": "stableswap",
-        "eventId": "LiquidityRemoved"
-      },
-      {
-        "moduleId": "currencies",
-        "eventId": "Transferred"
-      },
-      {
-        "moduleId": "tokens",
-        "eventId": "Transfer"
-      },
-      {
-        "moduleId": "currencies",
-        "eventId": "Withdrawn"
-      },
-      {
-        "moduleId": "tokens",
-        "eventId": "Withdrawn"
-      },
-      {
-        "moduleId": "broadcast",
-        "eventId": "Swapped"
-      },
-      {
-        "moduleId": "broadcast",
-        "eventId": "Swapped"
-      },
-      {
-        "moduleId": "omnipool",
-        "eventId": "SellExecuted"
-      },
-      {
-        "moduleId": "currencies",
-        "eventId": "Transferred"
-      },
-      {
-        "moduleId": "tokens",
-        "eventId": "Transfer"
-      },
-      {
-        "moduleId": "tokens",
-        "eventId": "Endowed"
-      },
-      {
-        "moduleId": "currencies",
-        "eventId": "Transferred"
-      },
-      {
-        "moduleId": "tokens",
-        "eventId": "Transfer"
-      },
-      {
-        "moduleId": "tokens",
-        "eventId": "Unreserved"
-      },
-      {
-        "moduleId": "currencies",
-        "eventId": "Transferred"
-      },
-      {
-        "moduleId": "tokens",
-        "eventId": "Transfer"
-      },
-      {
-        "moduleId": "tokens",
-        "eventId": "Unreserved"
-      }
-    ],
-    "hash": "0x118b0138ef63afcff39897795024bf89fdf9b1dc5815afa31af0a3fa46d47def",
-    "extrinsic_index": "7115791-0",
-    "block": 7115791,
-    "timestamp": 1741679736000,
-    "provenance": "transfer",
-    "label": "transfer"
+    "provenance": "xcm",
+    "xcmFee": 0,
+    "tip": 0,
+    "feeUsed": 0,
+    "events": [],
+    "label": "xcm_transfer"
   }
 ]

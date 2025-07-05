@@ -149,25 +149,28 @@ const verifyNativeTokenBalanceChange = async (address: string, chain: { domain: 
 }
 
 
+//portfolioZoomInError("5GepBTp2ZuDi3yAdWtBnMuWYaQAWU2sdY16Cnj7AHzxUJztR", { domain: 'bifrost', label: '', token: 'BNC' }, 'DOT')
+
 // BIFROST
-// OK! verifyPortfolioChange("1RRBm6aEAxYXjjacerrEyNxvhDZLbr9PJRvtbxD3NkgTB8S", { domain: 'bifrost', label: '', token: 'BNC' })
-// almost OK verifyPortfolioChange("5CFwQqMnG61MkaSS96tW9vU2JiaV2YPHve2EtFA5SgY4SAts", { domain: 'bifrost', label: '', token: 'BNC' }) -> missing event locked
-// OK verifyPortfolioChange("5GeJMTfNpe2mmJgnxHoYJDVvNFcn8X4fbdtVPHVonFSX9tH7", { domain: 'bifrost', label: '', token: 'BNC' })
-// verifyPortfolioChange("15b7Ko56RgVBVWB9UXEnW4LhS2AAALRmcVpgx26Wr5yzVbeS", { domain: 'bifrost', label: '', token: 'BNC' }) -> missing  5804444-8	5804444
-// OK verifyPortfolioChange("12TiTLQYFBsb2EUdaxFdcvo78gpkhajnuv7Jm8Aoy7c4z1YV", { domain: 'bifrost', label: '', token: 'BNC' })
-// OK verifyAssetPortfolioChange4Hydration("16882iTH5FHdH2ka552Rr6yUGUSvKPvQHBWAYLXjiCihVpgf", { domain: 'hydration', label: '', token: 'HDX' })
+// LOTS OF DATA NO TX BNC don't match verifyPortfolioChange("1RRBm6aEAxYXjjacerrEyNxvhDZLbr9PJRvtbxD3NkgTB8S", { domain: 'bifrost', label: '', token: 'BNC' })
+// OK !!! verifyPortfolioChange("1CEZAcr7sGqC7Sx6jwWJ5JBALa8iqwS18kj3Y9RzmZacL33", { domain: 'bifrost', label: '', token: 'BNC' }) 
+// OK !!! verifyPortfolioChange("15abVnvSgRJFCqhJuvrYSNL5DscRppcog8cyYaVALLU3LFjB", { domain: 'bifrost', label: '', token: 'BNC' })
+// OK !!! verifyPortfolioChange("15b7Ko56RgVBVWB9UXEnW4LhS2AAALRmcVpgx26Wr5yzVbeS", { domain: 'bifrost', label: '', token: 'BNC' }) 
+// OK !!! verifyPortfolioChange("12TiTLQYFBsb2EUdaxFdcvo78gpkhajnuv7Jm8Aoy7c4z1YV", { domain: 'bifrost', label: '', token: 'BNC' })
+
 
 // HYDRATION
-// OK ! verifyPortfolioChange("5GeJMTfNpe2mmJgnxHoYJDVvNFcn8X4fbdtVPHVonFSX9tH7", { domain: 'hydration', label: '', token: 'HDX' }) 
-// almost ok verifyPortfolioChange("5CFwQqMnG61MkaSS96tW9vU2JiaV2YPHve2EtFA5SgY4SAts", { domain: 'hydration', label: '', token: 'HDX' }) -> ZTG missing
+// OK verifyPortfolioChange("15abVnvSgRJFCqhJuvrYSNL5DscRppcog8cyYaVALLU3LFjB", { domain: 'hydration', label: '', token: 'HDX' }) 
+// verifyPortfolioChange("1CEZAcr7sGqC7Sx6jwWJ5JBALa8iqwS18kj3Y9RzmZacL33", { domain: 'hydration', label: '', token: 'HDX' }) //-> ZTG missing
 // aslomst ok 40k HDX! verifyPortfolioChange("1HGnvAkk9nbfZ58CzUJhjcrLdEDMkr5qNkqqYkyD5BF5v6Y", { domain: 'hydration', label: '', token: 'HDX' }) // Leemo
-// OK ! verifyPortfolioChange("12iyS9DpPLCbdt1ae136owqNPmcfYvkygeT6VmdtkbSv2ozq", { domain: 'hydration', label: '', token: 'HDX' })
-// ALMOST OK verifyPortfolioChange("131d4YS25qpuXiHrfJibuFYXwZrzwxpvU1ahvr3TJFNYcmfk", { domain: 'hydration', label: '', token: 'HDX' }) -> HDX  // jakub
+// OK !!! verifyPortfolioChange("12iyS9DpPLCbdt1ae136owqNPmcfYvkygeT6VmdtkbSv2ozq", { domain: 'hydration', label: '', token: 'HDX' })
+// ALMOST OK 
+// many issues verifyPortfolioChange("131d4YS25qpuXiHrfJibuFYXwZrzwxpvU1ahvr3TJFNYcmfk", { domain: 'hydration', label: '', token: 'HDX' }) // -> many issues  // jakub
 
-// portfolioZoomInError("131d4YS25qpuXiHrfJibuFYXwZrzwxpvU1ahvr3TJFNYcmfk", { domain: 'hydration', label: '', token: 'HDX' }, '2-Pool')
+//portfolioZoomInError("1CEZAcr7sGqC7Sx6jwWJ5JBALa8iqwS18kj3Y9RzmZacL33", { domain: 'hydration', label: '', token: 'HDX' }, 'BNC')
 
 // ASSET HUB
-// OK verifyAssetHubPortfolioChange("5GeJMTfNpe2mmJgnxHoYJDVvNFcn8X4fbdtVPHVonFSX9tH7", { domain: 'assethub-polkadot', label: '', token: 'DOT' })
+verifyAssetHubPortfolioChange("15abVnvSgRJFCqhJuvrYSNL5DscRppcog8cyYaVALLU3LFjB", { domain: 'assethub-polkadot', label: '', token: 'DOT' })
 // OK verifyAssetHubPortfolioChange("5CFwQqMnG61MkaSS96tW9vU2JiaV2YPHve2EtFA5SgY4SAts", { domain: 'assethub-polkadot', label: '', token: 'DOT' })
 // OK verifyAssetHubPortfolioChange("1HGnvAkk9nbfZ58CzUJhjcrLdEDMkr5qNkqqYkyD5BF5v6Y", { domain: 'assethub-polkadot', label: '', token: 'DOT' })
 // OK verifyAssetHubPortfolioChange("13qSxtKtr54qebSQzf1c7MC9CwkkZMMFaXyHKq8LzjSjiU3M", { domain: 'assethub-polkadot', label: '', token: 'DOT' })

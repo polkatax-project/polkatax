@@ -1,5 +1,878 @@
 [
   {
+    "block": 18881157,
+    "balance": 1047.6086450015,
+    "diff": 50,
+    "extrinsic_index": "18881157-2",
+    "expectedBalanceChange": 0,
+    "deviationFromExpectation": 50,
+    "label": "transfer"
+  },
+  {
+    "block": 18882423,
+    "balance": 1022.541406084,
+    "diff": -25.015813096899933,
+    "extrinsic_index": "18882423-2",
+    "expectedBalanceChange": -0.0158130969,
+    "deviationFromExpectation": -24.999999999999932,
+    "label": "transfer"
+  },
+  {
+    "block": 18953219,
+    "balance": 1043.674506582,
+    "diff": 20,
+    "extrinsic_index": "18953219-3",
+    "expectedBalanceChange": 0,
+    "deviationFromExpectation": 20,
+    "label": "transfer"
+  },
+  {
+    "block": 18982939,
+    "balance": 1227.8567505495,
+    "diff": 183.32999999999993,
+    "extrinsic_index": "18982939-2",
+    "expectedBalanceChange": 0,
+    "deviationFromExpectation": 183.32999999999993,
+    "label": "transfer"
+  },
+  {
+    "block": 19065615,
+    "balance": 1302.7583243793,
+    "diff": 75,
+    "extrinsic_index": "19065615-5",
+    "expectedBalanceChange": 0,
+    "deviationFromExpectation": 75,
+    "label": "transfer"
+  },
+  {
+    "block": 19065620,
+    "balance": 1377.7583243793,
+    "diff": 75,
+    "extrinsic_index": "19065620-9",
+    "expectedBalanceChange": 0,
+    "deviationFromExpectation": 75,
+    "label": "transfer"
+  },
+  {
+    "block": 19065626,
+    "balance": 1477.7583243793,
+    "diff": 100,
+    "extrinsic_index": "19065626-8",
+    "expectedBalanceChange": 0,
+    "deviationFromExpectation": 100,
+    "label": "transfer"
+  },
+  {
+    "block": 19110326,
+    "balance": 1481.1465160355,
+    "diff": 3.660000000000082,
+    "extrinsic_index": "19110326-2",
+    "expectedBalanceChange": 0,
+    "deviationFromExpectation": 3.660000000000082,
+    "label": "transfer"
+  },
+  {
+    "block": 19211452,
+    "balance": 1477.9736747501,
+    "diff": -2.0158130969000467,
+    "extrinsic_index": "19211452-3",
+    "expectedBalanceChange": -0.0158130969,
+    "deviationFromExpectation": -2.0000000000000466,
+    "label": "transfer"
+  },
+  {
+    "block": 19218005,
+    "balance": 1468.9578616532,
+    "diff": -9.01581309689982,
+    "extrinsic_index": "19218005-2",
+    "expectedBalanceChange": -0.0158130969,
+    "deviationFromExpectation": -8.999999999999819,
+    "label": "transfer"
+  },
+  {
+    "block": 19251552,
+    "balance": 1469.1578616532,
+    "diff": 0.1999999999998181,
+    "extrinsic_index": "19251552-2",
+    "expectedBalanceChange": 0,
+    "deviationFromExpectation": 0.1999999999998181,
+    "label": "transfer"
+  },
+  {
+    "block": 19252499,
+    "balance": 1069.1419485563,
+    "diff": -400.0159130969,
+    "extrinsic_index": "19252499-2",
+    "expectedBalanceChange": -0.0159130969,
+    "deviationFromExpectation": -400,
+    "label": "transfer"
+  },
+  {
+    "block": 19553519,
+    "balance": 1058.8960782755,
+    "diff": -10.015817443699916,
+    "extrinsic_index": "19553519-4",
+    "expectedBalanceChange": -0.0158174437,
+    "deviationFromExpectation": -9.999999999999917,
+    "label": "transfer"
+  },
+  {
+    "block": 19614513,
+    "balance": 1308.6411892663,
+    "diff": 250,
+    "extrinsic_index": "19614513-2",
+    "expectedBalanceChange": 0,
+    "deviationFromExpectation": 250,
+    "label": "transfer"
+  },
+  {
+    "block": 19790596,
+    "balance": 1328.5157439716,
+    "diff": 20,
+    "extrinsic_index": "19790596-2",
+    "expectedBalanceChange": 0,
+    "deviationFromExpectation": 20,
+    "label": "transfer"
+  },
+  {
+    "block": 19808533,
+    "balance": 1355.5157439716,
+    "diff": 27,
+    "extrinsic_index": "19808533-3",
+    "expectedBalanceChange": 0,
+    "deviationFromExpectation": 27,
+    "label": "transfer"
+  },
+  {
+    "block": 19861904,
+    "balance": 1350.4299253398,
+    "diff": -5.015817443699916,
+    "extrinsic_index": "19861904-3",
+    "expectedBalanceChange": -0.0158174437,
+    "deviationFromExpectation": -4.9999999999999165,
+    "label": "transfer"
+  },
+  {
+    "block": 19862040,
+    "balance": 1347.9141078961,
+    "diff": -2.5158174437001435,
+    "extrinsic_index": "19862040-3",
+    "expectedBalanceChange": -0.0158174437,
+    "deviationFromExpectation": -2.5000000000001434,
+    "label": "transfer"
+  },
+  {
+    "block": 19863605,
+    "balance": 1351.3527475733,
+    "diff": 3.4386396771999443,
+    "extrinsic_index": "19863605-2",
+    "expectedBalanceChange": 0,
+    "deviationFromExpectation": 3.4386396771999443,
+    "label": "transfer"
+  },
+  {
+    "block": 19868584,
+    "balance": 1344.4369301296,
+    "diff": -6.915817443700007,
+    "extrinsic_index": "19868584-4",
+    "expectedBalanceChange": -0.0158174437,
+    "deviationFromExpectation": -6.9000000000000075,
+    "label": "transfer"
+  },
+  {
+    "block": 19924403,
+    "balance": 1343.3545779414,
+    "diff": 1,
+    "extrinsic_index": "19924403-2",
+    "expectedBalanceChange": 0,
+    "deviationFromExpectation": 1,
+    "label": "transfer"
+  },
+  {
+    "block": 19966232,
+    "balance": 1342.2061487037,
+    "diff": -1.0158099812999808,
+    "extrinsic_index": "19966232-2",
+    "expectedBalanceChange": -0.0158099813,
+    "deviationFromExpectation": -0.9999999999999808,
+    "label": "transfer"
+  },
+  {
+    "block": 19967336,
+    "balance": 1302.1903387224,
+    "diff": -40.01580998129998,
+    "extrinsic_index": "19967336-3",
+    "expectedBalanceChange": -0.0158099813,
+    "deviationFromExpectation": -39.99999999999998,
+    "label": "transfer"
+  },
+  {
+    "block": 20054019,
+    "balance": 1182.1387251104,
+    "diff": -120.01591744370012,
+    "extrinsic_index": "20054019-2",
+    "expectedBalanceChange": -0.0159174437,
+    "deviationFromExpectation": -120.00000000000011,
+    "label": "transfer"
+  },
+  {
+    "block": 20144396,
+    "balance": 1183.0563729222,
+    "diff": 1,
+    "extrinsic_index": "20144396-2",
+    "expectedBalanceChange": 0,
+    "deviationFromExpectation": 1,
+    "label": "transfer"
+  },
+  {
+    "block": 20144400,
+    "balance": 1182.0405554785,
+    "diff": -1.0158174436999161,
+    "extrinsic_index": "20144400-2",
+    "expectedBalanceChange": -0.0158174437,
+    "deviationFromExpectation": -0.9999999999999161,
+    "label": "transfer"
+  },
+  {
+    "block": 20144437,
+    "balance": 281.8178076788,
+    "diff": -900.0159174437,
+    "extrinsic_index": "20144437-2",
+    "expectedBalanceChange": -0.0159174437,
+    "deviationFromExpectation": -900,
+    "label": "transfer"
+  },
+  {
+    "block": 20269183,
+    "balance": 422.1420854236,
+    "diff": 120,
+    "extrinsic_index": "20269183-4",
+    "expectedBalanceChange": 0,
+    "deviationFromExpectation": 120,
+    "label": "transfer"
+  },
+  {
+    "block": 20572904,
+    "balance": 367.4066439366,
+    "diff": 9.949999999999989,
+    "extrinsic_index": "20572904-3",
+    "expectedBalanceChange": 0,
+    "deviationFromExpectation": 9.949999999999989,
+    "label": "transfer"
+  },
+  {
+    "block": 20774019,
+    "balance": 325.2048281962,
+    "diff": -42.01581864879995,
+    "extrinsic_index": "20774019-3",
+    "expectedBalanceChange": -0.0158186488,
+    "deviationFromExpectation": -41.99999999999995,
+    "label": "transfer"
+  },
+  {
+    "block": 20774454,
+    "balance": 323.1890174183,
+    "diff": -2.0158107779000147,
+    "extrinsic_index": "20774454-3",
+    "expectedBalanceChange": -0.0158107779,
+    "deviationFromExpectation": -2.0000000000000147,
+    "label": "transfer"
+  },
+  {
+    "block": 20784459,
+    "balance": 302.1731987695,
+    "diff": -21.015818648800007,
+    "extrinsic_index": "20784459-2",
+    "expectedBalanceChange": -0.0158186488,
+    "deviationFromExpectation": -21.000000000000007,
+    "label": "transfer"
+  },
+  {
+    "block": 20784462,
+    "balance": 300.1573801207,
+    "diff": -2.015818648800007,
+    "extrinsic_index": "20784462-3",
+    "expectedBalanceChange": -0.0158186488,
+    "deviationFromExpectation": -2.000000000000007,
+    "label": "transfer"
+  },
+  {
+    "block": 20784867,
+    "balance": 299.1415614719,
+    "diff": -1.015818648800007,
+    "extrinsic_index": "20784867-2",
+    "expectedBalanceChange": -0.0158186488,
+    "deviationFromExpectation": -1.0000000000000069,
+    "label": "transfer"
+  },
+  {
+    "block": 21029685,
+    "balance": 443.8983899646,
+    "diff": 52.950000000000045,
+    "extrinsic_index": "21029685-2",
+    "expectedBalanceChange": 0,
+    "deviationFromExpectation": 52.950000000000045,
+    "label": "transfer"
+  },
+  {
+    "block": 21029769,
+    "balance": 393.8825791867,
+    "diff": -50.015810777900015,
+    "extrinsic_index": "21029769-2",
+    "expectedBalanceChange": -0.0158107779,
+    "deviationFromExpectation": -50.000000000000014,
+    "label": "transfer"
+  },
+  {
+    "block": 21183976,
+    "balance": 394.1485433591,
+    "diff": 0.5,
+    "extrinsic_index": "21183976-2",
+    "expectedBalanceChange": 0,
+    "deviationFromExpectation": 0.5,
+    "label": "transfer"
+  },
+  {
+    "block": 21184039,
+    "balance": 406.5763448823,
+    "diff": 10,
+    "extrinsic_index": "21184039-2",
+    "expectedBalanceChange": 0,
+    "deviationFromExpectation": 10,
+    "label": "transfer"
+  },
+  {
+    "block": 21184188,
+    "balance": 436.5098906057,
+    "diff": 29.94999999999999,
+    "extrinsic_index": "21184188-2",
+    "expectedBalanceChange": 0,
+    "deviationFromExpectation": 29.94999999999999,
+    "label": "transfer"
+  },
+  {
+    "block": 21184199,
+    "balance": 426.4940798278,
+    "diff": -10.015810777899958,
+    "extrinsic_index": "21184199-2",
+    "expectedBalanceChange": -0.0158107779,
+    "deviationFromExpectation": -9.999999999999957,
+    "label": "transfer"
+  },
+  {
+    "block": 21386256,
+    "balance": 424.8285510638,
+    "diff": -1.2158107779000034,
+    "extrinsic_index": "21386256-2",
+    "expectedBalanceChange": -0.0158107779,
+    "deviationFromExpectation": -1.2000000000000033,
+    "label": "transfer"
+  },
+  {
+    "block": 21446481,
+    "balance": 466.702562214,
+    "diff": 42,
+    "extrinsic_index": "21446481-2",
+    "expectedBalanceChange": 0,
+    "deviationFromExpectation": 42,
+    "label": "transfer"
+  },
+  {
+    "block": 21456032,
+    "balance": 464.4666435652,
+    "diff": -2.235918648800009,
+    "extrinsic_index": "21456032-2",
+    "expectedBalanceChange": -0.0159186488,
+    "deviationFromExpectation": -2.220000000000009,
+    "label": "transfer"
+  },
+  {
+    "block": 21458097,
+    "balance": 514.4666435652,
+    "diff": 50,
+    "extrinsic_index": "21458097-2",
+    "expectedBalanceChange": 0,
+    "deviationFromExpectation": 50,
+    "label": "transfer"
+  },
+  {
+    "block": 21574833,
+    "balance": 506.4875517175,
+    "diff": 2.2200000000000273,
+    "extrinsic_index": "21574833-3",
+    "expectedBalanceChange": 0,
+    "deviationFromExpectation": 2.2200000000000273,
+    "label": "transfer"
+  },
+  {
+    "block": 21691148,
+    "balance": 504.1617778216,
+    "diff": -2.0159107778999896,
+    "extrinsic_index": "21691148-2",
+    "expectedBalanceChange": -0.0159107779,
+    "deviationFromExpectation": -1.9999999999999896,
+    "label": "transfer"
+  },
+  {
+    "block": 21715588,
+    "balance": 528.8894284842,
+    "diff": 24.987240440400058,
+    "extrinsic_index": "21715588-3",
+    "expectedBalanceChange": -0.0127595596,
+    "deviationFromExpectation": 25.000000000000057,
+    "label": "treasury_payout"
+  },
+  {
+    "block": 21771910,
+    "balance": 527.4598913475,
+    "diff": -1.3529107778999787,
+    "extrinsic_index": "21771910-2",
+    "expectedBalanceChange": -0.0159107779,
+    "deviationFromExpectation": -1.3369999999999786,
+    "label": "transfer"
+  },
+  {
+    "block": 21922608,
+    "balance": 754.8242664346,
+    "diff": 233.31724044039993,
+    "extrinsic_index": "21922608-2",
+    "expectedBalanceChange": -0.0127595596,
+    "deviationFromExpectation": 233.32999999999993,
+    "label": "treasury_payout"
+  },
+  {
+    "block": 22001999,
+    "balance": 1177.6335993105,
+    "diff": 424.9999999999999,
+    "extrinsic_index": "22001999-2",
+    "expectedBalanceChange": 0,
+    "deviationFromExpectation": 424.9999999999999,
+    "label": "transfer"
+  },
+  {
+    "block": 22116545,
+    "balance": 739.9018800827,
+    "diff": -6.915910777899967,
+    "extrinsic_index": "22116545-2",
+    "expectedBalanceChange": -0.0159107779,
+    "deviationFromExpectation": -6.899999999999967,
+    "label": "transfer"
+  },
+  {
+    "block": 22119634,
+    "balance": 1039.8724752465,
+    "diff": 300,
+    "extrinsic_index": "22119634-2",
+    "expectedBalanceChange": 0,
+    "deviationFromExpectation": 300,
+    "label": "transfer"
+  },
+  {
+    "block": 22137529,
+    "balance": 1688.6369050185,
+    "diff": 200,
+    "extrinsic_index": "22137529-2",
+    "expectedBalanceChange": 0,
+    "deviationFromExpectation": 200,
+    "label": "transfer"
+  },
+  {
+    "block": 22288560,
+    "balance": 1687.3595293585,
+    "diff": -1.1159186488000614,
+    "extrinsic_index": "22288560-3",
+    "expectedBalanceChange": -0.0159186488,
+    "deviationFromExpectation": -1.1000000000000614,
+    "label": "transfer"
+  },
+  {
+    "block": 22318876,
+    "balance": 1764.1367697989,
+    "diff": 76.77724044040019,
+    "extrinsic_index": "22318876-2",
+    "expectedBalanceChange": -0.0127595596,
+    "deviationFromExpectation": 76.79000000000019,
+    "label": "treasury_payout"
+  },
+  {
+    "block": 22360174,
+    "balance": 1759.1208511501,
+    "diff": -5.015918648800152,
+    "extrinsic_index": "22360174-2",
+    "expectedBalanceChange": -0.0159186488,
+    "deviationFromExpectation": -5.000000000000153,
+    "label": "transfer"
+  },
+  {
+    "block": 22418301,
+    "balance": 1797.7862463286,
+    "diff": 38.74000000000001,
+    "extrinsic_index": "22418301-2",
+    "expectedBalanceChange": 0,
+    "deviationFromExpectation": 38.74000000000001,
+    "label": "transfer"
+  },
+  {
+    "block": 22418462,
+    "balance": 1792.7703276798,
+    "diff": -5.015918648800152,
+    "extrinsic_index": "22418462-2",
+    "expectedBalanceChange": -0.0159186488,
+    "deviationFromExpectation": -5.000000000000153,
+    "label": "transfer"
+  },
+  {
+    "block": 22466460,
+    "balance": 2139.412942053,
+    "diff": -200.01601864880013,
+    "extrinsic_index": "22466460-2",
+    "expectedBalanceChange": -0.0160186488,
+    "deviationFromExpectation": -200.0000000000001,
+    "label": "transfer"
+  },
+  {
+    "block": 22490749,
+    "balance": 2137.338354713,
+    "diff": -2.0159186529999715,
+    "extrinsic_index": "22490749-2",
+    "expectedBalanceChange": -0.015918653,
+    "deviationFromExpectation": -1.9999999999999716,
+    "label": "transfer"
+  },
+  {
+    "block": 22490757,
+    "balance": 2135.3224360642,
+    "diff": -2.0159186488003797,
+    "extrinsic_index": "22490757-3",
+    "expectedBalanceChange": -0.0159186488,
+    "deviationFromExpectation": -2.0000000000003797,
+    "label": "transfer"
+  },
+  {
+    "block": 22602418,
+    "balance": 2130.2094007305,
+    "diff": -5.015924741100207,
+    "extrinsic_index": "22602418-2",
+    "expectedBalanceChange": -0.0159247411,
+    "deviationFromExpectation": -5.000000000000207,
+    "label": "transfer"
+  },
+  {
+    "block": 22693958,
+    "balance": 2211.0534544532,
+    "diff": 80.92722814710032,
+    "extrinsic_index": "22693958-4",
+    "expectedBalanceChange": -0.0127718529,
+    "deviationFromExpectation": 80.94000000000032,
+    "label": "treasury_payout"
+  },
+  {
+    "block": 22719208,
+    "balance": 2200.9800792234,
+    "diff": -10.015915490499992,
+    "extrinsic_index": "22719208-3",
+    "expectedBalanceChange": -0.0159154905,
+    "deviationFromExpectation": -9.999999999999993,
+    "label": "transfer"
+  },
+  {
+    "block": 23008395,
+    "balance": 2184.1683854351,
+    "diff": -5.015915490499992,
+    "extrinsic_index": "23008395-2",
+    "expectedBalanceChange": -0.0159154905,
+    "deviationFromExpectation": -4.999999999999992,
+    "label": "transfer"
+  },
+  {
+    "block": 23204294,
+    "balance": 2140.3851522777,
+    "diff": -33.68592474110028,
+    "extrinsic_index": "23204294-2",
+    "expectedBalanceChange": -0.0159247411,
+    "deviationFromExpectation": -33.67000000000028,
+    "label": "transfer"
+  },
+  {
+    "block": 23322903,
+    "balance": 2130.0802165534,
+    "diff": -10.27592474109997,
+    "extrinsic_index": "23322903-2",
+    "expectedBalanceChange": -0.0159247411,
+    "deviationFromExpectation": -10.259999999999971,
+    "label": "transfer"
+  },
+  {
+    "block": 23331214,
+    "balance": 2075.0642918123,
+    "diff": -55.01592474110021,
+    "extrinsic_index": "23331214-2",
+    "expectedBalanceChange": -0.0159247411,
+    "deviationFromExpectation": -55.000000000000206,
+    "label": "transfer"
+  },
+  {
+    "block": 23550656,
+    "balance": 2073.8292588349,
+    "diff": 1.099999999999909,
+    "extrinsic_index": "23550656-4",
+    "expectedBalanceChange": 0,
+    "deviationFromExpectation": 1.099999999999909,
+    "label": "transfer"
+  },
+  {
+    "block": 23770176,
+    "balance": 1973.0079599379,
+    "diff": -1.5159154904999923,
+    "extrinsic_index": "23770176-2",
+    "expectedBalanceChange": -0.0159154905,
+    "deviationFromExpectation": -1.4999999999999922,
+    "label": "transfer"
+  },
+  {
+    "block": 23796082,
+    "balance": 2308.8502845456,
+    "diff": 490.9451310300001,
+    "extrinsic_index": "23796082-3",
+    "expectedBalanceChange": 0,
+    "deviationFromExpectation": 490.9451310300001,
+    "label": "transfer"
+  },
+  {
+    "block": 24300013,
+    "balance": 1302.1361142987,
+    "diff": -1.0159154904999923,
+    "extrinsic_index": "24300013-2",
+    "expectedBalanceChange": -0.0159154905,
+    "deviationFromExpectation": -0.9999999999999923,
+    "label": "transfer"
+  },
+  {
+    "block": 24317649,
+    "balance": 1302.120044593,
+    "diff": -400.01601549049997,
+    "extrinsic_index": "24317649-2",
+    "expectedBalanceChange": -0.0160154905,
+    "deviationFromExpectation": -399.99999999999994,
+    "label": "transfer"
+  },
+  {
+    "block": 24323803,
+    "balance": 1300.1041198519,
+    "diff": -2.015924741100207,
+    "extrinsic_index": "24323803-3",
+    "expectedBalanceChange": -0.0159247411,
+    "deviationFromExpectation": -2.000000000000207,
+    "label": "transfer"
+  },
+  {
+    "block": 24368654,
+    "balance": 1299.0423447172,
+    "diff": -1.0159247410999797,
+    "extrinsic_index": "24368654-2",
+    "expectedBalanceChange": -0.0159247411,
+    "deviationFromExpectation": -0.9999999999999797,
+    "label": "transfer"
+  },
+  {
+    "block": 24387566,
+    "balance": 1298.9382852258,
+    "diff": -3.0159154904999923,
+    "extrinsic_index": "24387566-2",
+    "expectedBalanceChange": -0.0159154905,
+    "deviationFromExpectation": -2.9999999999999925,
+    "label": "transfer"
+  },
+  {
+    "block": 24394246,
+    "balance": 1300.9382852258,
+    "diff": 2,
+    "extrinsic_index": "24394246-2",
+    "expectedBalanceChange": 0,
+    "deviationFromExpectation": 2,
+    "label": "transfer"
+  },
+  {
+    "block": 24570266,
+    "balance": 1294.6642421394,
+    "diff": -5.015924741100207,
+    "extrinsic_index": "24570266-2",
+    "expectedBalanceChange": -0.0159247411,
+    "deviationFromExpectation": -5.000000000000207,
+    "label": "transfer"
+  },
+  {
+    "block": 24604326,
+    "balance": 146.5881619167,
+    "diff": -680.0160247411001,
+    "extrinsic_index": "24604326-2",
+    "expectedBalanceChange": -0.0160247411,
+    "deviationFromExpectation": -680.0000000000001,
+    "label": "transfer"
+  },
+  {
+    "block": 24682771,
+    "balance": 174.6419817643,
+    "diff": -5.015915490499992,
+    "extrinsic_index": "24682771-2",
+    "expectedBalanceChange": -0.0159154905,
+    "deviationFromExpectation": -4.999999999999992,
+    "label": "transfer"
+  },
+  {
+    "block": 24702967,
+    "balance": 209.8249470376,
+    "diff": 35.24000000000001,
+    "extrinsic_index": "24702967-2",
+    "expectedBalanceChange": 0,
+    "deviationFromExpectation": 35.24000000000001,
+    "label": "transfer"
+  },
+  {
+    "block": 24703117,
+    "balance": 438.9449470376,
+    "diff": 229.12,
+    "extrinsic_index": "24703117-2",
+    "expectedBalanceChange": 0,
+    "deviationFromExpectation": 229.12,
+    "label": "transfer"
+  },
+  {
+    "block": 24739532,
+    "balance": 389.517126715,
+    "diff": -1.3529247410999687,
+    "extrinsic_index": "24739532-3",
+    "expectedBalanceChange": -0.0159247411,
+    "deviationFromExpectation": -1.3369999999999687,
+    "label": "transfer"
+  },
+  {
+    "block": 24739659,
+    "balance": 214.4076482364,
+    "diff": -175.0160247411,
+    "extrinsic_index": "24739659-2",
+    "expectedBalanceChange": -0.0160247411,
+    "deviationFromExpectation": -175,
+    "label": "transfer"
+  },
+  {
+    "block": 24816233,
+    "balance": 173.160486131,
+    "diff": -11.084802398800008,
+    "extrinsic_index": "24816233-2",
+    "expectedBalanceChange": -0.0159247411,
+    "deviationFromExpectation": -11.068877657700009,
+    "label": "transfer"
+  },
+  {
+    "block": 24873275,
+    "balance": 250.3452890261,
+    "diff": -22.81513672959997,
+    "extrinsic_index": "24873275-2",
+    "expectedBalanceChange": -0.0159247411,
+    "deviationFromExpectation": -22.79921198849997,
+    "label": "transfer"
+  },
+  {
+    "block": 24892776,
+    "balance": 254.6265759432,
+    "diff": -34.276303620600004,
+    "extrinsic_index": "24892776-2",
+    "expectedBalanceChange": -0.0159247411,
+    "deviationFromExpectation": -34.2603788795,
+    "label": "transfer"
+  },
+  {
+    "block": 24915056,
+    "balance": 336.8048300938,
+    "diff": 82.23999999999998,
+    "extrinsic_index": "24915056-2",
+    "expectedBalanceChange": 0,
+    "deviationFromExpectation": 82.23999999999998,
+    "label": "transfer"
+  },
+  {
+    "block": 24923775,
+    "balance": 369.4844053797,
+    "diff": -250.01603052480004,
+    "extrinsic_index": "24923775-2",
+    "expectedBalanceChange": -0.0160305248,
+    "deviationFromExpectation": -250.00000000000006,
+    "label": "transfer"
+  },
+  {
+    "block": 25021078,
+    "balance": 375.5994401914,
+    "diff": -50.01593052480001,
+    "extrinsic_index": "25021078-2",
+    "expectedBalanceChange": -0.0159305248,
+    "deviationFromExpectation": -50.000000000000014,
+    "label": "transfer"
+  },
+  {
+    "block": 25076954,
+    "balance": 374.0835096666,
+    "diff": -1.5159305248000123,
+    "extrinsic_index": "25076954-2",
+    "expectedBalanceChange": -0.0159305248,
+    "deviationFromExpectation": -1.5000000000000124,
+    "label": "transfer"
+  },
+  {
+    "block": 25102366,
+    "balance": 375.0835096666,
+    "diff": 1,
+    "extrinsic_index": "25102366-4",
+    "expectedBalanceChange": 0,
+    "deviationFromExpectation": 1,
+    "label": "transfer"
+  },
+  {
+    "block": 25105525,
+    "balance": 550.3835096666,
+    "diff": 175.30000000000007,
+    "extrinsic_index": "25105525-4",
+    "expectedBalanceChange": 0,
+    "deviationFromExpectation": 175.30000000000007,
+    "label": "transfer"
+  },
+  {
+    "block": 25115392,
+    "balance": 541.5192080463,
+    "diff": -8.864301620300012,
+    "extrinsic_index": "25115392-2",
+    "expectedBalanceChange": -0.0159305248,
+    "deviationFromExpectation": -8.848371095500012,
+    "label": "transfer"
+  },
+  {
+    "block": 25115455,
+    "balance": 533.9626117884,
+    "diff": -7.5565962579000825,
+    "extrinsic_index": "25115455-2",
+    "expectedBalanceChange": -0.0159305248,
+    "deviationFromExpectation": -7.540665733100083,
+    "label": "transfer"
+  },
+  {
+    "block": 25117982,
+    "balance": 788.2826117884,
+    "diff": 254.32000000000005,
+    "extrinsic_index": "25117982-2",
+    "expectedBalanceChange": 0,
+    "deviationFromExpectation": 254.32000000000005,
+    "label": "treasury_payout"
+  },
+  {
+    "block": 25147040,
+    "balance": 750.2284676773,
+    "diff": -37.9825417566999,
+    "extrinsic_index": "25147040-2",
+    "expectedBalanceChange": -0.0159305248,
+    "deviationFromExpectation": -37.966611231899904,
+    "label": "transfer"
+  },
+  {
     "block": 25188005,
     "balance": 748.9562508589,
     "diff": -0.03229327999997622,
@@ -23,21 +896,120 @@
     "deviationFromExpectation": -0.10000000000002274
   },
   {
-    "block": 25875903,
-    "balance": 1412.5239832211,
-    "diff": -200.0585870739999,
-    "extrinsic_index": "25875903-2",
-    "expectedBalanceChange": -200.018687074,
-    "deviationFromExpectation": -0.039899999999875035,
+    "block": 25292890,
+    "balance": 1129.8322762084,
+    "diff": 380.9999999999999,
+    "extrinsic_index": "25292890-2",
+    "expectedBalanceChange": 0,
+    "deviationFromExpectation": 380.9999999999999,
     "label": "transfer"
   },
   {
-    "block": 26091309,
-    "balance": 901.9678039718,
-    "diff": -10.06530384680002,
-    "extrinsic_index": "26091309-2",
-    "expectedBalanceChange": -10.0256038468,
-    "deviationFromExpectation": -0.03970000000002116,
+    "block": 25392529,
+    "balance": 1206.9516808813,
+    "diff": -400.01603052480004,
+    "extrinsic_index": "25392529-2",
+    "expectedBalanceChange": -0.0160305248,
+    "deviationFromExpectation": -400.00000000000006,
+    "label": "transfer"
+  },
+  {
+    "block": 25875526,
+    "balance": 1612.5825702951,
+    "diff": 408.9743589999998,
+    "extrinsic_index": "25875526-3",
+    "expectedBalanceChange": 0,
+    "deviationFromExpectation": 408.9743589999998,
+    "label": "transfer"
+  },
+  {
+    "block": 25916264,
+    "balance": 912.5079526963,
+    "diff": -500.01603052480004,
+    "extrinsic_index": "25916264-3",
+    "expectedBalanceChange": -0.0160305248,
+    "deviationFromExpectation": -500.00000000000006,
+    "label": "transfer"
+  },
+  {
+    "block": 26122176,
+    "balance": 900.8371998408,
+    "diff": -1.115920306199996,
+    "extrinsic_index": "26122176-2",
+    "expectedBalanceChange": -0.0159203062,
+    "deviationFromExpectation": -1.099999999999996,
+    "label": "transfer"
+  },
+  {
+    "block": 26218579,
+    "balance": 900.8209191911,
+    "diff": -275.0162806497,
+    "extrinsic_index": "26218579-3",
+    "expectedBalanceChange": -0.0162806497,
+    "deviationFromExpectation": -275,
+    "label": "transfer"
+  },
+  {
+    "block": 26287179,
+    "balance": 888.3977146357,
+    "diff": -12.309247360100017,
+    "extrinsic_index": "26287179-2",
+    "expectedBalanceChange": -0.0161806497,
+    "deviationFromExpectation": -12.293066710400016,
+    "label": "transfer"
+  },
+  {
+    "block": 26287276,
+    "balance": 876.0981983779,
+    "diff": -12.299516257800065,
+    "extrinsic_index": "26287276-2",
+    "expectedBalanceChange": -0.0161806497,
+    "deviationFromExpectation": -12.283335608100064,
+    "label": "transfer"
+  },
+  {
+    "block": 26304925,
+    "balance": 1779.0304487282,
+    "diff": 903.0000000000001,
+    "extrinsic_index": "26304925-3",
+    "expectedBalanceChange": 0,
+    "deviationFromExpectation": 903.0000000000001,
+    "label": "transfer"
+  },
+  {
+    "block": 26375466,
+    "balance": 1429.4361021955,
+    "diff": -350.01628064969987,
+    "extrinsic_index": "26375466-2",
+    "expectedBalanceChange": -0.0162806497,
+    "deviationFromExpectation": -349.9999999999999,
+    "label": "transfer"
+  },
+  {
+    "block": 26462652,
+    "balance": 1398.5755297637,
+    "diff": -31.401396080300174,
+    "extrinsic_index": "26462652-2",
+    "expectedBalanceChange": -0.0161806497,
+    "deviationFromExpectation": -31.385215430600173,
+    "label": "transfer"
+  },
+  {
+    "block": 26485937,
+    "balance": 1198.7703740219,
+    "diff": -200.0162806497001,
+    "extrinsic_index": "26485937-2",
+    "expectedBalanceChange": -0.0162806497,
+    "deviationFromExpectation": -200.00000000000009,
+    "label": "transfer"
+  },
+  {
+    "block": 26707148,
+    "balance": 1152.9223261155,
+    "diff": -175.01628064969987,
+    "extrinsic_index": "26707148-2",
+    "expectedBalanceChange": -0.0162806497,
+    "deviationFromExpectation": -174.99999999999986,
     "label": "transfer"
   }
 ]

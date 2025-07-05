@@ -7,6 +7,7 @@ import { TokenInfo } from "../../blockchain/substrate/model/token";
 import { mapPublicKeyToAddress } from "../../blockchain/substrate/util/map-public-key-to-address";
 import { logger } from "../../logger/logger";
 import isEqual from 'lodash.isequal';
+import { Asset } from "../../blockchain/substrate/model/asset";
 
 export class SpecialEventsToTransfersService {
     eventHandlers: { chain: string, moduleId: string, eventId: string, handler: (chain: string, e: EventDetails, extra?: any) => Promise<Transfer | Transfer[]> }[] = [
@@ -54,12 +55,14 @@ export class SpecialEventsToTransfersService {
                 break;
             case 'assethub-polkadot':
                 const foreignAssets = await this.subscanService.fetchForeignAssets(chain)
-                const stdAssets = await this.subscanService.scanTokens(chain)
+                const stdAssets = await this.subscanService.scanAssets(chain)
                 stdAssets.push({
-                    symbol: 'DOT',
-                    decimals: token.token_decimals,
+                    metadata: {
+                        symbol: 'DOT',
+                        decimals: token.token_decimals,
+                    },
                     unique_id: 'DOT',
-                    token_id: 'DOT'
+                    asset_id: 'DOT'
                 })
                 extra = { foreignAssets, stdAssets }
         }
@@ -162,7 +165,7 @@ export class SpecialEventsToTransfersService {
         }
     }
 
-    private async onAssethubSwapExecuted(event: EventDetails, { foreignAssets, stdAssets }: any): Promise<Transfer[]> {
+    private async onAssethubSwapExecuted(event: EventDetails, { foreignAssets, stdAssets }: { foreignAssets: ForeignAsset[], stdAssets: Asset[] }): Promise<Transfer[]> {
         const fromKey = event.params.find(p => p.name === "who")?.value;
         const toKey = event.params.find(p => p.name === "send_to")?.value;
         const from =  mapPublicKeyToAddress(fromKey)
@@ -171,24 +174,19 @@ export class SpecialEventsToTransfersService {
         const route: { col1: any, col2: any }[] =  event.params.find(p => p.name === "path")?.value
         const assets = route.map(r => r.col1).map(location => {
             if (location.interior?.Here === 'NULL') {
-                return stdAssets.find(t => t.token_id === 'DOT')
+                return stdAssets.find(t => t.metadata.symbol === 'DOT')
             }
             const foreign = foreignAssets.find(t => isEqual(t.multi_location, location))
             if (foreign) {
-                return {
-                    symbol: foreign.metadata.symbol,
-                    unique_id: foreign.unique_id,
-                    token_id: foreign.asset_id,
-                    decimals: foreign.metadata.decimals,
-                }
+                foreign
             }
             return stdAssets.find(t => t.asset_id == location.interior?.X2[1]?.GeneralIndex)
         })
         const fromAsset = assets[0]
         const toAsset = assets[assets.length - 1]
 
-        const amount_in = Number(event.params.find(p => p.name === "amount_in")?.value || undefined) / Math.pow(10, fromAsset.decimals)
-        const amount_out = Number(event.params.find(p => p.name === "amount_out")?.value || undefined) / Math.pow(10, toAsset.decimals)
+        const amount_in = Number(event.params.find(p => p.name === "amount_in")?.value || undefined) / Math.pow(10, fromAsset.metadata.decimals)
+        const amount_out = Number(event.params.find(p => p.name === "amount_out")?.value || undefined) / Math.pow(10, toAsset.metadata.decimals)
 
         if (!amount_in || !amount_out || !from || !to || !fromAsset || !toAsset) {
             throw "Missing data"
@@ -198,7 +196,7 @@ export class SpecialEventsToTransfersService {
             hash: event.extrinsic_hash,
             extrinsic_index: event.extrinsic_index,
             timestamp: event.timestamp!,
-            symbol: fromAsset.symbol,
+            symbol: fromAsset.metadata.symbol,
             amount: amount_in,
             tokenId: fromAsset.unique_id,
             to: '',
@@ -208,7 +206,7 @@ export class SpecialEventsToTransfersService {
             hash: event.extrinsic_hash,
             extrinsic_index: event.extrinsic_index,
             timestamp: event.timestamp!,
-            symbol: toAsset.symbol,
+            symbol: toAsset.metadata.symbol,
             amount: amount_out,
             tokenId: toAsset.unique_id,
             to,

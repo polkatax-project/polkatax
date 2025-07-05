@@ -1,4 +1,5 @@
 import { Transfer } from "../../blockchain/substrate/model/raw-transfer";
+import { mapToGenericSubstrateAddress } from "../../blockchain/substrate/util/map-to-generic-substrate-address";
 import { logger } from "../../logger/logger";
 import { Payment } from "../model/payment";
 
@@ -16,6 +17,8 @@ export class TransferMerger {
     let key = undefined;
     transferList.forEach((entry) => {
       key ??= entry.extrinsic_index;
+      entry.from = mapToGenericSubstrateAddress(entry.from)
+      entry.to = mapToGenericSubstrateAddress(entry.to)
       const otherAddress = isMyAccount(entry.from) ? entry.to : entry.from;
       if (!target[key]) {
         target[key] = {

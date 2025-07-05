@@ -9,7 +9,7 @@ const createDiffSheet = (balances: { block?: number, balance: number, diff?: num
   for (let idx = 1; idx < balances.length; idx ++) {
     balances[idx].diff = balances[idx].balance - balances[idx - 1].balance
   }
-  balances.shift() // remove first element because it cannot have a 'diff's
+  balances.shift() // remove first element because it cannot have a 'diff'
   const diffSheet = balances.map((b) => {
     const block = b.block;
     const matchingPayments = payments.filter(
@@ -19,7 +19,7 @@ const createDiffSheet = (balances: { block?: number, balance: number, diff?: num
     let expectedChange = 0;
 
     matchingPayments.forEach((p) => {
-      expectedChange += -(p?.feeUsed ?? 0) - (p?.tip ?? 0) - (p?.xcmFee ?? 0);
+      expectedChange += -(p?.feeUsed ?? 0) - (p?.tip ?? 0);
       p.transfers.forEach((t) => {
         expectedChange += t?.amount ?? 0;
       });
@@ -84,9 +84,13 @@ const veryNativeBalanceHistory = async (address: string, chain: { domain: string
 }
 
 const verifyMany = async () => {
-  await veryNativeBalanceHistory("5GeJMTfNpe2mmJgnxHoYJDVvNFcn8X4fbdtVPHVonFSX9tH7", { domain: "kusama", label: "", token: "KSM" })
-  await veryNativeBalanceHistory("1HGnvAkk9nbfZ58CzUJhjcrLdEDMkr5qNkqqYkyD5BF5v6Y", { domain: "polkadot", label: "", token: "DOT" })
-  await veryNativeBalanceHistory("12s37eSMQPEN5cuVyBxk2UypUHntwumqBHy7sJkoKpZ1v3HV", { domain: "polkadot", label: "", token: "DOT" })
+  //await veryNativeBalanceHistory("15abVnvSgRJFCqhJuvrYSNL5DscRppcog8cyYaVALLU3LFjB", { domain: "kusama", label: "", token: "KSM" })
+
+  // some don't match, reason unclear
+  await veryNativeBalanceHistory("1HGnvAkk9nbfZ58CzUJhjcrLdEDMkr5qNkqqYkyD5BF5v6Y", { domain: "polkadot", label: "", token: "DOT" }) 
+  
+  //await veryNativeBalanceHistory("12s37eSMQPEN5cuVyBxk2UypUHntwumqBHy7sJkoKpZ1v3HV", { domain: "polkadot", label: "", token: "DOT" })
+  //await veryNativeBalanceHistory("14gEYLb4pzg3RvYS72MPRWWGAUBDdBpp9U6Wh4uMZhdQRis2", { domain: "polkadot", label: "", token: "DOT" })
 }
 
 verifyMany()

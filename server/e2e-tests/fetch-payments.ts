@@ -1,10 +1,13 @@
 import { startStub as cryptoPricesStub } from "../src/crypto-currency-prices/stub";
+import { startStub as fiatPricesStub } from "../src/fiat-exchange-rates/stub";
+import { SubscanApi } from "../src/server/blockchain/substrate/api/subscan.api";
 import { PaymentsService } from "../src/server/data-aggregation/services/substrate-payments.service";
 import { createDIContainer } from "../src/server/di-container";
 
 export const fetchPayments = async (address: string, 
     chain: { domain: string, label: string, token: string }) => {
   const cryptoPriceServer = await cryptoPricesStub();
+  const fiatPriceServer = await fiatPricesStub()
   const container = createDIContainer();
   try {
     const currency = "usd";
@@ -18,12 +21,15 @@ export const fetchPayments = async (address: string,
     if (payments.length === 0) {
       return { payments: [] }
     }
-    const subscanApi = container.resolve("subscanApi")
-    const minBlock = (await subscanApi.fetchExtrinsic(chain.domain, payments[payments.length - 1].extrinsic_index)).block
-    const maxBlock = (await subscanApi.fetchExtrinsic(chain.domain, payments[0].extrinsic_index)).block
+    const subscanApi: SubscanApi = container.resolve("subscanApi")
+    const minBlock = (await subscanApi.fetchExtrinsicDetails(chain.domain, payments[payments.length - 1].extrinsic_index)).block
+    const maxBlock = (await subscanApi.fetchExtrinsicDetails(chain.domain, payments[0].extrinsic_index)).block
 
     return { payments, unmatchedEvents, minBlock, maxBlock }
+  } catch (error) {
+    console.log(error)
   } finally {
+    await fiatPriceServer.close()
     await cryptoPriceServer.close();
   }
 };

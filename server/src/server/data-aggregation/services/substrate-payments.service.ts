@@ -7,12 +7,12 @@ import { XcmService } from "../../blockchain/substrate/services/xcm.service";
 import { SubscanService } from "../../blockchain/substrate/api/subscan.service";
 import { TransactionsService } from "../../blockchain/substrate/services/transactions.service";
 import { ChainAdjustments } from "../helper/chain-adjustments";
-import { EventsToPaymentsService } from "./events-to-payments.service";
 import { StakingRewardsService } from "../../blockchain/substrate/services/staking-rewards.service";
 import { AddFiatValuesToPaymentsService } from "./add-fiat-values-to-payments.service";
 import { ChainDataAccumulationService } from "./chain-data-accumulation.service";
 import { determineLabelForPayment } from "../helper/determine-label-for-payment";
 import { PaymentsResponse } from "../model/payments.response";
+import { EventsService } from "./events.service";
 
 export class PaymentsService {
   constructor(
@@ -21,7 +21,7 @@ export class PaymentsService {
     private xcmService: XcmService,
     private stakingRewardsService: StakingRewardsService,
     private chainDataAccumulationService: ChainDataAccumulationService,
-    private eventsToPaymentsService: EventsToPaymentsService,
+    private eventsService: EventsService,
     private addFiatValuesToPaymentsService: AddFiatValuesToPaymentsService,
   ) {}
 
@@ -55,6 +55,9 @@ export class PaymentsService {
         this.stakingRewardsService.fetchStakingRewards(dataRequest),
       ]);
 
+    const specialEventTransfers = await this.eventsService.mapSpecialEventsToTransfers(paymentsRequest.chain.domain, events)
+    transfers.push(...specialEventTransfers)
+
     const { payments, unmatchedEvents } =
       await this.chainDataAccumulationService.combine(
         paymentsRequest,
@@ -65,17 +68,16 @@ export class PaymentsService {
         stakingRewards,
       );
 
+    const { eventPayments, unusedEvents } = await this.eventsService.convertUnmatchedEvents(
+      paymentsRequest,
+      unmatchedEvents,
+      payments,
+    )
+    payments.push(...eventPayments)
+
     if (paymentsRequest.chain.domain === "hydration") {
       new ChainAdjustments().handleHydration(payments);
     }
-
-    payments.push(
-      ...(await this.eventsToPaymentsService.convertEvents(
-        paymentsRequest,
-        unmatchedEvents,
-        payments,
-      )),
-    );
 
     await this.addFiatValuesToPaymentsService.addFiatValues(
       paymentsRequest,
@@ -92,6 +94,6 @@ export class PaymentsService {
     logger.info(
       `PaymentsService: Exit fetchPaymentsTxAndEvents with ${payments.length} entries for ${paymentsRequest.chain.domain} and wallet ${paymentsRequest.address}`,
     );
-    return { payments };
+    return { payments, unmatchedEvents: unusedEvents };
   }
 }
