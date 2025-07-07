@@ -11,6 +11,7 @@ interface Asset {
 }
 
 export interface RawXcmMessage {
+  id: string
   origin_event_index: string;
   from_account_id: string;
   origin_para_id: number;

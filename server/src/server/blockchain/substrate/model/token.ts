@@ -8,10 +8,10 @@ export interface TokenInfo {
   symbol: string,
   decimals: number,
   currency_id: string, // often just the symbol
-  token_id: number,
+  token_id: any,
   unique_id: string,
   metadata: {
       symbol: string,
-      decimals: string,
+      decimals: number,
   }
 }

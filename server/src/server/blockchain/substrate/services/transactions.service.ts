@@ -30,7 +30,7 @@ export class TransactionsService {
       }
     });
 
-    logger.info(`Exit fetchTx for ${data.chainName}`);
+    logger.info(`Exit fetchTx for ${data.chainName} with ${transactions.length} transactions.`);
     return transactions;
   }
 }

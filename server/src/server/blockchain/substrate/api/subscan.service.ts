@@ -71,7 +71,7 @@ export class SubscanService {
       maxDate,
     );
     logger.info(
-      `Exit searchAllEvents for chain ${chainName} and account ${address}`,
+      `Exit searchAllEvents for chain ${chainName} and account ${address} with ${result.length} events.`,
     );
     return result
   }
@@ -99,10 +99,10 @@ export class SubscanService {
       page += count;
       if (page >= 100 && withAfterId) {
         const lowestId = result.reduce((curr, next) => { return Math.min(curr, next.id)}, Number.MAX_SAFE_INTEGER)
-        logger.info(`Found more than ${result.length} entries. Fetching remaining values via after_id from ${lowestId}`)
+        logger.info(`Found more than ${result.length} entries. Fetching remaining values via after_id from ${lowestId}.`)
         const remaining = await this.fetchWithAfterId(fetchPages, lowestId)
         remaining.forEach(r => result.push(r))
-        logger.info(`Found ${result.length} entries.`)
+        logger.info(`iterateOverPagesParallel: Found ${result.length} entries.`)
         return result
       }
     } while (hasNext);
@@ -132,7 +132,7 @@ export class SubscanService {
     minDate: number,
     maxDate?: number,
   ): T[] {
-    return values.filter(
+    return (values || []).filter(
       (r) => (!maxDate || r.timestamp <= maxDate) && r.timestamp >= minDate,
     );
   }
@@ -164,7 +164,7 @@ export class SubscanService {
       minDate,
       maxDate,
     );
-    logger.info(`Exit fetchAllStakingRewards`);
+    logger.info(`Exit fetchAllStakingRewards with ${rewards.length} entries.`);
     return rewards;
   }
 
@@ -177,17 +177,19 @@ export class SubscanService {
     logger.info(
       `fetchXcmList for ${relayChainName} and address ${address} from ${new Date(minDate).toUTCString()} filtering on para_id ${filter_para_id}.`,
     );
-    const result = this.iterateOverPagesParallel<RawXcmMessage>((page) =>
+    const result = await this.iterateOverPagesParallel<RawXcmMessage>((page, after_id) =>
       this.subscanApi.fetchXcmList(
         relayChainName,
         address,
         page,
         filter_para_id,
         minDate,
+        after_id
       ),
+      { withAfterId: true }
     );
     logger.info(
-      `Exit fetchXcmList for ${relayChainName} and address ${address} and para_id ${filter_para_id}`,
+      `Exit fetchXcmList for ${relayChainName} and address ${address} and para_id ${filter_para_id} with ${result.length} messages.`,
     );
     return result;
   }
@@ -206,7 +208,7 @@ export class SubscanService {
     );
     for (let idx = 0; idx < results.length; idx++) {
       results[idx].timestamp = events[idx].timestamp;
-      results[idx].original_event_index = events[idx].event_id
+      results[idx].original_event_index = events[idx].event_index
     }
     logger.info(`Exit fetchEventDetails`);
     return results;
@@ -251,7 +253,7 @@ export class SubscanService {
       maxDate,
     );
     logger.info(
-      `Exit fetchAllExtrinsics for ${chainName} and address ${address}`,
+      `Exit fetchAllExtrinsics for ${chainName} and address ${address} with ${result.length} tx`,
     );
     return result;
   }
@@ -302,7 +304,7 @@ export class SubscanService {
       };
     });
     logger.info(
-      `Exit fetchAllTransfers for ${chainName} and address ${address}`,
+      `Exit fetchAllTransfers for ${chainName} and address ${address} with ${mapped.length} transfers.`,
     );
     return mapped;
   }

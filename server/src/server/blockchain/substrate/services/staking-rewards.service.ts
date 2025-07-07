@@ -45,7 +45,7 @@ export class StakingRewardsService {
     }
     const rewardsSlashes = await (async () => {
       switch (chainName) {
-        case "mythos":
+        /*case "mythos":
           return this.stakingRewardsViaEventsService.fetchStakingRewards(
             chainName,
             address,
@@ -53,7 +53,7 @@ export class StakingRewardsService {
             "StakingRewardReceived",
             minDate,
             maxDate,
-          );
+          );*/ // TODO: reactivate?!
         case "energywebx":
           return this.stakingRewardsViaEventsService.fetchStakingRewards(
             chainName,

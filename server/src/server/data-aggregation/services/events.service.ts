@@ -1,3 +1,4 @@
+import { Transfer } from "../../blockchain/substrate/model/raw-transfer";
 import { SubscanEvent } from "../../blockchain/substrate/model/subscan-event";
 import { Payment } from "../model/payment";
 import { HandleUnmatchedEventsService } from "./handle-unmatched-events.service";
@@ -8,7 +9,7 @@ export class EventsService {
         private handleUnmatchedEventsService: HandleUnmatchedEventsService) {
     }
 
-    async mapSpecialEventsToTransfers(chain: string, events: SubscanEvent[]) {
+    async mapSpecialEventsToTransfers(chain: { domain: string; token: string }, events: SubscanEvent[]): Promise<Transfer[]> {
         return await this.specialEventsToTransfersService.handleEvents(chain, events)
     }
 

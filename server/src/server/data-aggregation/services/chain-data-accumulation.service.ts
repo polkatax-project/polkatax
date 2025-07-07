@@ -83,14 +83,20 @@ export class ChainDataAccumulationService {
       indexedTx,
       context.address,
     );
-    for (let stakingReward of stakingRewardPayments) {
-      if (!indexedPayments[stakingReward.extrinsic_index]) {
-        indexedPayments[stakingReward.extrinsic_index] = stakingReward;
-      } else {
-        indexedPayments[stakingReward.extrinsic_index].transfers.push(...stakingReward.transfers)
-      }
-    }
-
+    const indexedStakingRewards: Record<string, Payment[]> = stakingRewardPayments.reduce(
+      (current, stakingRewards) => {
+        current[stakingRewards.extrinsic_index] ??= [];
+        current[stakingRewards.extrinsic_index].push(stakingRewards);
+        return current;
+      },
+      {},
+    );
+    
+    Object.keys(indexedStakingRewards).forEach((extrinsic_index) => {
+      indexedPayments[extrinsic_index] = indexedStakingRewards[extrinsic_index][0]
+      indexedPayments[extrinsic_index].transfers = indexedStakingRewards[extrinsic_index].map(r => r.transfers).flat()
+    })
+    
     const otherTransactions = this.enrichTxWithEvents(
       transactions.filter((t) => !indexedPayments[t.extrinsic_index]),
       extrinsicIndexedEvents,

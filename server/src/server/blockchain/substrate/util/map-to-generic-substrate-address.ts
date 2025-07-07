@@ -15,7 +15,10 @@ export function mapToGenericSubstrateAddress(address: string) {
 
 export function isSubstrateAddress(address: string): boolean {
   try {
-    decodeAddress(address);
+    if (/^0x[0-9a-fA-F]{40}$/.test(address)) { // EVM
+      return false;
+    }
+     decodeAddress(address);
     return true;
   } catch (error) {
     return false; 

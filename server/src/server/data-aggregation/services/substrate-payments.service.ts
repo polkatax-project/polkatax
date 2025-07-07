@@ -55,7 +55,7 @@ export class PaymentsService {
         this.stakingRewardsService.fetchStakingRewards(dataRequest),
       ]);
 
-    const specialEventTransfers = await this.eventsService.mapSpecialEventsToTransfers(paymentsRequest.chain.domain, events)
+    const specialEventTransfers = await this.eventsService.mapSpecialEventsToTransfers(paymentsRequest.chain, events)
     transfers.push(...specialEventTransfers)
 
     const { payments, unmatchedEvents } =

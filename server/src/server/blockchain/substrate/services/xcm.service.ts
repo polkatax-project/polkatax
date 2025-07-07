@@ -5,6 +5,7 @@ import * as subscanChains from "../../../../../res/gen/subscan-chains.json";
 import { logger } from "../../../logger/logger";
 import { isEvmAddress } from "../../../data-aggregation/helper/is-evm-address";
 import { XcmTransfer } from "../model/xcm-transfer";
+import { getAddress } from 'ethers';
 
 export class XcmService {
   constructor(private subscanService: SubscanService) {}
@@ -50,7 +51,10 @@ export class XcmService {
       return "";
     }
     if (isEvmAddress(id)) {
-      return id;
+      /**
+       * convert to checksumed / canonical address
+       */
+      return getAddress(id); 
     }
     return mapPublicKeyToAddress("0x" + id);
   }
@@ -114,9 +118,13 @@ export class XcmService {
           ? xcm.extrinsic_index
           : xcm.dest_extrinsic_index;
 
-        /*if (destChain === data.chainName) {
+        if (destChain === data.chainName && (data.chainName === 'bifrost' || data.chainName === 'hydration' || data.chainName === 'mythos')) {
           return undefined // TODO:
-        }*/
+        }
+
+        if (data.chainName === 'peaq') {
+          return undefined // TODO:
+        }
 
         if ((fromChain === data.chainName && from !== data.address) || (destChain === data.chainName && to !== data.address)) {
           // transfer NOT TO requested address and NOT FROM the addresses (for requested chain).
@@ -125,10 +133,7 @@ export class XcmService {
 
         return {
           timestamp,
-          block:
-            xcm.block_num !== 0
-              ? xcm.block_num
-              : undefined,
+          block: chain.isRelay ? xcm.block_num : undefined,
           fee:
             xcm.used_fee && fromChain === data.chainName
               ? Number(xcm.used_fee) / Math.pow(10, token.token_decimals)

@@ -373,6 +373,7 @@ export class SubscanApi {
     page: number = 0,
     filter_para_id: number,
     minDate: number,
+    after_id?: number,
   ): Promise<{ list: RawXcmMessage[]; hasNext: boolean }> {
     const json = await this.request(
       `https://${chainName}.api.subscan.io/api/scan/xcm/list`,
@@ -383,11 +384,13 @@ export class SubscanApi {
         address,
         filter_para_id,
         status: "success",
+        after_id
       },
     );
     const list = (json?.data?.list || []).map((xcm) => {
       return {
         ...xcm,
+        id: xcm.unique_id,
         origin_block_timestamp: xcm.origin_block_timestamp * 1000,
         relayed_block_timestamp: xcm.relayed_block_timestamp * 1000,
         confirm_block_timestamp: xcm.confirm_block_timestamp * 1000,
