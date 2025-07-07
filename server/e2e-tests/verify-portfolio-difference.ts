@@ -35,10 +35,6 @@ const verifyPortfolioChange = async (address: string, chain: { domain: string, l
 }
 
 const verifyAssetHubPortfolioChange = async (address: string, chain: { domain: string, label: string, token: string }) => {
-  const subscanService: SubscanService = createDIContainer().resolve("subscanService")
-  const xm = await subscanService.fetchXcmList('polkadot', '13b6hRRYPHTxFzs9prvL2YGHQepvd4YhdDb9Tc7khySp3hMN', 2006, Date.UTC(2024,0,1));
-  console.log(xm.length)
-
   const { payments, minBlock, maxBlock, unmatchedEvents } = await fetchPayments(address, chain);
   fs.writeFileSync(`./e2e-tests/out/all.json`, JSON.stringify({ payments, unmatchedEvents, minBlock, maxBlock }, null, 2))
 
@@ -206,7 +202,7 @@ const ahZoomIntoError = async (address: string, chainInfo: any, token: string, t
 // ASTAR -> NOK!!!
 // OK !! verifyAssetHubPortfolioChange("13hDgWbatzrMmdPGz4F3Y63vP3qmdac7PUrujcN5a8nB6CkJ", { domain: 'astar', label: '', token: 'ASTR' })
 // NOK very large !! verifyAssetHubPortfolioChange("15tH5VV82YwsJPBGcBFmGvgkiBCkAzcCXbZLbZ7TkCJM6kdq", { domain: 'astar', label: '', token: 'ASTR' })
-verifyAssetHubPortfolioChange("13b6hRRYPHTxFzs9prvL2YGHQepvd4YhdDb9Tc7khySp3hMN", { domain: 'astar', label: '', token: 'ASTR' })
+// 500 when querying rewards verifyAssetHubPortfolioChange("13b6hRRYPHTxFzs9prvL2YGHQepvd4YhdDb9Tc7khySp3hMN", { domain: 'astar', label: '', token: 'ASTR' })
 // error !? verifyAssetHubPortfolioChange("15TKmiwx1dG2qiDhi9k18wELcVLUhMw7Fwpdz3jLKBLsYJZ2", { domain: 'astar', label: '', token: 'ASTR' })
 
 // PEAQ -> issue with cross chain transfers -> DAI -> DAI.wh. xcm messages ignored for now
