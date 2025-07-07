@@ -131,6 +131,10 @@ export class XcmService {
           return
         }
 
+        if (!xcm.assets) { // msg without transfer
+          return
+        }
+
         return {
           timestamp,
           block: chain.isRelay ? xcm.block_num : undefined,
