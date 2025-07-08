@@ -30,6 +30,7 @@ export interface RewardDto {
   nominationPool?: boolean;
   fiatValue?: number;
   price?: number;
+  isoDate?: string;
 }
 
 export interface RewardsDto {

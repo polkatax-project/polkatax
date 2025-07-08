@@ -15,7 +15,7 @@ import { wsMsgReceived$, wsSendMsg } from '../service/ws-connection';
 import { JobResult } from '../model/job-result';
 import { fetchSubscanChains } from '../service/fetch-subscan-chains';
 import { mapRawValuesToRewards, sortJobs } from './helper/job.service';
-import { filterFromBeginningLastYear } from './helper/filter-from-beginning-last-year';
+import { filterOnLastYear } from './helper/filter-on-last-year';
 import { addIsoDate } from './helper/add-iso-date';
 import { convertToCanonicalAddress } from '../util/convert-to-generic-address';
 
@@ -35,11 +35,12 @@ wsMsgReceived$
     const list: JobResult[] = Array.isArray(payload) ? payload : [payload];
     for (const newJobResult of list) {
       if (newJobResult.data) {
-        filterFromBeginningLastYear(newJobResult.data);
+        addIsoDate(newJobResult.data.values)
+        filterOnLastYear(newJobResult.data);
         newJobResult.data = mapRawValuesToRewards(
           newJobResult,
           newJobResult.data.token,
-          addIsoDate(newJobResult.data.values)
+          newJobResult.data.values
         );
       }
       jobs = jobs.filter(

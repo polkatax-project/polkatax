@@ -50,6 +50,7 @@ export class DataPlatformService {
             .multipliedBy(Math.pow(10, -token.token_decimals))
             .toNumber(),
           timestamp: endOfDayUTC(reward.executionDate),
+          isoDate: reward.executionDate
         };
       });
       aggregatedRewards.push(
@@ -60,6 +61,7 @@ export class DataPlatformService {
               .toNumber(),
             timestamp: endOfDayUTC(reward.executionDate),
             nominationPool: true,
+            isoDate: reward.executionDate
           };
         }),
       );
