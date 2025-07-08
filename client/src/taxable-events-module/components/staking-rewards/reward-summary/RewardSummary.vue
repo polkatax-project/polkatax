@@ -4,12 +4,7 @@
     <tbody>
       <tr>
         <td class="text-left q-pa-sm">Year:</td>
-        <td class="text-right q-pa-sm">
-          <TimeFrameDropdown
-            v-model="year"
-            @update:model-value="yearSelected"
-          />
-        </td>
+        <td class="text-right q-pa-sm">{{ new Date().getFullYear() - 1 }}</td>
       </tr>
       <tr>
         <td class="text-left q-pa-sm">Blockchain:</td>
@@ -50,7 +45,6 @@ import { onBeforeUnmount, ref, Ref } from 'vue';
 import { useStakingRewardsStore } from '../store/staking-rewards.store';
 import { useSharedStore } from '../../../../shared-module/store/shared.store';
 import { combineLatest } from 'rxjs';
-import TimeFrameDropdown from '../../time-frame-dropdown/TimeFrameDropdown.vue';
 import { StakingRewardsPerYear } from '../../../../shared-module/model/rewards';
 import {
   formatCurrency,
@@ -77,8 +71,4 @@ onBeforeUnmount(() => {
   subscription.unsubscribe();
   yearSubscription.unsubscribe();
 });
-
-function yearSelected(year: number) {
-  rewardsStore.setYear(year);
-}
 </script>

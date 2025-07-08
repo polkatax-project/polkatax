@@ -14,11 +14,14 @@ export const extractStakingRewardsPerYear = (
     year,
     dailyValues: Object.fromEntries(
       Object.entries(rewards.dailyValues).filter(
-        ([key]) => key >= beginningOfYearFormatted && key < startNextYearFormatted
+        ([key]) =>
+          key >= beginningOfYearFormatted && key < startNextYearFormatted
       )
     ),
     values: rewards.values.filter(
-      (v) => v.isoDate >= beginningOfYearFormatted && v.isoDate < startNextYearFormatted
+      (v) =>
+        v.isoDate >= beginningOfYearFormatted &&
+        v.isoDate < startNextYearFormatted
     ),
     summary: rewards.summary.perYear.find((y) => y.year === year)!,
   };

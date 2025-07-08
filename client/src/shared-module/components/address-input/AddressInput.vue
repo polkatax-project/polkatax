@@ -58,7 +58,7 @@ import { isValidAddress, isValidEvmAddress } from '../../util/is-valid-address';
 import {
   isCanonicalSubstrateAddress,
   convertToCanonicalAddress,
-} from '../../util/convert-to-generic-address';
+} from '../../util/convert-to-canonical-address';
 
 const emits = defineEmits(['update:modelValue', 'enter-pressed']);
 
