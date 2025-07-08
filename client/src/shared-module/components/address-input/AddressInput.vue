@@ -23,7 +23,6 @@
         <div
           class="text-caption text-grey-7"
           style="
-            pointer-events: auto;
             white-space: nowrap;
             position: absolute;
             left: 50%;
