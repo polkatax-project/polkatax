@@ -57,7 +57,8 @@ export class JobConsumer {
         data: undefined,
       });
     } catch (err) {
-      logger.error("JobConsumer: error during processing", err);
+      logger.error("JobConsumer: error during processing");
+      logger.error(err);
       await this.handleError(err, job);
     }
   }

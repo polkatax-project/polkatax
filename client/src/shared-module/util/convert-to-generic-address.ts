@@ -1,7 +1,7 @@
 import { decodeAddress, encodeAddress } from '@polkadot/util-crypto';
 import { isValidSubstrateAddress } from './is-valid-address';
 
-export const convertToGenericAddress = (address: string): string => {
+export const convertToCanonicalAddress = (address: string): string => {
   if (isValidSubstrateAddress(address)) {
     const publicKey = decodeAddress(address);
     /**
@@ -13,11 +13,11 @@ export const convertToGenericAddress = (address: string): string => {
   }
 };
 
-export const isGenericSubstrateAddress = (address: string): boolean => {
+export const isCanonicalSubstrateAddress = (address: string): boolean => {
   if (!isValidSubstrateAddress(address)) {
     return false;
   } else {
-    const genericAddress = convertToGenericAddress(address);
+    const genericAddress = convertToCanonicalAddress(address);
     return address === genericAddress;
   }
 };

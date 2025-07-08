@@ -9,7 +9,7 @@ import {
 } from "./incoming-message-schema";
 import { JobRepository } from "../job-management/job.repository";
 import { JobId } from "../../model/job";
-import { convertToGenericAddress } from "../../common/util/convert-to-generic-address";
+import { convertToCanonicalAddress } from "../../common/util/convert-to-generic-address";
 
 interface Subscription {
   wallet: string;
@@ -140,7 +140,7 @@ export class WebSocketManager {
       }
 
       if (result.data.payload?.wallet) {
-        result.data.payload.wallet = convertToGenericAddress(
+        result.data.payload.wallet = convertToCanonicalAddress(
           result.data.payload.wallet,
         );
       }

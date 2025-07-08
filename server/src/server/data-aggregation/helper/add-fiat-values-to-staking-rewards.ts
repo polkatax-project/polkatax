@@ -5,7 +5,7 @@ import { PricedStakingReward } from "../model/priced-staking-reward";
 import { addFiatValueToTransfer } from "./add-fiat-values-to-transfers";
 
 export const addFiatValuesToStakingRewards = (
-  values: StakingReward[],
+  values: PricedStakingReward[],
   quotes: CurrencyQuotes,
 ): PricedStakingReward[] => {
   const currentIsoDate = formatDate(new Date());

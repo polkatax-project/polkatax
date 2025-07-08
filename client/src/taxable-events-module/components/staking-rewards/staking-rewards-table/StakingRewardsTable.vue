@@ -76,13 +76,6 @@ const columns = computed(() => [
     sortable: true,
   },
   {
-    name: 'block',
-    align: 'right',
-    label: 'Block',
-    field: 'block',
-    sortable: true,
-  },
-  {
     name: 'reward',
     align: 'right',
     label: `Reward (${rewardToken.value})`,

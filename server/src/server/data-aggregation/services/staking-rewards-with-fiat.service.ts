@@ -4,20 +4,22 @@ import { StakingRewardsRequest } from "../model/staking-rewards.request";
 import { TokenPriceConversionService } from "./token-price-conversion.service";
 import { StakingRewardsResponse } from "../model/staking-rewards.response";
 import { addFiatValuesToStakingRewards } from "../helper/add-fiat-values-to-staking-rewards";
-import { StakingReward } from "../../blockchain/substrate/model/staking-reward";
 import { findCoingeckoIdForNativeToken } from "../helper/find-coingecko-id-for-native-token";
 import { isEvmAddress } from "../helper/is-evm-address";
+import { DataPlatformService } from "../../data-platform-api/data-platform.service";
+import { PricedStakingReward } from "../model/priced-staking-reward";
 
 export class StakingRewardsWithFiatService {
   constructor(
     private stakingRewardsService: StakingRewardsService,
     private tokenPriceConversionService: TokenPriceConversionService,
     private subscanService: SubscanService,
+    private dataPlatformService: DataPlatformService,
   ) {}
 
-  private async fetchRawStakingRewards(
+  private async fetchFromSubscan(
     stakingRewardsRequest: StakingRewardsRequest,
-  ): Promise<StakingReward[]> {
+  ): Promise<PricedStakingReward[]> {
     let { chain, address, startDate } = stakingRewardsRequest;
     if (isEvmAddress(address)) {
       address =
@@ -31,6 +33,28 @@ export class StakingRewardsWithFiatService {
       address,
       startDate,
     );
+  }
+
+  private async fetchRawStakingRewards(
+    stakingRewardsRequest: StakingRewardsRequest,
+  ): Promise<PricedStakingReward[]> {
+    let { chain, address } = stakingRewardsRequest;
+    switch (chain.domain) {
+      case "polkadot":
+      case "kusama":
+      case "hydration":
+      case "enjin":
+        if (process.env["USE_AGGREGATED_DATA"]) {
+          const result =
+            await this.dataPlatformService.fetchAggregatedStakingRewards(
+              chain.domain,
+              address,
+            );
+          return result;
+        }
+      default:
+        return this.fetchFromSubscan(stakingRewardsRequest);
+    }
   }
 
   async fetchStakingRewards(

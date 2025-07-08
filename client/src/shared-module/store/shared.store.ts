@@ -17,7 +17,7 @@ import { fetchSubscanChains } from '../service/fetch-subscan-chains';
 import { mapRawValuesToRewards, sortJobs } from './helper/job.service';
 import { filterFromBeginningLastYear } from './helper/filter-from-beginning-last-year';
 import { addIsoDate } from './helper/add-iso-date';
-import { convertToGenericAddress } from '../util/convert-to-generic-address';
+import { convertToCanonicalAddress } from '../util/convert-to-generic-address';
 
 const jobs$ = new BehaviorSubject<JobResult[]>([]);
 const subscanChains$ = from(fetchSubscanChains()).pipe(shareReplay(1));
@@ -104,7 +104,7 @@ export const useSharedStore = defineStore('shared', {
       }
     },
     async sync() {
-      const genericAddress = convertToGenericAddress(this.address.trim());
+      const genericAddress = convertToCanonicalAddress(this.address.trim());
       wsSendMsg({
         type: 'fetchDataRequest',
         payload: {
