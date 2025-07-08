@@ -35,7 +35,7 @@ wsMsgReceived$
     const list: JobResult[] = Array.isArray(payload) ? payload : [payload];
     for (const newJobResult of list) {
       if (newJobResult.data) {
-        addIsoDate(newJobResult.data.values)
+        addIsoDate(newJobResult.data.values);
         filterOnLastYear(newJobResult.data);
         newJobResult.data = mapRawValuesToRewards(
           newJobResult,
