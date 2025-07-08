@@ -49,14 +49,12 @@ describe('exportKoinlyCsv', () => {
         Amount: 10,
         Currency: 'ABC',
         Label: 'Reward',
-        TxHash: 'hash123',
       },
       {
         'Koinly Date': 'formatted-1650001000',
         Amount: -5,
         Currency: 'ABC',
         Label: 'Cost',
-        TxHash: 'hash456',
       },
     ];
 

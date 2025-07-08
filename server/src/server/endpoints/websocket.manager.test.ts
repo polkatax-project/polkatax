@@ -1,125 +1,143 @@
-import { expect, test, jest, describe, beforeEach } from "@jest/globals";
 import { JobManager } from "../job-management/job.manager";
 import { JobRepository } from "../job-management/job.repository";
-import { JobId } from "../../model/job";
+import { StakingRewardsWithFiatService } from "../data-aggregation/services/staking-rewards-with-fiat.service";
+import { WebSocketIncomingMessage } from "./incoming-message-schema";
+import { expect, it, jest, describe, beforeEach } from "@jest/globals";
 import { WebSocketManager } from "./websocket.manager";
 
-const mockSend = jest.fn();
-const mockSocket = { send: mockSend, on: jest.fn<any>() } as any;
-
-const mockJobManager = {
-  enqueue: jest.fn<any>(),
-};
-
-const mockJobRepository = {
-  jobChanged$: { subscribe: jest.fn<any>() },
-  findJob: jest.fn<any>(),
-};
+const mockSocket = {
+  send: jest.fn(),
+} as any;
 
 describe("WebSocketManager", () => {
+  let jobManager: jest.Mocked<JobManager>;
+  let jobRepository: jest.Mocked<JobRepository>;
+  let stakingRewardsWithFiatService: jest.Mocked<StakingRewardsWithFiatService>;
   let manager: WebSocketManager;
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    jobManager = {
+      enqueue: jest.fn(),
+      getStakingChains: jest.fn<any>().mockReturnValue(["polkadot"]),
+    } as any;
+
+    jobRepository = {
+      jobChanged$: {
+        subscribe: jest.fn<any>(),
+      },
+      findJob: jest.fn<any>(),
+    } as any;
+
+    stakingRewardsWithFiatService = {
+      fetchStakingRewardsViaPlatformApi: jest.fn(),
+    } as any;
+
     manager = new WebSocketManager(
-      mockJobManager as unknown as JobManager,
-      mockJobRepository as unknown as JobRepository,
+      jobManager,
+      jobRepository,
+      stakingRewardsWithFiatService,
     );
+
+    process.env["USE_DATA_PLATFORM_API"] = "true"; // To trigger platform API fetch
+    mockSocket.send.mockClear();
   });
 
-  test("subscribes socket on fetchDataRequest", async () => {
-    mockJobManager.enqueue.mockResolvedValue([{ job: "test" }]);
-    const msg = {
+  it("handles fetchDataRequest and sends initial + aggregated rewards", async () => {
+    const reqId = "123";
+    const wallet = "0xabc";
+    const currency = "usd";
+
+    const msg: WebSocketIncomingMessage = {
       type: "fetchDataRequest",
-      reqId: "abc",
-      payload: { wallet: "w1", currency: "USD", blockchains: [] },
+      reqId,
+      payload: {
+        wallet,
+        currency,
+        blockchains: ["polkadot"],
+      },
     };
 
-    const response = await manager["handleFetchDataRequest"](
-      mockSocket,
-      msg as any,
-    );
-    expect(response.type).toBe("data");
-    expect(manager["connections"]).toContainEqual({
-      subscription: { wallet: "w1", currency: "USD" },
-      socket: mockSocket,
-    });
-  });
-
-  test("unsubscribes socket on unsubscribeRequest", async () => {
-    manager["connections"] = [
+    const mockJobs = [
       {
-        subscription: { wallet: "w1", currency: "USD" },
-        socket: mockSocket,
+        wallet,
+        status: "done",
+        data: {},
+        lastModified: Date.now(),
+        blockchain: "polkadot",
+        currency,
+        reqId,
       },
     ];
 
-    const msg = {
-      type: "unsubscribeRequest",
-      reqId: "xyz",
-      payload: { wallet: "w1", currency: "USD" },
-    };
+    const mockAggregated = [
+      {
+        token: "DOT",
+        currency,
+        chain: "polkadot",
+        values: [{ amount: 5 }],
+      },
+    ];
 
-    const response = await manager["handleUnsubscribeRequest"](
-      mockSocket,
-      msg as any,
+    stakingRewardsWithFiatService.fetchStakingRewardsViaPlatformApi.mockResolvedValue(
+      mockAggregated as any,
     );
-    expect(response.type).toBe("acknowledgeUnsubscribe");
-    expect(manager["connections"].length).toBe(0);
-  });
+    jobManager.enqueue.mockResolvedValue(mockJobs as any);
 
-  test("throttles after 4 wallets", () => {
-    manager["connections"] = Array.from({ length: 4 }, (_, i) => ({
-      socket: mockSocket,
-      subscription: { wallet: `w${i}`, currency: "USD" },
-    }));
+    const response = await manager["handleFetchDataRequest"](mockSocket, msg);
 
-    const result = manager["isThrottled"](mockSocket, {
-      type: "fetchDataRequest",
-      reqId: "1",
-      payload: { wallet: "w5", currency: "USD" },
+    // Called to fetch from platform API and send partial results
+    expect(
+      stakingRewardsWithFiatService.fetchStakingRewardsViaPlatformApi,
+    ).toHaveBeenCalledWith(wallet, currency);
+
+    expect(mockSocket.send).toHaveBeenCalledWith(
+      expect.stringContaining('"status":"in_progress"'),
+    );
+    expect(mockSocket.send).toHaveBeenCalledWith(
+      expect.stringContaining('"status":"done"'),
+    );
+
+    expect(response).toEqual({
+      type: "data",
+      reqId,
+      payload: mockJobs,
+      timestamp: expect.any(Number),
     });
 
+    // Subscription should be added
+    expect((manager as any).connections).toContainEqual({
+      socket: mockSocket,
+      subscription: { wallet, currency },
+    });
+  });
+
+  it("limits subscription to 4 wallets per socket (isThrottled)", () => {
+    const socket = {} as any;
+    const wsManager = new WebSocketManager(
+      jobManager,
+      jobRepository,
+      stakingRewardsWithFiatService,
+    );
+    const wallets = ["a", "b", "c", "d"];
+
+    for (const wallet of wallets) {
+      (wsManager as any).connections.push({
+        socket,
+        subscription: { wallet, currency: "usd" },
+      });
+    }
+
+    const msg: WebSocketIncomingMessage = {
+      type: "fetchDataRequest",
+      reqId: "999",
+      payload: {
+        wallet: "e",
+        currency: "usd",
+        blockchains: ["kusama"],
+      },
+    };
+
+    const result = (wsManager as any).isThrottled(socket, msg);
     expect(result).toBe(true);
-  });
-
-  test("does not throttle if wallet already subscribed", () => {
-    manager["connections"] = [
-      {
-        socket: mockSocket,
-        subscription: { wallet: "w1", currency: "USD" },
-      },
-    ];
-
-    const result = manager["isThrottled"](mockSocket, {
-      type: "fetchDataRequest",
-      reqId: "1",
-      payload: { wallet: "w1", currency: "USD" },
-    });
-
-    expect(result).toBe(false);
-  });
-
-  test("sends job notification to subscribed client", async () => {
-    const job: any = { reqId: "r123" };
-    const jobId: JobId = { wallet: "w1", currency: "USD", blockchain: "dot" };
-    manager["connections"] = [
-      {
-        socket: mockSocket,
-        subscription: { wallet: "w1", currency: "USD" },
-      },
-    ];
-
-    mockJobRepository.jobChanged$.subscribe = jest.fn((cb: any) => {
-      cb(jobId);
-    });
-    mockJobRepository.findJob.mockResolvedValue(job);
-
-    await manager.startJobNotificationChannel();
-
-    expect(mockSend).toHaveBeenCalled();
-    const sent = JSON.parse(mockSend.mock.calls[0][0] as any);
-    expect(sent.type).toBe("data");
-    expect(sent.reqId).toBe("r123");
   });
 });

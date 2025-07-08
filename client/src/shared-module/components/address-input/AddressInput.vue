@@ -30,11 +30,9 @@
             text-align: center;
           "
         >
-          Hint: You entered a parachain-specific address.<br />
-          This address maps to the generic address
-          {{
-            convertToGenericAddress(props.modelValue.trim()).substring(0, 4)
-          }}.... All results are shown using the canonical address format.
+          Hint: All results are shown using the canonical address format. ({{
+            convertToCanonicalAddress(props.modelValue.trim()).substring(0, 4)
+          }}...)
         </div>
       </template>
       <template v-slot:after>
@@ -58,8 +56,8 @@ import 'vue';
 import { computed } from 'vue';
 import { isValidAddress, isValidEvmAddress } from '../../util/is-valid-address';
 import {
-  isGenericSubstrateAddress,
-  convertToGenericAddress,
+  isCanonicalSubstrateAddress,
+  convertToCanonicalAddress,
 } from '../../util/convert-to-generic-address';
 
 const emits = defineEmits(['update:modelValue', 'enter-pressed']);
@@ -81,7 +79,7 @@ function validateAddress(adr: string) {
 }
 
 const isGenericAddress = computed(() => {
-  return isGenericSubstrateAddress(props.modelValue.trim());
+  return isCanonicalSubstrateAddress(props.modelValue.trim());
 });
 
 const isEvmAddress = computed(() => {

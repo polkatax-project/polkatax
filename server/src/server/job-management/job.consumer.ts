@@ -36,7 +36,7 @@ export class JobConsumer {
 
     try {
       const result =
-        await this.stakingRewardsWithFiatService.fetchStakingRewards({
+        await this.stakingRewardsWithFiatService.fetchStakingRewardsViaSubscan({
           chain,
           address: job.wallet,
           currency: job.currency,
@@ -57,7 +57,8 @@ export class JobConsumer {
         data: undefined,
       });
     } catch (err) {
-      logger.error("JobConsumer: error during processing", err);
+      logger.error("JobConsumer: error during processing");
+      logger.error(err);
       await this.handleError(err, job);
     }
   }

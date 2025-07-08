@@ -3,6 +3,7 @@ import { registerServices as registerBlockchainServices } from "./blockchain/reg
 import { registerServices as registerDataAggregationServices } from "./data-aggregation/registerServices";
 import { registerServices as registerJobServices } from "./job-management/registerServices";
 import { registerServices as registerEndpointsServices } from "./endpoints/registerServices";
+import { registerServices as registerDataPlatformServices } from "./data-platform-api/registerServices";
 
 export const createDIContainer = () => {
   const container = createContainer({
@@ -13,6 +14,7 @@ export const createDIContainer = () => {
   registerDataAggregationServices(container);
   registerJobServices(container);
   registerEndpointsServices(container);
+  registerDataPlatformServices(container);
   container.register({
     DIContainer: asValue(container),
   });

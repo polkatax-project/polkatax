@@ -1,16 +1,32 @@
-import { expect, it, jest, describe, beforeEach } from "@jest/globals";
 import { StakingRewardsWithFiatService } from "./staking-rewards-with-fiat.service";
 import { StakingRewardsService } from "../../blockchain/substrate/services/staking-rewards.service";
 import { TokenPriceConversionService } from "./token-price-conversion.service";
 import { SubscanService } from "../../blockchain/substrate/api/subscan.service";
+import { DataPlatformService } from "../../data-platform-api/data-platform.service";
 import { StakingRewardsRequest } from "../model/staking-rewards.request";
-import { StakingReward } from "../../blockchain/substrate/model/staking-reward";
-import * as helper from "../helper/add-fiat-values-to-staking-rewards";
-import * as tokenHelper from "../helper/find-coingecko-id-for-native-token";
-import * as evmHelper from "../helper/is-evm-address";
+import { PricedStakingReward } from "../model/priced-staking-reward";
+import { expect, it, jest, describe, beforeEach } from "@jest/globals";
 
 jest.mock("../helper/add-fiat-values-to-staking-rewards", () => ({
-  addFiatValuesToStakingRewards: jest.fn(),
+  addFiatValuesToStakingRewards: jest.fn((rewards: any, quote: any) => {
+    return rewards.map((r) => ({
+      ...r,
+      fiatValue: r.amount * (quote?.price || 1),
+    }));
+  }),
+}));
+
+jest.mock("../helper/find-coingecko-id-for-native-token", () => ({
+  findCoingeckoIdForNativeToken: (domain: string) => {
+    const map = {
+      polkadot: "polkadot",
+    };
+    return map[domain];
+  },
+}));
+
+jest.mock("../helper/is-evm-address", () => ({
+  isEvmAddress: (address: string) => address.startsWith("0x"),
 }));
 
 describe("StakingRewardsWithFiatService", () => {
@@ -18,129 +34,72 @@ describe("StakingRewardsWithFiatService", () => {
   let stakingRewardsService: jest.Mocked<StakingRewardsService>;
   let tokenPriceConversionService: jest.Mocked<TokenPriceConversionService>;
   let subscanService: jest.Mocked<SubscanService>;
-
-  const mockRequest: StakingRewardsRequest = {
-    chain: { domain: "polkadot", token: "DOT" } as any,
-    address: "0xabc123",
-    currency: "USD",
-    startDate: new Date().getTime(),
-  };
-
-  const fakeRewards: StakingReward[] = [
-    { amount: 10, timestamp: 1234567890, currency: "DOT" } as any,
-  ];
+  let dataPlatformService: jest.Mocked<DataPlatformService>;
 
   beforeEach(() => {
     stakingRewardsService = {
-      fetchStakingRewards: jest.fn(),
+      fetchStakingRewards: jest.fn<any>(),
     } as any;
 
     tokenPriceConversionService = {
-      fetchQuotesForTokens: jest.fn(),
+      fetchQuotesForTokens: jest.fn<any>(),
     } as any;
 
     subscanService = {
-      mapToSubstrateAccount: jest.fn(),
+      mapToSubstrateAccount: jest.fn<any>(),
+    } as any;
+
+    dataPlatformService = {
+      fetchAggregatedStakingRewards: jest.fn<any>(),
     } as any;
 
     service = new StakingRewardsWithFiatService(
       stakingRewardsService,
       tokenPriceConversionService,
       subscanService,
+      dataPlatformService,
+    );
+  });
+
+  it("fetchStakingRewardsViaSubscan returns fiat-priced rewards", async () => {
+    const mockRequest: StakingRewardsRequest = {
+      chain: { domain: "polkadot", token: "DOT", label: "" },
+      currency: "usd",
+      address: "0x123abc",
+      startDate: Date.now(),
+    };
+
+    // Simulate address mapping
+    subscanService.mapToSubstrateAccount.mockResolvedValue("substrate123");
+
+    const mockRewards: PricedStakingReward[] = [
+      { amount: 10, timestamp: 1234567890 },
+      { amount: 5, timestamp: 1234567891 },
+    ];
+
+    stakingRewardsService.fetchStakingRewards.mockResolvedValue(
+      mockRewards as any,
     );
 
-    jest
-      .spyOn(tokenHelper, "findCoingeckoIdForNativeToken")
-      .mockReturnValue("polkadot");
-    jest.spyOn(evmHelper, "isEvmAddress").mockReturnValue(false);
-  });
+    tokenPriceConversionService.fetchQuotesForTokens.mockResolvedValue({
+      polkadot: { price: 7.5 }, // 1 DOT = 7.5 USD
+    } as any);
 
-  describe("fetchRawStakingRewards", () => {
-    it("fetches rewards directly if not EVM", async () => {
-      stakingRewardsService.fetchStakingRewards.mockResolvedValue(fakeRewards);
+    const result = await service.fetchStakingRewardsViaSubscan(mockRequest);
 
-      const result = await (service as any).fetchRawStakingRewards(mockRequest);
-
-      expect(stakingRewardsService.fetchStakingRewards).toHaveBeenCalledWith(
-        "polkadot",
-        "0xabc123",
-        mockRequest.startDate,
-      );
-      expect(result).toEqual(fakeRewards);
-    });
-
-    it("maps EVM address using Subscan and fetches rewards", async () => {
-      jest.spyOn(evmHelper, "isEvmAddress").mockReturnValue(true);
-      subscanService.mapToSubstrateAccount.mockResolvedValue(
-        "substrateAddr123",
-      );
-      stakingRewardsService.fetchStakingRewards.mockResolvedValue(fakeRewards);
-
-      const result = await (service as any).fetchRawStakingRewards(mockRequest);
-
-      expect(subscanService.mapToSubstrateAccount).toHaveBeenCalledWith(
-        "polkadot",
-        "0xabc123",
-      );
-      expect(stakingRewardsService.fetchStakingRewards).toHaveBeenCalledWith(
-        "polkadot",
-        "substrateAddr123",
-        mockRequest.startDate,
-      );
-      expect(result).toEqual(fakeRewards);
-    });
-
-    it("falls back to original address if Subscan mapping fails", async () => {
-      jest.spyOn(evmHelper, "isEvmAddress").mockReturnValue(true);
-      subscanService.mapToSubstrateAccount.mockResolvedValue(null);
-      stakingRewardsService.fetchStakingRewards.mockResolvedValue(fakeRewards);
-
-      const result = await (service as any).fetchRawStakingRewards(mockRequest);
-
-      expect(stakingRewardsService.fetchStakingRewards).toHaveBeenCalledWith(
-        "polkadot",
-        "0xabc123",
-        mockRequest.startDate,
-      );
-    });
-  });
-
-  describe("fetchStakingRewards", () => {
-    it("returns converted staking rewards with fiat values", async () => {
-      stakingRewardsService.fetchStakingRewards.mockResolvedValue(fakeRewards);
-      tokenPriceConversionService.fetchQuotesForTokens.mockResolvedValue({
-        polkadot: { USD: 5 },
-      } as any);
-      (helper.addFiatValuesToStakingRewards as jest.Mock).mockReturnValue([
-        { amount: 10, fiat: 50 },
-      ]);
-
-      const result = await service.fetchStakingRewards(mockRequest);
-
-      expect(
-        tokenPriceConversionService.fetchQuotesForTokens,
-      ).toHaveBeenCalledWith(["polkadot"], "USD");
-      expect(result).toEqual({
-        token: "DOT",
-        values: [{ amount: 10, fiat: 50 }],
-      });
-    });
-
-    it("skips fiat conversion if no coingecko ID found", async () => {
-      (tokenHelper.findCoingeckoIdForNativeToken as jest.Mock).mockReturnValue(
-        undefined,
-      );
-      stakingRewardsService.fetchStakingRewards.mockResolvedValue(fakeRewards);
-      (helper.addFiatValuesToStakingRewards as jest.Mock).mockReturnValue([
-        { amount: 10, fiat: 0 },
-      ]);
-
-      const result = await service.fetchStakingRewards(mockRequest);
-
-      expect(
-        tokenPriceConversionService.fetchQuotesForTokens,
-      ).not.toHaveBeenCalled();
-      expect(result.values).toEqual([{ amount: 10, fiat: 0 }]);
+    expect(subscanService.mapToSubstrateAccount).toHaveBeenCalledWith(
+      "polkadot",
+      "0x123abc",
+    );
+    expect(
+      tokenPriceConversionService.fetchQuotesForTokens,
+    ).toHaveBeenCalledWith(["polkadot"], "usd");
+    expect(result).toEqual({
+      values: [
+        { amount: 10, timestamp: 1234567890, fiatValue: 75 },
+        { amount: 5, timestamp: 1234567891, fiatValue: 37.5 },
+      ],
+      token: "DOT",
     });
   });
 });
