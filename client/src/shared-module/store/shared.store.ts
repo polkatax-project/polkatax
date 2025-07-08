@@ -15,9 +15,10 @@ import { wsMsgReceived$, wsSendMsg } from '../service/ws-connection';
 import { JobResult } from '../model/job-result';
 import { fetchSubscanChains } from '../service/fetch-subscan-chains';
 import { mapRawValuesToRewards, sortJobs } from './helper/job.service';
-import { filterFromBeginningLastYear } from './helper/filter-from-beginning-last-year';
+import { filterOnLastYear } from './helper/filter-on-last-year';
 import { addIsoDate } from './helper/add-iso-date';
-import { convertToCanonicalAddress } from '../util/convert-to-generic-address';
+import { convertToCanonicalAddress } from '../util/convert-to-canonical-address';
+import { isValidEvmAddress } from '../util/is-valid-address';
 
 const jobs$ = new BehaviorSubject<JobResult[]>([]);
 const subscanChains$ = from(fetchSubscanChains()).pipe(shareReplay(1));
@@ -35,11 +36,12 @@ wsMsgReceived$
     const list: JobResult[] = Array.isArray(payload) ? payload : [payload];
     for (const newJobResult of list) {
       if (newJobResult.data) {
-        filterFromBeginningLastYear(newJobResult.data);
+        newJobResult.data.values = addIsoDate(newJobResult.data.values);
+        filterOnLastYear(newJobResult.data);
         newJobResult.data = mapRawValuesToRewards(
           newJobResult,
           newJobResult.data.token,
-          addIsoDate(newJobResult.data.values)
+          newJobResult.data.values
         );
       }
       jobs = jobs.filter(
@@ -104,7 +106,9 @@ export const useSharedStore = defineStore('shared', {
       }
     },
     async sync() {
-      const genericAddress = convertToCanonicalAddress(this.address.trim());
+      const genericAddress = isValidEvmAddress(this.address.trim())
+        ? this.address.trim()
+        : convertToCanonicalAddress(this.address.trim());
       wsSendMsg({
         type: 'fetchDataRequest',
         payload: {

@@ -47,7 +47,6 @@ import {
   formatCurrencyWithoutSymbol,
   formatCryptoAmount,
 } from '../../../../shared-module/util/number-formatters';
-import { formatDate } from '../../../../shared-module/util/date-utils';
 import { exportDefaultCsv } from '../../../../shared-module/service/export-default-csv';
 import { exportKoinlyCsv } from '../../../../shared-module/service/export-koinly-csv';
 
@@ -72,7 +71,7 @@ const columns = computed(() => [
     required: true,
     label: 'Date',
     align: 'left',
-    field: (row: Reward) => formatDate(row.timestamp),
+    field: (row: Reward) => row.isoDate,
     sortable: true,
   },
   {

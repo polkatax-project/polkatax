@@ -12,6 +12,7 @@ import { Job, JobId } from "../../model/job";
 import { convertToCanonicalAddress } from "../../common/util/convert-to-generic-address";
 import { dataPlatformChains } from "../data-platform-api/model/data-platform-chains";
 import { StakingRewardsWithFiatService } from "../data-aggregation/services/staking-rewards-with-fiat.service";
+import { isValidEvmAddress } from "../../common/util/is-valid-address";
 
 interface Subscription {
   wallet: string;
@@ -207,7 +208,10 @@ export class WebSocketManager {
         return this.sendError(socket, { code: 400, msg: "Invalid message" });
       }
 
-      if (result.data.payload?.wallet) {
+      if (
+        result.data.payload?.wallet &&
+        !isValidEvmAddress(result.data.payload.wallet)
+      ) {
         result.data.payload.wallet = convertToCanonicalAddress(
           result.data.payload.wallet,
         );

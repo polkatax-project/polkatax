@@ -4,4 +4,5 @@ export interface PricedStakingReward {
   price?: number;
   fiatValue?: number;
   nominationPool?: boolean;
+  isoDate?: string;
 }

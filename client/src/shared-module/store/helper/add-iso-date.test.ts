@@ -1,40 +1,38 @@
-import { jest, expect, it, describe } from '@jest/globals';
-
-import * as dateUtils from '../../util/date-utils';
-import { addIsoDate } from './add-iso-date';
 import { RewardDto } from '../../model/rewards';
+import * as dateUtils from '../../util/date-utils';
+import { expect, describe, it, jest } from '@jest/globals';
+import { addIsoDate } from './add-iso-date';
 
 describe('addIsoDate', () => {
-  it('adds isoDate and valueNow when currentPrice is defined', () => {
+  it('should preserve existing isoDate', () => {
     const input: RewardDto[] = [
-      { amount: 2, timestamp: 1609459200000 }, // 2021-01-01T00:00:00Z
-      { amount: 3, timestamp: 1609545600000 }, // 2021-01-02T00:00:00Z
+      { timestamp: 1234567890, isoDate: '2024-01-01', someField: 'x' },
     ] as any;
-
-    const mockFormatDate = jest
-      .spyOn(dateUtils, 'formatDate')
-      .mockImplementation((ts: number) => new Date(ts).toISOString());
 
     const result = addIsoDate(input);
 
     expect(result).toEqual([
-      {
-        amount: 2,
-        timestamp: 1609459200000,
-        isoDate: '2021-01-01T00:00:00.000Z',
-      },
-      {
-        amount: 3,
-        timestamp: 1609545600000,
-        isoDate: '2021-01-02T00:00:00.000Z',
-      },
+      { timestamp: 1234567890, isoDate: '2024-01-01', someField: 'x' },
     ]);
-
-    mockFormatDate.mockRestore();
   });
 
-  it('returns an empty array if input is empty', () => {
-    const result = addIsoDate([]);
-    expect(result).toEqual([]);
+  it('should compute isoDate using formatDate when missing', () => {
+    const input: RewardDto[] = [
+      { timestamp: 1698796800000, someField: 'a' }, // Example timestamp
+    ] as any;
+
+    const mockIsoDate = '2023-11-01';
+    const formatDateSpy = jest
+      .spyOn(dateUtils, 'formatDate')
+      .mockReturnValue(mockIsoDate);
+
+    const result = addIsoDate(input);
+
+    expect(formatDateSpy).toHaveBeenCalledWith(1698796800000);
+    expect(result).toEqual([
+      { timestamp: 1698796800000, someField: 'a', isoDate: mockIsoDate },
+    ]);
+
+    formatDateSpy.mockRestore();
   });
 });
