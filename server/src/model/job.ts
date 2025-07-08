@@ -14,5 +14,5 @@ export interface Job extends JobId {
   lastModified: number;
   deleted?: boolean;
   syncedUntil?: number;
-  syncFromDate: number;
+  syncFromDate?: number;
 }

@@ -20,7 +20,7 @@ export const fetchStakingRewards = async (
   const stakingRewardsWithFiatService: StakingRewardsWithFiatService =
     container.resolve("stakingRewardsWithFiatService");
   const rewards: StakingRewardsResponse =
-    await stakingRewardsWithFiatService.fetchStakingRewards({
+    await stakingRewardsWithFiatService.fetchStakingRewardsViaSubscan({
       chain: { domain: chain, label: "", token: "" },
       address,
       currency,

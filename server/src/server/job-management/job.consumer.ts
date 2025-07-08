@@ -36,7 +36,7 @@ export class JobConsumer {
 
     try {
       const result =
-        await this.stakingRewardsWithFiatService.fetchStakingRewards({
+        await this.stakingRewardsWithFiatService.fetchStakingRewardsViaSubscan({
           chain,
           address: job.wallet,
           currency: job.currency,

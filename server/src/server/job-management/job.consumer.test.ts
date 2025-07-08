@@ -13,7 +13,7 @@ const mockJobsService = {
 };
 
 const mockStakingService = {
-  fetchStakingRewards: jest.fn<any>(),
+  fetchStakingRewardsViaSubscan: jest.fn<any>(),
 };
 
 const createJob = (overrides: Partial<Job> = {}): Job =>
@@ -58,20 +58,24 @@ describe("JobConsumer", () => {
 
     await jobConsumer.process(job);
 
-    expect(mockStakingService.fetchStakingRewards).not.toHaveBeenCalled();
+    expect(
+      mockStakingService.fetchStakingRewardsViaSubscan,
+    ).not.toHaveBeenCalled();
     expect(mockJobsService.setDone).not.toHaveBeenCalled();
   });
 
   it("should process job and set it to done", async () => {
     const job = createJob();
     mockJobsService.setInProgress.mockResolvedValue(true);
-    mockStakingService.fetchStakingRewards.mockResolvedValue({
+    mockStakingService.fetchStakingRewardsViaSubscan.mockResolvedValue({
       values: [{ timestamp: 1800000000 }],
     });
 
     await jobConsumer.process(job);
 
-    expect(mockStakingService.fetchStakingRewards).toHaveBeenCalledWith(
+    expect(
+      mockStakingService.fetchStakingRewardsViaSubscan,
+    ).toHaveBeenCalledWith(
       expect.objectContaining({
         address: job.wallet,
         currency: job.currency,
@@ -88,7 +92,7 @@ describe("JobConsumer", () => {
     });
 
     mockJobsService.setInProgress.mockResolvedValue(true);
-    mockStakingService.fetchStakingRewards.mockResolvedValue({
+    mockStakingService.fetchStakingRewardsViaSubscan.mockResolvedValue({
       values: [{ timestamp: 1800000000 }],
     });
 
@@ -104,7 +108,7 @@ describe("JobConsumer", () => {
     const error = new Error("Unexpected failure");
 
     mockJobsService.setInProgress.mockResolvedValue(true);
-    mockStakingService.fetchStakingRewards.mockRejectedValue(error);
+    mockStakingService.fetchStakingRewardsViaSubscan.mockRejectedValue(error);
 
     await jobConsumer.process(job);
 
