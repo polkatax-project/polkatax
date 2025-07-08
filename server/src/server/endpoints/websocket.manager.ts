@@ -108,7 +108,7 @@ export class WebSocketManager {
 
     const relevantChains =
       blockchains ?? this.jobManager.getStakingChains(wallet);
-    const forSubscanChains = process.env["USE_AGGREGATED_DATA"]
+    const forSubscanChains = process.env["USE_DATA_PLATFORM_API"]
       ? relevantChains.filter(
           (b) => !dataPlatformChains.some((c) => c.domain === b),
         )
@@ -117,7 +117,7 @@ export class WebSocketManager {
     /**
      * fetch part of data directly if aggregated data is used from db. No additional caching in this case.
      */
-    if (process.env["USE_AGGREGATED_DATA"]) {
+    if (process.env["USE_DATA_PLATFORM_API"]) {
       this.fetchRewardsFromPlatformApi(socket, msg.reqId, wallet, currency);
     }
 

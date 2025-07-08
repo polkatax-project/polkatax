@@ -38,7 +38,7 @@ describe("WebSocketManager", () => {
       stakingRewardsWithFiatService,
     );
 
-    process.env["USE_AGGREGATED_DATA"] = "true"; // To trigger platform API fetch
+    process.env["USE_DATA_PLATFORM_API"] = "true"; // To trigger platform API fetch
     mockSocket.send.mockClear();
   });
 
