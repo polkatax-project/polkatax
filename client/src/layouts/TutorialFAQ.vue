@@ -3,25 +3,46 @@
     <AppHeader />
     <q-page-container>
       <q-page>
-        <!-- Tutorial Video -->
-        <!-- PLACEHOLDER FOR TUTORIAL VIDEO
-      <div style="max-width: 900px" class="q-mx-auto q-my-lg">
-        <q-card flat bordered class="q-pa-md" style="border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.08);">
-          <div class="text-h6 q-mb-md">
-            Getting Started Tutorial
-          </div>
-          <div class="video-wrapper" style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 12px;">
-            <iframe
-              src="https://www.youtube.com/embed/dQw4w9WgXcQ"
-              frameborder="0"
-              allowfullscreen
-              style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 12px;"
-              title="PolkaTax Tutorial"
-            ></iframe>
-          </div>
-        </q-card>
-      </div>
-      -->
+        <!-- TUTORIAL VIDEO -->
+        <div style="max-width: 900px" class="q-mx-auto q-my-lg">
+          <q-card
+            flat
+            bordered
+            class="q-pa-md"
+            style="
+              border-radius: 16px;
+              box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            "
+          >
+            <div class="text-h6 q-mb-md">Getting Started Tutorial</div>
+            <div
+              class="video-wrapper"
+              style="
+                position: relative;
+                background-color: white;
+                padding-bottom: 56.25%;
+                height: 0;
+                overflow: hidden;
+                border-radius: 12px;
+              "
+            >
+              <iframe
+                src="/tutorial.html"
+                frameborder="0"
+                allowfullscreen
+                style="
+                  position: absolute;
+                  top: 0;
+                  left: 0;
+                  width: 100%;
+                  height: 100%;
+                  border-radius: 12px;
+                "
+                title="PolkaTax Tutorial"
+              ></iframe>
+            </div>
+          </q-card>
+        </div>
         <!-- FAQ Section -->
         <div class="q-mx-auto q-mb-xl q-my-xl content">
           <div class="text-h5 text-bold q-mb-md">
@@ -76,7 +97,7 @@ const faqItems = computed(() => [
   {
     question: 'How do I connect my wallet?',
     answer:
-      'To connect your wallet, click on "Wallets" in the main menu. Then, copy your wallet address from your crypto wallet extension and paste it into the input field. Click "Add" to complete the connection.',
+      'You don’t need to connect your wallet directly. Simply copy your wallet address from your wallet app or extension and paste it into the input field.',
   },
   {
     question: 'Which chains are supported?',
@@ -92,7 +113,7 @@ const faqItems = computed(() => [
   {
     question: 'Is my data secure?',
     answer:
-      'Yes. PolkaTax only accesses publicly available blockchain data and stores all your information locally in your browser. No personal or sensitive data is transmitted to external servers.',
+      'PolkaTax only accesses publicly available blockchain data and stores that information in a database. No personal or sensitive data is transmitted to external servers.',
   },
   {
     question: 'Can I use PolkaTax for multiple accounts?',

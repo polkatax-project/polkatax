@@ -150,3 +150,14 @@ This will generate a new list of substrate chains in the `res/gen/` folder.
 The current implementation uses coingecko, however without API key.
 The reason are the relatively high costs of purchasing a coingecko API key.
 The consequence is that you might encounter errors with code 429 from coingecko if too many requests are made. To mitigate this issue [ZYTE](https://www.zyte.com/) is used in production.
+
+## Documentation of Architecture 
+
+[View Architecture Diagram](docs/architecture/architecture.drawio.png)
+
+
+Gradio xml file:
+- [Architecture](docs/architecture/architecture.xml)
+
+## Documentation of Data flow
+- [Data Flow](docs/data-flow.md)
