@@ -42,6 +42,44 @@
               ></iframe>
             </div>
           </q-card>
+
+          <q-card
+            flat
+            bordered
+            class="q-pa-md q-mt-md"
+            style="
+              border-radius: 16px;
+              box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            "
+          >
+            <div class="text-h6 q-mb-md">Koinly Import Tutorial</div>
+            <div
+              class="video-wrapper"
+              style="
+                position: relative;
+                background-color: white;
+                padding-bottom: 56.25%;
+                height: 0;
+                overflow: hidden;
+                border-radius: 12px;
+              "
+            >
+              <iframe
+                src="/koinly-import-tutorial.html"
+                frameborder="0"
+                allowfullscreen
+                style="
+                  position: absolute;
+                  top: 0;
+                  left: 0;
+                  width: 100%;
+                  height: 100%;
+                  border-radius: 12px;
+                "
+                title="PolkaTax Tutorial"
+              ></iframe>
+            </div>
+          </q-card>
         </div>
         <!-- FAQ Section -->
         <div class="q-mx-auto q-mb-xl q-my-xl content">
@@ -119,6 +157,11 @@ const faqItems = computed(() => [
     question: 'Can I use PolkaTax for multiple accounts?',
     answer:
       'Absolutely. You can connect multiple wallets and manage all their tax data seamlessly from a single dashboard.',
+  },
+  {
+    question: 'What kind of data is shown/exported?',
+    answer:
+      'This application currently displays staking rewards from multiple Substrate-based chains for the previous year.',
   },
 ]);
 </script>

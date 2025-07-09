@@ -73,8 +73,8 @@
                 (props.row?.data?.token ?? '')
               }}
             </q-td>
-            <q-td key="syncFromDate" :props="props">
-              {{ syncedFrom }}
+            <q-td key="timeFrame" :props="props">
+              {{ timeFrame }}
             </q-td>
             <q-td key="lastSynchronized" :props="props">
               {{
@@ -259,7 +259,7 @@ const columns = ref([
   },
   { name: 'currency', label: 'Currency' },
   { name: 'amountRewards', label: 'Total staking rewards' },
-  { name: 'syncFromDate', label: 'Since' },
+  { name: 'timeFrame', label: 'Time frame' },
   { name: 'lastSynchronized', label: 'Synchronized on' },
   { name: 'actions', label: 'Actions' },
 ]);
@@ -278,8 +278,8 @@ function calculateTotalReward(jobResult: JobResult) {
   return jobResult.data?.summary?.amount;
 }
 
-const syncedFrom = computed(() => {
-  return `${new Date().getFullYear()}-01-01`;
+const timeFrame = computed(() => {
+  return `${new Date().getFullYear() - 1}-01-01 until ${new Date().getFullYear() - 1}-12-31`;
 });
 
 function retry(job: JobResult) {
