@@ -20,9 +20,7 @@
         "
         v-slot:hint
       >
-        <div
-          class="text-caption text-grey-7 hint"
-        >
+        <div class="text-caption text-grey-7 hint">
           Hint: All results are shown using the canonical address format. ({{
             convertToCanonicalAddress(props.modelValue.trim()).substring(0, 4)
           }}...)

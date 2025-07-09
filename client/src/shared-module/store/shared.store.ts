@@ -59,13 +59,15 @@ wsMsgReceived$
 
 const currency$ = new ReplaySubject<string>(1);
 defer(() => {
-    const currency = localStorage.getItem('currency');
-    if (currency) {
-      return of(currency);
-    } else {
-      return fetchCurrency();
-    }
-  }).pipe(take(1)).subscribe((currency) => currency$.next(currency));
+  const currency = localStorage.getItem('currency');
+  if (currency) {
+    return of(currency);
+  } else {
+    return fetchCurrency();
+  }
+})
+  .pipe(take(1))
+  .subscribe((currency) => currency$.next(currency));
 
 combineLatest([
   firstValueFrom(currency$),
@@ -102,7 +104,7 @@ export const useSharedStore = defineStore('shared', {
   },
   actions: {
     selectCurrency(newCurrency: string) {
-      localStorage.setItem('currency', newCurrency)
+      localStorage.setItem('currency', newCurrency);
       currency$.next(newCurrency);
     },
     addWallet(wallet: string) {

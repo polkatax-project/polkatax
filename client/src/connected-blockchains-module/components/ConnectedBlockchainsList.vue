@@ -279,7 +279,9 @@ function calculateTotalReward(jobResult: JobResult) {
 }
 
 const timeFrame = computed(() => {
-  return `${new Date().getFullYear() - 1}-01-01 until ${new Date().getFullYear() - 1}-12-31`;
+  return `${new Date().getFullYear() - 1}-01-01 until ${
+    new Date().getFullYear() - 1
+  }-12-31`;
 });
 
 function retry(job: JobResult) {
