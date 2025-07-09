@@ -3,9 +3,9 @@ import { convertToGenericAddress } from "../../common/util/convert-to-generic-ad
 import { PricedStakingReward } from "../data-aggregation/model/priced-staking-reward";
 import { logger } from "../logger/logger";
 import { DataPlatformApi } from "./data-platform.api";
-import { SubscanApi } from "../blockchain/substrate/api/subscan.api";
 import { dataPlatformChains } from "./model/data-platform-chains";
 import { isValidEvmAddress } from "../../common/util/is-valid-address";
+import { SubscanService } from "../blockchain/substrate/api/subscan.service";
 
 function endOfDayUTC(dateStr: string): number {
   const dateTimeStr = `${dateStr}T23:59:59.999Z`;
@@ -15,7 +15,7 @@ function endOfDayUTC(dateStr: string): number {
 export class DataPlatformService {
   constructor(
     private dataPlatformApi: DataPlatformApi,
-    private subscanApi: SubscanApi,
+    private subscanService: SubscanService,
   ) {}
 
   async fetchAggregatedStakingRewards(
@@ -33,6 +33,7 @@ export class DataPlatformService {
       maxDate,
     );
     const results: { chain: string; values: PricedStakingReward[] }[] = [];
+    const tokens = await this.subscanService.fetchNativeTokens(dataPlatformChains.map(c => c.domain))
     for (let idx = 0; idx < dataPlatformChains.length; idx++) {
       const item = rewards.items.find(
         (i) => i.chainType === dataPlatformChains[idx].chainType,
@@ -44,7 +45,7 @@ export class DataPlatformService {
       const domain = dataPlatformChains.find(
         (c) => c.chainType === item.chainType,
       )?.domain;
-      const token = await this.subscanApi.fetchNativeToken(domain);
+      const token = tokens[domain]
       const aggregatedRewards = (item.stakingResults || []).map((reward) => {
         return {
           amount: BigNumber(reward.totalAmount)

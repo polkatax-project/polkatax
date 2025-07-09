@@ -21,14 +21,7 @@
         v-slot:hint
       >
         <div
-          class="text-caption text-grey-7"
-          style="
-            white-space: nowrap;
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-            text-align: center;
-          "
+          class="text-caption text-grey-7 hint"
         >
           Hint: All results are shown using the canonical address format. ({{
             convertToCanonicalAddress(props.modelValue.trim()).substring(0, 4)
@@ -91,5 +84,17 @@ const isEvmAddress = computed(() => {
   max-width: 250px;
   min-width: 250px;
   padding-bottom: 0;
+}
+
+.hint {
+  white-space: nowrap;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+  @media (max-width: 600px) {
+    white-space: normal;
+    width: 100%;
+  }
 }
 </style>
