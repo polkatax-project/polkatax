@@ -78,7 +78,7 @@ describe("Staking rewards via websocket", () => {
     wsWrapper.sendMsg({
       type: "fetchDataRequest",
       payload: {
-        wallet: "1494RbqK8edUZ9HPcUpR9ifnoJ83fNrLuKMB8EvJgaQPh8vH",
+        wallet: "1HGnvAkk9nbfZ58CzUJhjcrLdEDMkr5qNkqqYkyD5BF5v6Y",
         blockchains: ["astar"],
         currency: "USD",
       },

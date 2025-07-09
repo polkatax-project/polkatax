@@ -2,10 +2,12 @@ import { defineStore } from 'pinia';
 import {
   BehaviorSubject,
   combineLatest,
+  defer,
   filter,
   firstValueFrom,
   from,
   map,
+  of,
   ReplaySubject,
   shareReplay,
   take,
@@ -55,8 +57,20 @@ wsMsgReceived$
     jobs$.next(jobs);
   });
 
+const currency$ = new ReplaySubject<string>(1);
+defer(() => {
+  const currency = localStorage.getItem('currency');
+  if (currency) {
+    return of(currency);
+  } else {
+    return fetchCurrency();
+  }
+})
+  .pipe(take(1))
+  .subscribe((currency) => currency$.next(currency));
+
 combineLatest([
-  from(fetchCurrency()),
+  firstValueFrom(currency$),
   from([JSON.parse(localStorage.getItem('wallets') || '[]') as string[]]),
 ])
   .pipe(take(1))
@@ -77,11 +91,6 @@ const webSocketResponseError$ = wsMsgReceived$.pipe(
   map((msg) => msg.error!)
 );
 
-const currency$ = new ReplaySubject<string>(1);
-from(fetchCurrency())
-  .pipe(take(1))
-  .subscribe((currency) => currency$.next(currency));
-
 export const useSharedStore = defineStore('shared', {
   state: () => {
     return {
@@ -95,6 +104,7 @@ export const useSharedStore = defineStore('shared', {
   },
   actions: {
     selectCurrency(newCurrency: string) {
+      localStorage.setItem('currency', newCurrency);
       currency$.next(newCurrency);
     },
     addWallet(wallet: string) {

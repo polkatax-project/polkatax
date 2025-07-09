@@ -1,6 +1,5 @@
 {
   "name": "substrate-staking-rewards-server",
-  "version": "1.0.0",
   "description": "",
   "scripts": {
     "pm2-prod": "pm2 start prod.config.js",
