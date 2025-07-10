@@ -5,6 +5,7 @@
     </template>
     <q-breadcrumbs-el
       v-for="breadcrumb in breadcrumbs"
+      :data-testid="'breadcrumb-' + breadcrumb.label"
       v-bind:key="breadcrumb.label"
       :label="breadcrumb.label"
       class="text-white"

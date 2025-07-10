@@ -55,6 +55,7 @@ describe('exportDefaultCsv', () => {
         timestamp: 1700000000,
         amount: 50,
         hash: 'hash1',
+        nominationPool: undefined,
         utcDate: 'UTC-1700000000',
         totalAmount: 100,
         totalValue: 500,
@@ -63,6 +64,7 @@ describe('exportDefaultCsv', () => {
         timestamp: 1700001000,
         amount: 50,
         hash: 'hash2',
+        nominationPool: false,
         utcDate: 'UTC-1700001000',
       },
     ];

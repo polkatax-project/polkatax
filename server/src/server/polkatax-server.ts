@@ -1,10 +1,11 @@
+import dotenv from "dotenv";
+import { envFile } from "./env.config";
+dotenv.config({ path: envFile });
 import Fastify from "fastify";
 import path from "path";
 import { logger } from "./logger/logger";
-import dotenv from "dotenv";
 import websocketPlugin from "@fastify/websocket";
 import rateLimit from "@fastify/rate-limit";
-dotenv.config({ path: __dirname + "/../../.env" });
 import * as fs from "fs";
 import { HttpError } from "../common/error/HttpError";
 import { WebSocketManager } from "./endpoints/websocket.manager";
@@ -13,6 +14,7 @@ import { JobManager } from "./job-management/job.manager";
 
 export const polkataxServer = {
   init: async () => {
+    logger.info("Using env var file: " + envFile);
     const fastify = Fastify({
       loggerInstance: logger,
     });

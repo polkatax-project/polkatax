@@ -46,7 +46,7 @@ const footerLinks = [
   {
     title: 'Product',
     links: [
-      { label: 'Tutorial & FAQ', routerLink: 'tutorial-faq', link: undefined },
+      { label: 'Tutorial & FAQ', routerLink: '/tutorial-faq', link: undefined },
     ],
   },
   {

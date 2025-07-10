@@ -24,6 +24,7 @@
               text-color="primary"
               size="lg"
               to="/wallets"
+              data-testid="launch-button"
               class="launchbutton"
             />
           </div>
@@ -94,6 +95,7 @@
                 text-color="primary"
                 size="lg"
                 class="launchbutton"
+                data-testid="launch-button2"
                 to="/wallets"
               />
             </div>

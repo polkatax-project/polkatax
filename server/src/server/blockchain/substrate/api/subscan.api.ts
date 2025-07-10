@@ -36,8 +36,8 @@ export class SubscanApi {
 
   private async retry<T>(
     query: () => Promise<T>,
-    retries = 2,
-    backOff = [3000, 5000],
+    retries = 3,
+    backOff = [3000, 5000, 10000],
   ): Promise<T> {
     for (let i = 0; i < retries; i++) {
       try {
@@ -302,7 +302,7 @@ export class SubscanApi {
         event_id: entry.event_id,
         amount: BigNumber(entry.amount),
         timestamp: entry.block_timestamp * 1000, // convert from sec to ms
-        block: entry.extrinsic_index.split("-")[0],
+        block: entry.block_num ?? Number(entry.extrinsic_index.split("-")[0]),
         hash: entry.extrinsic_hash,
         extrinsic_index: entry.extrinsic_index,
         event_index: entry.event_index,

@@ -29,9 +29,12 @@ jobs:
         working-directory: server
         run: npm run test
 
-      - name: Run Server Integration Tests
+      - name: Run e2e Tests
         working-directory: server
-        run: npm run integration-tests
+        run: npm run e2e-tests
+        env:
+          SUBSCAN_API_KEY: ${{ secrets.SUBSCAN_API_KEY }}
+          ZYTE_USER: ${{ secrets.ZYTE_USER }}
 
   client-tests:
     runs-on: ubuntu-latest
@@ -61,34 +64,45 @@ jobs:
         working-directory: client
         run: npm run integration-tests 
 
-  deploy-to-fly:
-    if: github.ref == 'refs/heads/main'
-    needs: [server-tests, client-tests]
+  deploy:
     runs-on: ubuntu-latest
-
+    needs: [client-tests, server-tests]
+    if: github.ref == 'refs/heads/main'
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.8.0
         with:
-          node-version: '18'
+          ssh-private-key: ${{ secrets.HETZNER_SSH_KEY }}
 
-      - name: Install Dependencies
-        run: npm install
+      - name: Copy files via SSH (excluding .env and .log files from deletion)
+        run: |
+          rsync -avz --delete \
+            --exclude='*.env' \
+            --exclude='*.log' \
+            --exclude='server/dist' \
+            -e "ssh -o StrictHostKeyChecking=no" \
+            ./ ${{ secrets.HETZNER_USER }}@${{ secrets.HETZNER_HOST }}:${{ secrets.DEPLOY_PATH }}
 
-      - name: Build
-        run: npm run build
+      - name: Install & Restart app
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.HETZNER_USER }}@${{ secrets.HETZNER_HOST }} << 'EOF'
+            cd ${{ secrets.DEPLOY_PATH }}
+          # Install dependencies and build the project
+          npm install
+          npm run build
 
-      - name: Set up Fly CLI
-        uses: superfly/flyctl-actions/setup-flyctl@v1
-        with:
-          flyctl_version: "latest" 
-        env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          # Navigate to the server directory
+          cd server
 
-      - name: Deploy to Fly.io
-        run: flyctl deploy --remote-only --access-token ${{ secrets.FLY_API_TOKEN }}
-        env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          # Stop the PM2-managed app
+          npm run pm2-stop
+
+          # Reset any stuck jobs in the database
+          npm run reset-stuck-jobs
+
+          # Start the PM2-managed app again
+          npm run pm2-stub
+          EOF

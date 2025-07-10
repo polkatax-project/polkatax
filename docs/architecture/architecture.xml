@@ -1,0 +1,96 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36" version="27.2.0">
+  <diagram id="architectureDiagram" name="Architecture">
+    <mxGraphModel dx="1356" dy="770" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1300" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="2" value="Vue.js Frontend (WebSocket Client)" style="rounded=1;fillColor=#90CAF9;strokeColor=#1E88E5;strokeWidth=2;fontSize=14;fontColor=#0D47A1;align=center;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="150" y="70" width="240" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="3" value="Nginx Reverse Proxy / Load Balancer" style="rounded=1;fillColor=#A5D6A7;strokeColor=#388E3C;strokeWidth=2;fontSize=14;fontColor=#1B5E20;align=center;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="150" y="187" width="240" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="nodejs_container" value="Node.js Backend Services" style="rounded=1;fillColor=none;strokeColor=#FFB300;strokeWidth=2;dashed=1;fontSize=16;fontColor=#FF6F00;align=center;verticalAlign=top;" parent="1" vertex="1">
+          <mxGeometry x="90" y="300" width="720" height="250" as="geometry" />
+        </mxCell>
+        <mxCell id="4" value="Node.js Server" style="rounded=1;fillColor=#FFF59D;strokeColor=#FBC02D;strokeWidth=2;fontSize=14;fontColor=#F57F17;align=center;verticalAlign=top;spacingTop=8;whiteSpace=wrap;" parent="nodejs_container" vertex="1">
+          <mxGeometry x="33.52" y="47.62500000000001" width="293.52" height="152.375" as="geometry" />
+        </mxCell>
+        <mxCell id="4_text" value="• Handles WebSocket connection&lt;br&gt;• Calls Subscan.io API&lt;br&gt;• Talks to Crypto Price Service&lt;br&gt;• Talks to DB (cache Jobs/User data)&lt;br&gt;• Talks to Java REST API" style="fontSize=12;align=left;verticalAlign=top;whiteSpace=wrap;html=1;" parent="4" vertex="1">
+          <mxGeometry x="19.319914840160003" y="34.63724342105263" width="257.58886457954526" height="77.63907236842105" as="geometry" />
+        </mxCell>
+        <mxCell id="5" value="Crypto Price REST Service (Node.js)" style="rounded=1;fillColor=#FFE0B2;strokeColor=#F57C00;strokeWidth=2;fontSize=14;fontColor=#E65100;align=center;verticalAlign=middle;" parent="nodejs_container" vertex="1">
+          <mxGeometry x="428.30434782608694" y="56.25" width="260.8695652173913" height="59.52678571428572" as="geometry" />
+        </mxCell>
+        <mxCell id="7" value="Postgres DB (cache Jobs/User data)" style="rounded=1;fillColor=#C8E6C9;strokeColor=#2E7D32;strokeWidth=2;fontSize=14;fontColor=#1B5E20;align=center;verticalAlign=middle;" parent="nodejs_container" vertex="1">
+          <mxGeometry x="430.0043478260869" y="141.96428571428572" width="260.8695652173913" height="50.59821428571429" as="geometry" />
+        </mxCell>
+        <mxCell id="13" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#EF6C00;endArrow=block;endFill=1;exitX=1;exitY=0.25;exitDx=0;exitDy=0;" parent="nodejs_container" source="4" target="5" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="13_label" value="HTTP REST" style="text;html=1;strokeColor=none;fillColor=none;fontSize=11;fontColor=#EF6C00;align=center;verticalAlign=middle;" parent="13" vertex="1">
+          <mxGeometry x="0.5" relative="1" as="geometry">
+            <mxPoint x="-17" y="-8" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="15" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#2E7D32;endArrow=block;endFill=1;exitX=0.996;exitY=0.782;exitDx=0;exitDy=0;exitPerimeter=0;" parent="nodejs_container" source="4" target="7" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="15_label" value="DB Queries" style="text;html=1;strokeColor=none;fillColor=none;fontSize=11;fontColor=#2E7D32;align=center;verticalAlign=middle;" parent="15" vertex="1">
+          <mxGeometry x="0.5" relative="1" as="geometry">
+            <mxPoint x="-22" y="7" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="8" value="Java REST API Server" style="rounded=1;fillColor=#B3E5FC;strokeColor=#039BE5;strokeWidth=2;fontSize=14;fontColor=#01579B;align=center;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="170" y="593" width="200" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="9" value="Postgres DB" style="rounded=1;fillColor=#FFE082;strokeColor=#FF8F00;strokeWidth=2;fontSize=14;fontColor=#EF6C00;align=center;verticalAlign=middle;" parent="1" vertex="1">
+          <mxGeometry x="170" y="693" width="200" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="11" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#1976D2;endArrow=block;endFill=1;" parent="1" source="2" target="3" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="11_label" value="WebSocket" style="text;html=1;strokeColor=none;fillColor=none;fontSize=11;fontColor=#1976D2;align=center;verticalAlign=middle;" parent="11" vertex="1">
+          <mxGeometry x="0.5" relative="1" as="geometry">
+            <mxPoint x="30" y="-13" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="12" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#388E3C;endArrow=block;endFill=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" parent="1" source="3" target="4" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="270" y="279.8571428571429" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="12_label" value="WebSocket / HTTP" style="text;html=1;strokeColor=none;fillColor=none;fontSize=11;fontColor=#388E3C;align=center;verticalAlign=middle;" parent="12" vertex="1">
+          <mxGeometry x="0.5" relative="1" as="geometry">
+            <mxPoint x="50" y="-37" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="16" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#039BE5;endArrow=block;endFill=1;" parent="1" source="4" target="8" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="16_label" value="REST API" style="text;html=1;strokeColor=none;fillColor=none;fontSize=11;fontColor=#039BE5;align=center;verticalAlign=middle;" parent="16" vertex="1">
+          <mxGeometry x="0.5" relative="1" as="geometry">
+            <mxPoint x="29" y="-4" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="17" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#FF8F00;endArrow=block;endFill=1;" parent="1" source="8" target="9" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="17_label" value="DB Queries" style="text;html=1;strokeColor=none;fillColor=none;fontSize=11;fontColor=#FF8F00;align=center;verticalAlign=middle;" parent="17" vertex="1">
+          <mxGeometry x="0.5" relative="1" as="geometry">
+            <mxPoint x="33" y="-11" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="lyebfqFWvtTu7VxGt4dl-19" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;fillColor=#e1d5e7;strokeColor=#9673a6;" edge="1" parent="1" source="lyebfqFWvtTu7VxGt4dl-18" target="9">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="lyebfqFWvtTu7VxGt4dl-18" value="Data collector" style="rounded=1;fillColor=#e1d5e7;strokeColor=#9673a6;strokeWidth=2;fontSize=14;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="170" y="800" width="200" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="lyebfqFWvtTu7VxGt4dl-20" value="DB Queries" style="text;html=1;strokeColor=none;fillColor=none;fontSize=11;fontColor=#B5739D;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="300" y="780" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

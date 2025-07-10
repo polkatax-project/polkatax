@@ -1,4 +1,4 @@
-import { JobsCache } from "./jobs.cache";
+import { JobsService } from "./jobs.service";
 import * as subscanChains from "../../../res/gen/subscan-chains.json";
 import { Job } from "../../model/job";
 import { filter, firstValueFrom } from "rxjs";
@@ -8,114 +8,106 @@ import { isEvmAddress } from "../data-aggregation/helper/is-evm-address";
 import { getBeginningLastYear } from "./get-beginning-last-year";
 import { logger } from "../logger/logger";
 
+const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+
 export class JobManager {
   constructor(
-    private jobsCache: JobsCache,
+    private jobsService: JobsService,
     private DIContainer: AwilixContainer,
   ) {}
 
-  getStakingChains(wallet: string) {
-    const isEvmWallet = isEvmAddress(wallet);
+  getStakingChains(wallet: string): string[] {
+    const isEvm = isEvmAddress(wallet);
     return subscanChains.chains
       .filter((c) => c.stakingPallets.length > 0 && !c.pseudoStaking)
-      .filter((c) => !isEvmWallet || c.evmPallet || c.evmAddressSupport)
+      .filter((c) => !isEvm || c.evmPallet || c.evmAddressSupport)
       .map((c) => c.domain);
   }
 
-  isOutDated(job: Job) {
-    const now = Date.now();
-    const oneDayMs = 24 * 60 * 60 * 1000;
-    return now - job.lastModified > oneDayMs;
+  isOutdated(job: Job): boolean {
+    return Date.now() - job.lastModified > ONE_DAY_MS;
   }
 
-  enqueue(
+  async enqueue(
     reqId: string,
     wallet: string,
-    type: "staking_rewards" | "transactions",
     currency: string,
     blockchains: string[] = [],
-    syncFromDate: number = getBeginningLastYear(),
-  ): Job[] {
-    if (syncFromDate < getBeginningLastYear()) {
-      logger.warn(
-        "Client tried to set date to " +
-          syncFromDate +
-          ", which is less than beginning of last year.",
-      );
-      syncFromDate = getBeginningLastYear();
-    }
+  ): Promise<Job[]> {
+    logger.info(`Enter enqueue jobs ${reqId}, ${wallet}, ${currency}`);
+
+    const syncFromDate = getBeginningLastYear();
     const chains = blockchains.length
       ? blockchains
       : this.getStakingChains(wallet);
+    const jobs = await this.jobsService.fetchJobs(wallet);
+    const matchingJobs = jobs.filter(
+      (j) => chains.includes(j.blockchain) && j.currency === currency,
+    );
 
-    const matchingJobs = this.jobsCache
-      .fetchJobs(wallet)
-      .filter(
-        (j) =>
-          chains.includes(j.blockchain) &&
-          j.currency === currency &&
-          j.type === type,
-      );
-
-    const alreadySyncedJobs: Job[] = [];
     const newJobs: Job[] = [];
 
-    for (const blockchain of chains) {
-      const job = matchingJobs.find((j) => j.blockchain === blockchain);
+    for (const chain of chains) {
+      const job = matchingJobs.find((j) => j.blockchain === chain);
 
-      const jobCannotBeReused =
-        job && (job.status === "error" || job.syncFromDate > syncFromDate);
-      const jobOutdatedButDataReusable =
-        job && job.status === "done" && this.isOutDated(job);
-
-      if (job && jobCannotBeReused) {
-        this.jobsCache.delete(job);
-      }
-
-      if (!job || jobCannotBeReused) {
+      if (!job || job.status === "error") {
+        if (job) await this.jobsService.delete(job);
         newJobs.push(
-          this.jobsCache.addJob(
+          await this.jobsService.addJob(
             reqId,
             wallet,
-            blockchain,
-            type,
+            chain,
             syncFromDate,
             currency,
           ),
         );
-      } else if (jobOutdatedButDataReusable) {
-        this.jobsCache.delete(job);
+        continue;
+      }
+
+      if (job.status === "done" && this.isOutdated(job)) {
+        await this.jobsService.delete(job);
         newJobs.push(
-          this.jobsCache.addJob(
+          await this.jobsService.addJob(
             reqId,
             wallet,
-            blockchain,
-            type,
-            Math.min(syncFromDate, job.syncedUntil || syncFromDate),
+            chain,
+            job.syncedUntil ? job.syncedUntil - ONE_DAY_MS : syncFromDate,
             currency,
             job.data,
           ),
         );
-      } else {
-        alreadySyncedJobs.push(job);
+        continue;
       }
+
+      newJobs.push(job);
     }
 
-    return [...alreadySyncedJobs, ...newJobs];
+    logger.info(`Exit enqueue jobs ${reqId}`);
+    return newJobs;
   }
 
   async start() {
     let previousWallet: string | undefined;
 
     while (true) {
-      const jobs = await firstValueFrom(
-        this.jobsCache.pendingJobs$.pipe(filter((jobs) => jobs.length > 0)),
-      );
-      const job = determineNextJob(jobs, previousWallet);
+      try {
+        const jobs = await firstValueFrom(
+          this.jobsService.pendingJobs$.pipe(filter((jobs) => jobs.length > 0)),
+        );
 
-      if (job) {
+        const jobInfo = determineNextJob(jobs, previousWallet);
+        if (!jobInfo) continue;
+
+        const job = await this.jobsService.fetchJob(
+          jobInfo.wallet,
+          jobInfo.blockchain,
+          jobInfo.currency,
+        );
+
         previousWallet = job.wallet;
         await this.DIContainer.resolve("jobConsumer").process(job);
+      } catch (error) {
+        logger.error(error);
       }
     }
   }

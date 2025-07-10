@@ -14,7 +14,10 @@
           label="Back"
           :to="parentRoute"
         />
-        <div class="text-h5 text-no-wrap ellipsis text-bold">
+        <div
+          class="text-h5 text-no-wrap ellipsis text-bold"
+          data-testid="title"
+        >
           {{ route.name }}
         </div>
       </div>

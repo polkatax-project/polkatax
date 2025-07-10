@@ -8,7 +8,7 @@ export function sortJobs(jobs: JobResult[]) {
 }
 
 export function sortRewards(rewards: Rewards) {
-  rewards.values.sort((a, b) => a.block - b.block);
+  rewards.values.sort((a, b) => a.timestamp - b.timestamp);
 }
 
 export function mapRawValuesToRewards(

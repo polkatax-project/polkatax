@@ -1,6 +1,8 @@
-import { StakingReward } from "../../blockchain/substrate/model/staking-reward";
-
-export interface PricedStakingReward extends StakingReward {
+export interface PricedStakingReward {
+  amount: number;
+  timestamp: number;
   price?: number;
   fiatValue?: number;
+  nominationPool?: boolean;
+  isoDate?: string;
 }

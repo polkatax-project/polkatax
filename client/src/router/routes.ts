@@ -50,7 +50,7 @@ const routes: RouteRecordRaw[] = [
         meta: { breadcrumbs: [breadcrumbs.wallets] },
       },
       {
-        name: 'Connected blockchains',
+        name: 'Connected Blockchains',
         path: 'wallets/:wallet/:currency',
         component: () =>
           import(
@@ -62,7 +62,7 @@ const routes: RouteRecordRaw[] = [
         },
       },
       {
-        name: 'TaxableEvents',
+        name: 'Taxable Events',
         path: 'wallets/:wallet/:currency/:blockchain',
         component: () =>
           import(

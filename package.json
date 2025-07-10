@@ -8,7 +8,7 @@
     "start": "npm run start --prefix server"
   },
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "rimraf": "^5.0.1"
   }

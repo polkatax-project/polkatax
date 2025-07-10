@@ -6,6 +6,7 @@
         :columns="columns"
         :pagination="{ rowsPerPage: 0 }"
         row-key="name"
+        data-testid="connected-chains-data-table"
         hide-bottom
       >
         <template v-slot:body="props">
@@ -72,8 +73,8 @@
                 (props.row?.data?.token ?? '')
               }}
             </q-td>
-            <q-td key="syncFromDate" :props="props">
-              {{ syncedFrom }}
+            <q-td key="timeFrame" :props="props">
+              {{ timeFrame }}
             </q-td>
             <q-td key="lastSynchronized" :props="props">
               {{
@@ -106,7 +107,7 @@
                   dense
                   round
                   icon="picture_as_pdf"
-                  @click.stop="openMenu($event, props.row, 'pdf')"
+                  @click.stop="exportStakingRewards(props.row, 'pdf')"
                   aria-label="Export as PDF"
                 >
                   <q-tooltip
@@ -122,7 +123,7 @@
                   dense
                   round
                   icon="view_list"
-                  @click.stop="openMenu($event, props.row, 'CSV')"
+                  @click.stop="exportStakingRewards(props.row, 'CSV')"
                   aria-label="Export as CSV"
                 >
                   <q-tooltip
@@ -139,7 +140,7 @@
                   dense
                   round
                   icon="receipt"
-                  @click.stop="openMenu($event, props.row, 'Koinly')"
+                  @click.stop="exportStakingRewards(props.row, 'Koinly')"
                   aria-label="Export as Koinly CSV"
                 >
                   <q-tooltip
@@ -165,36 +166,6 @@
       </div>
     </div>
     <div class="q-pa-md"></div>
-    <q-menu
-      v-model="exportMenu"
-      :target="exportMenuTarget"
-      anchor="bottom middle"
-      self="top middle"
-      v-if="exportMenu"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="export-menu-label"
-    >
-      <div id="export-menu-label" class="q-pa-sm bg-primary text-white">
-        Select year to export
-      </div>
-      <q-list>
-        <q-item
-          v-for="year in exportYears"
-          :key="year"
-          clickable
-          tabindex="0"
-          @keydown.enter.stop.prevent="exportStakingRewards(year)"
-        >
-          <q-item-section
-            class="q-mx-auto text-center"
-            @click.stop="exportStakingRewards(year)"
-            role="button"
-            >{{ year }}</q-item-section
-          >
-        </q-item>
-      </q-list>
-    </q-menu>
   </q-page>
   <div class="flex justify-center q-pa-md">
     <q-btn
@@ -214,10 +185,7 @@ import { computed, onUnmounted, Ref, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { JobResult } from '../../shared-module/model/job-result';
 import { useSharedStore } from '../../shared-module/store/shared.store';
-import {
-  formatDate,
-  getBeginningAndEndOfYear,
-} from '../../shared-module/util/date-utils';
+import { formatDate } from '../../shared-module/util/date-utils';
 import {
   matSync,
   matOfflinePin,
@@ -228,33 +196,19 @@ import { exportKoinlyCsv } from '../../shared-module/service/export-koinly-csv';
 import { extractStakingRewardsPerYear } from '../../shared-module/util/extract-staking-rewards-per-year';
 import { useConnectedBlockchainsStore } from '../store/connected-blockchains.store';
 import { formatCryptoAmount } from '../../shared-module/util/number-formatters';
-
-const exportMenu = ref(false);
-const exportMenuTarget: Ref<HTMLElement | undefined> = ref(undefined);
-const exportType = ref('');
-let exportData: Ref<JobResult | undefined> = ref(undefined);
+import { Rewards } from '../../shared-module/model/rewards';
 
 const store = useConnectedBlockchainsStore();
 const route = useRoute();
 const router = useRouter();
 
-function openMenu(event: Event, _exportData: JobResult, _exportType: string) {
-  console.log('openMenu');
-  event.stopPropagation();
-  exportData.value = _exportData;
-  exportType.value = _exportType;
-  exportMenuTarget.value = event.currentTarget as HTMLElement;
-  setTimeout(() => {
-    exportMenu.value = true;
-  }, 0);
-}
-
-async function exportStakingRewards(year: number) {
-  const rewardsForYear = extractStakingRewardsPerYear(
-    exportData.value!.data,
-    year
-  )!;
-  switch (exportType.value) {
+async function exportStakingRewards(
+  rewards: { data: Rewards },
+  exportType: string
+) {
+  const year = new Date().getFullYear() - 1;
+  const rewardsForYear = extractStakingRewardsPerYear(rewards.data, year)!;
+  switch (exportType) {
     case 'CSV':
       return exportDefaultCsv(rewardsForYear);
     case 'Koinly':
@@ -266,17 +220,6 @@ async function exportStakingRewards(year: number) {
       exportPdf(rewardsForYear);
   }
 }
-
-const exportYears = computed(() => {
-  const currentYear = new Date().getFullYear();
-  return [currentYear, currentYear - 1].filter((year) => {
-    return (
-      (exportData.value?.data.summary.perYear || []).find(
-        (s) => s.year === year
-      )?.amount ?? 0 > 0
-    );
-  });
-});
 
 const jobs: Ref<JobResult[]> = ref([]);
 const chains: Ref<{ domain: string; label: string }[] | undefined> =
@@ -316,7 +259,7 @@ const columns = ref([
   },
   { name: 'currency', label: 'Currency' },
   { name: 'amountRewards', label: 'Total staking rewards' },
-  { name: 'syncFromDate', label: 'Since' },
+  { name: 'timeFrame', label: 'Time frame' },
   { name: 'lastSynchronized', label: 'Synchronized on' },
   { name: 'actions', label: 'Actions' },
 ]);
@@ -335,10 +278,10 @@ function calculateTotalReward(jobResult: JobResult) {
   return jobResult.data?.summary?.amount;
 }
 
-const syncedFrom = computed(() => {
-  return formatDate(
-    getBeginningAndEndOfYear(new Date().getFullYear() - 1).beginning
-  );
+const timeFrame = computed(() => {
+  return `${new Date().getFullYear() - 1}-01-01 until ${
+    new Date().getFullYear() - 1
+  }-12-31`;
 });
 
 function retry(job: JobResult) {

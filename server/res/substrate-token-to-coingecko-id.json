@@ -57,10 +57,6 @@
       "coingeckoId": "polymesh"
     },
     {
-      "token": "DOCK",
-      "coingeckoId": "dock"
-    },
-    {
       "token": "CTC",
       "coingeckoId": "creditcoin-2"
     },

@@ -3,7 +3,6 @@ import { WsError } from "../server/model/ws-error";
 export interface JobId {
   wallet: string;
   blockchain: string;
-  type: "staking_rewards" | "transactions";
   currency: string;
 }
 
@@ -15,5 +14,5 @@ export interface Job extends JobId {
   lastModified: number;
   deleted?: boolean;
   syncedUntil?: number;
-  syncFromDate: number;
+  syncFromDate?: number;
 }

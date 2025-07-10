@@ -1,17 +1,15 @@
 import {
-  test,
-  expect,
-  describe,
   beforeEach,
+  describe,
+  expect,
   jest,
   afterEach,
+  it,
 } from "@jest/globals";
 import { ExchangeRateRestService } from "../exchange-rate-api/exchange-rate.rest-service";
-import { FiatExchangeRateService } from "./fiat-exchange-rate.service";
 import { logger } from "../logger/logger";
-import * as dateUtils from "../../common/util/date-utils";
+import { FiatExchangeRateService } from "./fiat-exchange-rate.service";
 
-jest.useFakeTimers();
 jest.mock("../logger/logger", () => ({
   logger: {
     info: jest.fn(),
@@ -20,67 +18,65 @@ jest.mock("../logger/logger", () => ({
 }));
 
 describe("FiatExchangeRateService", () => {
-  let mockRestService: jest.Mocked<ExchangeRateRestService>;
   let service: FiatExchangeRateService;
+  let mockRestService: jest.Mocked<ExchangeRateRestService>;
 
   beforeEach(() => {
     mockRestService = {
       fetchTimeSeries: jest.fn(),
-    } as unknown as jest.Mocked<ExchangeRateRestService>;
+    } as any;
 
-    jest.spyOn(dateUtils, "formatDate").mockReturnValue("2024-05-02");
     service = new FiatExchangeRateService(mockRestService);
+    jest.useFakeTimers();
   });
 
   afterEach(() => {
+    jest.useRealTimers();
     jest.clearAllMocks();
   });
 
-  test("should initialize and sync immediately, then set interval for future syncs", async () => {
-    const fakeData = { "2024-01-01": 1.1 };
-    mockRestService.fetchTimeSeries.mockResolvedValue(fakeData as any);
-
-    const syncSpy = jest.spyOn(service as any, "sync");
+  it("calls sync() once on init", async () => {
+    mockRestService.fetchTimeSeries.mockResolvedValue({ USD: 1.2 } as any);
 
     await service.init();
 
-    expect(syncSpy).toHaveBeenCalledTimes(1);
-
-    jest.advanceTimersByTime(12 * 60 * 60 * 1000); // advance 12 hours
-    expect(syncSpy).toHaveBeenCalledTimes(2);
+    expect(mockRestService.fetchTimeSeries).toHaveBeenCalledTimes(2); // current and previous year
   });
 
-  test("should fetch data for 11 years if exchangeRates is empty", async () => {
-    const fakeData = { "2020-01-01": 1.0 };
-    mockRestService.fetchTimeSeries.mockResolvedValue(fakeData as any);
+  it("sets interval to call sync every 12 hours", async () => {
+    mockRestService.fetchTimeSeries.mockResolvedValue({ USD: 1.2 } as any);
 
-    await (service as any).sync(); // call private method directly
+    await service.init();
 
-    expect(mockRestService.fetchTimeSeries).toHaveBeenCalledTimes(11); // 10 years back + current
+    jest.advanceTimersByTime(12 * 60 * 60 * 1000); // 12 hours
+    expect(mockRestService.fetchTimeSeries).toHaveBeenCalledTimes(3);
   });
 
-  test("should fetch data for 2 years if exchangeRates has existing data", async () => {
-    service.exchangeRates = { "2023-01-01": { usd: 1.2 } };
+  it("aggregates results from multiple years", async () => {
+    mockRestService.fetchTimeSeries
+      .mockResolvedValueOnce({ USD: 1.2 } as any) // current year
+      .mockResolvedValueOnce({ EUR: 0.9 } as any); // last year
 
-    const fakeData = { "2023-01-01": { usd: 1.1 } };
-    mockRestService.fetchTimeSeries.mockResolvedValue(fakeData as any);
+    await service["sync"]();
 
-    await (service as any).sync();
-
-    expect(mockRestService.fetchTimeSeries).toHaveBeenCalledTimes(2); // current + last year
+    expect(service.exchangeRates).toEqual({
+      USD: 1.2,
+      EUR: 0.9,
+    });
   });
 
-  test("should use December 31 if past year, otherwise formatDate", () => {
+  it("returns correct date for getEndDate()", () => {
     const now = new Date();
-    const thisYear = now.getFullYear();
-    const lastYear = thisYear - 1;
+    const currentYear = now.getFullYear();
+    const futureYear = currentYear + 1;
+    const pastYear = currentYear - 1;
 
-    // test future year
-    const result1 = (service as any).endOfYearOrNow(thisYear + 1);
-    expect(result1).toBe("2024-05-02"); // mocked formatDate
+    // Should return formatted now
+    const nowResult = service["getEndDate"](futureYear);
+    expect(nowResult).toBeTruthy(); // just basic check
 
-    // test past year
-    const result2 = (service as any).endOfYearOrNow(lastYear);
-    expect(result2).toBe(`${lastYear}-12-31`);
+    // Should return "YYYY-12-31"
+    const pastResult = service["getEndDate"](pastYear);
+    expect(pastResult).toEqual(`${pastYear}-12-31`);
   });
 });

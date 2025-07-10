@@ -1,12 +1,12 @@
 {
   "name": "substrate-staking-rewards-server",
-  "version": "1.0.0",
   "description": "",
   "scripts": {
-    "pm2-prod": "pm2 start prod.config.js --no-daemon",
-    "pm2-stub": "pm2 start stub.config.js --no-daemon",
+    "pm2-prod": "pm2 start prod.config.js",
+    "pm2-stub": "pm2 start stub.config.js",
     "pm2-stop": "pm2 stop all",
     "build": "tsc && npm run copy-env-to-dist",
+    "reset-stuck-jobs": "ENV_FILE=pm2.env ts-node src/server/database/reset-stuck-jobs.ts",
     "start:server": "ts-node src/server/start-server.ts",
     "verify-balance-history": "ts-node e2e-tests/verify-balance-history.ts",
     "verify-portfolio-difference": "ts-node e2e-tests/verify-portfolio-difference.ts",
@@ -18,9 +18,9 @@
     "start-with-stubs": "concurrently \"npm run start:server\" \"npm run start:crypto-currency-prices\" \"npm run start:fiat-exchange-rates-stub\"",
     "generate-subscan-chain-list": "ts-node src/generators/generate-subscan-chain-list.ts",
     "test": "jest --config jest.unit.config.ts",
-    "integration-tests": "jest --config jest.integration.config.ts --runInBand integration-tests  --detectOpenHandles",
+    "e2e-tests": "jest --config jest.e2e-test.config.ts --runInBand e2e-tests",
     "format": "prettier --write . --ignore-path ../.gitignore",
-    "copy-env-to-dist": "if [ -f .env ]; then cp .env ./dist; fi"
+    "copy-env-to-dist": "cp *.env ./dist && if [ -f .env ]; then cp .env ./dist; fi"
   },
   "author": "",
   "license": "ISC",
@@ -41,6 +41,7 @@
     "luxon": "^3.6.1",
     "node-html-parser": "^6.1.13",
     "p-queue": "^6.6.2",
+    "pg": "^8.16.2",
     "pino-pretty": "^10.2.0",
     "pm2": "^6.0.5",
     "ts-node": "^10.9.2",
@@ -55,8 +56,8 @@
     "@types/pg": "^8.15.2",
     "concurrently": "^9.1.2",
     "jest": "^29.7.0",
-    "msw": "^2.8.2",
     "pg-mem": "^3.0.5",
+    "pg-promise": "^11.14.0",
     "prettier": "^3.5.3",
     "ts-jest": "^29.2.6"
   }

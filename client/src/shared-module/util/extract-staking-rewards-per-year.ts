@@ -1,5 +1,4 @@
 import { Rewards, StakingRewardsPerYear } from '../model/rewards';
-import { getBeginningAndEndOfYear } from './date-utils';
 
 export const extractStakingRewardsPerYear = (
   rewards: Rewards | undefined,
@@ -9,18 +8,20 @@ export const extractStakingRewardsPerYear = (
     return undefined;
   }
   const beginningOfYearFormatted = `${year}-01-01`;
-  const endOfYearFormatted = `${year}-12-31`;
-  const { beginning, end } = getBeginningAndEndOfYear(year);
+  const startNextYearFormatted = `${year + 1}-01-01`;
   return {
     ...rewards,
     year,
     dailyValues: Object.fromEntries(
       Object.entries(rewards.dailyValues).filter(
-        ([key]) => key >= beginningOfYearFormatted && key <= endOfYearFormatted
+        ([key]) =>
+          key >= beginningOfYearFormatted && key < startNextYearFormatted
       )
     ),
     values: rewards.values.filter(
-      (v) => v.timestamp >= beginning && v.timestamp <= end
+      (v) =>
+        v.isoDate >= beginningOfYearFormatted &&
+        v.isoDate < startNextYearFormatted
     ),
     summary: rewards.summary.perYear.find((y) => y.year === year)!,
   };

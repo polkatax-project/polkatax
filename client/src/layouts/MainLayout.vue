@@ -37,16 +37,20 @@ const subscription: Subscription =
 
 function handleError(err: any) {
   console.error(JSON.stringify(err));
-  switch (err.code) {
-    case 429:
-      errorMsg.value = 'Too many requests. Please try again later.';
-      break;
-    case 400:
-      errorMsg.value = 'The data sent to the server is invalid.';
-      break;
-    default:
-      errorMsg.value =
-        'There was an error connecting to the server. Please try again later.';
+  if (err.msg) {
+    errorMsg.value = err.msg;
+  } else {
+    switch (err.code) {
+      case 429:
+        errorMsg.value = 'Too many requests. Please try again later.';
+        break;
+      case 400:
+        errorMsg.value = 'The data sent to the server is invalid.';
+        break;
+      default:
+        errorMsg.value =
+          'There was an error connecting to the server. Please try again later.';
+    }
   }
   showErrorDialog.value = true;
 }

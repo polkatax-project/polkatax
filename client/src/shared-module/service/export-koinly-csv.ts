@@ -11,7 +11,6 @@ export const exportKoinlyCsv = (stakingRewards: StakingRewardsPerYear) => {
       Amount: v.amount,
       Currency: stakingRewards.token,
       Label: v.amount > 0 ? 'Reward' : 'Cost',
-      TxHash: v.hash,
     };
   });
   const csv = parser.parse(values);

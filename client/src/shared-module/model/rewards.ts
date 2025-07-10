@@ -26,11 +26,11 @@ export interface Rewards {
 
 export interface RewardDto {
   timestamp: number;
-  block: number;
   amount: number;
+  nominationPool?: boolean;
   fiatValue?: number;
   price?: number;
-  hash: string;
+  isoDate?: string;
 }
 
 export interface RewardsDto {

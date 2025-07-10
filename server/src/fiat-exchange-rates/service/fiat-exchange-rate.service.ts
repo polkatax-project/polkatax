@@ -5,49 +5,38 @@ import { formatDate } from "../../common/util/date-utils";
 
 export class FiatExchangeRateService {
   exchangeRates: ExchangeRates = {};
+  private readonly SYNC_INTERVAL_MS = 12 * 60 * 60 * 1000;
 
   constructor(private exchangeRateRestService: ExchangeRateRestService) {}
 
   async init() {
     await this.sync();
-    setInterval(
-      async () => {
-        try {
-          await this.sync();
-        } catch (error) {
-          logger.error(error);
-        }
-      },
-      12 * 60 * 60 * 1000,
-    );
+
+    setInterval(() => this.sync().catch(logger.error), this.SYNC_INTERVAL_MS);
   }
 
-  private endOfYearOrNow(year: number) {
-    const d = new Date();
-    d.setFullYear(year);
-    d.setMonth(11);
-    d.setDate(31);
-    if (d.getTime() < Date.now()) {
-      return `${year}-12-31`;
-    }
-    return formatDate(new Date());
+  private getEndDate(year: number): string {
+    const endOfYear = new Date(year, 11, 31); // December 31
+    return endOfYear < new Date() ? `${year}-12-31` : formatDate(new Date());
   }
 
   private async sync() {
     logger.info("CurrencyExchangeRateService syncing");
-    let results: ExchangeRates = this.exchangeRates;
-    // fetch data from 10 years back if it hasn't been stored yet. otherwise fetch current and last year
-    const yearsToLookPast = Object.keys(results).length === 0 ? 10 : 1;
-    for (let yearInPast = 0; yearInPast <= yearsToLookPast; yearInPast++) {
-      let year = new Date().getFullYear() - yearInPast;
-      results = {
-        ...results,
-        ...(await this.exchangeRateRestService.fetchTimeSeries(
-          `${year}-01-01`,
-          this.endOfYearOrNow(year),
-        )),
-      };
+
+    const currentYear = new Date().getFullYear();
+    const results: ExchangeRates = { ...this.exchangeRates };
+
+    for (let i = 0; i <= 1; i++) {
+      const year = currentYear - i;
+      const startDate = `${year}-01-01`;
+      const endDate = this.getEndDate(year);
+
+      Object.assign(
+        results,
+        await this.exchangeRateRestService.fetchTimeSeries(startDate, endDate),
+      );
     }
+
     this.exchangeRates = results;
   }
 }

@@ -13,6 +13,8 @@ Data can be shown as graph and table and can be exported in CSV and JSON format.
 This project does NOT offer a one-click solution to taxation of crypto currencies.
 Rather, the user is encouraged to export the data to CSV for further processing.
 
+Note: At this time, only staking rewards export is supported.
+
 ## Install the dependencies
 
 The project is split into a server and a client folder
@@ -98,7 +100,44 @@ npm run start-with-stubs
 ```
 This will provide dummy values for fiat-to-fiat values, allowing you to test without needing an EXCHANGERATE_HOST_API_KEY.
 
+### Running e2e-test
+
+Note: E2E tests make calls to the Subscan API and require a valid SUBSCAN_API_KEY.
+
+To run the E2E tests, navigate to the `server` folder and execute:
+```bash
+npm run e2e-tests
+```
+
+## Prerequisites
+To run the server locally you should provide multiple API keys as environment variables.
+Only the `SUBSCAN_API_KEY` is absolutely mandatory (see stubs in section above). 
+
+| API   |      Environment variable name      |  Required for |
+|----------|:-------------:|:-------------:|
+| exchangerate_host | EXCHANGERATE_HOST_API_KEY | fetching fiat exchange rates |
+| subscan |  SUBSCAN_API_KEY | any substrate related functions |
+
+
+## Run in production
+
 ### Production setup
+
+In production, several additional environment settings are needed.
+Locally, an in-memory DB is used to store jobs. In production, a proper DB connection must be configured.
+
+Furthermore, there are additional environment variables which are not mandatory but recommended for production:
+
+| API   |      Environment variable name      |  Required for |
+|----------|:-------------:|:-------------:|
+| exchangerate_host | EXCHANGERATE_HOST_API_KEY | fetching fiat exchange rates |
+| subscan |  SUBSCAN_API_KEY | any substrate related functions |
+| postgres db | POSTGRES_DATABASE | 	flag that determines if PostgreSQL is used to cache jobs / user data |
+| postgres db | DB_PASSWORD | password for the database |
+| rest / postgres db | USE_DATA_PLATFORM_API | flag that determines if pre-collected and aggregated data should be used |
+| zyte | ZYTE_USER | accessing coingecko.com via Zyte proxy |
+
+### Start in production
 
 For production environments, first build the application:
 ```bash
@@ -110,21 +149,6 @@ And run with pm2:
 cd server
 pm2 start prod.config.js
 ```
-
-## Prerequisites
-To run the server locally you should provide multiple API keys as environment variables.
-Only the SUBSCAN_API_KEY is absolutely mandatory (see stubs in section above). 
-
-| API   |      Environment variable name      |  Required for |
-|----------|:-------------:|:-------------:|
-| exchangerate_host | EXCHANGERATE_HOST_API_KEY | all functions |
-| subscan |  SUBSCAN_API_KEY | any substrate related functions |
-| etherscan |    ETHERSCAN_API_KEY   | transactions / trades on Ethereum |
-| moonscan | MOONSCAN_API_KEY |  transactions / trades on Moonbeam |
-| arbiscan | ARBISCAN_API_KEY |  transactions / trades on Arbitrum One |
-| optiscan | OPTIMISM_API_KEY |  transactions / trades on Optimism |
-| polyscan | POLYSCAN_API_KEY |  transactions / trades on Polygon |
-
 
 ## Create substrate chain list
 
@@ -138,5 +162,15 @@ This will generate a new list of substrate chains in the `res/gen/` folder.
 
 The current implementation uses coingecko, however without API key.
 The reason are the relatively high costs of purchasing a coingecko API key.
-The consequence is that you might encounter errors with code 429 from coingecko if too many
-requests are made, especially when you just started the application.
+The consequence is that you might encounter errors with code 429 from coingecko if too many requests are made. To mitigate this issue [ZYTE](https://www.zyte.com/) is used in production.
+
+## Documentation of Architecture 
+
+[View Architecture Diagram](docs/architecture/architecture.drawio.png)
+
+
+Gradio xml file:
+- [Architecture](docs/architecture/architecture.xml)
+
+## Documentation of Data flow
+- [Data Flow](docs/data-flow.md)

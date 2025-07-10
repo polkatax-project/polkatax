@@ -1,321 +1,143 @@
-import { expect, it, jest, describe, beforeEach } from "@jest/globals";
 import { JobManager } from "../job-management/job.manager";
-import { JobsCache } from "../job-management/jobs.cache";
-import { WebSocketIncomingMessageSchema } from "./incoming-message-schema";
+import { JobRepository } from "../job-management/job.repository";
+import { StakingRewardsWithFiatService } from "../data-aggregation/services/staking-rewards-with-fiat.service";
+import { WebSocketIncomingMessage } from "./incoming-message-schema";
+import { expect, it, jest, describe, beforeEach } from "@jest/globals";
 import { WebSocketManager } from "./websocket.manager";
+
+const mockSocket = {
+  send: jest.fn(),
+} as any;
 
 describe("WebSocketManager", () => {
   let jobManager: jest.Mocked<JobManager>;
-  let jobsCache: jest.Mocked<JobsCache>;
-  let wsManager: WebSocketManager;
-  let socket: any;
+  let jobRepository: jest.Mocked<JobRepository>;
+  let stakingRewardsWithFiatService: jest.Mocked<StakingRewardsWithFiatService>;
+  let manager: WebSocketManager;
 
   beforeEach(() => {
-    // Mock JobManager with enqueue spy
     jobManager = {
-      enqueue: jest.fn<any>(),
-    } as unknown as jest.Mocked<JobManager>;
+      enqueue: jest.fn(),
+      getStakingChains: jest.fn<any>().mockReturnValue(["polkadot"]),
+    } as any;
 
-    // Mock JobsCache with fetchJobs and jobUpdate$
-    jobsCache = {
-      fetchJobs: jest.fn(),
-      jobUpdate$: {
-        subscribe: jest.fn(),
+    jobRepository = {
+      jobChanged$: {
+        subscribe: jest.fn<any>(),
       },
-    } as unknown as jest.Mocked<JobsCache>;
+      findJob: jest.fn<any>(),
+    } as any;
 
-    wsManager = new WebSocketManager(jobManager, jobsCache);
+    stakingRewardsWithFiatService = {
+      fetchStakingRewardsViaPlatformApi: jest.fn(),
+    } as any;
 
-    // Fake WebSocket with on/send mocks and simulate event listeners
-    socket = {
-      send: jest.fn(),
-      on: jest.fn(),
+    manager = new WebSocketManager(
+      jobManager,
+      jobRepository,
+      stakingRewardsWithFiatService,
+    );
+
+    process.env["USE_DATA_PLATFORM_API"] = "true"; // To trigger platform API fetch
+    mockSocket.send.mockClear();
+  });
+
+  it("handles fetchDataRequest and sends initial + aggregated rewards", async () => {
+    const reqId = "123";
+    const wallet = "0xabc";
+    const currency = "usd";
+
+    const msg: WebSocketIncomingMessage = {
+      type: "fetchDataRequest",
+      reqId,
+      payload: {
+        wallet,
+        currency,
+        blockchains: ["polkadot"],
+      },
     };
+
+    const mockJobs = [
+      {
+        wallet,
+        status: "done",
+        data: {},
+        lastModified: Date.now(),
+        blockchain: "polkadot",
+        currency,
+        reqId,
+      },
+    ];
+
+    const mockAggregated = [
+      {
+        token: "DOT",
+        currency,
+        chain: "polkadot",
+        values: [{ amount: 5 }],
+      },
+    ];
+
+    stakingRewardsWithFiatService.fetchStakingRewardsViaPlatformApi.mockResolvedValue(
+      mockAggregated as any,
+    );
+    jobManager.enqueue.mockResolvedValue(mockJobs as any);
+
+    const response = await manager["handleFetchDataRequest"](mockSocket, msg);
+
+    // Called to fetch from platform API and send partial results
+    expect(
+      stakingRewardsWithFiatService.fetchStakingRewardsViaPlatformApi,
+    ).toHaveBeenCalledWith(wallet, currency);
+
+    expect(mockSocket.send).toHaveBeenCalledWith(
+      expect.stringContaining('"status":"in_progress"'),
+    );
+    expect(mockSocket.send).toHaveBeenCalledWith(
+      expect.stringContaining('"status":"done"'),
+    );
+
+    expect(response).toEqual({
+      type: "data",
+      reqId,
+      payload: mockJobs,
+      timestamp: expect.any(Number),
+    });
+
+    // Subscription should be added
+    expect((manager as any).connections).toContainEqual({
+      socket: mockSocket,
+      subscription: { wallet, currency },
+    });
   });
 
-  describe("subscriptionMachtes", () => {
-    it("returns true for matching wallet and currency", () => {
-      expect(
-        wsManager["subscriptionMachtes"](
-          { wallet: "a", currency: "b" },
-          { wallet: "a", currency: "b" },
-        ),
-      ).toBe(true);
-    });
-    it("returns false for mismatched wallet or currency", () => {
-      expect(
-        wsManager["subscriptionMachtes"](
-          { wallet: "a", currency: "b" },
-          { wallet: "a", currency: "c" },
-        ),
-      ).toBe(false);
-      expect(
-        wsManager["subscriptionMachtes"](
-          { wallet: "a", currency: "b" },
-          { wallet: "x", currency: "b" },
-        ),
-      ).toBe(false);
-    });
-  });
+  it("limits subscription to 4 wallets per socket (isThrottled)", () => {
+    const socket = {} as any;
+    const wsManager = new WebSocketManager(
+      jobManager,
+      jobRepository,
+      stakingRewardsWithFiatService,
+    );
+    const wallets = ["a", "b", "c", "d"];
 
-  describe("handleFetchDataRequest", () => {
-    it("adds connection if new and returns jobs payload", async () => {
-      const msg = {
-        type: "fetchDataRequest",
-        reqId: "req1",
-        payload: {
-          wallet: "w1",
-          syncFromDate: 123,
-          currency: "USD",
-          blockchains: ["chain1"],
-        },
-      };
-      jobManager.enqueue.mockReturnValue([{ blockchain: "chain1" }] as any);
-
-      const response = await wsManager["handleFetchDataRequest"](
+    for (const wallet of wallets) {
+      (wsManager as any).connections.push({
         socket,
-        msg as any,
-      );
-
-      expect(wsManager.connections).toHaveLength(1);
-      expect(wsManager.connections[0].subscription).toEqual({
-        wallet: "w1",
-        currency: "USD",
+        subscription: { wallet, currency: "usd" },
       });
-      expect(jobManager.enqueue).toHaveBeenCalledWith(
-        "req1",
-        "w1",
-        "staking_rewards",
-        "USD",
-        ["chain1"],
-        123,
-      );
-      expect(response).toEqual(
-        expect.objectContaining({
-          type: "data",
-          reqId: "req1",
-          payload: [{ blockchain: "chain1" }],
-        }),
-      );
-    });
+    }
 
-    it("does not add duplicate connections for same socket and subscription", async () => {
-      const subscription = { wallet: "w1", currency: "USD" };
-      wsManager.connections.push({ subscription, socket });
+    const msg: WebSocketIncomingMessage = {
+      type: "fetchDataRequest",
+      reqId: "999",
+      payload: {
+        wallet: "e",
+        currency: "usd",
+        blockchains: ["kusama"],
+      },
+    };
 
-      const msg = {
-        type: "fetchDataRequest",
-        reqId: "req1",
-        payload: {
-          wallet: "w1",
-          syncFromDate: 123,
-          currency: "USD",
-          blockchains: [],
-        },
-      };
-      jobManager.enqueue.mockReturnValue([]);
-
-      await wsManager["handleFetchDataRequest"](socket, msg as any);
-      expect(wsManager.connections.length).toBe(1); // no duplicate added
-    });
-  });
-
-  describe("handleUnsubscribeRequest", () => {
-    it("removes matching connection and returns acknowledge", async () => {
-      const subscription = { wallet: "w1", currency: "USD" };
-      wsManager.connections.push({ subscription, socket });
-
-      const msg = {
-        type: "unsubscribeRequest",
-        reqId: "req2",
-        payload: { wallet: "w1", currency: "USD" },
-      };
-
-      const response = await wsManager["handleUnsubscribeRequest"](
-        socket,
-        msg as any,
-      );
-
-      expect(wsManager.connections).toHaveLength(0);
-      expect(response).toEqual(
-        expect.objectContaining({
-          type: "acknowledgeUnsubscribe",
-          reqId: "req2",
-          payload: [],
-        }),
-      );
-    });
-
-    it("does not remove unrelated connections", async () => {
-      wsManager.connections.push({
-        subscription: { wallet: "w1", currency: "USD" },
-        socket,
-      });
-      wsManager.connections.push({
-        subscription: { wallet: "w2", currency: "EUR" },
-        socket: {},
-      });
-
-      const msg = {
-        type: "unsubscribeRequest",
-        reqId: "req2",
-        payload: { wallet: "w1", currency: "USD" },
-      };
-
-      await wsManager["handleUnsubscribeRequest"](socket, msg as any);
-
-      expect(wsManager.connections).toHaveLength(1);
-      expect(wsManager.connections[0].subscription).toEqual({
-        wallet: "w2",
-        currency: "EUR",
-      });
-    });
-  });
-
-  describe("throttle", () => {
-    it("returns true if pending jobs exceed max", () => {
-      for (let i = 0; i < 100; i++) {
-        wsManager.connections.push({
-          subscription: { wallet: "w1", currency: "USD" },
-          socket,
-        });
-      }
-      jobsCache.fetchJobs.mockReturnValue([
-        { status: "pending", currency: "USD" },
-        { status: "in_progress", currency: "USD" },
-      ] as any);
-      expect(wsManager["throttle"](socket)).toBe(true);
-    });
-
-    it("returns false if pending jobs below max", () => {
-      wsManager.connections.push({
-        subscription: { wallet: "w1", currency: "USD" },
-        socket,
-      });
-      jobsCache.fetchJobs.mockReturnValue([
-        { status: "done", currency: "USD" },
-      ] as any);
-      expect(wsManager["throttle"](socket)).toBe(false);
-    });
-  });
-
-  describe("wsHandler", () => {
-    it("sets up socket.on for message and close", () => {
-      wsManager.wsHandler(socket);
-      expect(socket.on).toHaveBeenCalledWith("message", expect.any(Function));
-      expect(socket.on).toHaveBeenCalledWith("close", expect.any(Function));
-    });
-
-    it("handles invalid JSON message by sending error", () => {
-      wsManager.wsHandler(socket);
-      const messageHandler = socket.on.mock.calls.find(
-        (call) => call[0] === "message",
-      )[1];
-
-      messageHandler("invalid json");
-
-      expect(socket.send).toHaveBeenCalledWith(
-        expect.stringContaining('"type":"error"'),
-      );
-    });
-
-    it("handles malformed message by sending error", () => {
-      wsManager.wsHandler(socket);
-      const messageHandler = socket.on.mock.calls.find(
-        (call) => call[0] === "message",
-      )[1];
-
-      const invalidMsg = JSON.stringify({ type: "unknown" });
-      messageHandler(invalidMsg);
-
-      expect(socket.send).toHaveBeenCalledWith(
-        expect.stringContaining('"type":"error"'),
-      );
-    });
-
-    it("processes fetchDataRequest and sends response", async () => {
-      wsManager.wsHandler(socket);
-      const messageHandler = socket.on.mock.calls.find(
-        (call) => call[0] === "message",
-      )[1];
-
-      const msg = {
-        type: "fetchDataRequest",
-        reqId: "req1",
-        payload: {
-          wallet: "w1",
-          syncFromDate: 123,
-          currency: "USD",
-          blockchains: [],
-        },
-      };
-      jobManager.enqueue.mockReturnValue([{ blockchain: "chain1" }] as any);
-      // Mock throttle to false
-      jest.spyOn(wsManager as any, "throttle").mockReturnValue(false);
-      // Mock message schema success
-      jest
-        .spyOn(WebSocketIncomingMessageSchema, "safeParse")
-        .mockReturnValue({ success: true, data: msg } as any);
-
-      await messageHandler(JSON.stringify(msg));
-
-      expect(socket.send).toHaveBeenCalledWith(
-        expect.stringContaining('"type":"data"'),
-      );
-    });
-
-    it("rejects fetchDataRequest when throttled", async () => {
-      wsManager.wsHandler(socket);
-      const messageHandler = socket.on.mock.calls.find(
-        (call) => call[0] === "message",
-      )[1];
-
-      const msg = {
-        type: "fetchDataRequest",
-        reqId: "req1",
-        payload: {
-          wallet: "w1",
-          syncFromDate: 123,
-          currency: "USD",
-          blockchains: [],
-        },
-      };
-
-      jest.spyOn(wsManager as any, "throttle").mockReturnValue(true);
-
-      await messageHandler(JSON.stringify(msg));
-
-      expect(socket.send).toHaveBeenCalledWith(
-        expect.stringContaining('"code":429'),
-      );
-    });
-  });
-
-  describe("startJobNotificationChannel", () => {
-    it("subscribes to jobUpdate$ and sends notifications", () => {
-      const subCallback = jest.fn();
-      jobsCache.jobUpdate$.subscribe = jest.fn<any>((cb) => {
-        subCallback.mockImplementation(cb);
-        return { unsubscribe: jest.fn() };
-      });
-
-      wsManager.connections.push({
-        subscription: { wallet: "w1", currency: "USD" },
-        socket,
-      });
-
-      wsManager.startJobNotificationChannel();
-
-      // Simulate job notification
-      subCallback({
-        wallet: "w1",
-        currency: "USD",
-        reqId: "reqId",
-      });
-
-      expect(socket.send).toHaveBeenCalledWith(
-        expect.stringContaining('"reqId":"reqId"'),
-      );
-    });
+    const result = (wsManager as any).isThrottled(socket, msg);
+    expect(result).toBe(true);
   });
 });

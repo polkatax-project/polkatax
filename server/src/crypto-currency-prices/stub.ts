@@ -54,5 +54,6 @@ export const startStub = async (): Promise<FastifyInstance> => {
       }
     },
   );
+  await fastify.ready();
   return fastify;
 };

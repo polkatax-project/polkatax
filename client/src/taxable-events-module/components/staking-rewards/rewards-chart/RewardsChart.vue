@@ -1,11 +1,17 @@
 <template>
-  <GChart
-    v-if="hasData"
-    :data="rewardDataTable"
-    :type="chartType"
-    :options="options"
-    style="width: 100%; min-height: 400px"
-  ></GChart>
+  <div style="width: 100%; min-height: 400px">
+    <div v-if="loading" class="text-center">
+      <q-spinner color="primary" size="3em" />
+    </div>
+    <GChart
+      v-if="hasData"
+      :data="rewardDataTable"
+      :type="chartType"
+      :options="options"
+      style="width: 100%; min-height: 400px"
+      @ready="onChartReady"
+    ></GChart>
+  </div>
 </template>
 <script setup lang="ts">
 import { computed, onUnmounted, ref, Ref } from 'vue';
@@ -15,6 +21,7 @@ import { formatDate } from '../../../../shared-module/util/date-utils';
 import { StakingRewardsPerYear } from '../../../../shared-module/model/rewards';
 
 const rewardsStore = useStakingRewardsStore();
+const loading = ref(true);
 
 const props = defineProps({
   currency: Boolean,
@@ -34,6 +41,10 @@ const hasData = computed(() => {
 onUnmounted(() => {
   subscription.unsubscribe();
 });
+
+function onChartReady() {
+  loading.value = false;
+}
 
 const rewardDataTable = computed(() => {
   if (!rewards.value || rewards.value.values.length === 0) return [];

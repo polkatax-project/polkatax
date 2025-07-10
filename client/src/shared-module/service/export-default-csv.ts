@@ -19,6 +19,7 @@ export const exportDefaultCsv = (rewards: StakingRewardsPerYear) => {
   const values = [...(rewards.values || [])].map((v) => {
     return {
       ...v,
+      nominationPool: v.nominationPool || false,
       utcDate: formatDateUTC(v.timestamp),
     };
   });
@@ -30,6 +31,7 @@ export const exportDefaultCsv = (rewards: StakingRewardsPerYear) => {
     ...values[0],
     totalAmount: rewards.summary.amount,
     totalValue: rewards.summary.fiatValue,
+    nominationPool: undefined,
   } as RewardsTableHeader;
   const csv = parser.parse(values);
   saveAs(

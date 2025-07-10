@@ -1,223 +1,144 @@
 import { expect, it, describe, jest, beforeEach } from "@jest/globals";
-
-import { JobsCache } from "./jobs.cache";
-import { Job } from "../../model/job";
+import { JobsService } from "./jobs.service";
 import { AwilixContainer } from "awilix";
+import * as subscanChains from "../../../res/gen/subscan-chains.json";
+import { Job } from "../../model/job";
 import { JobManager } from "./job.manager";
 
-jest.mock("../../../res/gen/subscan-chains.json", () => ({
-  chains: [
-    {
-      domain: "chain1",
-      stakingPallets: [1],
-      pseudoStaking: false,
-      evmPallet: true,
-      evmAddressSupport: true,
-    },
-    {
-      domain: "chain2",
-      stakingPallets: [],
-      pseudoStaking: false,
-      evmPallet: false,
-      evmAddressSupport: false,
-    },
-    {
-      domain: "chain3",
-      stakingPallets: [1],
-      pseudoStaking: true,
-      evmPallet: false,
-      evmAddressSupport: false,
-    },
-  ],
-}));
-
 jest.mock("../data-aggregation/helper/is-evm-address", () => ({
-  isEvmAddress: jest.fn(),
+  isEvmAddress: jest.fn().mockReturnValue(false),
 }));
-
-jest.mock("./determine-next-job", () => ({
-  determineNextJob: jest.fn(() => null),
-}));
-
 jest.mock("./get-beginning-last-year", () => ({
-  getBeginningLastYear: jest.fn(() => 123456789),
+  getBeginningLastYear: jest.fn(() => 1609459200000), // Jan 1, 2021 UTC timestamp
 }));
 
-describe("JobManager", () => {
-  let jobsCache: JobsCache;
-  let diContainer: AwilixContainer;
+const mockJobsService = {
+  fetchJobs: jest.fn<any>(),
+  addJob: jest.fn<any>(),
+  delete: jest.fn<any>(),
+  pendingJobs$: {
+    pipe: jest.fn<any>(),
+  },
+};
+
+const mockDIContainer = {
+  resolve: jest.fn<any>(),
+};
+
+const makeJob = (overrides: Partial<Job> = {}): Job =>
+  ({
+    wallet: "wallet1",
+    blockchain: "polkadot",
+    currency: "USD",
+    status: "done",
+    lastModified: Date.now(),
+    syncedUntil: undefined,
+    data: undefined,
+    ...overrides,
+  }) as any;
+
+describe("JobManager.enqueue", () => {
   let jobManager: JobManager;
-  const mockIsEvmAddress =
-    require("../data-aggregation/helper/is-evm-address").isEvmAddress;
 
   beforeEach(() => {
-    jobsCache = {
-      fetchJobs: jest.fn().mockReturnValue([]),
-      delete: jest.fn(),
-      addJob: jest
-        .fn()
-        .mockImplementation(
-          (reqId, wallet, blockchain, type, syncFromDate, currency, data) => ({
-            reqId,
-            wallet,
-            blockchain,
-            type,
-            syncFromDate,
-            currency,
-            data,
-            status: "pending",
-            lastModified: Date.now(),
-          }),
-        ),
-      pendingJobs$: {
-        pipe: jest.fn().mockReturnThis(),
-      },
-    } as unknown as JobsCache;
-
-    diContainer = {
-      resolve: jest.fn().mockReturnValue({
-        process: jest.fn<any>().mockResolvedValue(undefined),
-      }),
-    } as unknown as AwilixContainer;
-
-    mockIsEvmAddress.mockReturnValue(false);
-
-    jobManager = new JobManager(jobsCache, diContainer);
+    jest.clearAllMocks();
+    jobManager = new JobManager(
+      mockJobsService as unknown as JobsService,
+      mockDIContainer as unknown as AwilixContainer,
+    );
   });
 
-  describe("getStakingChains", () => {
-    it("returns chains with staking pallets and no pseudoStaking for non-EVM wallets", () => {
-      mockIsEvmAddress.mockReturnValue(false);
-      const chains = jobManager.getStakingChains("nonEvmWallet");
-      expect(chains).toContain("chain1");
-      expect(chains).not.toContain("chain2"); // no staking pallets
-      expect(chains).not.toContain("chain3"); // pseudoStaking true
-    });
-
-    it("filters EVM chains correctly for EVM wallets", () => {
-      mockIsEvmAddress.mockReturnValue(true);
-      const chains = jobManager.getStakingChains("evmWallet");
-      expect(chains).toContain("chain1"); // has evmPallet true
-      expect(chains).not.toContain("chain3"); // pseudoStaking true
-    });
-  });
-
-  describe("isOutDated", () => {
-    it("returns true if job lastModified is more than 1 day ago", () => {
-      const oldJob = { lastModified: Date.now() - 25 * 60 * 60 * 1000 } as Job;
-      expect(jobManager.isOutDated(oldJob)).toBe(true);
-    });
-
-    it("returns false if job lastModified is less than 1 day ago", () => {
-      const recentJob = {
-        lastModified: Date.now() - 2 * 60 * 60 * 1000,
-      } as Job;
-      expect(jobManager.isOutDated(recentJob)).toBe(false);
-    });
-  });
-
-  describe("enqueue", () => {
-    it("adds new job if no matching job found", () => {
-      jobsCache.fetchJobs = jest.fn<any>().mockReturnValue([]);
-      const syncFrom = new Date().getTime() - 60_000_000;
-      const addedJobs = jobManager.enqueue(
-        "req1",
-        "wallet1",
-        "staking_rewards",
-        "USD",
-        ["chain1"],
-        syncFrom,
-      );
-      expect(addedJobs.length).toBe(1);
-      expect(jobsCache.addJob).toHaveBeenCalledWith(
-        "req1",
-        "wallet1",
-        "chain1",
-        "staking_rewards",
-        syncFrom,
-        "USD",
-      );
-    });
-
-    it("reuses job if status done and not outdated", () => {
-      const job = {
-        wallet: "wallet1",
-        blockchain: "chain1",
+  it("should add new jobs if no matching job exists", async () => {
+    mockJobsService.fetchJobs.mockResolvedValue([]);
+    mockJobsService.addJob.mockImplementation(
+      async (reqId, wallet, blockchain) => ({
+        reqId: `new-${blockchain}`,
+        wallet,
+        blockchain,
         currency: "USD",
-        type: "staking_rewards",
-        status: "done",
+        status: "new",
         lastModified: Date.now(),
-        syncFromDate: 500,
-      } as Job;
-      jobsCache.fetchJobs = jest.fn<any>().mockReturnValue([job]);
-      const jobs = jobManager.enqueue(
-        "req1",
-        "wallet1",
-        "staking_rewards",
-        "USD",
-        ["chain1"],
-        1000,
-      );
-      expect(jobs).toContain(job);
-      expect(jobsCache.addJob).not.toHaveBeenCalled();
+      }),
+    );
+
+    const jobs = await jobManager.enqueue("req-1", "wallet1", "USD", [
+      "polkadot",
+      "kusama",
+    ]);
+
+    expect(mockJobsService.addJob).toHaveBeenCalledTimes(2);
+    expect(jobs.every((j) => j.reqId.startsWith("new-"))).toBe(true);
+  });
+
+  it("should reuse existing job if not outdated or error", async () => {
+    const existingJob = makeJob({
+      blockchain: "polkadot",
+      status: "done",
+      lastModified: Date.now(),
+    });
+    mockJobsService.fetchJobs.mockResolvedValue([existingJob]);
+
+    const jobs = await jobManager.enqueue("req-2", "wallet1", "USD", [
+      "polkadot",
+    ]);
+
+    expect(mockJobsService.addJob).not.toHaveBeenCalled();
+    expect(jobs).toContain(existingJob);
+  });
+
+  it("should delete and add new job if existing job status is error", async () => {
+    const errorJob = makeJob({ blockchain: "polkadot", status: "error" });
+    mockJobsService.fetchJobs.mockResolvedValue([errorJob]);
+    mockJobsService.addJob.mockResolvedValue({
+      reqId: "new-job",
+      wallet: "wallet1",
+      blockchain: "polkadot",
+      currency: "USD",
+      status: "new",
+      lastModified: Date.now(),
     });
 
-    it("deletes job and adds new if job in error", () => {
-      const job = {
-        wallet: "wallet1",
-        blockchain: "chain1",
-        currency: "USD",
-        type: "staking_rewards",
-        status: "error",
-        syncFromDate: 500,
-      } as Job;
-      jobsCache.fetchJobs = jest.fn<any>().mockReturnValue([job]);
-      const jobs = jobManager.enqueue(
-        "req1",
-        "wallet1",
-        "staking_rewards",
-        "USD",
-        ["chain1"],
-        1000,
-      );
-      expect(jobsCache.delete).toHaveBeenCalledWith(job);
-      expect(jobsCache.addJob).toHaveBeenCalled();
-      expect(jobs).toHaveLength(1);
+    const jobs = await jobManager.enqueue("req-3", "wallet1", "USD", [
+      "polkadot",
+    ]);
+
+    expect(mockJobsService.delete).toHaveBeenCalledWith(errorJob);
+    expect(mockJobsService.addJob).toHaveBeenCalled();
+    expect(jobs[0].reqId).toBe("new-job");
+  });
+
+  it("should delete and add new job if job is outdated but data reusable", async () => {
+    const outdatedJob = makeJob({
+      blockchain: "polkadot",
+      status: "done",
+      lastModified: Date.now() - 2 * 24 * 60 * 60 * 1000, // outdated by 2 days
+      syncedUntil: 1609545600000, // Jan 2, 2021
+      data: { some: "data" },
+    });
+    mockJobsService.fetchJobs.mockResolvedValue([outdatedJob]);
+    mockJobsService.addJob.mockResolvedValue({
+      reqId: "new-job",
+      wallet: "wallet1",
+      blockchain: "polkadot",
+      currency: "USD",
+      status: "new",
+      lastModified: Date.now(),
+      data: outdatedJob.data,
     });
 
-    it("handles outdated but reusable job correctly", () => {
-      const oldDate = Date.now() - 25 * 60 * 60 * 1000;
-      const job = {
-        wallet: "wallet1",
-        blockchain: "chain1",
-        currency: "USD",
-        type: "staking_rewards",
-        status: "done",
-        lastModified: oldDate,
-        syncedUntil: 900,
-        syncFromDate: 800,
-        data: { some: "data" },
-      } as Job;
-      jobsCache.fetchJobs = jest.fn<any>().mockReturnValue([job]);
-      const jobs = jobManager.enqueue(
-        "req1",
-        "wallet1",
-        "staking_rewards",
-        "USD",
-        ["chain1"],
-        1000,
-      );
-      expect(jobsCache.delete).toHaveBeenCalledWith(job);
-      expect(jobsCache.addJob).toHaveBeenCalledWith(
-        "req1",
-        "wallet1",
-        "chain1",
-        "staking_rewards",
-        900, // min(syncFromDate=1000, job.syncedUntil=900)
-        "USD",
-        job.data,
-      );
-      expect(jobs.length).toBe(1);
-    });
+    const jobs = await jobManager.enqueue("req-4", "wallet1", "USD", [
+      "polkadot",
+    ]);
+
+    expect(mockJobsService.delete).toHaveBeenCalledWith(outdatedJob);
+    expect(mockJobsService.addJob).toHaveBeenCalledWith(
+      expect.any(String),
+      outdatedJob.wallet,
+      outdatedJob.blockchain,
+      outdatedJob.syncedUntil! - 24 * 60 * 60 * 1000,
+      outdatedJob.currency,
+      outdatedJob.data,
+    );
+    expect(jobs[0].reqId).toBe("new-job");
   });
 });

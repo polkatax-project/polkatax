@@ -135,6 +135,8 @@
       "evmPallet": false,
       "standardStaking": true,
       "parachainStaking": false,
+      "delegatedStaking": false
+    },
       "delegatedStaking": false,
       "relay": "polkadot",
       "isRelay": true,

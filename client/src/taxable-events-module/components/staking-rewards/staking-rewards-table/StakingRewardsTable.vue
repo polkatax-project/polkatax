@@ -13,12 +13,14 @@
           class="q-mr-sm"
           @click="exportRewardsAsPdf"
           :disable="noRewards"
+          data-testid="pdfExport"
           >Export Pdf
         </q-btn>
         <q-btn
           color="primary"
           class="q-mr-sm"
           @click="exportRewardsAsCsv"
+          data-testid="csvExport"
           :disable="noRewards"
           >Export CSV
         </q-btn>
@@ -26,6 +28,7 @@
           color="primary"
           class="q-mr-sm"
           @click="exportRewardsAsKoinlyCsv"
+          data-testid="koinlyExport"
           :disable="noRewards"
           >Koinly Export
         </q-btn>
@@ -44,7 +47,6 @@ import {
   formatCurrencyWithoutSymbol,
   formatCryptoAmount,
 } from '../../../../shared-module/util/number-formatters';
-import { formatDate } from '../../../../shared-module/util/date-utils';
 import { exportDefaultCsv } from '../../../../shared-module/service/export-default-csv';
 import { exportKoinlyCsv } from '../../../../shared-module/service/export-koinly-csv';
 
@@ -69,14 +71,7 @@ const columns = computed(() => [
     required: true,
     label: 'Date',
     align: 'left',
-    field: (row: Reward) => formatDate(row.timestamp),
-    sortable: true,
-  },
-  {
-    name: 'block',
-    align: 'right',
-    label: 'Block',
-    field: 'block',
+    field: (row: Reward) => row.isoDate,
     sortable: true,
   },
   {
@@ -112,7 +107,7 @@ const rewardToken = computed(() => {
 });
 
 const initialPagination = ref({
-  sortBy: 'block',
+  sortBy: 'timestamp',
   descending: true,
   page: 1,
   rowsPerPage: 10,
