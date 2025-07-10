@@ -6,14 +6,14 @@
 - For some chains such as Mythos or Peaq, where the Subscan API does not provide direct reward/slash endpoints:
   - The Node.js backend queries the Subscan API for relevant events, e.g., `collateralstaking/StakingRewardReceived`.
   - It then cross-references these events with corresponding blockchain transfers to compute rewards.
-- Additionally, there is an **indexer** that processes blockchain events of type `staking/reward` and `staking/slash` as well as `nominationpools/PaidOut` for the following blockchains:
+- Additionally, there is an **data collector** that processes blockchain events of type `staking/reward` and `staking/slash` as well as `nominationpools/PaidOut` for the following blockchains:
   - Polkadot
   - Kusama
   - Hydration
   - Enjin-relay
-- The indexer captures both:
-  - Solo staking rewards/slashes
-  - Staking rewards/slashes for nomination pool participants
+- The data collector captures both:
+  - Solo staking rewards
+  - Staking rewards for nomination pool participants
   - The collected data is **accumulated per day (UTC timezone)**.
 
 ## 2. Cryptocurrency Prices

@@ -1,4 +1,3 @@
-import { REFUSED } from "dns";
 import { RequestHelper } from "../../common/util/request.helper";
 import { StakingResultItem } from "./model/staking-result-item";
 
@@ -18,7 +17,7 @@ export class DataPlatformApi {
     endDate: string,
   ): Promise<{ items: StakingResultItem[] }> {
     return this.requestHelper.req(
-      `http://localhost:${process.env['DATA_PLATFORM_PORT'] || 9090}/api/rewards/list-account-rewards`,
+      `http://localhost:${process.env["DATA_PLATFORM_PORT"] || 9090}/api/rewards/list-account-rewards`,
       "POST",
       {
         accountId,

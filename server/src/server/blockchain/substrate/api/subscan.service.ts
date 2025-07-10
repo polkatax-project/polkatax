@@ -226,12 +226,16 @@ export class SubscanService {
     return this.subscanApi.fetchAccounts(address, chainName);
   }
 
-  async fetchNativeTokens(chainNames: string[]): Promise<Record<string, Token>> {
-    const result: Record<string, Token> = {}
-    const tokens  = await Promise.all(chainNames.map(c => this.subscanApi.fetchNativeToken(c)))
+  async fetchNativeTokens(
+    chainNames: string[],
+  ): Promise<Record<string, Token>> {
+    const result: Record<string, Token> = {};
+    const tokens = await Promise.all(
+      chainNames.map((c) => this.subscanApi.fetchNativeToken(c)),
+    );
     for (let i = 0; i < chainNames.length; i++) {
-      result[chainNames[i]] = tokens[i]
+      result[chainNames[i]] = tokens[i];
     }
-    return result
+    return result;
   }
 }

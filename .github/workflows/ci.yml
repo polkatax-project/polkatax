@@ -104,5 +104,5 @@ jobs:
           npm run reset-stuck-jobs
 
           # Start the PM2-managed app again
-          npm run pm2-prod
+          npm run pm2-stub
           EOF

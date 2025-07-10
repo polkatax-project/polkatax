@@ -11,7 +11,11 @@ export const createLogger = (fileName: string) => {
               level: "info",
               target: "pino/file",
               options: {
-                destination: path.join(process.cwd(), fileName + ".log"),
+                destination: path.join(
+                  process.cwd(),
+                  "logs",
+                  fileName + ".log",
+                ),
               },
             },
             {

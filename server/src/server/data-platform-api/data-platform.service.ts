@@ -33,7 +33,9 @@ export class DataPlatformService {
       maxDate,
     );
     const results: { chain: string; values: PricedStakingReward[] }[] = [];
-    const tokens = await this.subscanService.fetchNativeTokens(dataPlatformChains.map(c => c.domain))
+    const tokens = await this.subscanService.fetchNativeTokens(
+      dataPlatformChains.map((c) => c.domain),
+    );
     for (let idx = 0; idx < dataPlatformChains.length; idx++) {
       const item = rewards.items.find(
         (i) => i.chainType === dataPlatformChains[idx].chainType,
@@ -45,7 +47,7 @@ export class DataPlatformService {
       const domain = dataPlatformChains.find(
         (c) => c.chainType === item.chainType,
       )?.domain;
-      const token = tokens[domain]
+      const token = tokens[domain];
       const aggregatedRewards = (item.stakingResults || []).map((reward) => {
         return {
           amount: BigNumber(reward.totalAmount)
