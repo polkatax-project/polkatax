@@ -109,7 +109,35 @@ To run the E2E tests, navigate to the `server` folder and execute:
 npm run e2e-tests
 ```
 
+## Prerequisites
+To run the server locally you should provide multiple API keys as environment variables.
+Only the `SUBSCAN_API_KEY` is absolutely mandatory (see stubs in section above). 
+
+| API   |      Environment variable name      |  Required for |
+|----------|:-------------:|:-------------:|
+| exchangerate_host | EXCHANGERATE_HOST_API_KEY | fetching fiat exchange rates |
+| subscan |  SUBSCAN_API_KEY | any substrate related functions |
+
+
+## Run in production
+
 ### Production setup
+
+In production, several additional environment settings are needed.
+Locally, an in-memory DB is used to store jobs. In production, a proper DB connection must be configured.
+
+Furthermore, there are additional environment variables which are not mandatory but recommended for production:
+
+| API   |      Environment variable name      |  Required for |
+|----------|:-------------:|:-------------:|
+| exchangerate_host | EXCHANGERATE_HOST_API_KEY | fetching fiat exchange rates |
+| subscan |  SUBSCAN_API_KEY | any substrate related functions |
+| postgres db | POSTGRES_DATABASE | 	flag that determines if PostgreSQL is used to cache jobs / user data |
+| postgres db | DB_PASSWORD | password for the database |
+| rest / postgres db | USE_DATA_PLATFORM_API | flag that determines if pre-collected and aggregated data should be used |
+| zyte | ZYTE_USER | accessing coingecko.com via Zyte proxy |
+
+### Start in production
 
 For production environments, first build the application:
 ```bash
@@ -121,21 +149,6 @@ And run with pm2:
 cd server
 pm2 start prod.config.js
 ```
-
-## Prerequisites
-To run the server locally you should provide multiple API keys as environment variables.
-Only the SUBSCAN_API_KEY is absolutely mandatory (see stubs in section above). 
-
-| API   |      Environment variable name      |  Required for |
-|----------|:-------------:|:-------------:|
-| exchangerate_host | EXCHANGERATE_HOST_API_KEY | all functions |
-| subscan |  SUBSCAN_API_KEY | any substrate related functions |
-| etherscan |    ETHERSCAN_API_KEY   | transactions / trades on Ethereum |
-| moonscan | MOONSCAN_API_KEY |  transactions / trades on Moonbeam |
-| arbiscan | ARBISCAN_API_KEY |  transactions / trades on Arbitrum One |
-| optiscan | OPTIMISM_API_KEY |  transactions / trades on Optimism |
-| polyscan | POLYSCAN_API_KEY |  transactions / trades on Polygon |
-
 
 ## Create substrate chain list
 
