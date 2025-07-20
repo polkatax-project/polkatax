@@ -21,7 +21,7 @@ export class StakingRewardsWithFiatService {
   private async fetchFromSubscan(
     stakingRewardsRequest: StakingRewardsRequest,
   ): Promise<PricedStakingReward[]> {
-    let { chain, address, startDate } = stakingRewardsRequest;
+    let { chain, address, minDate } = stakingRewardsRequest;
     if (isEvmAddress(address)) {
       address =
         (await this.subscanService.mapToSubstrateAccount(
@@ -29,11 +29,11 @@ export class StakingRewardsWithFiatService {
           address,
         )) || address;
     }
-    return this.stakingRewardsService.fetchStakingRewards(
-      chain.domain,
+    return this.stakingRewardsService.fetchStakingRewards({
+      chainName: chain.domain,
       address,
-      startDate,
-    );
+      minDate,
+    });
   }
 
   async fetchStakingRewardsViaPlatformApi(

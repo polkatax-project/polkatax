@@ -1,4 +1,4 @@
-interface Asset {
+export interface XcmAssetTransfer {
   enum_key: string;
   asset_module: string;
   amount: string;
@@ -8,10 +8,12 @@ interface Asset {
   symbol: string;
   asset_unique_id: string;
   network?: string;
+  raw: any;
 }
 
 export interface RawXcmMessage {
-  id: string
+  message_hash: string;
+  id: string;
   origin_event_index: string;
   from_account_id: string;
   origin_para_id: number;
@@ -37,7 +39,8 @@ export interface RawXcmMessage {
   used_fee: string;
   s2s_dest_para_id?: number;
   s2s_origin_para_id?: number;
-  assets: Asset[];
+  assets: XcmAssetTransfer[];
+  bridge_type: "s2e" | "e2s" | "s2s" | "";
 }
 
 export interface XcmTransfer {
@@ -47,7 +50,6 @@ export interface XcmTransfer {
   extrinsic_index?: string;
   transfers: {
     symbol: string;
-    tokenId: string;
     amount: number;
     from: string;
     to: string;
@@ -55,6 +57,7 @@ export interface XcmTransfer {
     price?: number;
     fiatValue?: number;
     fromChain?: string;
-    toChain?: string;
+    destChain?: string;
+    asset_unique_id;
   }[];
 }

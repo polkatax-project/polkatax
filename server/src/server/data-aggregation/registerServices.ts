@@ -9,17 +9,13 @@ import { TransferMerger } from "./helper/transfer-merger";
 import { CoingeckoIdLookupService } from "./services/coingecko-id-lookup.service";
 import { AddFiatValuesToPaymentsService } from "./services/add-fiat-values-to-payments.service";
 import { ChainDataAccumulationService } from "./services/chain-data-accumulation.service";
-import { EventsService } from "./services/events.service";
-import { HandleUnmatchedEventsService } from "./services/handle-unmatched-events.service";
 import { SpecialEventsToTransfersService } from "./services/special-events-to-transfers.service";
+import { XcmTokenResolutionService } from "./services/xcm-token-resolution.service";
 
 export const registerServices = (container: AwilixContainer) => {
   container.register({
-
-    eventsService: asClass(EventsService),
     addFiatValuesToPaymentsService: asClass(AddFiatValuesToPaymentsService),
     specialEventsToTransfersService: asClass(SpecialEventsToTransfersService),
-    handleUnmatchedEventsService: asClass(HandleUnmatchedEventsService),
     stakingRewardsWithFiatService: asClass(StakingRewardsWithFiatService),
     cryptoCurrencyPricesService: asClass(CryptoCurrencyPricesService),
     fiatExchangeRateService: asClass(FiatExchangeRateService),
@@ -29,5 +25,6 @@ export const registerServices = (container: AwilixContainer) => {
     chainDataAccumulationService: asClass(ChainDataAccumulationService),
     transferMerger: asClass(TransferMerger),
     coingeckoIdLookupService: asClass(CoingeckoIdLookupService),
+    xcmTokenResolutionService: asClass(XcmTokenResolutionService)
   });
 };

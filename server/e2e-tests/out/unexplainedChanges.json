@@ -1,0 +1,20 @@
+[
+  {
+    "block": 24883512,
+    "balance": 555.56130352233,
+    "diff": 8.299917020566,
+    "extrinsic_index": "24883512-0",
+    "expectedBalanceChange": 16.599917020566,
+    "deviationFromExpectation": -8.3,
+    "label": "transfer"
+  },
+  {
+    "block": 29089360,
+    "balance": 596.374655498907,
+    "diff": 595.176745099331,
+    "extrinsic_index": "29089360-0",
+    "expectedBalanceChange": 1190.353576508329,
+    "deviationFromExpectation": -595.176831408998,
+    "label": "transfer"
+  }
+]

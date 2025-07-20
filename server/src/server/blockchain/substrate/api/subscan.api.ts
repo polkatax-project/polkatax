@@ -1,5 +1,4 @@
-import { MetaData } from "../model/meta-data";
-import { Token, TokenInfo } from "../model/token";
+import { Token } from "../model/token";
 import { Block } from "../model/block";
 import { RawStakingReward } from "../model/staking-reward";
 import { BigNumber } from "bignumber.js";
@@ -160,49 +159,79 @@ export class SubscanApi {
     };
   }
 
-  async fetchForeignAssets(chainName: string, page: number): Promise<{ list: ForeignAsset[], hasNext: boolean }> {
+  async fetchForeignAssets(
+    chainName: string,
+    page: number,
+  ): Promise<{ list: ForeignAsset[]; hasNext: boolean }> {
     const response = await this.request(
       `https://${chainName}.api.subscan.io/api/scan/foreignAssets/assets`,
       `post`,
       {
         page,
-        row: 100
+        row: 100,
       },
     );
-    const list = response?.data?.list ?? []
-    return { list, hasNext: list.length >= 100 }
+    const list = response?.data?.list ?? [];
+    return {
+      list: list.map((asset) => {
+        return {
+          ...asset,
+          ...(asset?.metadata || {}),
+        };
+      }),
+      hasNext: list.length >= 100,
+    };
   }
 
   /**
-   * 
+   *
    * @param chainName Not supported by assethub
-   * @returns 
+   * @returns
    */
-  async scanTokens(chainName: string): Promise<TokenInfo[]> {
+  async scanTokens(chainName: string): Promise<Asset[]> {
     const response = await this.request(
       `https://${chainName}.api.subscan.io/api/v2/scan/tokens`,
       `post`,
       {},
     );
-    return response.data.tokens
+    return response.data.tokens.map((t) => {
+      return {
+        ...t,
+        asset_id: t.currency_id,
+        decimals: t.decimals ?? t?.metadata?.decimals,
+        symbol: t.symbol ?? t?.metadata?.symbol,
+        native: t?.metadata?.native ?? false,
+      };
+    });
   }
 
   /**
-   * 
+   *
    * @param chainName Supported by assethub but not by Bifrost, Hydration...
-   * @returns 
+   * @returns
    */
-  async scanAssets(chainName: string, page: number): Promise<{ list: Asset[], hasNext: boolean }> {
+  async scanAssets(
+    chainName: string,
+    page: number,
+  ): Promise<{ list: Asset[]; hasNext: boolean }> {
     const response = await this.request(
       `https://${chainName}.api.subscan.io/api/scan/assets/assets`,
       `post`,
       {
         page,
-        row: 100
+        row: 100,
       },
     );
-    const list = response?.data?.list ?? []
-    return { list, hasNext: list.length >= 100 }
+    const list = response?.data?.list ?? [];
+    return {
+      list: list.map((asset) => {
+        return {
+          ...asset,
+          ...(asset?.metadata || {}),
+        };
+      }),
+      hasNext: list.length >= 100,
+    };
   }
 
   async fetchRuntimeMetadata(chainName: string): Promise<RuntimeMetaData> {
@@ -219,7 +248,7 @@ export class SubscanApi {
       `https://${chainName}.api.subscan.io/api/scan/account/tokens`,
       `post`,
       {
-        address
+        address,
       },
     );
     return response.data;
@@ -237,19 +266,22 @@ export class SubscanApi {
     ) as Token;
   }
 
-  async fetchExtrinsicDetails(chainName: string, extrinsic_index: string): Promise<Transaction> {
+  async fetchExtrinsicDetails(
+    chainName: string,
+    extrinsic_index: string,
+  ): Promise<Transaction> {
     const response = await this.request(
       `https://${chainName}.api.subscan.io/api/scan/extrinsic`,
       `post`,
       {
-        extrinsic_index
+        extrinsic_index,
       },
     );
     return response.data
       ? {
           ...response.data,
           timestamp: response.data.block_timestamp * 1000,
-          block: response.data.block_num
+          block: response.data.block_num,
         }
       : response.data;
   }
@@ -383,8 +415,7 @@ export class SubscanApi {
         page,
         address,
         filter_para_id,
-        status: "success",
-        after_id
+        after_id,
       },
     );
     const list = (json?.data?.list || []).map((xcm) => {
@@ -422,7 +453,7 @@ export class SubscanApi {
         row: 100,
         page,
         address,
-        after_id
+        after_id,
       },
     );
     const resultList = (
@@ -474,7 +505,7 @@ export class SubscanApi {
     evm = false,
   ): Promise<{
     list: (RawSubstrateTransferDto &
-      RawEvmTransferDto & { timestamp: number, id: number })[];
+      RawEvmTransferDto & { timestamp: number; id: number })[];
     hasNext: boolean;
   }> {
     const endpoint = evm
@@ -488,7 +519,7 @@ export class SubscanApi {
         page,
         address: account,
         success: true,
-        after_id
+        after_id,
       },
     );
     const list = (

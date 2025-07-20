@@ -1,9 +1,10 @@
 export interface Asset {
-    asset_id: string,
-    unique_id: string,
-    metadata: {
-        symbol: string,
-        name?: string,
-        decimals: number
-    }
+  asset_id: any;
+  unique_id: string;
+  symbol: string;
+  name?: string;
+  decimals: number;
+  native?: boolean;
+  currency_id?: string; // often just the symbol
+  token_id?: string;
 }

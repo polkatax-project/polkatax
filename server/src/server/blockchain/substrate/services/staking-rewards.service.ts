@@ -4,6 +4,7 @@ import { StakingReward } from "../model/staking-reward";
 import { logger } from "../../../logger/logger";
 import { StakingRewardsViaEventsService } from "./staking-rewards-via-events.service";
 import { isEvmAddress } from "../../../data-aggregation/helper/is-evm-address";
+import { getNativeToken } from "../../../data-aggregation/helper/get-native-token";
 
 export class StakingRewardsService {
   constructor(
@@ -12,6 +13,7 @@ export class StakingRewardsService {
   ) {}
 
   private async mapRawRewards(
+    nativeToken: string,
     rewards: StakingReward[],
   ): Promise<StakingReward[]> {
     return rewards.map((reward) => ({
@@ -21,6 +23,7 @@ export class StakingRewardsService {
       hash: reward.hash,
       event_index: reward.event_index,
       extrinsic_index: reward.extrinsic_index,
+      asset_unique_id: reward.asset_unique_id ?? nativeToken,
     }));
   }
 
@@ -81,6 +84,9 @@ export class StakingRewardsService {
             minDate,
             maxDate,
           );
+        case 'mythos':
+        case 'acala':
+          return [] // staking rewards are transfers as well -> prevent duplicates
         default:
           const token = await this.subscanService.fetchNativeToken(chainName);
           const rawRewards = await this.subscanService.fetchAllStakingRewards({
@@ -98,7 +104,10 @@ export class StakingRewardsService {
           }));
       }
     })();
-    const filtered = await this.mapRawRewards(rewardsSlashes);
+    const filtered = await this.mapRawRewards(
+      getNativeToken(chainName),
+      rewardsSlashes as StakingReward[],
+    );
     logger.info(`Exit fetchStakingRewards with ${filtered.length} elements`);
     return filtered;
   }

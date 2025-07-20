@@ -47,9 +47,8 @@ export interface RawEvmTransferDto {
 }
 
 export interface Transfer {
-  id?: string
+  id?: string;
   symbol: string;
-  tokenId: string;
   amount: number;
   from: string;
   to: string;
@@ -61,4 +60,6 @@ export interface Transfer {
   price?: number;
   fiatValue?: number;
   asset_type?: string;
+  asset_unique_id: string;
+  coingeckoId?: string;
 }

@@ -16,8 +16,8 @@ export class CoingeckoIdLookupService {
       [tokenId: string]: { id: string | undefined };
     } = {};
     transfers.forEach((t) => {
-      if (!tokenIdToCoingeckoIdMap[t.tokenId]) {
-        tokenIdToCoingeckoIdMap[t.tokenId] = {
+      if (!tokenIdToCoingeckoIdMap[t.asset_unique_id]) {
+        tokenIdToCoingeckoIdMap[t.asset_unique_id] = {
           id: this.findCoingeckoId(t),
         };
       }
@@ -37,8 +37,10 @@ export class CoingeckoIdLookupService {
     }
     // tokenId is either contract address (evm) or unique token Id
     return (
-      this.findCoingeckoIdByContractAddress(candidates, token.tokenId) ||
-      this.findCoingeckoIdByUniqueId(candidates, token.tokenId)
+      this.findCoingeckoIdByContractAddress(
+        candidates,
+        token.asset_unique_id,
+      ) || this.findCoingeckoIdByUniqueId(candidates, token.asset_unique_id)
     );
   }
 

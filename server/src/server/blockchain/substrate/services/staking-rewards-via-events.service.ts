@@ -42,6 +42,7 @@ export class StakingRewardsViaEventsService {
           extrinsic_index: transfer.extrinsic_index,
           fiatValue: transfer.fiatValue,
           price: transfer.price,
+          asset_unique_id: transfer.asset_unique_id,
         };
       });
   }

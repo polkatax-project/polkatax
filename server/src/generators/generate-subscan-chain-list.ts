@@ -121,6 +121,8 @@ const fetchListOfSupportedChains = async () => {
           (name) => name.toLowerCase().indexOf("staking") > -1,
         ),
         evmPallet: pallets.indexOf("EVM") > -1,
+        assetPallet: pallets.indexOf("Assets") > -1,
+        foreignAssetsPallet: pallets.indexOf("ForeignAssets") > -1,
         standardStaking: pallets.indexOf("Staking") > -1,
         parachainStaking: pallets.indexOf("ParachainStaking") > -1,
         delegatedStaking: pallets.indexOf("DelegatedStaking") > -1,

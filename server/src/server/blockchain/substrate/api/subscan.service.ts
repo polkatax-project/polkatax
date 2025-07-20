@@ -1,4 +1,4 @@
-import { Token, TokenInfo } from "../model/token";
+import { Token } from "../model/token";
 import { Transaction } from "../model/transaction";
 import { RawStakingReward } from "../model/staking-reward";
 import { SubscanApi } from "./subscan.api";
@@ -13,8 +13,15 @@ import { RawXcmMessage } from "../model/xcm-transfer";
 import { Block } from "../model/block";
 import { ForeignAsset } from "../model/foreign-asset";
 import { Asset } from "../model/asset";
+import { ResponseCache } from "./response.cache";
+
 
 export class SubscanService {
+  private scanTokensCache = new ResponseCache()
+  private assetsCache = new ResponseCache()
+  private foreignAssetsCache = new ResponseCache()
+  private nativeTokenCache = new ResponseCache()
+
   constructor(private subscanApi: SubscanApi) {}
 
   async mapToSubstrateAccount(
@@ -33,7 +40,7 @@ export class SubscanService {
   }
 
   async fetchNativeToken(chainName: string): Promise<Token> {
-    return this.subscanApi.fetchNativeToken(chainName);
+    return this.nativeTokenCache.getData(chainName, () => this.subscanApi.fetchNativeToken(chainName));
   }
 
   async searchAllEvents({
@@ -55,17 +62,18 @@ export class SubscanService {
       `Enter searchAllEvents for chain ${chainName} and account ${address}`,
     );
     const result = await this.filterOnDate(
-      await this.iterateOverPagesParallel<SubscanEvent>((page, after_id) =>
-        this.subscanApi.searchEvents(
-          chainName,
-          address,
-          module,
-          event_id,
-          page,
-          minDate,
-          after_id
-        ),
-        { withAfterId: true }
+      await this.iterateOverPagesParallel<SubscanEvent>(
+        (page, after_id) =>
+          this.subscanApi.searchEvents(
+            chainName,
+            address,
+            module,
+            event_id,
+            page,
+            minDate,
+            after_id,
+          ),
+        { withAfterId: true },
       ),
       minDate,
       maxDate,
@@ -73,15 +81,15 @@ export class SubscanService {
     logger.info(
       `Exit searchAllEvents for chain ${chainName} and account ${address} with ${result.length} events.`,
     );
-    return result
+    return result;
   }
 
   private async iterateOverPagesParallel<T>(
     fetchPages: (page, after_id?) => Promise<{ list: T[]; hasNext: boolean }>,
-    options?: { count?: number, withAfterId?: boolean }
+    options?: { count?: number; withAfterId?: boolean },
   ): Promise<T[]> {
-    const count = options?.count ?? 5
-    const withAfterId = options?.withAfterId ?? false
+    const count = options?.count ?? 5;
+    const withAfterId = options?.withAfterId ?? false;
     const parallelFn = [...Array(count).keys()].map(
       (offset) => (page) => fetchPages(page + offset),
     );
@@ -98,12 +106,18 @@ export class SubscanService {
       hasNext = intermediate_results[intermediate_results.length - 1].hasNext;
       page += count;
       if (page >= 100 && withAfterId) {
-        const lowestId = result.reduce((curr, next) => { return Math.min(curr, next.id)}, Number.MAX_SAFE_INTEGER)
-        logger.info(`Found more than ${result.length} entries. Fetching remaining values via after_id from ${lowestId}.`)
-        const remaining = await this.fetchWithAfterId(fetchPages, lowestId)
-        remaining.forEach(r => result.push(r))
-        logger.info(`iterateOverPagesParallel: Found ${result.length} entries.`)
-        return result
+        const lowestId = result.reduce((curr, next) => {
+          return Math.min(curr, next.id);
+        }, Number.MAX_SAFE_INTEGER);
+        logger.info(
+          `Found more than ${result.length} entries. Fetching remaining values via after_id from ${lowestId}.`,
+        );
+        const remaining = await this.fetchWithAfterId(fetchPages, lowestId);
+        remaining.forEach((r) => result.push(r));
+        logger.info(
+          `iterateOverPagesParallel: Found ${result.length} entries.`,
+        );
+        return result;
       }
     } while (hasNext);
     return result;
@@ -114,17 +128,17 @@ export class SubscanService {
     after_id: number,
   ): Promise<T[]> {
     const result = [];
-    let intermediate_result: { hasNext: boolean, list: T []};
+    let intermediate_result: { hasNext: boolean; list: T[] };
     do {
-      intermediate_result = await fetchPages(0, after_id)
-      intermediate_result.list.forEach(entry => result.push(entry))
-      after_id = Math.min(...intermediate_result.list.map(e => e.id))
+      intermediate_result = await fetchPages(0, after_id);
+      intermediate_result.list.forEach((entry) => result.push(entry));
+      after_id = Math.min(...intermediate_result.list.map((e) => e.id));
       if (result.length >= 250000) {
-        logger.info(`Found more than ${result.length} entries. Aborting...`)
-        return result
+        logger.info(`Found more than ${result.length} entries. Aborting...`);
+        return result;
       }
     } while (intermediate_result.hasNext);
-    return result
+    return result;
   }
 
   private filterOnDate<T extends { timestamp: number }>(
@@ -157,9 +171,9 @@ export class SubscanService {
           chainName,
           address,
           page,
-          true,
+          undefined,
           minDate,
-        )
+        ),
       ),
       minDate,
       maxDate,
@@ -177,16 +191,17 @@ export class SubscanService {
     logger.info(
       `fetchXcmList for ${relayChainName} and address ${address} from ${new Date(minDate).toUTCString()} filtering on para_id ${filter_para_id}.`,
     );
-    const result = await this.iterateOverPagesParallel<RawXcmMessage>((page, after_id) =>
-      this.subscanApi.fetchXcmList(
-        relayChainName,
-        address,
-        page,
-        filter_para_id,
-        minDate,
-        after_id
-      ),
-      { withAfterId: true }
+    const result = await this.iterateOverPagesParallel<RawXcmMessage>(
+      (page, after_id) =>
+        this.subscanApi.fetchXcmList(
+          relayChainName,
+          address,
+          page,
+          filter_para_id,
+          minDate,
+          after_id,
+        ),
+      { withAfterId: true },
     );
     logger.info(
       `Exit fetchXcmList for ${relayChainName} and address ${address} and para_id ${filter_para_id} with ${result.length} messages.`,
@@ -208,7 +223,7 @@ export class SubscanService {
     );
     for (let idx = 0; idx < results.length; idx++) {
       results[idx].timestamp = events[idx].timestamp;
-      results[idx].original_event_index = events[idx].event_index
+      results[idx].original_event_index = events[idx].event_index;
     }
     logger.info(`Exit fetchEventDetails`);
     return results;
@@ -245,9 +260,17 @@ export class SubscanService {
       `fetchAllExtrinsics for ${chainName} and address ${address} from ${new Date(minDate).toUTCString()}. Evm ${evm}`,
     );
     const result = this.filterOnDate(
-      await this.iterateOverPagesParallel<Transaction>((page, after_id) =>
-        this.subscanApi.fetchExtrinsics(chainName, address, page, minDate, after_id, evm),
-        { withAfterId: true }
+      await this.iterateOverPagesParallel<Transaction>(
+        (page, after_id) =>
+          this.subscanApi.fetchExtrinsics(
+            chainName,
+            address,
+            page,
+            minDate,
+            after_id,
+            evm,
+          ),
+        { withAfterId: true },
       ),
       minDate,
       maxDate,
@@ -276,9 +299,17 @@ export class SubscanService {
     );
     const result = await this.iterateOverPagesParallel<
       RawSubstrateTransferDto & RawEvmTransferDto & { timestamp: number }
-    >((page, after_id) =>
-      this.subscanApi.fetchTransfers(chainName, address, page, minDate, after_id ? [after_id] : [], evm),
-      { withAfterId: true }
+    >(
+      (page, after_id) =>
+        this.subscanApi.fetchTransfers(
+          chainName,
+          address,
+          page,
+          minDate,
+          after_id ? [after_id] : [],
+          evm,
+        ),
+      { withAfterId: true },
     );
     const filtered = this.filterOnDate(result, minDate, maxDate);
     const mapped = filtered.map((transfer) => {
@@ -292,7 +323,6 @@ export class SubscanService {
         block: transfer.block_num,
         timestamp: transfer.timestamp,
         hash: transfer.hash,
-        tokenId: transfer.asset_unique_id || transfer.contract,
         extrinsic_index: transfer.extrinsic_index,
         fiatValue: transfer.currency_amount
           ? Number(transfer.currency_amount)
@@ -301,6 +331,7 @@ export class SubscanService {
           ? Number(transfer.currency_amount) / Number(transfer.amount)
           : undefined,
         asset_type: transfer.asset_type ? transfer.asset_type : undefined,
+        asset_unique_id: transfer.asset_unique_id || transfer.contract,
       };
     });
     logger.info(
@@ -314,21 +345,20 @@ export class SubscanService {
   }
 
   async fetchForeignAssets(chainName: string): Promise<ForeignAsset[]> {
-    return this.iterateOverPagesParallel<ForeignAsset>((page) =>
-        this.subscanApi.fetchForeignAssets(chainName, page)
-      )
+    return this.foreignAssetsCache.getData<Asset[]>(chainName, () => this.iterateOverPagesParallel<ForeignAsset>((page) =>
+      this.subscanApi.fetchForeignAssets(chainName, page), { count: 1 }
+    ));
   }
 
-  async scanTokens(chainName: string): Promise<TokenInfo[]> {
-    return this.subscanApi.scanTokens(chainName)
+  async scanTokens(chainName: string): Promise<Asset[]> {
+    return this.scanTokensCache.getData<Asset[]>(chainName, () => this.subscanApi.scanTokens(chainName));
   }
-  
+
   async scanAssets(chainName: string): Promise<Asset[]> {
-    return this.iterateOverPagesParallel<Asset>((page) =>
-      this.subscanApi.scanAssets(chainName, page)
-    )
+    return this.assetsCache.getData<Asset[]>(chainName, () => this.iterateOverPagesParallel<Asset>((page) =>
+      this.subscanApi.scanAssets(chainName, page), { count: 1 }
+    ));
   }
-
 
   async fetchNativeTokens(
     chainNames: string[],

@@ -1,4 +1,4 @@
-import { asClass, AwilixContainer } from "awilix";
+import { asClass, AwilixContainer, Lifetime } from "awilix";
 import { StakingRewardsService } from "./substrate/services/staking-rewards.service";
 import { SubscanApi } from "./substrate/api/subscan.api";
 import { SubscanService } from "./substrate/api/subscan.service";
@@ -10,8 +10,12 @@ import { TransactionsService } from "./substrate/services/transactions.service";
 
 export const registerServices = (container: AwilixContainer) => {
   container.register({
-    subscanService: asClass(SubscanService),
-    subscanApi: asClass(SubscanApi),
+    subscanService: asClass(SubscanService, {
+        lifetime: Lifetime.SINGLETON,
+      }),
+    subscanApi: asClass(SubscanApi, {
+        lifetime: Lifetime.SINGLETON,
+      }),
     transactionsService: asClass(TransactionsService),
     stakingRewardsService: asClass(StakingRewardsService),
     evmSwapsAndPaymentsService: asClass(EvmSwapsAndPaymentsService),

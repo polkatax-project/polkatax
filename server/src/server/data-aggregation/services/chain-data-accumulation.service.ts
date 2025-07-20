@@ -3,10 +3,10 @@ import { SubscanService } from "../../blockchain/substrate/api/subscan.service";
 import { isEvmAddress } from "../helper/is-evm-address";
 import { SubscanEvent } from "../../blockchain/substrate/model/subscan-event";
 import { Payment } from "../model/payment";
-import { XcmTransfer } from "../../blockchain/substrate/model/xcm-transfer";
 import { StakingReward } from "../../blockchain/substrate/model/staking-reward";
 import { Transaction } from "../../blockchain/substrate/model/transaction";
 import { Transfer } from "../../blockchain/substrate/model/raw-transfer";
+import { EventEnrichedXcmTransfer } from "../model/EventEnrichedXcmTransfer";
 
 export class ChainDataAccumulationService {
   constructor(
@@ -18,7 +18,7 @@ export class ChainDataAccumulationService {
     context: { address: string; chain: { domain: string; token: string } },
     transactions: Transaction[],
     transfersList: Transfer[],
-    xcmList: XcmTransfer[],
+    xcmList: EventEnrichedXcmTransfer[],
     events: SubscanEvent[],
     stakingRewards: StakingReward[],
   ): Promise<{ payments: Payment[]; unmatchedEvents: SubscanEvent[] }> {
@@ -72,37 +72,71 @@ export class ChainDataAccumulationService {
       extrinsicIndexedEvents,
       hashIndexedEvents,
     );
+
+    /**
+     * Event to xcm via extrinsic index but this can be misleading(?!)
+     * For incoming xcm maybe there's no tx -> map via timestamp. always use just timestamp?
+     * -> just interested in deposits anyway!?
+     */
     const xcmPayments = this.enrichXcmTransfers(xcmList, indexedTx);
     for (let xcmPayment of xcmPayments) {
-      indexedPayments[xcmPayment.extrinsic_index] = xcmPayment;
+      if (xcmPayment.extrinsic_index === '6423957-8') {
+        console.log("TODO:!")
+      }
+
+      if (!indexedPayments[xcmPayment.extrinsic_index]) {
+        indexedPayments[xcmPayment.extrinsic_index] = xcmPayment;
+      } else {
+        xcmPayment.transfers
+          .filter((t) => {
+            // avoiding duplicates
+            return !indexedPayments[xcmPayment.extrinsic_index].transfers.some(
+              (other) => other.amount === t.amount && other.symbol === t.symbol,
+            );
+          })
+          .forEach((t) => {
+            indexedPayments[xcmPayment.extrinsic_index].transfers.push(t);
+          });
+      }
     }
 
+    
     const stakingRewardPayments = this.enrichStakingRewards(
       stakingRewards,
       context.chain.token,
       indexedTx,
       context.address,
     );
-    const indexedStakingRewards: Record<string, Payment[]> = stakingRewardPayments.reduce(
-      (current, stakingRewards) => {
+    const indexedStakingRewards: Record<string, Payment[]> =
+      stakingRewardPayments.reduce((current, stakingRewards) => {
         current[stakingRewards.extrinsic_index] ??= [];
         current[stakingRewards.extrinsic_index].push(stakingRewards);
         return current;
-      },
-      {},
-    );
-    
+      }, {});
+
+
+    /**
+     * TODO: how to avoid duplicated (reward/transfer)?
+     */
     Object.keys(indexedStakingRewards).forEach((extrinsic_index) => {
-      indexedPayments[extrinsic_index] = indexedStakingRewards[extrinsic_index][0]
-      indexedPayments[extrinsic_index].transfers = indexedStakingRewards[extrinsic_index].map(r => r.transfers).flat()
-    })
-    
+      if (!indexedPayments[extrinsic_index]) {
+        indexedPayments[extrinsic_index] = {
+          ...indexedStakingRewards[extrinsic_index][0],
+          transfers: []
+        }
+      } 
+      indexedStakingRewards[extrinsic_index].forEach((r) =>
+        r.transfers.forEach((t) => {
+          indexedPayments[extrinsic_index].transfers.push(t);
+        }),
+      );
+    });
+
     const otherTransactions = this.enrichTxWithEvents(
       transactions.filter((t) => !indexedPayments[t.extrinsic_index]),
       extrinsicIndexedEvents,
       hashIndexedEvents,
     );
-    const unmatchedEvents = this.findUnmatchedEvents(events, indexedPayments);
 
     otherTransactions.forEach((tx) => {
       indexedPayments[tx.extrinsic_index] = {
@@ -112,6 +146,8 @@ export class ChainDataAccumulationService {
       };
     });
 
+    const unmatchedEvents = this.findUnmatchedEvents(events, indexedPayments);
+    
     return { payments: Object.values(indexedPayments), unmatchedEvents };
   }
 
@@ -134,14 +170,15 @@ export class ChainDataAccumulationService {
         provenance: "stakingRewards",
         transfers: [
           {
+            provenance: "stakingReward",
             symbol: stakingRewardsToken,
-            tokenId: stakingRewardsToken,
             amount: stakingReward.amount,
             from: undefined,
             to: walletAddress,
             extrinsic_index: stakingReward.extrinsic_index,
             price: stakingReward.price,
             fiatValue: stakingReward.fiatValue,
+            asset_unique_id: stakingReward.asset_unique_id,
           },
         ],
       };
@@ -187,6 +224,7 @@ export class ChainDataAccumulationService {
           enrichedTx.events.push({
             moduleId: event.module_id,
             eventId: event.event_id,
+            eventIndex: event.event_index
           });
         });
       } else if (hash && hashIndexedEvents[hash]) {
@@ -194,6 +232,7 @@ export class ChainDataAccumulationService {
           enrichedTx.events.push({
             moduleId: event.module_id,
             eventId: event.event_id,
+            eventIndex: event.event_index
           });
         });
       }
@@ -217,6 +256,7 @@ export class ChainDataAccumulationService {
           transfers.events.push({
             moduleId: event.module_id,
             eventId: event.event_id,
+            eventIndex: event.event_index
           });
         });
       } else if (hashIndexedEvents[hash]) {
@@ -224,6 +264,7 @@ export class ChainDataAccumulationService {
           transfers.events.push({
             moduleId: event.module_id,
             eventId: event.event_id,
+            eventIndex: event.event_index
           });
         });
       }
@@ -239,8 +280,8 @@ export class ChainDataAccumulationService {
   }
 
   private enrichXcmTransfers(
-    xcmTransfers: XcmTransfer[],
-    indexedTx: Record<string, Transaction>,
+    xcmTransfers: EventEnrichedXcmTransfer[],
+    indexedTx: Record<string, Transaction>
   ): Payment[] {
     const payments: Payment[] = [];
     xcmTransfers.forEach((xcmTransfer) => {
@@ -254,8 +295,7 @@ export class ChainDataAccumulationService {
         extrinsic_index: tx?.extrinsic_index ?? xcmTransfer.extrinsic_index,
         tip: tx?.tip ?? 0,
         feeUsed: tx?.feeUsed ?? 0,
-        hash: tx?.hash,
-        events: [],
+        hash: tx?.hash
       });
     });
     return payments;

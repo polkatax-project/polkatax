@@ -11,7 +11,6 @@ export class EvmSwapsAndPaymentsService {
   private mapEvmTransferToTransferDto(evmTransfer: EVMTransfer): Transfer {
     return {
       symbol: evmTransfer.tokenSymbol,
-      tokenId: evmTransfer.contractAddress,
       amount: Number(
         new BigNumber(evmTransfer.value).dividedBy(
           Math.pow(10, Number(evmTransfer.tokenDecimal)),
@@ -22,6 +21,7 @@ export class EvmSwapsAndPaymentsService {
       block: Number(evmTransfer.blockNumber),
       timestamp: Number(evmTransfer.timeStamp),
       hash: evmTransfer.hash,
+      asset_unique_id: evmTransfer.contractAddress,
     };
   }
 

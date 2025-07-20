@@ -1,694 +1,945 @@
 {
-  "chains": [
-    {
-      "domain": "peaq",
-      "label": "peaq",
-      "token": "PEAQ",
-      "stakingPallets": ["ParachainStaking"],
-      "evmPallet": true,
-      "standardStaking": false,
-      "parachainStaking": true,
-      "delegatedStaking": false,
-      "relay": "polkadot",
-      "paraId": 3338
-    },
-    {
-      "domain": "krest",
-      "label": "krest",
-      "token": "KREST",
-      "stakingPallets": [
-        "ParachainStaking",
-        "StakingCoefficientRewardCalculator"
-      ],
-      "evmPallet": true,
-      "standardStaking": false,
-      "parachainStaking": true,
-      "delegatedStaking": false
-    },
-    {
-      "domain": "zeitgeist",
-      "label": "Zeitgeist",
-      "token": "ZTG",
-      "stakingPallets": ["ParachainStaking"],
-      "evmPallet": false,
-      "standardStaking": false,
-      "parachainStaking": true,
-      "delegatedStaking": false,
-      "relay": "polkadot",
-      "paraId": 2092
-    },
-    {
-      "domain": "vara",
-      "label": "Vara",
-      "token": "VARA",
-      "stakingPallets": ["Staking", "StakingRewards"],
-      "evmPallet": false,
-      "standardStaking": true,
-      "parachainStaking": false,
-      "delegatedStaking": false
-    },
-    {
-      "domain": "unique",
-      "label": "Unique",
-      "token": "UNQ",
-      "stakingPallets": [],
-      "evmPallet": true,
-      "standardStaking": false,
-      "parachainStaking": false,
-      "delegatedStaking": false,
-      "relay": "polkadot",
-      "paraId": 2037
-    },
-    {
-      "domain": "stafi",
-      "label": "Stafi",
-      "token": "FIS",
-      "stakingPallets": ["Staking"],
-      "evmPallet": false,
-      "standardStaking": true,
-      "parachainStaking": false,
-      "delegatedStaking": false
-    },
-    {
-      "domain": "shiden",
-      "label": "Shiden",
-      "token": "SDN",
-      "stakingPallets": ["DappStaking"],
-      "evmPallet": true,
-      "standardStaking": false,
-      "parachainStaking": false,
-      "delegatedStaking": false,
-      "relay": "kusama",
-      "paraId": 2007
-    },
-    {
-      "domain": "sora",
-      "label": "SORA",
-      "token": "XOR",
-      "stakingPallets": ["Staking", "CeresStaking"],
-      "evmPallet": false,
-      "standardStaking": true,
-      "parachainStaking": false,
-      "delegatedStaking": false,
-      "relay": "polkadot",
-      "paraId": 2025
-    },
-    {
-      "domain": "robonomics-freemium",
-      "label": "Robonomics Freemium",
-      "token": "XRT",
-      "stakingPallets": [],
-      "evmPallet": false,
-      "standardStaking": false,
-      "parachainStaking": false,
-      "delegatedStaking": false,
-      "relay": "kusama",
-      "paraId": 2048
-    },
-    {
-      "domain": "robonomics",
-      "label": "Robonomics",
-      "token": "XRT",
-      "stakingPallets": [],
-      "evmPallet": false,
-      "standardStaking": false,
-      "parachainStaking": false,
-      "delegatedStaking": false,
-      "relay": "polkadot",
-      "paraId": 3388
-    },
-    {
-      "domain": "polymesh",
-      "label": "Polymesh",
-      "token": "POLYX",
-      "stakingPallets": ["Staking"],
-      "evmPallet": false,
-      "standardStaking": true,
-      "parachainStaking": false,
-      "delegatedStaking": false
-    },
-    {
-      "domain": "polkadot",
-      "label": "Polkadot",
-      "token": "DOT",
-      "stakingPallets": ["Staking"],
-      "evmPallet": false,
-      "standardStaking": true,
-      "parachainStaking": false,
-      "delegatedStaking": false
-    },
-      "delegatedStaking": false,
-      "relay": "polkadot",
-      "isRelay": true,
-      "paraId": 0
-    },
-    {
-      "domain": "phala",
-      "label": "Phala",
-      "token": "PHA",
-      "stakingPallets": [],
-      "evmPallet": false,
-      "standardStaking": false,
-      "parachainStaking": false,
-      "delegatedStaking": false,
-      "relay": "polkadot",
-      "paraId": 2035
-    },
-    {
-      "domain": "people-polkadot",
-      "label": "People Polkadot",
-      "token": "DOT",
-      "stakingPallets": [],
-      "evmPallet": false,
-      "standardStaking": false,
-      "parachainStaking": false,
-      "delegatedStaking": false,
-      "relay": "polkadot",
-      "paraId": 1004
-    },
-    {
-      "domain": "people-kusama",
-      "label": "People Kusama",
-      "token": "KSM",
-      "stakingPallets": [],
-      "evmPallet": false,
-      "standardStaking": false,
-      "parachainStaking": false,
-      "delegatedStaking": false,
-      "relay": "kusama",
-      "paraId": 1004
-    },
-    {
-      "domain": "pendulum",
-      "label": "Pendulum",
-      "token": "PEN",
-      "stakingPallets": ["ParachainStaking", "VaultStaking"],
-      "evmPallet": false,
-      "standardStaking": false,
-      "parachainStaking": true,
-      "delegatedStaking": false,
-      "relay": "polkadot",
-      "paraId": 2094
-    },
-    {
-      "domain": "nodle",
-      "label": "Nodle",
-      "token": "NODL",
-      "stakingPallets": [],
-      "evmPallet": false,
-      "standardStaking": false,
-      "parachainStaking": false,
-      "delegatedStaking": false,
-      "relay": "polkadot",
-      "paraId": 2026
-    },
-    {
-      "domain": "neuroweb",
-      "label": "NeuroWeb",
-      "token": "NEURO",
-      "stakingPallets": [],
-      "evmPallet": true,
-      "standardStaking": false,
-      "parachainStaking": false,
-      "delegatedStaking": false,
-      "relay": "polkadot",
-      "paraId": 2043
-    },
-    {
-      "domain": "mythos",
-      "label": "Mythos",
-      "token": "MYTH",
-      "stakingPallets": ["CollatorStaking"],
-      "evmPallet": false,
-      "standardStaking": false,
-      "parachainStaking": false,
-      "delegatedStaking": false,
-      "relay": "polkadot",
-      "paraId": 3369,
-      "evmAddressSupport": true
-    },
-    {
-      "domain": "moonriver",
-      "label": "Moonriver",
-      "token": "MOVR",
-      "stakingPallets": ["ParachainStaking"],
-      "evmPallet": true,
-      "standardStaking": false,
-      "parachainStaking": true,
-      "delegatedStaking": false,
-      "relay": "kusama",
-      "paraId": 2023
-    },
-    {
-      "domain": "moonbeam",
-      "label": "Moonbeam",
-      "token": "GLMR",
-      "stakingPallets": ["ParachainStaking"],
-      "evmPallet": true,
-      "standardStaking": false,
-      "parachainStaking": true,
-      "delegatedStaking": false,
-      "relay": "polkadot",
-      "paraId": 2004
-    },
-    {
-      "domain": "manta",
-      "label": "Manta Atlantic",
-      "token": "MANTA",
-      "stakingPallets": ["ParachainStaking"],
-      "evmPallet": false,
-      "standardStaking": false,
-      "parachainStaking": true,
-      "delegatedStaking": false,
-      "relay": "polkadot",
-      "paraId": 2104
-    },
-    {
-      "domain": "kusama",
-      "label": "Kusama",
-      "token": "KSM",
-      "stakingPallets": ["Staking", "DelegatedStaking"],
-      "evmPallet": false,
-      "standardStaking": true,
-      "parachainStaking": false,
-      "delegatedStaking": true,
-      "relay": "kusama",
-      "isRelay": true,
-      "paraId": 0
-    },
-    {
-      "domain": "kintsugi",
-      "label": "Kintsugi",
-      "token": "KINT",
-      "stakingPallets": ["VaultStaking"],
-      "evmPallet": true,
-      "standardStaking": false,
-      "parachainStaking": false,
-      "delegatedStaking": false,
-      "relay": "kusama",
-      "paraId": 2092,
-      "pseudoStaking": true
-    },
-    {
-      "domain": "karura",
-      "label": "Karura",
-      "token": "KAR",
-      "stakingPallets": [],
-      "evmPallet": true,
-      "standardStaking": false,
-      "parachainStaking": false,
-      "delegatedStaking": false,
-      "relay": "kusama",
-      "paraId": 2000
-    },
-    {
-      "domain": "spiritnet",
-      "label": "KILT Spiritnet",
-      "token": "KILT",
-      "stakingPallets": ["ParachainStaking"],
-      "evmPallet": false,
-      "standardStaking": false,
-      "parachainStaking": true,
-      "delegatedStaking": false,
-      "relay": "polkadot",
-      "paraId": 2086
-    },
-    {
-      "domain": "integritee",
-      "label": "IntegriTEE",
-      "token": "TEER",
-      "stakingPallets": [],
-      "evmPallet": false,
-      "standardStaking": false,
-      "parachainStaking": false,
-      "delegatedStaking": false,
-      "relay": "kusama",
-      "paraId": 2015
-    },
-    {
-      "domain": "hydration",
-      "label": "Hydration",
-      "token": "HDX",
-      "stakingPallets": ["Staking"],
-      "evmPallet": true,
-      "standardStaking": true,
-      "parachainStaking": false,
-      "delegatedStaking": false,
-      "relay": "polkadot",
-      "paraId": 2034,
-      "pseudoStaking": true
-    },
-    {
-      "domain": "humanode",
-      "label": "Humanode",
-      "token": "HMND",
-      "stakingPallets": [],
-      "evmPallet": true,
-      "standardStaking": false,
-      "parachainStaking": false,
-      "delegatedStaking": false
-    },
-    {
-      "domain": "heima",
-      "label": "Heima",
-      "token": "HEI",
-      "stakingPallets": ["ParachainStaking", "ScoreStaking"],
-      "evmPallet": true,
-      "standardStaking": false,
-      "parachainStaking": true,
-      "delegatedStaking": false,
-      "relay": "polkadot",
-      "paraId": 2013
-    },
-    {
-      "domain": "gasp",
-      "label": "Gasp",
-      "token": "GASP",
-      "stakingPallets": ["ParachainStaking", "SequencerStaking"],
-      "evmPallet": false,
-      "standardStaking": false,
-      "parachainStaking": true,
-      "delegatedStaking": false
-    },
-    {
-      "domain": "enjin",
-      "label": "Enjin Relay",
-      "token": "ENJ",
-      "stakingPallets": ["Staking"],
-      "evmPallet": false,
-      "standardStaking": true,
-      "parachainStaking": false,
-      "delegatedStaking": false,
-      "relay": "enjin",
-      "isRelay": true,
-      "paraId": 0
-    },
-    {
-      "domain": "matrix",
-      "label": "Enjin Matrix",
-      "token": "ENJ",
-      "stakingPallets": ["CollatorStaking"],
-      "evmPallet": false,
-      "standardStaking": false,
-      "parachainStaking": false,
-      "delegatedStaking": false
-    },
-    {
-      "domain": "energywebx",
-      "label": "Energy Web X",
-      "token": "EWT",
-      "stakingPallets": ["ParachainStaking"],
-      "evmPallet": false,
-      "standardStaking": false,
-      "parachainStaking": true,
-      "delegatedStaking": false,
-      "relay": "polkadot",
-      "paraId": 3345
-    },
-    {
-      "domain": "dbc",
-      "label": "DeepBrain Chain",
-      "token": "DBC",
-      "stakingPallets": ["Staking"],
-      "evmPallet": true,
-      "standardStaking": true,
-      "parachainStaking": false,
-      "delegatedStaking": false
-    },
-    {
-      "domain": "darwinia",
-      "label": "Darwinia",
-      "token": "RING",
-      "stakingPallets": ["DarwiniaStaking"],
-      "evmPallet": true,
-      "standardStaking": false,
-      "parachainStaking": false,
-      "delegatedStaking": false,
-      "relay": "polkadot",
-      "paraId": 2046
-    },
-    {
-      "domain": "shadow",
-      "label": "Crust Shadow",
-      "token": "CSM",
-      "stakingPallets": [],
-      "evmPallet": false,
-      "standardStaking": false,
-      "parachainStaking": false,
-      "delegatedStaking": false,
-      "relay": "kusama",
-      "paraId": 2012
-    },
-    {
-      "domain": "crust-parachain",
-      "label": "Crust Parachain",
-      "token": "CRU",
-      "stakingPallets": [],
-      "evmPallet": false,
-      "standardStaking": false,
-      "parachainStaking": false,
-      "delegatedStaking": false,
-      "relay": "polkadot",
-      "paraId": 2008
-    },
-    {
-      "domain": "crust",
-      "label": "Crust",
-      "token": "CRU",
-      "stakingPallets": ["Staking"],
-      "evmPallet": false,
-      "standardStaking": true,
-      "parachainStaking": false,
-      "delegatedStaking": false
-    },
-    {
-      "domain": "creditcoin",
-      "label": "Creditcoin",
-      "token": "CTC",
-      "stakingPallets": ["Staking"],
-      "evmPallet": false,
-      "standardStaking": true,
-      "parachainStaking": false,
-      "delegatedStaking": false
-    },
-    {
-      "domain": "coretime-polkadot",
-      "label": "Coretime Polkadot",
-      "token": "DOT",
-      "stakingPallets": [],
-      "evmPallet": false,
-      "standardStaking": false,
-      "parachainStaking": false,
-      "delegatedStaking": false,
-      "relay": "polkadot",
-      "paraId": 1005
-    },
-    {
-      "domain": "coretime-kusama",
-      "label": "Coretime Kusama",
-      "token": "KSM",
-      "stakingPallets": [],
-      "evmPallet": false,
-      "standardStaking": false,
-      "parachainStaking": false,
-      "delegatedStaking": false,
-      "relay": "kusama",
-      "paraId": 1005
-    },
-    {
-      "domain": "collectives-polkadot",
-      "label": "Collectives Polkadot",
-      "token": "DOT",
-      "stakingPallets": [],
-      "evmPallet": false,
-      "standardStaking": false,
-      "parachainStaking": false,
-      "delegatedStaking": false,
-      "relay": "polkadot",
-      "paraId": 1001
-    },
-    {
-      "domain": "clover",
-      "label": "Clover",
-      "token": "CLV",
-      "stakingPallets": ["Staking"],
-      "evmPallet": false,
-      "standardStaking": true,
-      "parachainStaking": false,
-      "delegatedStaking": false,
-      "relay": "polkadot",
-      "paraId": 2002
-    },
-    {
-      "domain": "centrifuge",
-      "label": "Centrifuge",
-      "token": "CFG",
-      "stakingPallets": [],
-      "evmPallet": true,
-      "standardStaking": false,
-      "parachainStaking": false,
-      "delegatedStaking": false,
-      "relay": "polkadot",
-      "paraId": 2031
-    },
-    {
-      "domain": "bridgehub-polkadot",
-      "label": "BridgeHub Polkadot",
-      "token": "DOT",
-      "stakingPallets": [],
-      "evmPallet": false,
-      "standardStaking": false,
-      "parachainStaking": false,
-      "delegatedStaking": false,
-      "relay": "polkadot",
-      "paraId": 1002
-    },
-    {
-      "domain": "bridgehub-kusama",
-      "label": "BridgeHub Kusama",
-      "token": "KSM",
-      "stakingPallets": [],
-      "evmPallet": false,
-      "standardStaking": false,
-      "parachainStaking": false,
-      "delegatedStaking": false,
-      "relay": "kusama",
-      "paraId": 1002
-    },
-    {
-      "domain": "bifrost-kusama",
-      "label": "Bifrost Kusama",
-      "token": "BNC",
-      "stakingPallets": [
-        "ParachainStaking",
-        "SystemStaking",
-        "LeverageStaking"
-      ],
-      "evmPallet": false,
-      "standardStaking": false,
-      "parachainStaking": true,
-      "delegatedStaking": false,
-      "relay": "kusama",
-      "paraId": 2001
-    },
-    {
-      "domain": "bifrost",
-      "label": "Bifrost",
-      "token": "BNC",
-      "stakingPallets": [
-        "ParachainStaking",
-        "SystemStaking",
-        "LeverageStaking"
-      ],
-      "evmPallet": true,
-      "standardStaking": false,
-      "parachainStaking": true,
-      "delegatedStaking": false,
-      "relay": "polkadot",
-      "paraId": 2030
-    },
-    {
-      "domain": "basilisk",
-      "label": "Basilisk",
-      "token": "BSX",
-      "stakingPallets": [],
-      "evmPallet": false,
-      "standardStaking": false,
-      "parachainStaking": false,
-      "delegatedStaking": false,
-      "relay": "kusama",
-      "paraId": 2090,
-      "pseudoStaking": true
-    },
-    {
-      "domain": "avail",
-      "label": "Avail",
-      "token": "AVAIL",
-      "stakingPallets": ["Staking"],
-      "evmPallet": false,
-      "standardStaking": true,
-      "parachainStaking": false,
-      "delegatedStaking": false
-    },
-    {
-      "domain": "autonomys",
-      "label": "Autonomys",
-      "token": "AI3",
-      "stakingPallets": [],
-      "evmPallet": false,
-      "standardStaking": false,
-      "parachainStaking": false,
-      "delegatedStaking": false
-    },
-    {
-      "domain": "astar",
-      "label": "Astar",
-      "token": "ASTR",
-      "stakingPallets": ["DappStaking"],
-      "evmPallet": true,
-      "standardStaking": false,
-      "parachainStaking": false,
-      "delegatedStaking": false,
-      "relay": "polkadot",
-      "paraId": 2006
-    },
-    {
-      "domain": "assethub-polkadot",
-      "label": "AssetHub Polkadot",
-      "token": "DOT",
-      "stakingPallets": [],
-      "evmPallet": false,
-      "standardStaking": false,
-      "parachainStaking": false,
-      "delegatedStaking": false,
-      "relay": "polkadot",
-      "paraId": 1000
-    },
-    {
-      "domain": "assethub-kusama",
-      "label": "AssetHub Kusama",
-      "token": "KSM",
-      "stakingPallets": [],
-      "evmPallet": false,
-      "standardStaking": false,
-      "parachainStaking": false,
-      "delegatedStaking": false,
-      "relay": "kusama",
-      "paraId": 1000
-    },
-    {
-      "domain": "altair",
-      "label": "Altair",
-      "token": "AIR",
-      "stakingPallets": [],
-      "evmPallet": true,
-      "standardStaking": false,
-      "parachainStaking": false,
-      "delegatedStaking": false,
-      "relay": "kusama",
-      "paraId": 2088
-    },
-    {
-      "domain": "alephzero",
-      "label": "Aleph Zero",
-      "token": "AZERO",
-      "stakingPallets": ["Staking"],
-      "evmPallet": false,
-      "standardStaking": true,
-      "parachainStaking": false,
-      "delegatedStaking": false
-    },
-    {
-      "domain": "acala",
-      "label": "Acala",
-      "token": "ACA",
-      "stakingPallets": [],
-      "evmPallet": true,
-      "standardStaking": false,
-      "parachainStaking": false,
-      "delegatedStaking": false,
-      "relay": "polkadot",
-      "paraId": 2000
-    }
-  ]
+    "chains": [
+        {
+            "domain": "peaq",
+            "label": "peaq",
+            "token": "PEAQ",
+            "stakingPallets": [
+                "ParachainStaking"
+            ],
+            "evmPallet": true,
+            "assetPallet": true,
+            "foreignAssetsPallet": false,
+            "standardStaking": false,
+            "parachainStaking": true,
+            "delegatedStaking": false,
+            "relay": "polkadot",
+            "paraId": 3338
+        },
+        {
+            "domain": "krest",
+            "label": "krest",
+            "token": "KREST",
+            "stakingPallets": [
+                "ParachainStaking",
+                "StakingCoefficientRewardCalculator"
+            ],
+            "evmPallet": true,
+            "assetPallet": true,
+            "foreignAssetsPallet": false,
+            "standardStaking": false,
+            "parachainStaking": true,
+            "delegatedStaking": false
+        },
+        {
+            "domain": "zeitgeist",
+            "label": "Zeitgeist",
+            "token": "ZTG",
+            "stakingPallets": [
+                "ParachainStaking"
+            ],
+            "evmPallet": false,
+            "assetPallet": false,
+            "foreignAssetsPallet": false,
+            "standardStaking": false,
+            "parachainStaking": true,
+            "delegatedStaking": false,
+            "relay": "polkadot",
+            "paraId": 2092
+        },
+        {
+            "domain": "vara",
+            "label": "Vara",
+            "token": "VARA",
+            "stakingPallets": [
+                "Staking",
+                "StakingRewards"
+            ],
+            "evmPallet": false,
+            "assetPallet": false,
+            "foreignAssetsPallet": false,
+            "standardStaking": true,
+            "parachainStaking": false,
+            "delegatedStaking": false
+        },
+        {
+            "domain": "unique",
+            "label": "Unique",
+            "token": "UNQ",
+            "stakingPallets": [],
+            "evmPallet": true,
+            "assetPallet": false,
+            "foreignAssetsPallet": true,
+            "standardStaking": false,
+            "parachainStaking": false,
+            "delegatedStaking": false,
+            "relay": "polkadot",
+            "paraId": 2037
+        },
+        {
+            "domain": "stafi",
+            "label": "Stafi",
+            "token": "FIS",
+            "stakingPallets": [
+                "Staking"
+            ],
+            "evmPallet": false,
+            "assetPallet": false,
+            "foreignAssetsPallet": false,
+            "standardStaking": true,
+            "parachainStaking": false,
+            "delegatedStaking": false
+        },
+        {
+            "domain": "shiden",
+            "label": "Shiden",
+            "token": "SDN",
+            "stakingPallets": [
+                "DappStaking"
+            ],
+            "evmPallet": true,
+            "assetPallet": true,
+            "foreignAssetsPallet": false,
+            "standardStaking": false,
+            "parachainStaking": false,
+            "delegatedStaking": false,
+            "relay": "kusama",
+            "paraId": 2007
+        },
+        {
+            "domain": "shibuya",
+            "label": "Shibuya",
+            "token": "SBY",
+            "stakingPallets": [
+                "DappStaking"
+            ],
+            "evmPallet": true,
+            "assetPallet": true,
+            "foreignAssetsPallet": false,
+            "standardStaking": false,
+            "parachainStaking": false,
+            "delegatedStaking": false
+        },
+        {
+            "domain": "sora",
+            "label": "SORA",
+            "token": "XOR",
+            "stakingPallets": [
+                "Staking",
+                "CeresStaking"
+            ],
+            "evmPallet": false,
+            "assetPallet": true,
+            "foreignAssetsPallet": false,
+            "standardStaking": true,
+            "parachainStaking": false,
+            "delegatedStaking": false,
+            "relay": "polkadot",
+            "paraId": 2025
+        },
+        {
+            "domain": "robonomics-freemium",
+            "label": "Robonomics Freemium",
+            "token": "XRT",
+            "stakingPallets": [],
+            "evmPallet": false,
+            "assetPallet": true,
+            "foreignAssetsPallet": false,
+            "standardStaking": false,
+            "parachainStaking": false,
+            "delegatedStaking": false,
+            "relay": "kusama",
+            "paraId": 2048
+        },
+        {
+            "domain": "robonomics",
+            "label": "Robonomics",
+            "token": "XRT",
+            "stakingPallets": [],
+            "evmPallet": false,
+            "assetPallet": true,
+            "foreignAssetsPallet": false,
+            "standardStaking": false,
+            "parachainStaking": false,
+            "delegatedStaking": false,
+            "relay": "polkadot",
+            "paraId": 3388
+        },
+        {
+            "domain": "polymesh",
+            "label": "Polymesh",
+            "token": "POLYX",
+            "stakingPallets": [
+                "Staking"
+            ],
+            "evmPallet": false,
+            "assetPallet": false,
+            "foreignAssetsPallet": false,
+            "standardStaking": true,
+            "parachainStaking": false,
+            "delegatedStaking": false
+        },
+        {
+            "domain": "polkadot",
+            "label": "Polkadot",
+            "token": "DOT",
+            "stakingPallets": [
+                "Staking"
+            ],
+            "evmPallet": false,
+            "assetPallet": false,
+            "foreignAssetsPallet": false,
+            "standardStaking": true,
+            "parachainStaking": false,
+            "delegatedStaking": false,
+            "relay": "polkadot",
+            "isRelay": true,
+            "paraId": 0
+        },
+        {
+            "domain": "phala",
+            "label": "Phala",
+            "token": "PHA",
+            "stakingPallets": [],
+            "evmPallet": false,
+            "assetPallet": true,
+            "foreignAssetsPallet": false,
+            "standardStaking": false,
+            "parachainStaking": false,
+            "delegatedStaking": false,
+            "relay": "polkadot",
+            "paraId": 2035
+        },
+        {
+            "domain": "people-polkadot",
+            "label": "People Polkadot",
+            "token": "DOT",
+            "stakingPallets": [],
+            "evmPallet": false,
+            "assetPallet": false,
+            "foreignAssetsPallet": false,
+            "standardStaking": false,
+            "parachainStaking": false,
+            "delegatedStaking": false,
+            "relay": "polkadot",
+            "paraId": 1004
+        },
+        {
+            "domain": "people-kusama",
+            "label": "People Kusama",
+            "token": "KSM",
+            "stakingPallets": [],
+            "evmPallet": false,
+            "assetPallet": false,
+            "foreignAssetsPallet": false,
+            "standardStaking": false,
+            "parachainStaking": false,
+            "delegatedStaking": false,
+            "relay": "kusama",
+            "paraId": 1004
+        },
+        {
+            "domain": "pendulum",
+            "label": "Pendulum",
+            "token": "PEN",
+            "stakingPallets": [
+                "ParachainStaking",
+                "VaultStaking"
+            ],
+            "evmPallet": false,
+            "assetPallet": false,
+            "foreignAssetsPallet": false,
+            "standardStaking": false,
+            "parachainStaking": true,
+            "delegatedStaking": false,
+            "relay": "polkadot",
+            "paraId": 2094
+        },
+        {
+            "domain": "opal",
+            "label": "Opal",
+            "token": "OPL",
+            "stakingPallets": [],
+            "evmPallet": true,
+            "assetPallet": false,
+            "foreignAssetsPallet": true,
+            "standardStaking": false,
+            "parachainStaking": false,
+            "delegatedStaking": false
+        },
+        {
+            "domain": "nodle",
+            "label": "Nodle",
+            "token": "NODL",
+            "stakingPallets": [],
+            "evmPallet": false,
+            "assetPallet": false,
+            "foreignAssetsPallet": false,
+            "standardStaking": false,
+            "parachainStaking": false,
+            "delegatedStaking": false,
+            "relay": "polkadot",
+            "paraId": 2026
+        },
+        {
+            "domain": "neuroweb",
+            "label": "NeuroWeb",
+            "token": "NEURO",
+            "stakingPallets": [],
+            "evmPallet": true,
+            "assetPallet": true,
+            "foreignAssetsPallet": false,
+            "standardStaking": false,
+            "parachainStaking": false,
+            "delegatedStaking": false,
+            "relay": "polkadot",
+            "paraId": 2043
+        },
+        {
+            "domain": "mythos",
+            "label": "Mythos",
+            "token": "MYTH",
+            "stakingPallets": [
+                "CollatorStaking"
+            ],
+            "evmPallet": false,
+            "assetPallet": false,
+            "foreignAssetsPallet": false,
+            "standardStaking": false,
+            "parachainStaking": false,
+            "delegatedStaking": false,
+            "relay": "polkadot",
+            "paraId": 3369,
+            "evmAddressSupport": true
+        },
+        {
+            "domain": "moonriver",
+            "label": "Moonriver",
+            "token": "MOVR",
+            "stakingPallets": [
+                "ParachainStaking"
+            ],
+            "evmPallet": true,
+            "assetPallet": true,
+            "foreignAssetsPallet": false,
+            "standardStaking": false,
+            "parachainStaking": true,
+            "delegatedStaking": false,
+            "relay": "kusama",
+            "paraId": 2023
+        },
+        {
+            "domain": "moonbeam",
+            "label": "Moonbeam",
+            "token": "GLMR",
+            "stakingPallets": [
+                "ParachainStaking"
+            ],
+            "evmPallet": true,
+            "assetPallet": true,
+            "foreignAssetsPallet": false,
+            "standardStaking": false,
+            "parachainStaking": true,
+            "delegatedStaking": false,
+            "relay": "polkadot",
+            "paraId": 2004
+        },
+        {
+            "domain": "manta",
+            "label": "Manta Atlantic",
+            "token": "MANTA",
+            "stakingPallets": [
+                "ParachainStaking"
+            ],
+            "evmPallet": false,
+            "assetPallet": true,
+            "foreignAssetsPallet": false,
+            "standardStaking": false,
+            "parachainStaking": true,
+            "delegatedStaking": false,
+            "relay": "polkadot",
+            "paraId": 2104
+        },
+        {
+            "domain": "kusama",
+            "label": "Kusama",
+            "token": "KSM",
+            "stakingPallets": [
+                "Staking",
+                "DelegatedStaking"
+            ],
+            "evmPallet": false,
+            "assetPallet": false,
+            "foreignAssetsPallet": false,
+            "standardStaking": true,
+            "parachainStaking": false,
+            "delegatedStaking": true,
+            "relay": "kusama",
+            "isRelay": true,
+            "paraId": 0
+        },
+        {
+            "domain": "kintsugi",
+            "label": "Kintsugi",
+            "token": "KINT",
+            "stakingPallets": [
+                "VaultStaking"
+            ],
+            "evmPallet": true,
+            "assetPallet": false,
+            "foreignAssetsPallet": false,
+            "standardStaking": false,
+            "parachainStaking": false,
+            "delegatedStaking": false,
+            "relay": "kusama",
+            "paraId": 2092,
+            "pseudoStaking": true
+        },
+        {
+            "domain": "khala",
+            "label": "Khala (Archived)",
+            "token": "PHA",
+            "stakingPallets": [],
+            "evmPallet": false,
+            "assetPallet": true,
+            "foreignAssetsPallet": false,
+            "standardStaking": false,
+            "parachainStaking": false,
+            "delegatedStaking": false,
+            "relay": "kusama",
+            "paraId": 2004
+        },
+        {
+            "domain": "karura",
+            "label": "Karura",
+            "token": "KAR",
+            "stakingPallets": [],
+            "evmPallet": true,
+            "assetPallet": false,
+            "foreignAssetsPallet": false,
+            "standardStaking": false,
+            "parachainStaking": false,
+            "delegatedStaking": false,
+            "relay": "kusama",
+            "paraId": 2000
+        },
+        {
+            "domain": "spiritnet",
+            "label": "KILT Spiritnet",
+            "token": "KILT",
+            "stakingPallets": [
+                "ParachainStaking"
+            ],
+            "evmPallet": false,
+            "assetPallet": false,
+            "foreignAssetsPallet": false,
+            "standardStaking": false,
+            "parachainStaking": true,
+            "delegatedStaking": false,
+            "relay": "polkadot",
+            "paraId": 2086
+        },
+        {
+            "domain": "integritee",
+            "label": "IntegriTEE",
+            "token": "TEER",
+            "stakingPallets": [],
+            "evmPallet": false,
+            "assetPallet": true,
+            "foreignAssetsPallet": false,
+            "standardStaking": false,
+            "parachainStaking": false,
+            "delegatedStaking": false,
+            "relay": "kusama",
+            "paraId": 2015
+        },
+        {
+            "domain": "hydration",
+            "label": "Hydration",
+            "token": "HDX",
+            "stakingPallets": [
+                "Staking"
+            ],
+            "evmPallet": true,
+            "assetPallet": false,
+            "foreignAssetsPallet": false,
+            "standardStaking": true,
+            "parachainStaking": false,
+            "delegatedStaking": false,
+            "relay": "polkadot",
+            "paraId": 2034,
+            "pseudoStaking": true
+        },
+        {
+            "domain": "humanode",
+            "label": "Humanode",
+            "token": "HMND",
+            "stakingPallets": [],
+            "evmPallet": true,
+            "assetPallet": false,
+            "foreignAssetsPallet": false,
+            "standardStaking": false,
+            "parachainStaking": false,
+            "delegatedStaking": false
+        },
+        {
+            "domain": "heima",
+            "label": "Heima",
+            "token": "HEI",
+            "stakingPallets": [
+                "ParachainStaking",
+                "ScoreStaking"
+            ],
+            "evmPallet": true,
+            "assetPallet": true,
+            "foreignAssetsPallet": false,
+            "standardStaking": false,
+            "parachainStaking": true,
+            "delegatedStaking": false,
+            "relay": "polkadot",
+            "paraId": 2013
+        },
+        {
+            "domain": "gasp",
+            "label": "Gasp",
+            "token": "GASP",
+            "stakingPallets": [
+                "ParachainStaking",
+                "SequencerStaking"
+            ],
+            "evmPallet": false,
+            "assetPallet": false,
+            "foreignAssetsPallet": false,
+            "standardStaking": false,
+            "parachainStaking": true,
+            "delegatedStaking": false
+        },
+        {
+            "domain": "enjin",
+            "label": "Enjin Relay",
+            "token": "ENJ",
+            "stakingPallets": [
+                "Staking"
+            ],
+            "evmPallet": false,
+            "assetPallet": false,
+            "foreignAssetsPallet": false,
+            "standardStaking": true,
+            "parachainStaking": false,
+            "delegatedStaking": false,
+            "relay": "enjin",
+            "isRelay": true,
+            "paraId": 0
+        },
+        {
+            "domain": "matrix",
+            "label": "Enjin Matrix",
+            "token": "ENJ",
+            "stakingPallets": [
+                "CollatorStaking"
+            ],
+            "evmPallet": false,
+            "assetPallet": false,
+            "foreignAssetsPallet": false,
+            "standardStaking": false,
+            "parachainStaking": false,
+            "delegatedStaking": false
+        },
+        {
+            "domain": "energywebx",
+            "label": "Energy Web X",
+            "token": "EWT",
+            "stakingPallets": [
+                "ParachainStaking"
+            ],
+            "evmPallet": false,
+            "assetPallet": true,
+            "foreignAssetsPallet": false,
+            "standardStaking": false,
+            "parachainStaking": true,
+            "delegatedStaking": false,
+            "relay": "polkadot",
+            "paraId": 3345
+        },
+        {
+            "domain": "dock",
+            "label": "Dock",
+            "token": "DOCK",
+            "stakingPallets": [
+                "Staking",
+                "StakingRewards"
+            ],
+            "evmPallet": true,
+            "assetPallet": false,
+            "foreignAssetsPallet": false,
+            "standardStaking": true,
+            "parachainStaking": false,
+            "delegatedStaking": false
+        },
+        {
+            "domain": "dbc",
+            "label": "DeepBrain Chain",
+            "token": "DBC",
+            "stakingPallets": [
+                "Staking"
+            ],
+            "evmPallet": true,
+            "assetPallet": true,
+            "foreignAssetsPallet": false,
+            "standardStaking": true,
+            "parachainStaking": false,
+            "delegatedStaking": false
+        },
+        {
+            "domain": "darwinia",
+            "label": "Darwinia",
+            "token": "RING",
+            "stakingPallets": [
+                "DarwiniaStaking"
+            ],
+            "evmPallet": true,
+            "assetPallet": true,
+            "foreignAssetsPallet": false,
+            "standardStaking": false,
+            "parachainStaking": false,
+            "delegatedStaking": false,
+            "relay": "polkadot",
+            "paraId": 2046
+        },
+        {
+            "domain": "dancebox",
+            "label": "Dancebox",
+            "token": "DANCE",
+            "stakingPallets": [
+                "PooledStaking"
+            ],
+            "evmPallet": false,
+            "assetPallet": false,
+            "foreignAssetsPallet": true,
+            "standardStaking": false,
+            "parachainStaking": false,
+            "delegatedStaking": false
+        },
+        {
+            "domain": "crust-parachain",
+            "label": "Crust Parachain",
+            "token": "CRU",
+            "stakingPallets": [],
+            "evmPallet": false,
+            "assetPallet": true,
+            "foreignAssetsPallet": false,
+            "standardStaking": false,
+            "parachainStaking": false,
+            "delegatedStaking": false,
+            "relay": "polkadot",
+            "paraId": 2008
+        },
+        {
+            "domain": "crust",
+            "label": "Crust",
+            "token": "CRU",
+            "stakingPallets": [
+                "Staking"
+            ],
+            "evmPallet": false,
+            "assetPallet": false,
+            "foreignAssetsPallet": false,
+            "standardStaking": true,
+            "parachainStaking": false,
+            "delegatedStaking": false
+        },
+        {
+            "domain": "creditcoin",
+            "label": "Creditcoin",
+            "token": "CTC",
+            "stakingPallets": [
+                "Staking"
+            ],
+            "evmPallet": false,
+            "assetPallet": false,
+            "foreignAssetsPallet": false,
+            "standardStaking": true,
+            "parachainStaking": false,
+            "delegatedStaking": false
+        },
+        {
+            "domain": "coretime-polkadot",
+            "label": "Coretime Polkadot",
+            "token": "DOT",
+            "stakingPallets": [],
+            "evmPallet": false,
+            "assetPallet": false,
+            "foreignAssetsPallet": false,
+            "standardStaking": false,
+            "parachainStaking": false,
+            "delegatedStaking": false,
+            "relay": "polkadot",
+            "paraId": 1005
+        },
+        {
+            "domain": "coretime-kusama",
+            "label": "Coretime Kusama",
+            "token": "KSM",
+            "stakingPallets": [],
+            "evmPallet": false,
+            "assetPallet": false,
+            "foreignAssetsPallet": false,
+            "standardStaking": false,
+            "parachainStaking": false,
+            "delegatedStaking": false,
+            "relay": "kusama",
+            "paraId": 1005
+        },
+        {
+            "domain": "collectives-polkadot",
+            "label": "Collectives Polkadot",
+            "token": "DOT",
+            "stakingPallets": [],
+            "evmPallet": false,
+            "assetPallet": false,
+            "foreignAssetsPallet": false,
+            "standardStaking": false,
+            "parachainStaking": false,
+            "delegatedStaking": false,
+            "relay": "polkadot",
+            "paraId": 1001
+        },
+        {
+            "domain": "clover",
+            "label": "Clover",
+            "token": "CLV",
+            "stakingPallets": [
+                "Staking"
+            ],
+            "evmPallet": false,
+            "assetPallet": false,
+            "foreignAssetsPallet": false,
+            "standardStaking": true,
+            "parachainStaking": false,
+            "delegatedStaking": false,
+            "relay": "polkadot",
+            "paraId": 2002
+        },
+        {
+            "domain": "centrifuge",
+            "label": "Centrifuge",
+            "token": "CFG",
+            "stakingPallets": [],
+            "evmPallet": true,
+            "assetPallet": false,
+            "foreignAssetsPallet": false,
+            "standardStaking": false,
+            "parachainStaking": false,
+            "delegatedStaking": false,
+            "relay": "polkadot",
+            "paraId": 2031
+        },
+        {
+            "domain": "calamari",
+            "label": "Calamari",
+            "token": "KMA",
+            "stakingPallets": [
+                "ParachainStaking"
+            ],
+            "evmPallet": false,
+            "assetPallet": true,
+            "foreignAssetsPallet": false,
+            "standardStaking": false,
+            "parachainStaking": true,
+            "delegatedStaking": false,
+            "relay": "kusama",
+            "paraId": 2084
+        },
+        {
+            "domain": "bridgehub-polkadot",
+            "label": "BridgeHub Polkadot",
+            "token": "DOT",
+            "stakingPallets": [],
+            "evmPallet": false,
+            "assetPallet": false,
+            "foreignAssetsPallet": false,
+            "standardStaking": false,
+            "parachainStaking": false,
+            "delegatedStaking": false,
+            "relay": "polkadot",
+            "paraId": 1002
+        },
+        {
+            "domain": "bridgehub-kusama",
+            "label": "BridgeHub Kusama",
+            "token": "KSM",
+            "stakingPallets": [],
+            "evmPallet": false,
+            "assetPallet": false,
+            "foreignAssetsPallet": false,
+            "standardStaking": false,
+            "parachainStaking": false,
+            "delegatedStaking": false,
+            "relay": "kusama",
+            "paraId": 1002
+        },
+        {
+            "domain": "bifrost-kusama",
+            "label": "Bifrost Kusama",
+            "token": "BNC",
+            "stakingPallets": [
+                "ParachainStaking",
+                "SystemStaking",
+                "LeverageStaking"
+            ],
+            "evmPallet": false,
+            "assetPallet": false,
+            "foreignAssetsPallet": false,
+            "standardStaking": false,
+            "parachainStaking": true,
+            "delegatedStaking": false,
+            "relay": "kusama",
+            "paraId": 2001
+        },
+        {
+            "domain": "bifrost",
+            "label": "Bifrost",
+            "token": "BNC",
+            "stakingPallets": [
+                "ParachainStaking",
+                "SystemStaking",
+                "LeverageStaking"
+            ],
+            "evmPallet": true,
+            "assetPallet": false,
+            "foreignAssetsPallet": false,
+            "standardStaking": false,
+            "parachainStaking": true,
+            "delegatedStaking": false,
+            "relay": "polkadot",
+            "paraId": 2030
+        },
+        {
+            "domain": "basilisk",
+            "label": "Basilisk",
+            "token": "BSX",
+            "stakingPallets": [],
+            "evmPallet": false,
+            "assetPallet": false,
+            "foreignAssetsPallet": false,
+            "standardStaking": false,
+            "parachainStaking": false,
+            "delegatedStaking": false,
+            "relay": "kusama",
+            "paraId": 2090,
+            "pseudoStaking": true
+        },
+        {
+            "domain": "avail",
+            "label": "Avail",
+            "token": "AVAIL",
+            "stakingPallets": [
+                "Staking"
+            ],
+            "evmPallet": false,
+            "assetPallet": false,
+            "foreignAssetsPallet": false,
+            "standardStaking": true,
+            "parachainStaking": false,
+            "delegatedStaking": false
+        },
+        {
+            "domain": "autonomys",
+            "label": "Autonomys",
+            "token": "AI3",
+            "stakingPallets": [],
+            "evmPallet": false,
+            "assetPallet": false,
+            "foreignAssetsPallet": false,
+            "standardStaking": false,
+            "parachainStaking": false,
+            "delegatedStaking": false
+        },
+        {
+            "domain": "astar",
+            "label": "Astar",
+            "token": "ASTR",
+            "stakingPallets": [
+                "DappStaking"
+            ],
+            "evmPallet": true,
+            "assetPallet": true,
+            "foreignAssetsPallet": false,
+            "standardStaking": false,
+            "parachainStaking": false,
+            "delegatedStaking": false,
+            "relay": "polkadot",
+            "paraId": 2006
+        },
+        {
+            "domain": "assethub-polkadot",
+            "label": "AssetHub Polkadot",
+            "token": "DOT",
+            "stakingPallets": [],
+            "evmPallet": false,
+            "assetPallet": true,
+            "foreignAssetsPallet": true,
+            "standardStaking": false,
+            "parachainStaking": false,
+            "delegatedStaking": false,
+            "relay": "polkadot",
+            "paraId": 1000
+        },
+        {
+            "domain": "assethub-kusama",
+            "label": "AssetHub Kusama",
+            "token": "KSM",
+            "stakingPallets": [],
+            "evmPallet": false,
+            "assetPallet": true,
+            "foreignAssetsPallet": true,
+            "standardStaking": false,
+            "parachainStaking": false,
+            "delegatedStaking": false,
+            "relay": "kusama",
+            "paraId": 1000
+        },
+        {
+            "domain": "altair",
+            "label": "Altair",
+            "token": "AIR",
+            "stakingPallets": [],
+            "evmPallet": true,
+            "assetPallet": false,
+            "foreignAssetsPallet": false,
+            "standardStaking": false,
+            "parachainStaking": false,
+            "delegatedStaking": false,
+            "relay": "kusama",
+            "paraId": 2088
+        },
+        {
+            "domain": "alephzero",
+            "label": "Aleph Zero",
+            "token": "AZERO",
+            "stakingPallets": [
+                "Staking"
+            ],
+            "evmPallet": false,
+            "assetPallet": false,
+            "foreignAssetsPallet": false,
+            "standardStaking": true,
+            "parachainStaking": false,
+            "delegatedStaking": false
+        },
+        {
+            "domain": "acala",
+            "label": "Acala",
+            "token": "ACA",
+            "stakingPallets": [],
+            "evmPallet": true,
+            "assetPallet": false,
+            "foreignAssetsPallet": false,
+            "standardStaking": false,
+            "parachainStaking": false,
+            "delegatedStaking": false,
+            "relay": "polkadot",
+            "paraId": 2000
+        }
+    ]
 }

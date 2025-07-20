@@ -17,8 +17,8 @@ export class TransferMerger {
     let key = undefined;
     transferList.forEach((entry) => {
       key ??= entry.extrinsic_index;
-      entry.from = mapToGenericSubstrateAddress(entry.from)
-      entry.to = mapToGenericSubstrateAddress(entry.to)
+      entry.from = mapToGenericSubstrateAddress(entry.from);
+      entry.to = mapToGenericSubstrateAddress(entry.to);
       const otherAddress = isMyAccount(entry.from) ? entry.to : entry.from;
       if (!target[key]) {
         target[key] = {
@@ -31,7 +31,7 @@ export class TransferMerger {
         };
       }
       let matchingTransfer = target[key].transfers.find(
-        (t) => t.tokenId === entry.tokenId,
+        (t) => t.asset_unique_id === entry.asset_unique_id,
       );
       if (!matchingTransfer) {
         matchingTransfer = {

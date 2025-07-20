@@ -1,447 +1,540 @@
 import { SubscanService } from "../../blockchain/substrate/api/subscan.service";
 import { ForeignAsset } from "../../blockchain/substrate/model/foreign-asset";
 import { Transfer } from "../../blockchain/substrate/model/raw-transfer";
-import { EventDetails, SubscanEvent } from "../../blockchain/substrate/model/subscan-event";
-import { TokenInfo } from "../../blockchain/substrate/model/token";
+import {
+  EventDetails,
+  SubscanEvent,
+} from "../../blockchain/substrate/model/subscan-event";
 import { mapPublicKeyToAddress } from "../../blockchain/substrate/util/map-public-key-to-address";
 import { logger } from "../../logger/logger";
-import isEqual from 'lodash.isequal';
+import isEqual from "lodash.isequal";
 import { Asset } from "../../blockchain/substrate/model/asset";
 import { isEvmAddress } from "../../data-aggregation/helper/is-evm-address";
-import { getAddress } from 'ethers';
+import { getAddress } from "ethers";
+import BigNumber from "bignumber.js";
 
 interface EventDerivedTransfer extends Transfer {
-    event_id: string,
-    module_id: string,
-    original_event_id: string
+  event_id: string;
+  module_id: string;
+  original_event_id: string;
 }
 
 interface AssetInfos {
- tokens: TokenInfo[], stdAssets: Asset[], foreignAssets: ForeignAsset[]
+  tokens: Asset[];
+  foreignAssets: ForeignAsset[];
+}
+
+const getPropertyValue = (property: string | string[], event: EventDetails) => {
+  if (!Array.isArray(property)) {
+    property = [property]
+  }
+  return event.params.find(
+    (p) => property.includes(p.name),
+  )?.value;
+}
+
+const extractAddress = (property: string | string[], event: EventDetails) => {
+  const value = getPropertyValue(property, event)
+  return mapKeyToCanonicalAddress(value);
+}
+
+const extractAsset = (property: string | string[], event: EventDetails, tokens: Asset[]) => {
+  const value = getPropertyValue(property, event)
+  return tokens.find((t) => value == t.asset_id || isEqual(value, t.asset_id));
+}
+
+const extractForeignAsset = (property: string | string[], event: EventDetails, tokens: ForeignAsset[]) => {
+  const value = getPropertyValue(property, event)
+  return tokens.find((t) => value == t.asset_id || isEqual(value, t.multi_location) || isEqual(value, t.asset_id));
 }
 
 const mapKeyToCanonicalAddress = (key: string) => {
-    if (isEvmAddress(key)) {
-        return getAddress(key)
-    }
-    return mapPublicKeyToAddress(key)
+  if (isEvmAddress(key)) {
+    return getAddress(key);
+  }
+  return mapPublicKeyToAddress(key);
+};
+
+const toTransfer = (event: EventDetails, from: string, to: string, amount: number, token: { symbol: string, decimals: number, unique_id: string }) => {
+  if (to === undefined || from === undefined || !token || !amount) {
+    throw `Missing data: to: ${to}, from: ${from}, token: ${token}, amount: ${amount}`
+  }
+  return {
+    event_id: event.event_id,
+    module_id: event.module_id,
+    original_event_id: event.original_event_index,
+    block: event.block_num,
+    hash: event.extrinsic_hash,
+    extrinsic_index: event.extrinsic_index,
+    timestamp: event.timestamp!,
+    symbol: token.symbol,
+    amount: amount,
+    to,
+    from,
+    asset_unique_id: token.unique_id,
+  }
 }
 
 export class SpecialEventsToTransfersService {
-    eventHandlers: { chain, moduleId: string, eventId: string, handler: (chain: { domain: string, token: string }, e: EventDetails, assets: AssetInfos) => Promise<EventDerivedTransfer | EventDerivedTransfer[]> }[] = [
-        { chain: 'bifrost', moduleId: 'balances', eventId: 'Locked', handler: (c, e, assets) => this.onBifrostParachainBalancesLocked(e, assets) },
-        { chain: 'bifrost', moduleId: 'balances', eventId: 'Unlocked', handler: (c, e, assets) => this.onBifrostParachainBalancesUnlocked(e, assets) },
-        { chain: 'bifrost', moduleId: 'tokens', eventId: 'Withdrawn', handler: (c, e, assets) => this.onBifrostTokensWithdrawn(e, assets) },
-        { chain: 'bifrost', moduleId: 'tokens', eventId: 'Deposited', handler: (c, e, assets) => this.onBifrostTokensDeposited(e, assets) },
-        { chain: 'assethub-polkadot', moduleId: 'assetconversion', eventId: 'SwapExecuted', handler: (c, e, assets) => this.onAssethubSwapExecuted(e, assets) },
-        { chain: 'assethub-polkadot', moduleId: 'assets', eventId: 'Issued', handler: (c, e, assets) => this.onAssethubAssetsIssued(e, assets) },
-        //{ chain: 'hydration', moduleId: 'tokens', eventId: 'Deposited', handler: (c, e, extra) => this.onHydrationTokensDeposited(e, extra) },
-        { chain: 'hydration', moduleId: 'currencies', eventId: 'Deposited', handler: (c, e, assets) => this.onHydrationTokensDeposited(e, assets) },
-        { chain: 'hydration', moduleId: 'currencies', eventId: 'Minted', handler: (c, e, assets) => this.onHydrationTokensDeposited(e, assets) },
-        { chain: 'hydration', moduleId: 'balances', eventId: 'Locked', handler: (c, e, assets) => this.onBalancesLocked(c, e, assets) },
-        { chain: 'hydration', moduleId: 'balances', eventId: 'Unlocked', handler: (c, e, assets) => this.onBalancesUnlocked(c, e, assets) },
-        { chain: 'acala', moduleId: 'balances', eventId: 'Locked', handler: (c, e, assets) => this.onBalancesLocked(c, e, assets) },
-        { chain: 'acala', moduleId: 'balances', eventId: 'Unlocked', handler: (c, e, assets) => this.onBalancesUnlocked(c, e, assets) },
-        { chain: 'astar', moduleId: 'balances', eventId: 'Locked', handler: (c, e, assets) => this.onBalancesLocked(c, e, assets) },
-        { chain: 'astar', moduleId: 'balances', eventId: 'Unlocked', handler: (c, e, assets) => this.onBalancesUnlocked(c, e, assets) },
-        { chain: 'astar', moduleId: 'balances', eventId: 'Thawed', handler: (c, e, assets) => this.onBalancesUnlocked(c, e, assets) },
-        { chain: 'astar', moduleId: 'balances', eventId: 'Frozen', handler: (c, e, assets) => this.onBalancesLocked(c, e, assets) },
-        { chain: 'mythos', moduleId: 'balances', eventId: 'Frozen', handler: (c, e, assets) => this.onBalancesLocked(c, e, assets) },
-        { chain: 'mythos', moduleId: 'balances', eventId: 'Thawed', handler: (c, e, assets) => this.onBalancesUnlocked(c, e, assets) },
-        { chain: 'peaq', moduleId: 'assets', eventId: 'Burned', handler: (c, e, assets) => this.onPeaqBalancesBurned(e, assets) },
-        { chain: 'peaq', moduleId: 'assets', eventId: 'Issued', handler: (c, e, assets) => this.onPeaqBalancesIssued(e, assets) },
-    ]
-
-    constructor(private subscanService: SubscanService) {
+  eventConfigs: {
+    chains;
+    event: string | string[];
+    condition?: (event: SubscanEvent, peerEvents: SubscanEvent[]) => boolean,
+    handler: (
+      chain: { domain: string; token: string },
+      e: EventDetails,
+      context: AssetInfos & { events: SubscanEvent[] },
+    ) => Promise<EventDerivedTransfer | EventDerivedTransfer[]>;
+  }[] = [
+    { 
+      chains: ["coretime-polkadot", "coretime-kusama"],
+      event: "brokerPurchased",
+      handler: (c, e, context) => this.onCoretimePurchased(e, context),
+    },
+    { 
+      chains: ["coretime-polkadot", "coretime-kusama"],
+      event: "brokerRenewed",
+      handler: (c, e, context) => this.onCoretimePurchased(e, context),
+    },
+    { 
+        chains: ["*"],
+        event: "balancesReserveRepatriated",
+        handler: (c, e, context) => this.onReserveRepatriated(e, context),
+    },
+    { 
+        chains: ["energywebx"],
+        event: "balancesDeposit",
+        handler: (c, e, context) => this.onBalancesDeposit(e, context),
+        condition: (event, events) => !!events.find(e => e.module_id + e.event_id === "tokenmanagerAVTLifted"), 
+    },
+    { 
+        chains: ["energywebx"],
+        event: "balancesWithdraw",
+        handler: (c, e, context) => this.onBalancesWithdraw(e, context),
+        condition: (event, events) => !!events.find(e => e.module_id + e.event_id === "tokenmanagerAvtLowered"), 
+    },
+    /*{
+      chains: ["*"],
+      event: "balancesLocked",
+      handler: (c, e, context) => this.onBalancesDeposit(e, context),
+    },
+    {
+      chains: ["*"],
+      event: "balancesUnlocked",
+      handler: (c, e, context) => this.onBalancesWithdraw(e, context),
+    },*/
+    {
+      chains: ["bifrost"],
+      event: "balancesIssued",
+      handler: (c, e, context) =>
+        this.onBalancesDeposit(e, context),
+    },
+    {
+      chains: ["bifrost"],
+      event: "vtokenmintingRedeemed",
+      handler: (c, e, context) => this.bifrostRedeemedVToken(e, context),
+    },
+    {
+      chains: ["bifrost"],
+      event: "vtokenmintingMinted",
+      handler: (c, e, context) => this.bifrostMintedVToken(e, context),
+    },
+    {
+      chains: ["bifrost"],
+      event: "vtokenmintingRebondedByUnlockId",
+      handler: (c, e, context) => this.bifrostMintedVToken(e, context),
+    },
+    {
+      chains: ["assethub-polkadot", "assethub-kusama"],
+      event: "assetconversionSwapExecuted",  // SwapCreditExecuted
+      handler: (c, e, context) => this.onAssethubSwapExecuted(e, context),
+    },
+    {
+      chains: ["assethub-polkadot", "assethub-kusama"],
+      event: "foreignassetsIssued",
+      handler: (c, e, context) => this.onAssethubForeignAssetsIssued(e, context),
+    },
+    {
+      chains: ["assethub-polkadot", "assethub-kusama", "coretime-polkadot", "coretime-kusama"],
+      event: "assetsIssued",
+      handler: (c, e, context) => this.onAssethubAssetsIssued(e, context),
+    },
+    {
+      chains: ["*"],
+      event: "balancesDeposit",
+      handler: (c, e, context) => this.onBalancesDeposit(e, context),
+      condition: (event, events) => !!events.find(e => e.module_id + e.event_id === "systemNewAccount"), 
+    },
+    {
+      chains: ["*"],
+      event: "balancesWithdraw",
+      handler: (c, e, context) => this.onBalancesWithdraw(e, context),
+      condition: (event, events) => !!events.find(e => e.module_id + e.event_id === "systemKilledAccount"), 
+    },
+    {
+      chains: ["assethub-polkadot", "assethub-kusama", "coretime-polkadot", "coretime-kusama", "people-polkadot", "people-kusama",
+        "collectives-polkadot", "collectives-kusama"
+      ],
+      event: "balancesMinted",
+      handler: (c, e, context) => this.onBalancesDeposit(e, context),
+    },
+    {
+      chains: ["astar", "mythos", "spiritnet"],
+      event: "balancesThawed",
+      handler: (c, e, context) => this.onBalancesWithdraw(e, context),
+    },
+    {
+      chains: ["astar", "mythos", "spiritnet"],
+      event: "balancesFrozen",
+      handler: (c, e, context) => this.onBalancesDeposit(e, context),
+    },
+    {
+      chains: ["polkadot", "kusama"],
+      event: "delegatedstakingMigratedDelegation",
+      handler: (c, e, context) => this.migratedDelegation(c, e, context),
     }
+  ];
 
-    private findMatchingHandler(chain: string, ev: { module_id: string, event_id: string }) {
-        return this.eventHandlers.find(h => chain === h.chain && h.moduleId === ev.module_id && h.eventId === ev.event_id )
+  constructor(private subscanService: SubscanService) {}
+
+  private findMatchingConfig(
+    chain: string,
+    ev: { module_id: string; event_id: string },
+  ) {
+    return this.eventConfigs.find(
+      (h) =>
+        (h.chains.includes("*") || h.chains.includes(chain)) && (ev.module_id + ev.event_id) === h.event
+    );
+  }
+
+  private async fetchTokens(chainInfo: {
+    token: string;
+    domain: string;
+  }): Promise<AssetInfos> {
+    const token = await this.subscanService.fetchNativeToken(chainInfo.domain);
+    let extra: {
+      tokens: Asset[];
+      foreignAssets: ForeignAsset[];
+    } = {
+      tokens: [],
+      foreignAssets: [],
+    };
+    switch (chainInfo.domain) {
+      case "assethub-polkadot":
+      case "assethub-kusama":
+        const foreignAssets = await this.subscanService.fetchForeignAssets(
+          chainInfo.domain,
+        );
+        const tokens = await this.subscanService.scanAssets(
+          chainInfo.domain,
+        );
+        tokens.push({
+          symbol: chainInfo.token,
+          decimals: token.token_decimals,
+          native: true,
+          unique_id: chainInfo.token,
+          asset_id: chainInfo.token,
+        });
+        extra = { foreignAssets, tokens };
+        break;
+      case "peaq":
+        extra.tokens =  await this.subscanService.scanAssets(chainInfo.domain);
+        extra.tokens.push({
+          symbol: chainInfo.token,
+          decimals: token.token_decimals,
+          native: true,
+          unique_id: chainInfo.token,
+          asset_id: chainInfo.token,
+        });
+        break;
+      case "bifrost":
+      case "hydration":
+      case "acala":
+      case "astar":
+      case "mythos":
+      case "energywebx":
+      case "unique":
+      case 'spiritnet':
+        extra.tokens = await this.subscanService.scanTokens(chainInfo.domain);
+        extra.tokens.push({
+          name: chainInfo.token,
+          decimals: token.token_decimals,
+          symbol: chainInfo.token,
+          asset_id: { Native: chainInfo.token },
+          unique_id: chainInfo.token,
+          currency_id: chainInfo.token,
+          native: true,
+        });
+        break;
+      case "polkadot":
+      case "kusama":
+      case "coretime-polkadot":
+      case "collectives-polkadot":
+      case "people-polkadot":
+      case "people-kusama":
+      case "coretime-kusama":
+      case "collectives-kusama":
+          extra.tokens.push({
+          name: chainInfo.token,
+          decimals: token.token_decimals,
+          symbol: chainInfo.token,
+          asset_id: { Native: chainInfo.token },
+          unique_id: chainInfo.token,
+          currency_id: chainInfo.token,
+          native: true,
+        });
     }
+    return extra;
+  }
 
-    private async fetchTokens(chainInfo: { token: string, domain: string}): Promise<AssetInfos> {
-        const token = await this.subscanService.fetchNativeToken(chainInfo.domain)
-        let extra: { tokens: TokenInfo[], stdAssets: Asset[], foreignAssets: ForeignAsset[] } = {
-            tokens: [], stdAssets: [], foreignAssets: []
+  async handleEvents(
+    chainInfo: { token: string; domain: string },
+    events: SubscanEvent[],
+  ): Promise<EventDerivedTransfer[]> {
+
+    const groupedEvents: Record<string, SubscanEvent[]> = {}
+    events.forEach(e => {
+        if (!groupedEvents[e.extrinsic_index ?? e.timestamp]) {
+            groupedEvents[e.extrinsic_index ?? e.timestamp] = []
         }
-        switch (chainInfo.domain) {
-            case 'assethub-polkadot':
-            case 'assethub-kusama':
-                const foreignAssets = await this.subscanService.fetchForeignAssets(chainInfo.domain)
-                const stdAssets = await this.subscanService.scanAssets(chainInfo.domain)
-                stdAssets.push({
-                    metadata: {
-                        symbol: chainInfo.token,
-                        decimals: token.token_decimals,
-                    },
-                    unique_id: chainInfo.token,
-                    asset_id: chainInfo.token
-                })
-                extra = { foreignAssets, stdAssets, tokens: [] }
-                break;
-            case 'peaq':
-                const assets = await this.subscanService.scanAssets(chainInfo.domain)
-                assets.push({
-                    metadata: {
-                        symbol: chainInfo.token,
-                        decimals: token.token_decimals,
-                    },
-                    unique_id: chainInfo.token,
-                    asset_id: chainInfo.token
-                })
-                extra = { foreignAssets: [], stdAssets: assets, tokens: [] }
-                break;
-            case 'bifrost':
-            case 'hydration':
-            case 'acala':
-            case 'astar':
-            case 'mythos':
-                extra.tokens = await this.subscanService.scanTokens(chainInfo.domain)
-                extra.tokens.push({
-                    name: chainInfo.token,
-                    decimals: token.token_decimals,
-                    symbol: chainInfo.token,
-                    token_id: { Native: chainInfo.token },
-                    unique_id: chainInfo.token,
-                    currency_id: chainInfo.token,
-                    metadata: {
-                        decimals: token.token_decimals,
-                        symbol: chainInfo.token
-                    }
-                })
-        }
-        return extra
-    }
+        groupedEvents[e.extrinsic_index ?? e.timestamp].push(e)
+    })
 
-    async handleEvents(chainInfo: { token: string, domain: string}, events: SubscanEvent[]): Promise<EventDerivedTransfer[]> {
-        const eventsOfInterest = events.filter(e => this.findMatchingHandler(chainInfo.domain, e))
-        const eventDetails = await this.subscanService.fetchEventDetails(chainInfo.domain, eventsOfInterest)
-        const extras = await this.fetchTokens(chainInfo)
-        const transfersFromEvents = (await Promise.all(eventDetails.map(async details => {
-            try {
-                return await this.findMatchingHandler(chainInfo.domain, details).handler(chainInfo, details, extras)
-            } catch (error) {
-                logger.error(`Error mapping event to transfer: ${details.extrinsic_index}, ${details.original_event_index}, ${details.module_id} ${details.event_id}`)
-                logger.error(error)
-                return undefined
+    const eventsOfInterest = events.filter((e) => {
+      const config = this.findMatchingConfig(chainInfo.domain, e)
+      if (!config) {
+        return false
+      }
+      if (!config.condition) {
+        return true
+      }
+      return config.condition(e, groupedEvents[e.extrinsic_index ?? e.timestamp])
+    })
+
+    const eventDetails = await this.subscanService.fetchEventDetails(
+      chainInfo.domain,
+      eventsOfInterest,
+    );
+    const extras = await this.fetchTokens(chainInfo);
+    const transfersFromEvents = (
+      await Promise.all(
+        eventDetails.map(async (details) => {
+          try {
+            const originalEvent = events.find(e => e.event_index === details.original_event_index)
+            const eventsInTx = groupedEvents[originalEvent.extrinsic_index ?? originalEvent.timestamp]
+            return await this.findMatchingConfig(
+              chainInfo.domain,
+              details,
+            ).handler(chainInfo, details, { ...extras, events: eventsInTx });
+          } catch (error) {
+            logger.error(
+              `Error mapping event to transfer: ${details.extrinsic_index}, ${details.original_event_index}, ${details.module_id} ${details.event_id}`,
+            );
+            logger.error(error);
+            return undefined;
+          }
+        }),
+      )
+    )
+      .flat()
+      .filter((t) => !!t);
+
+    const groupedTransfers: Record<string, [EventDerivedTransfer]> = {};
+    transfersFromEvents.forEach((t) => {
+      if (!groupedTransfers[t.extrinsic_index]) {
+        groupedTransfers[t.extrinsic_index] = [t];
+      } else {
+        groupedTransfers[t.extrinsic_index].push(t);
+      }
+    });
+    const gatheredTransfers = Object.values(groupedTransfers).flat();
+    return gatheredTransfers;
+  }
+
+  private async onAssethubSwapExecuted(
+    event: EventDetails,
+    {
+      foreignAssets,
+      tokens,
+    }: { foreignAssets: ForeignAsset[]; tokens: Asset[] },
+  ): Promise<EventDerivedTransfer[]> {
+    const from = extractAddress("who", event)
+    const to = extractAddress("send_to", event)
+    const route: { col1: any; col2: any }[] = getPropertyValue("path", event)
+    const assets = route
+      .map((r) => r.col1)
+      .map((location) => {
+        if (location.interior?.Here === "NULL") {
+          return tokens.find((t) => t.symbol === "DOT");
+        }
+        const foreign = foreignAssets.find((t) =>
+          isEqual(t.multi_location, location),
+        );
+        if (foreign) {
+          return foreign;
+        }
+        const findGeneralIndex = (location: any): any => {
+          const stack = [location];
+
+          while (stack.length > 0) {
+            const current = stack.pop();
+
+            if (current?.GeneralIndex) {
+              return current.GeneralIndex;
             }
-        }))).flat().filter(t => !!t)
 
-        // smart filter
-        const groupedTransfers: Record<string, [EventDerivedTransfer]> = {}
-        transfersFromEvents.forEach(t => {
-            if (!groupedTransfers[t.extrinsic_index]) {
-                groupedTransfers[t.extrinsic_index] = [t]
-            } else {
-                groupedTransfers[t.extrinsic_index].push(t)
+            if (Array.isArray(current)) {
+              stack.push(...current);
+            } else if (current && typeof current === "object") {
+              stack.push(...Object.values(current));
             }
-        }) 
-        const gatheredTransfers = Object.values(groupedTransfers).flat()
-        return gatheredTransfers
-    }
+          }
 
-    private async onBifrostTokensWithdrawn(event: EventDetails, { tokens } : { tokens: TokenInfo[] }): Promise<EventDerivedTransfer> {
-        const key = event.params.find(p => p.name === "who")?.value;
-        const address =  mapKeyToCanonicalAddress(key)
-        const amount = Number(event.params.find(p => p.name === "amount")?.value || undefined)
-        const currencyId =  event.params.find(p => p.name === "currency_id")?.value
-        const token = tokens.find(t => isEqual(currencyId, t.token_id))
-        if (!address || !amount || !token) {
-            throw "Missing data"
-        }
-        return {
-            event_id: event.event_id,
-            module_id: event.module_id,
-            original_event_id: event.original_event_index,
-            block: event.block_num,
-            hash: event.extrinsic_hash,
-            extrinsic_index: event.extrinsic_index,
-            timestamp: event.timestamp!,
-            symbol: token.symbol,
-            amount: amount / Math.pow(10, token.decimals),
-            tokenId: token.unique_id,
-            to: '',
-            from: address,
-        }
-    }
+          return undefined;
+        };
+        const generalIndex = findGeneralIndex(location);
+        return tokens.find((t) => t.asset_id == generalIndex);
+      });
+    const fromAsset = assets[0];
+    const toAsset = assets[assets.length - 1];
 
-    private async onBifrostTokensDeposited(event: EventDetails, { tokens } : { tokens: TokenInfo[] }): Promise<EventDerivedTransfer> {
-        if (event.extrinsic_hash === "0xf7d6c93ef657e0fab4ac0b8225b5ade896bbbf928801b3c710b44477313bc3ea") {
-            console.log("found it!")
-        }
-        const key = event.params.find(p => p.name === "who")?.value;
-        const address =  mapKeyToCanonicalAddress(key)
-        const amount = Number(event.params.find(p => p.name === "amount")?.value || undefined)
-        const currencyId =  event.params.find(p => p.name === "currency_id")?.value
-        const token = tokens.find(t => isEqual(currencyId, t.token_id))
-        if (!address || !amount || !token) {
-            throw "Missing data"
-        }
-        return {
-            event_id: event.event_id,
-            module_id: event.module_id,
-            original_event_id: event.original_event_index,
-            block: event.block_num,
-            hash: event.extrinsic_hash,
-            extrinsic_index: event.extrinsic_index,
-            timestamp: event.timestamp!,
-            symbol: token.symbol,
-            amount: amount / Math.pow(10, token.decimals),
-            tokenId: token.unique_id,
-            to: address,
-            from: '',
-        }
-    }
+    const amount_in = Number(getPropertyValue("amount_in", event)) / Math.pow(10, fromAsset?.decimals)
+    const amount_out = Number(getPropertyValue("amount_out", event)) / Math.pow(10, toAsset?.decimals)
+    return [
+      toTransfer(event, from, "", amount_in, fromAsset),
+      toTransfer(event, "", to, amount_out, toAsset)
+    ];
+  }
 
-    private async onBifrostParachainBalancesUnlocked(event: EventDetails, { tokens } : { tokens: TokenInfo[] }): Promise<EventDerivedTransfer> {
-        const key = event.params.find(p => p.name === "who")?.value;
-        const address =  mapKeyToCanonicalAddress(key)
-        const amount = Number(event.params.find(p => p.name === "amount")?.value || undefined)
-        const token = tokens.find(t => t.symbol === "BNC")
-        if (!address || !amount || !token) {
-            throw "Missing data"
-        }
-        return {
-            event_id: event.event_id,
-            module_id: event.module_id,
-            original_event_id: event.original_event_index,
-            block: event.block_num,
-            hash: event.extrinsic_hash,
-            extrinsic_index: event.extrinsic_index,
-            timestamp: event.timestamp!,
-            symbol: token.symbol,
-            amount: amount / Math.pow(10, token.decimals),
-            tokenId: token.unique_id,
-            to: '',
-            from: address,
-        }
-    }
+  private async onAssethubForeignAssetsIssued(
+    event: EventDetails,
+    { foreignAssets }: { foreignAssets: ForeignAsset[] },
+  ): Promise<EventDerivedTransfer> {
+    const owner = extractAddress("owner", event)
+    const asset = extractForeignAsset("asset_id", event, foreignAssets)
+    const amount = Number(getPropertyValue("amount", event)) / Math.pow(10, asset?.decimals);
+    return toTransfer(event, "", owner, amount, asset)
+  }
 
-    private async onBifrostParachainBalancesLocked(event: EventDetails, { tokens } : { tokens: TokenInfo[] }): Promise<EventDerivedTransfer> {
-        const key = event.params.find(p => p.name === "who")?.value;
-        const address =  mapKeyToCanonicalAddress(key)
-        const amount = Number(event.params.find(p => p.name === "amount")?.value || undefined)
-        const token = tokens.find(t => t.symbol === "BNC")
-        if (!address || !amount || !token) {
-            throw "Missing data"
-        }
-        return {
-            event_id: event.event_id,
-            module_id: event.module_id,
-            original_event_id: event.original_event_index,
-            block: event.block_num,
-            hash: event.extrinsic_hash,
-            extrinsic_index: event.extrinsic_index,
-            timestamp: event.timestamp!,
-            symbol: token.symbol,
-            amount: amount / Math.pow(10, token.decimals),
-            tokenId: token.unique_id,
-            to: address,
-            from: '',
-        }
-    }
+  private async onAssethubAssetsIssued(
+    event: EventDetails,
+    { tokens }: { tokens: Asset[] },
+  ): Promise<EventDerivedTransfer> {
+    const owner = extractAddress("owner", event)
+    const asset = extractAsset("asset_id", event, tokens)
+    const amount = Number(getPropertyValue("amount", event)) / Math.pow(10, asset?.decimals);
+    return toTransfer(event, "", owner, amount, asset)
+  }
 
-    private async onAssethubSwapExecuted(event: EventDetails, { foreignAssets, stdAssets }: { foreignAssets: ForeignAsset[], stdAssets: Asset[] }): Promise<EventDerivedTransfer[]> {
-        const fromKey = event.params.find(p => p.name === "who")?.value;
-        const toKey = event.params.find(p => p.name === "send_to")?.value;
-        const from =  mapKeyToCanonicalAddress(fromKey)
-        const to =  mapKeyToCanonicalAddress(toKey)
+  private async onBalancesDeposit(
+    event: EventDetails,
+    { tokens }: { tokens: Asset[] },
+  ): Promise<EventDerivedTransfer> {
+    const address = extractAddress("who", event)
+    const tokenInfo = tokens.find((t) => t.native);
+    const amount = Number(getPropertyValue("amount", event)) / Math.pow(10, tokenInfo?.decimals);
+    return toTransfer(event, "", address, amount, tokenInfo)
+  }
 
-        const route: { col1: any, col2: any }[] =  event.params.find(p => p.name === "path")?.value
-        const assets = route.map(r => r.col1).map(location => {
-            if (location.interior?.Here === 'NULL') {
-                return stdAssets.find(t => t.metadata.symbol === 'DOT')
-            }
-            const foreign = foreignAssets.find(t => isEqual(t.multi_location, location))
-            if (foreign) {
-                foreign
-            }
-            return stdAssets.find(t => t.asset_id == location.interior?.X2[1]?.GeneralIndex)
-        })
-        const fromAsset = assets[0]
-        const toAsset = assets[assets.length - 1]
+  private async onBalancesWithdraw(
+    event: EventDetails,
+    { tokens }: { tokens: Asset[] },
+  ): Promise<EventDerivedTransfer> {
+    const address = extractAddress("who", event)
+    const tokenInfo = tokens.find((t) => t.native);
+    const amount = Number(getPropertyValue("amount", event)) / Math.pow(10, tokenInfo?.decimals);
+    return toTransfer(event, address, "", amount, tokenInfo)
+  }
 
-        const amount_in = Number(event.params.find(p => p.name === "amount_in")?.value || undefined) / Math.pow(10, fromAsset?.metadata?.decimals)
-        const amount_out = Number(event.params.find(p => p.name === "amount_out")?.value || undefined) / Math.pow(10, toAsset?.metadata?.decimals)
+  private async onPeaqBalancesBurned(
+    event: EventDetails,
+    { tokens }: { tokens: Asset[] },
+  ): Promise<EventDerivedTransfer> {
+    const address = extractAddress("who", event)
+    const asset = extractAsset("asset_id", event, tokens)
+    const amount = Number(getPropertyValue("amount", event)) / Math.pow(10, asset?.decimals);
+    return toTransfer(event, address, "", amount, asset)
+  }
 
-        if (!amount_in || !amount_out || !from || !to || !fromAsset || !toAsset) {
-            throw "Missing data"
-        }
-        return [{
-            event_id: event.event_id,
-            module_id: event.module_id,
-            original_event_id: event.original_event_index,
-            block: event.block_num,
-            hash: event.extrinsic_hash,
-            extrinsic_index: event.extrinsic_index,
-            timestamp: event.timestamp!,
-            symbol: fromAsset.metadata.symbol,
-            amount: amount_in,
-            tokenId: fromAsset.unique_id,
-            to: '',
-            from,
-        }, {
-            event_id: event.event_id,
-            module_id: event.module_id,
-            original_event_id: event.original_event_index,
-            block: event.block_num,
-            hash: event.extrinsic_hash,
-            extrinsic_index: event.extrinsic_index,
-            timestamp: event.timestamp!,
-            symbol: toAsset.metadata.symbol,
-            amount: amount_out,
-            tokenId: toAsset.unique_id,
-            to,
-            from: '',
-        }]
-    }
+  private async onPeaqBalancesIssued(
+    event: EventDetails,
+    { tokens }: { tokens: Asset[] },
+  ): Promise<EventDerivedTransfer> {
+    const address = extractAddress("who", event)
+    const asset = extractAsset("asset_id", event, tokens)
+    const amount = Number(getPropertyValue("amount", event)) / Math.pow(10, asset?.decimals);
+    return toTransfer(event, "", address, amount, asset)
+  }
 
-    private async onAssethubAssetsIssued(event: EventDetails,  { stdAssets }: { stdAssets: Asset[] }): Promise<EventDerivedTransfer> {
-        const ownerKey = event.params.find(p => p.name === "owner")?.value;
-        const owner =  mapKeyToCanonicalAddress(ownerKey)
-        const assetId = event.params.find(p => p.name === "asset_id")?.value;
-        const asset = stdAssets.find(t => t.asset_id == assetId)
-        const amount = Number(event.params.find(p => p.name === "amount")?.value || undefined) / Math.pow(10, asset?.metadata?.decimals)
+  private async onCoretimePurchased(
+    event: EventDetails,
+    { tokens }: { tokens: Asset[] },
+  ): Promise<EventDerivedTransfer> {
+    const address = extractAddress("who", event)
+    const tokenInfo = tokens.find((t) => t.native);
+    const amount = Number(getPropertyValue("price", event)) / Math.pow(10, tokenInfo?.decimals);
+    return toTransfer(event, address, "", amount, tokenInfo)
+  }
 
-        if (!owner || !asset || !amount) {
-            throw "Missing data"
-        }
-        return {
-            event_id: event.event_id,
-            module_id: event.module_id,
-            original_event_id: event.original_event_index,
-            block: event.block_num,
-            hash: event.extrinsic_hash,
-            extrinsic_index: event.extrinsic_index,
-            timestamp: event.timestamp!,
-            symbol: asset?.metadata?.symbol,
-            amount: amount,
-            tokenId: asset.asset_id,
-            to: owner,
-            from: '',
-        }
-    }
+  private async bifrostMintedVToken(
+    event: EventDetails,
+    { tokens }: { tokens: Asset[] },
+  ): Promise<EventDerivedTransfer> {
+    const address = extractAddress(["minter", "address", "rebonder"], event)
+    const tokenId = getPropertyValue(["currency_id", "token_id"], event)
+    const vTokenId = {};
+    Object.keys(tokenId).forEach((property) => {
+      vTokenId["V" + property] = tokenId[property];
+    });
+    const token = tokens.find((t) => isEqual(t.asset_id, vTokenId));
+    const amount = new BigNumber(
+      getPropertyValue(["v_currency_amount", "vtoken_amount"], event)
+    )
+      .multipliedBy(Math.pow(10, -token.decimals))
+      .toNumber();
+    return toTransfer(event, "", address, amount, token)
+  }
 
-    private async onHydrationTokensDeposited(event: EventDetails,  { tokens } : { tokens: TokenInfo[] }): Promise<EventDerivedTransfer> {
-        const key = event.params.find(p => p.name === "who")?.value;
-        const address = mapKeyToCanonicalAddress(key)
-        const currency_id = event.params.find(p => p.name === "currency_id")?.value;
-        const asset = tokens.find(t => t.token_id == currency_id)
-        const amount = Number(event.params.find(p => p.name === "amount")?.value || undefined) / Math.pow(10, asset?.metadata?.decimals)
-        if (!address || !asset || !amount) {
-            throw "Missing data"
-        }
-        return {
-            event_id: event.event_id,
-            module_id: event.module_id,
-            original_event_id: event.original_event_index,
-            block: event.block_num,
-            hash: event.extrinsic_hash,
-            extrinsic_index: event.extrinsic_index,
-            timestamp: event.timestamp!,
-            symbol: asset.symbol,
-            amount: amount,
-            tokenId: asset.unique_id,
-            to: address,
-            from: '',
-        }
-    }
+  private async bifrostRedeemedVToken(
+    event: EventDetails,
+    { tokens }: { tokens: Asset[] },
+  ): Promise<EventDerivedTransfer> {
+    const address = extractAddress(["redeemer", "address"], event)
+    const tokenId = getPropertyValue(["currency_id", "token_id"], event)
+    const vTokenId = {};
+    Object.keys(tokenId).forEach((property) => {
+      vTokenId["V" + property] = tokenId[property];
+    });
+    const token = tokens.find((t) => isEqual(t.asset_id, vTokenId));
+    const amount = new BigNumber(getPropertyValue(["v_currency_amount", "vtoken_amount"], event))
+      .multipliedBy(Math.pow(10, -token.decimals))
+      .toNumber();
+    return toTransfer(event, address, "", amount, token)
+  }
 
-    private async onBalancesLocked({ token }: { token: string }, event: EventDetails,  { tokens } : { tokens: TokenInfo[] }): Promise<EventDerivedTransfer> {
-        const key = event.params.find(p => p.name === "who")?.value;
-        const address = mapKeyToCanonicalAddress(key)
-        const tokenInfo = tokens.find(t => t.symbol === token)
-        const amount = Number(event.params.find(p => p.name === "amount")?.value || undefined) / Math.pow(10, tokenInfo?.metadata?.decimals)
-        if (!address || !tokenInfo || !amount) {
-            throw "Missing data"
-        }
-        return {
-            event_id: event.event_id,
-            module_id: event.module_id,
-            original_event_id: event.original_event_index,
-            block: event.block_num,
-            hash: event.extrinsic_hash,
-            extrinsic_index: event.extrinsic_index,
-            timestamp: event.timestamp!,
-            symbol: tokenInfo.symbol,
-            amount: amount,
-            tokenId: tokenInfo.unique_id,
-            to: address,
-            from: '',
-        }
-    }
+  private async migratedDelegation(
+    chainInfo: { token: string; domain: string },
+    event: EventDetails,
+    { tokens }: { tokens: Asset[] },
+  ): Promise<EventDerivedTransfer> {
+    const address = extractAddress("delegator", event)
+    const token = tokens.find((t) => t.symbol === chainInfo.token);
+    const amount = new BigNumber(getPropertyValue("amount", event))
+      .multipliedBy(Math.pow(10, -token.decimals))
+      .toNumber();
+    return toTransfer(event, "", address, amount, token)
+  }
 
-    private async onBalancesUnlocked({ token }: { token: string }, event: EventDetails, { tokens } : { tokens: TokenInfo[] }): Promise<EventDerivedTransfer> {
-        const key = event.params.find(p => p.name === "who")?.value;
-        const address = mapKeyToCanonicalAddress(key)
-        const tokenInfo = tokens.find(t => t.symbol === token)
-        const amount = Number(event.params.find(p => p.name === "amount")?.value || undefined) / Math.pow(10, tokenInfo?.metadata?.decimals)
-        if (!address || !tokenInfo || !amount) {
-            throw "Missing data"
-        }
-        return {
-            event_id: event.event_id,
-            module_id: event.module_id,
-            original_event_id: event.original_event_index,
-            block: event.block_num,
-            hash: event.extrinsic_hash,
-            extrinsic_index: event.extrinsic_index,
-            timestamp: event.timestamp!,
-            symbol: tokenInfo.symbol,
-            amount: amount,
-            tokenId: tokenInfo.unique_id,
-            to: '',
-            from: address,
-        }
-    }
+  private async onReserveRepatriated(
+    event: EventDetails,
+    { tokens }: { tokens: Asset[] },
+  ): Promise<EventDerivedTransfer> {
+    const to = extractAddress("to", event)
+    const from = extractAddress("from", event)
+    const tokenInfo = tokens.find((t) => t.native);
+    const amount = Number(getPropertyValue("amount", event)) / Math.pow(10, tokenInfo?.decimals);
+    return toTransfer(event, from, to, amount, tokenInfo)
 
-    private async onPeaqBalancesBurned(event: EventDetails, { stdAssets }: { stdAssets: Asset[] }): Promise<EventDerivedTransfer> {
-        const key = event.params.find(p => p.name === "owner")?.value;
-        const address = mapKeyToCanonicalAddress(key)
-        const asset_id = event.params.find(p => p.name === "asset_id")?.value;
-        const asset = stdAssets.find(t => t.asset_id == asset_id)
-        const amount = Number(event.params.find(p => p.name === "balance")?.value || undefined) / Math.pow(10, asset?.metadata?.decimals)
-        if (!address || !asset || !amount) {
-            throw "Missing data"
-        }
-        return {
-            event_id: event.event_id,
-            module_id: event.module_id,
-            original_event_id: event.original_event_index,
-            block: event.block_num,
-            hash: event.extrinsic_hash,
-            extrinsic_index: event.extrinsic_index,
-            timestamp: event.timestamp!,
-            symbol: asset.metadata.symbol,
-            amount: amount,
-            tokenId: asset.unique_id,
-            to: '',
-            from: address,
-        }
-    }
+  }
 
-    private async onPeaqBalancesIssued(event: EventDetails, { stdAssets }: { stdAssets: Asset[] }): Promise<EventDerivedTransfer> {
-        const key = event.params.find(p => p.name === "owner")?.value;
-        const address = mapKeyToCanonicalAddress(key)
-        const asset_id = event.params.find(p => p.name === "asset_id")?.value;
-        const asset = stdAssets.find(t => t.asset_id == asset_id)
-        const amount = Number(event.params.find(p => p.name === "amount")?.value || undefined) / Math.pow(10, asset?.metadata?.decimals)
-        if (!address || !asset || !amount) {
-            throw "Missing data"
-        }
-        return {
-            event_id: event.event_id,
-            module_id: event.module_id,
-            original_event_id: event.original_event_index,
-            block: event.block_num,
-            hash: event.extrinsic_hash,
-            extrinsic_index: event.extrinsic_index,
-            timestamp: event.timestamp!,
-            symbol: asset.metadata.symbol,
-            amount: amount,
-            tokenId: asset.unique_id,
-            to: address,
-            from: '',
-        }
-    }
-}  
+}

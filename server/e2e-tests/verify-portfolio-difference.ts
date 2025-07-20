@@ -9,213 +9,584 @@ import { SubscanService } from "../src/server/blockchain/substrate/api/subscan.s
 import { SpecialEventsToTransfersService } from "../src/server/data-aggregation/services/special-events-to-transfers.service";
 import { Payment } from "../src/server/data-aggregation/model/payment";
 
-const verifyPortfolioChange = async (address: string, chain: { domain: string, label: string, token: string }, tolerance = 0.5, useFees = true) => {
-  const { payments, minBlock, maxBlock, unmatchedEvents } = await fetchPayments(address, chain);
-  fs.writeFileSync(`./e2e-tests/out/all.json`, JSON.stringify({ payments, unmatchedEvents, minBlock, maxBlock }, null, 2))
+const verifyPortfolioChange = async (
+  address: string,
+  chain: { domain: string; label: string; token: string },
+  tolerance = 0.5,
+  useFees = true,
+) => {
+  const { payments, minBlock, maxBlock, unmatchedEvents } = await fetchPayments(
+    address,
+    chain,
+  );
+  fs.writeFileSync(
+    `./e2e-tests/out/all.json`,
+    JSON.stringify({ payments, unmatchedEvents, minBlock, maxBlock }, null, 2),
+  );
 
-  /*let { payments, unmatchedEvents } = JSON.parse(fs.readFileSync(`./e2e-tests/out/payments.json`, 'utf-8'))
-  payments = payments.filter(p => !p.transfers.some(t => t.destChain === 'hydration'))
-  const minBlock = payments.reduce((curr, next) => Math.min(curr, next.block), Number.MAX_SAFE_INTEGER)
-  const maxBlock = 8197543 // payments.reduce((curr, next) => Math.max(curr, next.block), 0)*/
-
-  const subscanApi: SubscanApi = createDIContainer().resolve("subscanApi")
-  const timestamps = []
-  const blocksToFetch = []
-  const chunks = 1
-  for (let blockNum = minBlock; blockNum <= maxBlock; blockNum+=Math.ceil((maxBlock- minBlock) / chunks)) {
-    const block = await subscanApi.fetchBlock(chain.domain, blockNum)
-    timestamps.push(block.timestamp)
-    blocksToFetch.push(blockNum)
+  const subscanApi: SubscanApi = createDIContainer().resolve("subscanApi");
+  const timestamps = [];
+  const blocksToFetch = [];
+  const chunks = 1;
+  for (
+    let blockNum = minBlock;
+    blockNum <= maxBlock;
+    blockNum += Math.ceil((maxBlock - minBlock) / chunks)
+  ) {
+    const block = await subscanApi.fetchBlock(chain.domain, blockNum);
+    timestamps.push(block.timestamp);
+    blocksToFetch.push(blockNum);
   }
-  const portfolios = await (new Wallet().fetchPortfolios(chain.domain, chain.token, address, blocksToFetch))
+  const portfolios = await new Wallet().fetchPortfolios(
+    chain.domain,
+    chain.token,
+    address,
+    blocksToFetch,
+  );
   // console.log(JSON.stringify(portfolios, null, 4))
-  verifyPortfolioHistory(address, chain.domain, useFees ? chain.token : undefined, portfolios.map(p => ({
-    timestamp: timestamps[portfolios.indexOf(p)], balances: p.values, blockNumber: blocksToFetch[portfolios.indexOf(p)]
-  })), payments, unmatchedEvents, tolerance)
-}
+  verifyPortfolioHistory(
+    address,
+    chain.domain,
+    useFees ? chain.token : undefined,
+    portfolios.map((p) => ({
+      timestamp: timestamps[portfolios.indexOf(p)],
+      balances: p.values,
+      blockNumber: blocksToFetch[portfolios.indexOf(p)],
+    })),
+    payments,
+    unmatchedEvents,
+    tolerance,
+  );
+};
 
-const verifyAssetHubPortfolioChange = async (address: string, chain: { domain: string, label: string, token: string }) => {
-  const { payments, minBlock, maxBlock, unmatchedEvents } = await fetchPayments(address, chain);
-  fs.writeFileSync(`./e2e-tests/out/all.json`, JSON.stringify({ payments, unmatchedEvents, minBlock, maxBlock }, null, 2))
+const verifyAssetHubPortfolioChange = async (
+  address: string,
+  chain: { domain: string; label: string; token: string },
+) => {
+  const { payments, minBlock, maxBlock, unmatchedEvents } = await fetchPayments(
+    address,
+    chain,
+  );
+  fs.writeFileSync(
+    `./e2e-tests/out/all.json`,
+    JSON.stringify({ payments, unmatchedEvents, minBlock, maxBlock }, null, 2),
+  );
 
-  const subscanApi: SubscanApi = createDIContainer().resolve("subscanApi")
-  const portfolioNow = await subscanApi.fetchAccountTokens(chain.domain, address)
-  const mergedPortfolio = [...portfolioNow.builtin ?? [], ...portfolioNow.native ?? [], ...portfolioNow.assets ?? []]
+  const subscanApi: SubscanApi = createDIContainer().resolve("subscanApi");
+  const portfolioNow = await subscanApi.fetchAccountTokens(
+    chain.domain,
+    address,
+  );
+  const mergedPortfolio = [
+    ...(portfolioNow.builtin ?? []),
+    ...(portfolioNow.native ?? []),
+    ...(portfolioNow.assets ?? []),
+  ];
   const relevantTokens = mergedPortfolio
-    .filter(b => b.unique_id.startsWith('standard_assets/') || b.symbol === chain.token)
-    .map(b => ({ unique_id: b.unique_id, symbol: b.symbol, decimals: b.decimals, asset_id: Number(b.asset_id) }))
-  
-  const portfolios: { timestamp: number, blockNumber?: number ,balances: { symbol: string, balance: number }[] }[] = []
-  const numberChunks = 1
-  for (let blockNumber = minBlock; blockNumber <= maxBlock; blockNumber += Math.ceil((maxBlock - minBlock) / numberChunks)) {
-    const block = await subscanApi.fetchBlock(chain.domain, blockNumber)
-    const portfolio = await (new Wallet().getAssetBalances(chain.domain, chain.token, address, blockNumber, relevantTokens))
+    .filter(
+      (b) =>
+        b.unique_id.startsWith("standard_assets/") || b.symbol === chain.token,
+    )
+    .map((b) => ({
+      asset_unique_id: b.unique_id,
+      symbol: b.symbol,
+      decimals: b.decimals,
+      asset_id: Number(b.asset_id),
+    }));
+
+  const portfolios: {
+    timestamp: number;
+    blockNumber?: number;
+    balances: { asset_unique_id: string; symbol: string; balance: number }[];
+  }[] = [];
+  const numberChunks = 1;
+  for (
+    let blockNumber = minBlock;
+    blockNumber <= maxBlock;
+    blockNumber += Math.ceil((maxBlock - minBlock) / numberChunks)
+  ) {
+    const block = await subscanApi.fetchBlock(chain.domain, blockNumber);
+    const portfolio = await new Wallet().getAssetBalances(
+      chain.domain,
+      chain.token,
+      address,
+      blockNumber,
+      relevantTokens,
+    );
     portfolios.push({
-      timestamp: block.timestamp, balances: portfolio.values, blockNumber
-    })
+      timestamp: block.timestamp,
+      balances: portfolio.values,
+      blockNumber,
+    });
   }
   for (let token of relevantTokens) {
-    const portfolioList = [...portfolios.map(p => ({ blockNumber: p.blockNumber, timestamp: p.timestamp, balances: p.balances.filter(v => v.symbol === token.symbol) }))]
-    verifyPortfolioHistory(address, chain.domain, chain.token, portfolioList, payments, unmatchedEvents, token.symbol === chain.token ? 0.5 : 0.05)
+    const portfolioList = [
+      ...portfolios.map((p) => ({
+        blockNumber: p.blockNumber,
+        timestamp: p.timestamp,
+        balances: p.balances.filter(
+          (v) => v.asset_unique_id === token.asset_unique_id,
+        ),
+      })),
+    ];
+    verifyPortfolioHistory(
+      address,
+      chain.domain,
+      chain.token,
+      portfolioList,
+      payments,
+      unmatchedEvents,
+      token.symbol === chain.token ? 0.5 : 0.05,
+    );
   }
-}
+};
 
-const assetHubZoomInError = async (address: string, chain: { domain: string, label: string, token: string },
+const assetHubZoomInError = async (
+  address: string,
+  chain: { domain: string; label: string; token: string },
   tokenOfInterest: string,
-  interval?: { startBlock: number, endBlock: number},
+  interval?: { startBlock: number; endBlock: number },
   cachedData?: any,
-  tolerance?: number
+  tolerance?: number,
 ) => {
-  const { payments, minBlock, maxBlock, unmatchedEvents } = cachedData?.payments ?? await fetchPayments(address, chain);
-  const subscanApi: SubscanApi = createDIContainer().resolve("subscanApi")
-  const accountTokens = cachedData?.accountTokens ?? await subscanApi.fetchAccountTokens(chain.domain, address)
-  const mergedPortfolio = [...accountTokens.builtin ?? [], ...accountTokens.native ?? [], ...accountTokens.assets ?? []]
+  const { payments, minBlock, maxBlock, unmatchedEvents } =
+    cachedData?.payments ?? (await fetchPayments(address, chain));
+  const subscanApi: SubscanApi = createDIContainer().resolve("subscanApi");
+  const accountTokens =
+    cachedData?.accountTokens ??
+    (await subscanApi.fetchAccountTokens(chain.domain, address));
+  const mergedPortfolio = [
+    ...(accountTokens.builtin ?? []),
+    ...(accountTokens.native ?? []),
+    ...(accountTokens.assets ?? []),
+  ];
   const relevantToken = mergedPortfolio
-    .filter(b => b.symbol === tokenOfInterest)
-    .map(b => ({ unique_id: b.unique_id, symbol: b.symbol, decimals: b.decimals, asset_id: Number(b.asset_id) }))[0]
-  
-  const blocks = interval ? [ interval.startBlock, interval.endBlock ] : [minBlock, maxBlock]
-  const portfolios: { timestamp: number, blockNumber?: number ,balances: { symbol: string, balance: number }[] }[] = []
+    .filter((b) => b.symbol === tokenOfInterest)
+    .map((b) => ({
+      asset_unique_id: b.unique_id,
+      symbol: b.symbol,
+      decimals: b.decimals,
+      asset_id: Number(b.asset_id),
+    }))[0];
 
-  const timestamps = []
-  const blocksToFetch = [blocks[0], Math.floor((blocks[1] - blocks[0]) / 2) + blocks[0], blocks[1]]
+  const blocks = interval
+    ? [interval.startBlock, interval.endBlock]
+    : [minBlock, maxBlock];
+  const portfolios: {
+    timestamp: number;
+    blockNumber?: number;
+    balances: { asset_unique_id: string; symbol: string; balance: number }[];
+  }[] = [];
+
+  const timestamps = [];
+  const blocksToFetch = [
+    blocks[0],
+    Math.floor((blocks[1] - blocks[0]) / 2) + blocks[0],
+    blocks[1],
+  ];
 
   for (let blockNumber of blocksToFetch) {
-    const block = await subscanApi.fetchBlock(chain.domain, blockNumber)
-    timestamps.push(block.timestamp)
-    const cachedPortfolio = cachedData?.portfolios?.find(p => p.blockNumber === blockNumber)
-    const balances = cachedPortfolio?.balances ?? (await new Wallet().getAssetBalances(chain.domain, chain.token, address, blockNumber, [relevantToken])).values
+    const block = await subscanApi.fetchBlock(chain.domain, blockNumber);
+    timestamps.push(block.timestamp);
+    const cachedPortfolio = cachedData?.portfolios?.find(
+      (p) => p.blockNumber === blockNumber,
+    );
+    const balances =
+      cachedPortfolio?.balances ??
+      (
+        await new Wallet().getAssetBalances(
+          chain.domain,
+          chain.token,
+          address,
+          blockNumber,
+          [relevantToken],
+        )
+      ).values;
     portfolios.push({
-      timestamp: block.timestamp, balances, blockNumber
-    })
+      timestamp: block.timestamp,
+      balances,
+      blockNumber,
+    });
   }
-  const portfolioList = [...portfolios.map(p => ({ blockNumber: p.blockNumber, timestamp: p.timestamp, balances: p.balances.filter(v => v.symbol === relevantToken.symbol) }))]
-  const badIntervals = verifyPortfolioHistory(address, chain.domain, chain.token, portfolioList, payments, unmatchedEvents, tolerance ?? 0.1)
+  const portfolioList = [
+    ...portfolios.map((p) => ({
+      blockNumber: p.blockNumber,
+      timestamp: p.timestamp,
+      balances: p.balances.filter(
+        (v) => v.asset_unique_id === relevantToken.asset_unique_id,
+      ),
+    })),
+  ];
+  const badIntervals = verifyPortfolioHistory(
+    address,
+    chain.domain,
+    chain.token,
+    portfolioList,
+    payments,
+    unmatchedEvents,
+    tolerance ?? 0.1,
+  );
   if (badIntervals.length === 0) {
-    console.log("No issues found.")
-    return
+    console.log("No issues found.");
+    return;
   }
-  const max = Math.max(...badIntervals.map(i => i.deviation))
-  const intervalOfChoice = badIntervals.find(i => i.deviation === max)
+  const max = Math.max(...badIntervals.map((i) => i.deviation));
+  const intervalOfChoice = badIntervals.find((i) => i.deviation === max);
   if (intervalOfChoice.endBlock - intervalOfChoice.startBlock > 1) {
-    assetHubZoomInError(address, chain, tokenOfInterest, intervalOfChoice, { portfolios, payments: { payments, minBlock, maxBlock, unmatchedEvents }, accountTokens }, tolerance)
+    assetHubZoomInError(
+      address,
+      chain,
+      tokenOfInterest,
+      intervalOfChoice,
+      {
+        portfolios,
+        payments: { payments, minBlock, maxBlock, unmatchedEvents },
+        accountTokens,
+      },
+      tolerance,
+    );
   } else {
-    console.log("Finished : " + JSON.stringify(intervalOfChoice))
+    const block1  = await subscanApi.fetchBlock(
+      chain.domain,
+      interval.startBlock,
+    );
+    const block2 = await subscanApi.fetchBlock(chain.domain, interval.endBlock);
+    console.log("from " + block1.timestamp + " to " + block2.timestamp)
+    console.log("Finished : " + JSON.stringify(intervalOfChoice));
   }
-}
+};
 
-const portfolioZoomInError = async (address: string, chain: { domain: string, label: string, token: string }, 
+const portfolioZoomInError = async (
+  address: string,
+  chain: { domain: string; label: string; token: string },
+  tokenUniqueId: string,
   tokenSymbol: string,
-  tolerance = 0.01, 
+  tolerance = 0.01,
   withFees = true,
-  interval?: { startBlock: number, endBlock: number},
-  cachedData?: any
+  interval?: { startBlock: number; endBlock: number },
+  cachedData?: any,
 ) => {
+  const { payments, minBlock, maxBlock, unmatchedEvents } =
+    cachedData?.payments ?? (await fetchPayments(address, chain));
+  const subscanApi: SubscanApi = createDIContainer().resolve("subscanApi");
 
-  const { payments, minBlock, maxBlock, unmatchedEvents } = cachedData?.payments ?? await fetchPayments(address, chain);
-  const subscanApi: SubscanApi = createDIContainer().resolve("subscanApi")
-
-  const blocks = interval ? [ interval.startBlock, interval.endBlock ] : [minBlock, maxBlock]
-  const timestamps = []
-  const blocksToFetch = [blocks[0], Math.floor((blocks[1] - blocks[0]) / 2) + blocks[0], blocks[1]]
+  const blocks = interval
+    ? [interval.startBlock, interval.endBlock]
+    : [minBlock, maxBlock];
+  const timestamps = [];
+  const blocksToFetch = [
+    blocks[0],
+    Math.floor((blocks[1] - blocks[0]) / 2) + blocks[0],
+    blocks[1],
+  ];
   for (const blockNum of blocksToFetch) {
-    const block = await subscanApi.fetchBlock(chain.domain, blockNum)
-    timestamps.push(block.timestamp)
+    const block = await subscanApi.fetchBlock(chain.domain, blockNum);
+    timestamps.push(block.timestamp);
   }
-  const portfolios = await (new Wallet().fetchPortfolios(chain.domain, chain.token, address, blocksToFetch))
-  const badIntervals = verifyPortfolioHistory(address, chain.domain, withFees ? chain.token : '', portfolios.map(p => ({
-    timestamp: timestamps[portfolios.indexOf(p)], balances: [p.values.find(b => b.symbol === tokenSymbol) ?? { symbol: tokenSymbol, balance: 0 }], blockNumber: blocksToFetch[portfolios.indexOf(p)]
-  })), payments, unmatchedEvents, tolerance)
+  const portfolios = await new Wallet().fetchPortfolios(
+    chain.domain,
+    chain.token,
+    address,
+    blocksToFetch,
+  );
+  const badIntervals = verifyPortfolioHistory(
+    address,
+    chain.domain,
+    withFees ? chain.token : "",
+    portfolios.map((p) => ({
+      timestamp: timestamps[portfolios.indexOf(p)],
+      balances: [
+        p.values.find((b) => b.asset_unique_id === tokenUniqueId) ?? {
+          asset_unique_id: tokenUniqueId,
+          symbol: tokenSymbol,
+          balance: 0,
+        },
+      ],
+      blockNumber: blocksToFetch[portfolios.indexOf(p)],
+    })),
+    payments,
+    unmatchedEvents,
+    tolerance,
+  );
   if (badIntervals.length === 0) {
-    console.log("No issues found.")
-    return
+    console.log("No issues found.");
+    return;
   }
-  const max = Math.max(...badIntervals.map(i => i.deviation))
-  const intervalOfChoice = badIntervals.find(i => i.deviation === max)
+  const max = Math.max(...badIntervals.map((i) => i.deviation));
+  const intervalOfChoice = badIntervals.find((i) => i.deviation === max);
   if (intervalOfChoice.endBlock - intervalOfChoice.startBlock > 1) {
-    portfolioZoomInError(address ,chain,  tokenSymbol, tolerance, withFees, intervalOfChoice, { payments: { payments, minBlock, maxBlock, unmatchedEvents }})
+    portfolioZoomInError(
+      address,
+      chain,
+      tokenUniqueId,
+      tokenSymbol,
+      tolerance,
+      withFees,
+      intervalOfChoice,
+      { payments: { payments, minBlock, maxBlock, unmatchedEvents } },
+    );
   } else {
-    const block1= await subscanApi.fetchBlock(chain.domain, interval.startBlock)
-    const block2 = await subscanApi.fetchBlock(chain.domain, interval.endBlock)
+    const block1 = await subscanApi.fetchBlock(
+      chain.domain,
+      interval.startBlock,
+    );
+    const block2 = await subscanApi.fetchBlock(chain.domain, interval.endBlock);
     const matchingPayments = payments.filter(
       (p) => p.timestamp > block1.timestamp && p.timestamp <= block2.timestamp,
     );
-    console.log(JSON.stringify(portfolios))
+    const startPortfolio = portfolios.find((p) => p.block === block1.block_num);
+    const endPortfolio = portfolios.find((p) => p.block === block2.block_num);
+    console.log("=======");
+    console.log(
+      "Block " +
+        block1.block_num +
+        "/" +
+        block1.timestamp +
+        " : " +
+        JSON.stringify(startPortfolio),
+    );
+    console.log("=======");
+    console.log(
+      "Block " +
+        block2.block_num +
+        "/" +
+        block2.timestamp +
+        " : " +
+        JSON.stringify(endPortfolio),
+    );
+    console.log("=======");
     //fs.writeFileSync(`./e2e-tests/out/payments.json`, JSON.stringify({ payments, unmatchedEvents }, null, 2))
     //fs.writeFileSync(`./e2e-tests/out/matchingPayments.json`, JSON.stringify(matchingPayments, null, 2))
-    console.log("finished : " + JSON.stringify(intervalOfChoice))
+    console.log("finished : " + JSON.stringify(intervalOfChoice));
   }
-}
+};
 
-
-// BIFROST -> OK
-// OK !! verifyPortfolioChange("1RRBm6aEAxYXjjacerrEyNxvhDZLbr9PJRvtbxD3NkgTB8S", { domain: 'bifrost', label: '', token: 'BNC' })
-// OK !! verifyPortfolioChange("1CEZAcr7sGqC7Sx6jwWJ5JBALa8iqwS18kj3Y9RzmZacL33", { domain: 'bifrost', label: '', token: 'BNC' }) 
-// OK !!! verifyPortfolioChange("15abVnvSgRJFCqhJuvrYSNL5DscRppcog8cyYaVALLU3LFjB", { domain: 'bifrost', label: '', token: 'BNC' })
-// OK !!! verifyPortfolioChange("15b7Ko56RgVBVWB9UXEnW4LhS2AAALRmcVpgx26Wr5yzVbeS", { domain: 'bifrost', label: '', token: 'BNC' }) 
-// OK !!! verifyPortfolioChange("12TiTLQYFBsb2EUdaxFdcvo78gpkhajnuv7Jm8Aoy7c4z1YV", { domain: 'bifrost', label: '', token: 'BNC' })
-
-
-// HYDRATION -> NOK
-// OK ! verifyPortfolioChange("15abVnvSgRJFCqhJuvrYSNL5DscRppcog8cyYaVALLU3LFjB", { domain: 'hydration', label: '', token: 'HDX' }) 
-//verifyPortfolioChange("1CEZAcr7sGqC7Sx6jwWJ5JBALa8iqwS18kj3Y9RzmZacL33", { domain: 'hydration', label: '', token: 'HDX' }) //-> ZTG missing
-// ~40k miracle at block 4355799 HDX! verifyPortfolioChange("1HGnvAkk9nbfZ58CzUJhjcrLdEDMkr5qNkqqYkyD5BF5v6Y", { domain: 'hydration', label: '', token: 'HDX' }) // Leemo
-// OK !! verifyPortfolioChange("12iyS9DpPLCbdt1ae136owqNPmcfYvkygeT6VmdtkbSv2ozq", { domain: 'hydration', label: '', token: 'HDX' })
-// Mostly OK! verifyPortfolioChange("131d4YS25qpuXiHrfJibuFYXwZrzwxpvU1ahvr3TJFNYcmfk", { domain: 'hydration', label: '', token: 'HDX' }) // jakub
-// OK!! verifyPortfolioChange("12R6XdCSw3HX59CX2kmCYzAkVrf5u4AZd7YExSjwMLNzm2da", { domain: 'hydration', label: '', token: 'HDX' }, 0.3, true) 
-
-
-const zoomIntoError = async (address: string, chainInfo: any, token: string, tolerance = 0.5) => {
-  const { payments, unmatchedEvents, minBlock, maxBlock } = JSON.parse(fs.readFileSync(`./e2e-tests/out/all.json`, 'utf-8'))
-  portfolioZoomInError(address, chainInfo, token, tolerance, true,
-   undefined,
-    { payments: { payments, unmatchedEvents, minBlock, maxBlock } }
-  )
-}
-//zoomIntoError("15tH5VV82YwsJPBGcBFmGvgkiBCkAzcCXbZLbZ7TkCJM6kdq", { domain: 'astar', label: '', token: 'ASTR' }, 'ASTR')*/
-
-const ahZoomIntoError = async (address: string, chainInfo: any, token: string, tolerance = 0.1) => {
-  const { payments, unmatchedEvents, minBlock, maxBlock } = JSON.parse(fs.readFileSync(`./e2e-tests/out/all.json`, 'utf-8'))
-  assetHubZoomInError(address, chainInfo, token, 
-   undefined,
+const zoomIntoError = async (
+  address: string,
+  chainInfo: any,
+  tokenUniqueId: string,
+  tokenSymbol: string,
+  tolerance = 0.5,
+) => {
+  const { payments, unmatchedEvents, minBlock, maxBlock } = JSON.parse(
+    fs.readFileSync(`./e2e-tests/out/all.json`, "utf-8"),
+  );
+  portfolioZoomInError(
+    address,
+    chainInfo,
+    tokenUniqueId,
+    tokenSymbol,
+    tolerance,
+    true,
+    undefined,
     { payments: { payments, unmatchedEvents, minBlock, maxBlock } },
-    tolerance
-  )
-}
-// ahZoomIntoError("0x56F17ebFe6B126E9f196e7a87f74e9f026a27A1F",  { domain: 'mythos', label: '', token: 'MYTH' }, 'MYTH', 0.0001)
+  );
+};
+// zoomIntoError("1CEZAcr7sGqC7Sx6jwWJ5JBALa8iqwS18kj3Y9RzmZacL33", { domain: 'hydration', label: '', token: 'HDX' }, 'asset_registry/141d6d6bce4007bd0e50d1a014c01085f8aab9f0', 'USDC', 0)
 
-// ASSET HUB -> OK
-//assetHubZoomInError("15abVnvSgRJFCqhJuvrYSNL5DscRppcog8cyYaVALLU3LFjB", { domain: 'assethub-polkadot', label: '', token: 'DOT' }, 'USDt')
-// OK ! verifyAssetHubPortfolioChange("15abVnvSgRJFCqhJuvrYSNL5DscRppcog8cyYaVALLU3LFjB", { domain: 'assethub-polkadot', label: '', token: 'DOT' })
-// OK ! verifyAssetHubPortfolioChange("1CEZAcr7sGqC7Sx6jwWJ5JBALa8iqwS18kj3Y9RzmZacL33", { domain: 'assethub-polkadot', label: '', token: 'DOT' })
-// OK! USDC alt token! verifyAssetHubPortfolioChange("1HGnvAkk9nbfZ58CzUJhjcrLdEDMkr5qNkqqYkyD5BF5v6Y", { domain: 'assethub-polkadot', label: '', token: 'DOT' })
-// OK ! verifyAssetHubPortfolioChange("13qSxtKtr54qebSQzf1c7MC9CwkkZMMFaXyHKq8LzjSjiU3M", { domain: 'assethub-polkadot', label: '', token: 'DOT' })
-// OK ! verifyAssetHubPortfolioChange("13vg3Mrxm3GL9eXxLsGgLYRueiwFCiMbkdHBL4ZN5aob5D4N", { domain: 'assethub-polkadot', label: '', token: 'DOT' })
+const ahZoomIntoError = async (
+  address: string,
+  chainInfo: any,
+  token: string,
+  tolerance = 0.1,
+) => {
+  const { payments, unmatchedEvents, minBlock, maxBlock } = JSON.parse(
+    fs.readFileSync(`./e2e-tests/out/all.json`, "utf-8"),
+  );
+  assetHubZoomInError(
+    address,
+    chainInfo,
+    token,
+    undefined,
+    { payments: { payments, unmatchedEvents, minBlock, maxBlock } },
+    tolerance,
+  );
+};
+// ahZoomIntoError("1CEZAcr7sGqC7Sx6jwWJ5JBALa8iqwS18kj3Y9RzmZacL33", { domain: 'assethub-polkadot', label: '', token: 'DOT' }, "USDC", 0.01);
+
+// ASSET HUB -> ALL OK
+/**
+ * Incoming cross-chain transfers are ignored. Instead listen to deposit events assetsIssued/balancesMinted
+ */
+// verifyAssetHubPortfolioChange("15abVnvSgRJFCqhJuvrYSNL5DscRppcog8cyYaVALLU3LFjB", { domain: 'assethub-polkadot', label: '', token: 'DOT' })
+/**
+ * Burn event ignored because burn is also called thrown during by xcm. Difference 6 DOT
+ * 40k USDC "missing" due to transfer of snowflake USDC. Incoming snowflake transfer not recognized.
+ * -> TODO: foreignassets (Issued)
+ */
+// verifyAssetHubPortfolioChange("1CEZAcr7sGqC7Sx6jwWJ5JBALa8iqwS18kj3Y9RzmZacL33", { domain: 'assethub-polkadot', label: '', token: 'DOT' })
+// verifyAssetHubPortfolioChange("1HGnvAkk9nbfZ58CzUJhjcrLdEDMkr5qNkqqYkyD5BF5v6Y", { domain: 'assethub-polkadot', label: '', token: 'DOT' })
+// verifyAssetHubPortfolioChange("13qSxtKtr54qebSQzf1c7MC9CwkkZMMFaXyHKq8LzjSjiU3M", { domain: 'assethub-polkadot', label: '', token: 'DOT' })
+// verifyAssetHubPortfolioChange("13vg3Mrxm3GL9eXxLsGgLYRueiwFCiMbkdHBL4ZN5aob5D4N", { domain: 'assethub-polkadot', label: '', token: 'DOT' }) // ~very slow
+
+// coretime
+// verifyAssetHubPortfolioChange("15fTH34bbKGMUjF1bLmTqxPYgpg481imThwhWcQfCyktyBzL", { domain: 'coretime-polkadot', label: '', token: 'DOT' }) 
+// verifyAssetHubPortfolioChange("16aXFECXjLKBbEAjGtF6cs9besGQ8Yk8o4RzvA5FRPJNHeHN", { domain: 'coretime-polkadot', label: '', token: 'DOT' }) 
+// verifyAssetHubPortfolioChange("15mYsj6DpBno58jRoV5HCTiVPFBuWhDLdsWtq3LxwZrfaTEZ", { domain: 'coretime-polkadot', label: '', token: 'DOT' }) 
+// verifyAssetHubPortfolioChange("15tkmix9R7ZRYGsLGV15mpZSbicPjmnhLdnUccAwfRi7RPVV", { domain: 'coretime-polkadot', label: '', token: 'DOT' }) 
+// verifyAssetHubPortfolioChange("16aXFECXjLKBbEAjGtF6cs9besGQ8Yk8o4RzvA5FRPJNHeHN", { domain: 'coretime-polkadot', label: '', token: 'DOT' }) 
+// verifyAssetHubPortfolioChange("1HwQbUpcr99UA6W7WBK86RtMHJTBWRazpxuYfRHyhSCbE1j", { domain: 'coretime-polkadot', label: '', token: 'DOT' }) 
+
+// people
+// verifyAssetHubPortfolioChange("16LviqDmEdn49UqeVSw3N1SjoJxRVV1EBbydbEqqaCvdtAsY", { domain: 'people-polkadot', label: '', token: 'DOT' }) 
+// verifyAssetHubPortfolioChange("142nFphK2qW4AWxZYFZiKjirKBMZPFRsCYDe75Rv9YSCkDUW", { domain: 'people-polkadot', label: '', token: 'DOT' }) 
+// verifyAssetHubPortfolioChange("14Gnp9cpb4mrXrpbCVNQSEPyL3QhoccGB9qpTRxqKWWMWSxn", { domain: 'people-polkadot', label: '', token: 'DOT' }) 
+// verifyAssetHubPortfolioChange("15mYsj6DpBno58jRoV5HCTiVPFBuWhDLdsWtq3LxwZrfaTEZ", { domain: 'people-polkadot', label: '', token: 'DOT' }) 
+// verifyAssetHubPortfolioChange("12ryo7Fp21tKkFQWJ2vSVMY2BH3t9syk65FUaywraHLs3T4T", { domain: 'people-polkadot', label: '', token: 'DOT' }) 
+
+
+// collectives
+// verifyAssetHubPortfolioChange("1L66uQMKFnXKSZx9pCD5o56GvvP1i2Qns7CaS2AaKp9mnwc", { domain: 'collectives-polkadot', label: '', token: 'DOT' }) 
+// verifyAssetHubPortfolioChange("168BAPzMCWtzvbUVAXjDcJjZCtog7tmoMN2kRa7nusoxJeB8", { domain: 'collectives-polkadot', label: '', token: 'DOT' }) 
+/**
+ * new account created -> https://collectives-polkadot.subscan.io/block/3124100?tab=event
+ * and killed https://collectives-polkadot.subscan.io/block/3346100?tab=event
+ */
+// verifyAssetHubPortfolioChange("12zsKEDVcHpKEWb99iFt3xrTCQQXZMu477nJQsTBBrof5k2h", { domain: 'collectives-polkadot', label: '', token: 'DOT' }) 
+// verifyAssetHubPortfolioChange("14EQvBy9h8xGbh2R3ustnkfkF514E7wpmHtg27gDaTLM2str", { domain: 'collectives-polkadot', label: '', token: 'DOT' }) 
+// verifyAssetHubPortfolioChange("13C7Ssy9QNJk515SFezaKMfhMRFrRcZWBhXA3oDq1AuKVds5", { domain: 'collectives-polkadot', label: '', token: 'DOT' }) 
+
 
 // ACALA
-// OK ! verifyPortfolioChange("1UA2r4UWyAJfWyCEb39oevsUxuzB8XeriJSsdzVtoLNzddr", { domain: 'acala', label: '', token: 'ACA' })
-// OK ! verifyPortfolioChange("13EXo5nS5kJMRHqghAcq1z3j3XpguLiWzvV8cbYSXXJsTBYy", { domain: 'acala', label: '', token: 'ACA' })
-// OK ! verifyPortfolioChange("1sdEj2dBvsGUQ2MqiZWJ8hHss7cCZ4nFcrjE6xDBCtPYiJx", { domain: 'acala', label: '', token: 'ACA' })
-// OK ! verifyPortfolioChange("1CEZAcr7sGqC7Sx6jwWJ5JBALa8iqwS18kj3Y9RzmZacL33", { domain: 'acala', label: '', token: 'ACA' })
-// OK ! verifyPortfolioChange("1sdEj2dBvsGUQ2MqiZWJ8hHss7cCZ4nFcrjE6xDBCtPYiJx", { domain: 'acala', label: '', token: 'ACA' })
+// verifyPortfolioChange("1UA2r4UWyAJfWyCEb39oevsUxuzB8XeriJSsdzVtoLNzddr", { domain: 'acala', label: '', token: 'ACA' })
+/**
+ * reward is also a transfer:
+ * https://acala.subscan.io/account/13EXo5nS5kJMRHqghAcq1z3j3XpguLiWzvV8cbYSXXJsTBYy?tab=reward
+ * https://acala.subscan.io/event?block=8089502
+ */
+// verifyPortfolioChange("13EXo5nS5kJMRHqghAcq1z3j3XpguLiWzvV8cbYSXXJsTBYy", { domain: 'acala', label: '', token: 'ACA' })
+// verifyPortfolioChange("1sdEj2dBvsGUQ2MqiZWJ8hHss7cCZ4nFcrjE6xDBCtPYiJx", { domain: 'acala', label: '', token: 'ACA' })
+// verifyPortfolioChange("1CEZAcr7sGqC7Sx6jwWJ5JBALa8iqwS18kj3Y9RzmZacL33", { domain: 'acala', label: '', token: 'ACA' })
+// verifyPortfolioChange("1sdEj2dBvsGUQ2MqiZWJ8hHss7cCZ4nFcrjE6xDBCtPYiJx", { domain: 'acala', label: '', token: 'ACA' })
 
-// ASTAR -> NOK!!!
-// OK !! verifyAssetHubPortfolioChange("13hDgWbatzrMmdPGz4F3Y63vP3qmdac7PUrujcN5a8nB6CkJ", { domain: 'astar', label: '', token: 'ASTR' })
-// NOK very large !! verifyAssetHubPortfolioChange("15tH5VV82YwsJPBGcBFmGvgkiBCkAzcCXbZLbZ7TkCJM6kdq", { domain: 'astar', label: '', token: 'ASTR' })
-// 500 when querying rewards verifyAssetHubPortfolioChange("13b6hRRYPHTxFzs9prvL2YGHQepvd4YhdDb9Tc7khySp3hMN", { domain: 'astar', label: '', token: 'ASTR' })
-// error !? verifyAssetHubPortfolioChange("15TKmiwx1dG2qiDhi9k18wELcVLUhMw7Fwpdz3jLKBLsYJZ2", { domain: 'astar', label: '', token: 'ASTR' })
 
+// ASTAR
+// verifyAssetHubPortfolioChange("13hDgWbatzrMmdPGz4F3Y63vP3qmdac7PUrujcN5a8nB6CkJ", { domain: 'astar', label: '', token: 'ASTR' })
+// verifyAssetHubPortfolioChange("15tH5VV82YwsJPBGcBFmGvgkiBCkAzcCXbZLbZ7TkCJM6kdq", { domain: 'astar', label: '', token: 'ASTR' })
+// verifyAssetHubPortfolioChange("16m3U19QHy39x5BBTR2FN9yh2k9LhUnS727N3wSH48P9wj8K", { domain: 'astar', label: '', token: 'ASTR' })
+// verifyAssetHubPortfolioChange("153G4p8oHhKuVodS4pcQEgs23TrC9jfVueZ7npbL65JoFRYs", { domain: 'astar', label: '', token: 'ASTR' })
+// verifyAssetHubPortfolioChange("15yZzmbMsogqqxVNNfe6t4LaYmjGWbPFDbADo23voJSKvywq", { domain: 'astar', label: '', token: 'ASTR' })
+// verifyAssetHubPortfolioChange("13AxCbvHff9d9LBtdNZBT5f2JoiHVRaHyiuUwZMmnBuGrSE8", { domain: 'astar', label: '', token: 'ASTR' })
+
+
+// MYTHOS
+// verifyAssetHubPortfolioChange("0xf8683ecADdCb12891867CCDF4dbC96f47d62d67B", { domain: 'mythos', label: '', token: 'MYTH' })
+// verifyAssetHubPortfolioChange("0x56F17ebFe6B126E9f196e7a87f74e9f026a27A1F", { domain: 'mythos', label: '', token: 'MYTH' })
+// verifyAssetHubPortfolioChange("0xfd56a122ec50912811ec2856e6df5fd0a1581df2", { domain: 'mythos', label: '', token: 'MYTH' })
+// verifyAssetHubPortfolioChange("0x5EE06FECF52b12c66b03700821FbBc9dD5680361", { domain: 'mythos', label: '', token: 'MYTH' })
+// verifyAssetHubPortfolioChange("0xF6eAAdC72D1a58F735965EA196E4FA7029fC76dC", { domain: 'mythos', label: '', token: 'MYTH' })
+// verifyAssetHubPortfolioChange("0x3359314e9dC3FE983a9f71AF25680fd6fe0CccC6", { domain: 'mythos', label: '', token: 'MYTH' }) // lot's of data.
+// verifyAssetHubPortfolioChange("0xEcdbC924dFe6C6c7b2242890d0b4764dddBE40B1", { domain: 'mythos', label: '', token: 'MYTH' }) // lot's of data.
+// verifyAssetHubPortfolioChange("0x7AdbF4458aaDa94129a898a142c4cda58BaEE04c", { domain: 'mythos', label: '', token: 'MYTH' }) // lot's of data.
+
+
+// energywebx
+// verifyAssetHubPortfolioChange("13KemmTsLpdz8sbdB8cL4Lw3PDVgy2UjEnayx72QgUbAcSRT", { domain: 'energywebx', label: '', token: 'EWT' })
+// verifyAssetHubPortfolioChange("16dCndCe1hUGuqFNiBQdvmXtWTRN6MSf9s5wjiEkxTsBo5Jb", { domain: 'energywebx', label: '', token: 'EWT' })
+// verifyAssetHubPortfolioChange("13VMMtNPxsTiJZ6rz5N9FJASnNg5iuEamf5SBBhiDTQJBKhk", { domain: 'energywebx', label: '', token: 'EWT' }) // lot's of data.
+// verifyAssetHubPortfolioChange("1gQCP9rT9dfQKCnneh5w8mqxCH5E9XWXnt17wJqGLyZ7eEL", { domain: 'energywebx', label: '', token: 'EWT' }) // lot's of data.
+
+
+// neuroweb
+// verifyAssetHubPortfolioChange("16MRsnWMXvBiHK8FUu9GMNBaVFbY9RpVcCWbviRjL1ogGWQ7", { domain: 'neuroweb', label: '', token: 'NEURO' })
+// verifyAssetHubPortfolioChange("15gPguU3rf2CdWwqahgc3HYk6R9bw5HSdDqYxoNyG9Enrc5V", { domain: 'neuroweb', label: '', token: 'NEURO' })
+// verifyAssetHubPortfolioChange("12pGnMsHHe4cUVTnBpXEhxyfL59zcDSEk4xLA9EgYFUgS6Uq", { domain: 'neuroweb', label: '', token: 'NEURO' })
+// verifyAssetHubPortfolioChange("16MRsnWMXvBiHK8FUu9GMNBaVFbY9RpVcCWbviRjL1ogGWQ7", { domain: 'neuroweb', label: '', token: 'NEURO' })
+// verifyAssetHubPortfolioChange("14BSK3tU1iqT7U2UfdZGsQ7duLRUBXK6W4sUTUd5J7DQPoNz", { domain: 'neuroweb', label: '', token: 'NEURO' })
+
+/////////////// everything ok until here
+
+// Hydration
+/**
+ * USDC mixup between USDC Wormhole and USDC native.
+ * unique id identical between assethub and hydration!
+ * 40k HDX out of nowhere
+ */
+// verifyPortfolioChange("1HGnvAkk9nbfZ58CzUJhjcrLdEDMkr5qNkqqYkyD5BF5v6Y", { domain: 'hydration', label: '', token: 'HDX' })
+// KKK verifyPortfolioChange("15abVnvSgRJFCqhJuvrYSNL5DscRppcog8cyYaVALLU3LFjB", { domain: 'hydration', label: '', token: 'HDX' })
+/**
+ * failed transfer of 200 DOT but the DOT as deposited anyway.
+ * https://hydration.subscan.io/xcm_message/polkadot-09ef67bec117f87c1746ebe99d44c94fc311b665
+ */
+// verifyPortfolioChange("1CEZAcr7sGqC7Sx6jwWJ5JBALa8iqwS18kj3Y9RzmZacL33", { domain: 'hydration', label: '', token: 'HDX' })
+// KKK verifyPortfolioChange("16882iTH5FHdH2ka552Rr6yUGUSvKPvQHBWAYLXjiCihVpgf", { domain: 'hydration', label: '', token: 'HDX' })
+/**
+ * Issue xcm -> DAI -> DAI.wh (Acala) vs DAI.wh (Moonbeam)
+ * Also "fake" HDX cross-chain transfer: https://hydration.subscan.io/xcm_message/polkadot-3461cadc89dcfe9ac5434f634d1d01cce325b8cd
+ */
+// verifyPortfolioChange("131d4YS25qpuXiHrfJibuFYXwZrzwxpvU1ahvr3TJFNYcmfk", { domain: 'hydration', label: '', token: 'HDX' }) // jakub
+// KKK verifyPortfolioChange("12R6XdCSw3HX59CX2kmCYzAkVrf5u4AZd7YExSjwMLNzm2da", { domain: 'hydration', label: '', token: 'HDX' }, 0.3, true)
+
+
+// Bifrost
+/**
+ * vtoken Minted event 3917920-5 cannot be found via subscan.
+ * also crossinout events are missing. there's no clear mapping from multi location to token, e.g. : 6672187-6
+ */
+// verifyPortfolioChange("15abVnvSgRJFCqhJuvrYSNL5DscRppcog8cyYaVALLU3LFjB", { domain: 'bifrost', label: '', token: 'BNC' })
+/**
+ * some events not showing up e.g. 4193678-18 (vGLMR Minted),
+ * also vsDOT
+ */
+// verifyPortfolioChange("1CEZAcr7sGqC7Sx6jwWJ5JBALa8iqwS18kj3Y9RzmZacL33", { domain: 'bifrost', label: '', token: 'BNC' })
+// OK, large diff due to tx fees(?) BNC verifyPortfolioChange("1RRBm6aEAxYXjjacerrEyNxvhDZLbr9PJRvtbxD3NkgTB8S", { domain: 'bifrost', label: '', token: 'BNC' })
+/**
+ * Deposit event unclear provenance: https://bifrost.subscan.io/block/8207115?tab=event
+ * Also missing vtoken minting event.
+ */
+// NOK: BNC, vBNC verifyPortfolioChange("15b7Ko56RgVBVWB9UXEnW4LhS2AAALRmcVpgx26Wr5yzVbeS", { domain: 'bifrost', label: '', token: 'BNC' })
+// OK! verifyPortfolioChange("12TiTLQYFBsb2EUdaxFdcvo78gpkhajnuv7Jm8Aoy7c4z1YV", { domain: 'bifrost', label: '', token: 'BNC' })
+
+
+// phala
+// verifyAssetHubPortfolioChange("1eo82wr76n25UXYHNa9hym1ZTHeK4oBrNMcz97m71H85qfP", { domain: 'phala', label: '', token: 'PHA' }) 
+// verifyAssetHubPortfolioChange("14EAEgGrbX3KCgyjBZRyB5qgYpuFHLB5AC8TX7hYLPRT1YPN", { domain: 'phala', label: '', token: 'PHA' }) 
+// verifyAssetHubPortfolioChange("162WLLoopzLWSninv2FpegsfDvrTn3xBAT2FGEhwszHShJPx", { domain: 'phala', label: '', token: 'PHA' }) 
+/**
+ * XCM where the parachain no longer exists / is not indexed 
+ * https://polkadot.subscan.io/xcm_message/polkadot-dcbfb4b249b0abd7b58efd6464450e6405503eca
+ * PHA disappears through "withdraw", e.g. block: 6831351
+ */ 
+// verifyAssetHubPortfolioChange("129ahoNBbD53JrHC3aP6XXdWvTKxVyQo1PjqMcQ698sp3FdM", { domain: 'phala', label: '', token: 'PHA' }) 
+// verifyAssetHubPortfolioChange("16M3S6cVeZ4pEjhUjErzp43NvmCCNnAMJhocYsBG3v8nFw9t", { domain: 'phala', label: '', token: 'PHA' }) 
+
+/**
+ * Mostly EVM transactions...
+ */
 // PEAQ -> issue with cross chain transfers -> DAI -> DAI.wh. xcm messages ignored for now
-// OK ! verifyAssetHubPortfolioChange("1333RgL47QYYkmJk1BHzfEF4hRE7Bd2Yf8P2HdV8Cn3p9hVh", { domain: 'peaq', label: '', token: 'PEAQ' })
-// OK ! verifyAssetHubPortfolioChange("1228xdwBttfQ5LpT2rihE2FLJLAY2hu8jsGYzD2dgY25DkTe", { domain: 'peaq', label: '', token: 'PEAQ' })
-// OK ! verifyAssetHubPortfolioChange("12nJnQhAZ5p6xHFNMLTUZ4SyYiSQX5vrz2hdEiVGg4m4FG6i", { domain: 'peaq', label: '', token: 'PEAQ' })
-// OK ! verifyAssetHubPortfolioChange("14ztyLQdP2B5ahuH9AipKSqvf29wXSf7jWhJ9mEP8cJXfmVw", { domain: 'peaq', label: '', token: 'PEAQ' })
+// verifyAssetHubPortfolioChange("1333RgL47QYYkmJk1BHzfEF4hRE7Bd2Yf8P2HdV8Cn3p9hVh", { domain: 'peaq', label: '', token: 'PEAQ' })
+/**
+ * XCM of Moonbeam but not recognizable as such...
+ */
+// verifyAssetHubPortfolioChange("1228xdwBttfQ5LpT2rihE2FLJLAY2hu8jsGYzD2dgY25DkTe", { domain: 'peaq', label: '', token: 'PEAQ' })
+// verifyAssetHubPortfolioChange("14ztyLQdP2B5ahuH9AipKSqvf29wXSf7jWhJ9mEP8cJXfmVw", { domain: 'peaq', label: '', token: 'PEAQ' })
+// NOK withdrawals / deposits...
+// verifyAssetHubPortfolioChange("15GMzoTZjgj1957aE7NPVUdZpdYfgntM5ryFobHLJWVwp4VP", { domain: 'peaq', label: '', token: 'PEAQ' })
 
-// MYHTOS
-// OK !! verifyAssetHubPortfolioChange("0xf8683ecADdCb12891867CCDF4dbC96f47d62d67B", { domain: 'mythos', label: '', token: 'MYTH' })
-// OK !! verifyAssetHubPortfolioChange("0x56F17ebFe6B126E9f196e7a87f74e9f026a27A1F", { domain: 'mythos', label: '', token: 'MYTH' })
-// OK !! verifyAssetHubPortfolioChange("0xfd56a122ec50912811ec2856e6df5fd0a1581df2", { domain: 'mythos', label: '', token: 'MYTH' })
-// OK !! verifyAssetHubPortfolioChange("0x5EE06FECF52b12c66b03700821FbBc9dD5680361", { domain: 'mythos', label: '', token: 'MYTH' })
-// OK !! verifyAssetHubPortfolioChange("0xf7A1F5AC6D7A8Ee94B69fE0BFb092AA36d9a7099", { domain: 'mythos', label: '', token: 'MYTH' })
-// OK !! verifyAssetHubPortfolioChange("0xF6eAAdC72D1a58F735965EA196E4FA7029fC76dC", { domain: 'mythos', label: '', token: 'MYTH' })
+// Unique
+/**
+ * there is some mechanism such that fees are lower than actually given
+ * for each transaction there a deposit event returning some of the fees. e.g. https://unique.subscan.io/extrinsic/8210174-8
+ * actual fee is 3.20996 not 3.2181
+ * Also one should look at deposit and withdrawal events... not feasable
+ *
+ */
+// verifyAssetHubPortfolioChange("16dHFQnXT8dZyGXSWFo3SDms6KBEEUDp2LgHx3vmqhVR3tXJ", { domain: 'unique', label: '', token: 'UNQ' })
+// verifyAssetHubPortfolioChange("12jwmRZMbkKbyGfmu7LgWLpZkUoj4wy3Vmh48k17gEKRYfzk", { domain: 'unique', label: '', token: 'UNQ' })
+// verifyAssetHubPortfolioChange("16MVJ7qYwZJdFc9XbXyrndn31xXhxQ9XkctUvmGKzeZACq2Q", { domain: 'unique', label: '', token: 'UNQ' })
+// verifyAssetHubPortfolioChange("15iSPt39ba3nBN4ttyx9cCUFRnVxpALcUR5vHnqGzT46wjTd", { domain: 'unique', label: '', token: 'UNQ' })
 
+// pendulum
+// XCM transfers completely different!
+// verifyAssetHubPortfolioChange("16aPu5eDzW5XTHQvixUUfZCAXiRXpFdiuRi49rcr4DGJmJmM", { domain: 'pendulum', label: '', token: 'PEN' })
+
+// spiritnet
+// verifyAssetHubPortfolioChange("12n5xSTNDB2WGTtv8Fcst2PeZPnJaM1zchR5w1ZJdDrbgqnV", { domain: 'spiritnet', label: '', token: 'KILT' })
+//verifyAssetHubPortfolioChange("14igNr9LabUkxmMys8CSTqUyJaHWum4bjBCSPqZPgXdmFTPc", { domain: 'spiritnet', label: '', token: 'KILT' })
+/**
+ * balances upgraded -> balance doubled? "event_index": "5776680-279"
+ * 4sjKoUyu8Bn5kkQAyqn82DscY7o55tQH65DficCPphxMwaWY
+ */
+// verifyAssetHubPortfolioChange("15pFynQaX8YTpX2YZcMDfymTygMtzvUVvLAgLdkxEDMqFHrn", { domain: 'spiritnet', label: '', token: 'KILT' })
+// verifyAssetHubPortfolioChange("15uWH9p8mA3Ggfdt5z8kkJp1Dmama5rpKgrR6AgDzfygqNn1", { domain: 'spiritnet', label: '', token: 'KILT' })
+// verifyAssetHubPortfolioChange("16PLqVKSrYhpXhVBZk1DJSGuCacr1W2nyBBiHZCtBYgse1Hi", { domain: 'spiritnet', label: '', token: 'KILT' })
