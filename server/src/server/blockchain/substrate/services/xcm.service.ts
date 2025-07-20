@@ -228,6 +228,7 @@ export class XcmService {
                   .multipliedBy(new BigNumber(Math.pow(10, -decimals)))
                   .toNumber();
                 return {
+                  messageHash: xcm.message_hash,
                   symbol: originToken?.symbol ?? symbol,
                   asset_unique_id: originToken?.unique_id,
                   amount: (fromChain === data.chainName ? -1 : 1) * amount,

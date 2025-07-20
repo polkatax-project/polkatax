@@ -113,16 +113,27 @@ export class SpecialEventsToTransfersService {
         handler: (c, e, context) => this.onBalancesWithdraw(e, context),
         condition: (event, events) => !!events.find(e => e.module_id + e.event_id === "tokenmanagerAvtLowered"), 
     },
-    /*{
-      chains: ["*"],
+    {
+      chains: ["acala"],
+      event: "earningBonded",
+      handler: (c, e, context) => this.onBalancesDeposit(e, context),
+    },
+    {
+      chains: ["hydration"],
       event: "balancesLocked",
       handler: (c, e, context) => this.onBalancesDeposit(e, context),
     },
     {
-      chains: ["*"],
+      chains: ["hydration"],
       event: "balancesUnlocked",
       handler: (c, e, context) => this.onBalancesWithdraw(e, context),
-    },*/
+    },
+    { 
+      chains: ["polkadot", "kusama"],
+      event: "balancesBurned",
+      handler: (c, e, context) => this.onBalancesWithdraw(e, context),
+      condition: (event, events) => !!events.find(e => e.module_id + e.event_id === "identitymigratorIdentityReaped"), 
+    },
     {
       chains: ["bifrost"],
       event: "balancesIssued",

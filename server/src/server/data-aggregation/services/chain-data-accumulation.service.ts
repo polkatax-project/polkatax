@@ -106,6 +106,7 @@ export class ChainDataAccumulationService {
       context.chain.token,
       indexedTx,
       context.address,
+      extrinsicIndexedEvents
     );
     const indexedStakingRewards: Record<string, Payment[]> =
       stakingRewardPayments.reduce((current, stakingRewards) => {
@@ -156,15 +157,20 @@ export class ChainDataAccumulationService {
     stakingRewardsToken: string,
     indexedTx: Record<string, Transaction>,
     walletAddress: string,
+    indexedEvents: Record<string, SubscanEvent[]>
   ): Payment[] {
-    return stakingRewards.map((stakingReward) => {
+    return (stakingRewards || []).map((stakingReward) => {
       const matchingTx = indexedTx[stakingReward.extrinsic_index];
       return {
         hash: stakingReward.hash,
         block: stakingReward.block,
         timestamp: stakingReward.timestamp,
         extrinsic_index: stakingReward.extrinsic_index,
-        events: [],
+        events: indexedEvents[stakingReward.extrinsic_index]?.map(e => ({
+          moduleId: e.module_id,
+          eventId: e.event_id,
+          eventIndex: e.event_index
+        })) ?? [],
         feeUsed: matchingTx?.feeUsed,
         tip: matchingTx?.tip,
         provenance: "stakingRewards",
