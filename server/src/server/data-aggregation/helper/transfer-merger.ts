@@ -30,9 +30,10 @@ export class TransferMerger {
           timestamp: entry.timestamp,
         };
       }
-      let matchingTransfer = target[key].transfers.find(
+      let matchingTransfer =
+        undefined; /* TODO: this makes debugging easier. Maybe no merging is needed? target[key].transfers.find(
         (t) => t.asset_unique_id === entry.asset_unique_id,
-      );
+      ); */
       if (!matchingTransfer) {
         matchingTransfer = {
           ...entry,

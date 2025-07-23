@@ -61,9 +61,6 @@ export const verifyPortfolioHistory = (
       const history = [];
       let expectedChange = 0;
 
-      if (intervalStart === 1709458668000 && intervalEnd === 1709458704000) {
-        console.log("TODO:!");
-      }
       const matchingPayments = payments.filter(
         (p) => p.timestamp > intervalStart && p.timestamp <= intervalEnd,
       );
@@ -73,9 +70,6 @@ export const verifyPortfolioHistory = (
           expectedChange += -(p?.feeUsed ?? 0) - (p?.tip ?? 0); // - (p?.xcmFee ?? 0);
         }
         p.transfers.forEach((t) => {
-          if (t.amount === -22208.985273074737) {
-            console.log("TODO:!");
-          }
           if (
             t.asset_unique_id === token.asset_unique_id ||
             (t.symbol.toUpperCase() === token.symbol.toUpperCase() &&
@@ -85,7 +79,6 @@ export const verifyPortfolioHistory = (
             history.push(p);
           }
         });
-        // console.log(p.extrinsic_index + " matched: " + matched +  " ts " + p.timestamp + " amount " + amount)
       });
 
       const expectedVsActual = actualBalanceChange - expectedChange;

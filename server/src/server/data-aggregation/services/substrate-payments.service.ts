@@ -24,7 +24,7 @@ export class PaymentsService {
     private chainDataAccumulationService: ChainDataAccumulationService,
     private specialEventsToTransfersService: SpecialEventsToTransfersService,
     private addFiatValuesToPaymentsService: AddFiatValuesToPaymentsService,
-    private xcmTokenResolutionService: XcmTokenResolutionService
+    private xcmTokenResolutionService: XcmTokenResolutionService,
   ) {}
 
   private validate(paymentsRequest: PaymentsRequest) {
@@ -48,21 +48,32 @@ export class PaymentsService {
       ...paymentsRequest,
       chainName: paymentsRequest.chain.domain,
     };
-    const [transfers, transactions, events, xcmList, stakingRewards] =
-      await Promise.all([
-        this.subscanService.fetchAllTransfers(dataRequest),
-        this.transactionsService.fetchTx(dataRequest),
-        this.subscanService.searchAllEvents(dataRequest),
-        this.xcmService.fetchXcmTransfers(dataRequest),
-        this.stakingRewardsService.fetchStakingRewards(dataRequest),
-      ]);
+    const [
+      transfers,
+      transactions,
+      events,
+      { xcmForEventContext, xcmMapToTransfer },
+      stakingRewards,
+    ] = await Promise.all([
+      this.subscanService.fetchAllTransfers(dataRequest),
+      this.transactionsService.fetchTx(dataRequest),
+      this.subscanService.searchAllEvents(dataRequest),
+      this.xcmService.fetchXcmTransfers(dataRequest),
+      this.stakingRewardsService.fetchStakingRewards(dataRequest),
+    ]);
 
-    const eventEnrichedXcmTransfers = await this.xcmTokenResolutionService.resolveTokens(paymentsRequest.chain, xcmList, events)
+    const eventEnrichedXcmTransfers =
+      await this.xcmTokenResolutionService.resolveTokens(
+        paymentsRequest.chain,
+        xcmMapToTransfer,
+        events,
+      );
 
     const specialEventTransfers =
       await this.specialEventsToTransfersService.handleEvents(
         paymentsRequest.chain,
         events,
+        xcmForEventContext,
       );
     transfers.push(...specialEventTransfers);
 

@@ -27,6 +27,7 @@ export class EvmSwapsAndPaymentsService {
 
   private mapEvmTxToTransaction(tx: EVMTx): Transaction {
     return {
+      id: tx.hash,
       hash: tx.hash,
       from: tx.from,
       to: tx.to,

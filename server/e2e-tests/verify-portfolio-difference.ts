@@ -9,6 +9,26 @@ import { SubscanService } from "../src/server/blockchain/substrate/api/subscan.s
 import { SpecialEventsToTransfersService } from "../src/server/data-aggregation/services/special-events-to-transfers.service";
 import { Payment } from "../src/server/data-aggregation/model/payment";
 
+
+const checkPoolTokens = async () => {
+  const { payments, unmatchedEvents, minBlock, maxBlock } = JSON.parse(
+    fs.readFileSync(`./e2e-tests/out/all.json`, "utf-8"),
+  );
+  let pool2 = 0
+  let pool4 = 0
+  payments.forEach(p => {
+    p.transfers.filter(t => t.symbol.toLowerCase() === '2-pool' || t.symbol.toLowerCase() === '4-pool').forEach(t => {
+      if (t.symbol.toLowerCase() === '2-pool') {
+        pool2 += t.amount
+      } else {
+        pool4 += t.amount
+      }
+    })
+  })
+  console.log("2-Pool change " + pool2)
+  console.log("4-Pool change " + pool4)
+}
+
 const verifyPortfolioChange = async (
   address: string,
   chain: { domain: string; label: string; token: string },
@@ -57,6 +77,9 @@ const verifyPortfolioChange = async (
     unmatchedEvents,
     tolerance,
   );
+  if (chain.domain === 'hydration') {
+    checkPoolTokens()
+  }
 };
 
 const verifyAssetHubPortfolioChange = async (
@@ -382,7 +405,7 @@ const zoomIntoError = async (
     { payments: { payments, unmatchedEvents, minBlock, maxBlock } },
   );
 };
-// zoomIntoError("15abVnvSgRJFCqhJuvrYSNL5DscRppcog8cyYaVALLU3LFjB", { domain: 'hydration', label: '', token: 'HDX' }, 'HDX', 'HDX', 0)
+// zoomIntoError("16MRsnWMXvBiHK8FUu9GMNBaVFbY9RpVcCWbviRjL1ogGWQ7", { domain: 'hydration', label: '', token: 'HDX' }, 'asset_registry/28a5c2818590ee3c4d5d93a448190f3397144303', 'DOT', 0)
 
 const ahZoomIntoError = async (
   address: string,
@@ -402,20 +425,30 @@ const ahZoomIntoError = async (
     tolerance,
   );
 };
-// ahZoomIntoError("1CEZAcr7sGqC7Sx6jwWJ5JBALa8iqwS18kj3Y9RzmZacL33", { domain: 'assethub-polkadot', label: '', token: 'DOT' }, "USDC", 0.01);
+// ahZoomIntoError("15rSJtfCbB3MtWmW5pNnRhNeJENSQX9hLXUikkAee6mJVC9j", { domain: 'assethub-polkadot', label: '', token: 'DOT' }, "USDC", 0.01);
 
-// ASSET HUB -> ALL OK
+const fetchTransfers = async () => {
+  const subscanService: SubscanService = createDIContainer().resolve("subscanService");
+  const result = await subscanService.fetchAllTransfers({
+        chainName: "hydration",
+        address: "13b6hRRYPHTxFzs9prvL2YGHQepvd4YhdDb9Tc7khySp3hMN",
+        minDate: new Date(Date.UTC(2025, 6, 15)).getTime(), // new Date(Date.UTC(new Date().getFullYear() - 1, 0, 1)).getTime(), // 
+      })
+    fs.writeFileSync(`./e2e-tests/out/transfers.json`, JSON.stringify(result))
+}
+// fetchTransfers()
+
+// ASSET HUB 
 /**
  * Incoming cross-chain transfers are ignored. Instead listen to deposit events assetsIssued/balancesMinted
  */
 // verifyAssetHubPortfolioChange("15abVnvSgRJFCqhJuvrYSNL5DscRppcog8cyYaVALLU3LFjB", { domain: 'assethub-polkadot', label: '', token: 'DOT' })
 /**
  * Burn event ignored because burn is also called thrown during by xcm. Difference 6 DOT
- * 40k USDC "missing" due to transfer of snowflake USDC. Incoming snowflake transfer not recognized.
  */
 // verifyAssetHubPortfolioChange("1CEZAcr7sGqC7Sx6jwWJ5JBALa8iqwS18kj3Y9RzmZacL33", { domain: 'assethub-polkadot', label: '', token: 'DOT' })
 /**
- * Works but MYTH xcm transfers which are not recognized. Formatting of multi location does not match. Reason unclear.
+ * XCM: Works but MYTH xcm transfers which are not recognized. Formatting of multi location does not match. Reason unclear.
  * https://polkadot.subscan.io/xcm_message/polkadot-bff42d3f55c8f50357f1cbb3448387a3101657ea
  */
 // verifyAssetHubPortfolioChange("1HGnvAkk9nbfZ58CzUJhjcrLdEDMkr5qNkqqYkyD5BF5v6Y", { domain: 'assethub-polkadot', label: '', token: 'DOT' })
@@ -437,14 +470,9 @@ const ahZoomIntoError = async (
 // verifyAssetHubPortfolioChange("15mYsj6DpBno58jRoV5HCTiVPFBuWhDLdsWtq3LxwZrfaTEZ", { domain: 'people-polkadot', label: '', token: 'DOT' }) 
 // verifyAssetHubPortfolioChange("12ryo7Fp21tKkFQWJ2vSVMY2BH3t9syk65FUaywraHLs3T4T", { domain: 'people-polkadot', label: '', token: 'DOT' }) 
 
-
 // collectives
 // verifyAssetHubPortfolioChange("1L66uQMKFnXKSZx9pCD5o56GvvP1i2Qns7CaS2AaKp9mnwc", { domain: 'collectives-polkadot', label: '', token: 'DOT' }) 
 // verifyAssetHubPortfolioChange("168BAPzMCWtzvbUVAXjDcJjZCtog7tmoMN2kRa7nusoxJeB8", { domain: 'collectives-polkadot', label: '', token: 'DOT' }) 
-/**
- * new account created -> https://collectives-polkadot.subscan.io/block/3124100?tab=event
- * and killed https://collectives-polkadot.subscan.io/block/3346100?tab=event
- */
 // verifyAssetHubPortfolioChange("12zsKEDVcHpKEWb99iFt3xrTCQQXZMu477nJQsTBBrof5k2h", { domain: 'collectives-polkadot', label: '', token: 'DOT' }) 
 // verifyAssetHubPortfolioChange("14EQvBy9h8xGbh2R3ustnkfkF514E7wpmHtg27gDaTLM2str", { domain: 'collectives-polkadot', label: '', token: 'DOT' }) 
 // verifyAssetHubPortfolioChange("13C7Ssy9QNJk515SFezaKMfhMRFrRcZWBhXA3oDq1AuKVds5", { domain: 'collectives-polkadot', label: '', token: 'DOT' }) 
@@ -494,32 +522,54 @@ const ahZoomIntoError = async (
 // verifyAssetHubPortfolioChange("16MRsnWMXvBiHK8FUu9GMNBaVFbY9RpVcCWbviRjL1ogGWQ7", { domain: 'neuroweb', label: '', token: 'NEURO' })
 // verifyAssetHubPortfolioChange("15gPguU3rf2CdWwqahgc3HYk6R9bw5HSdDqYxoNyG9Enrc5V", { domain: 'neuroweb', label: '', token: 'NEURO' })
 // verifyAssetHubPortfolioChange("12pGnMsHHe4cUVTnBpXEhxyfL59zcDSEk4xLA9EgYFUgS6Uq", { domain: 'neuroweb', label: '', token: 'NEURO' })
-// verifyAssetHubPortfolioChange("16MRsnWMXvBiHK8FUu9GMNBaVFbY9RpVcCWbviRjL1ogGWQ7", { domain: 'neuroweb', label: '', token: 'NEURO' })
 // verifyAssetHubPortfolioChange("14BSK3tU1iqT7U2UfdZGsQ7duLRUBXK6W4sUTUd5J7DQPoNz", { domain: 'neuroweb', label: '', token: 'NEURO' })
 
 /////////////// everything ok until here
 
+
 // Hydration
-// OK verifyPortfolioChange("15abVnvSgRJFCqhJuvrYSNL5DscRppcog8cyYaVALLU3LFjB", { domain: 'hydration', label: '', token: 'HDX' })
-// OK verifyPortfolioChange("16882iTH5FHdH2ka552Rr6yUGUSvKPvQHBWAYLXjiCihVpgf", { domain: 'hydration', label: '', token: 'HDX' })
+// KK verifyPortfolioChange("15abVnvSgRJFCqhJuvrYSNL5DscRppcog8cyYaVALLU3LFjB", { domain: 'hydration', label: '', token: 'HDX' })
+// KK verifyPortfolioChange("16882iTH5FHdH2ka552Rr6yUGUSvKPvQHBWAYLXjiCihVpgf", { domain: 'hydration', label: '', token: 'HDX' })
+// KK verifyPortfolioChange("1po4rmTmihcdumpP7XP4ZnexNvaRX1bHoNawndvMk4udC1G", { domain: 'hydration', label: '', token: 'HDX' })
+// KK verifyPortfolioChange("16CzpgW3YoR8FQYLromGxfVhare7JyLBsnUcm5i8GZocfujb", { domain: 'hydration', label: '', token: 'HDX' })
+// verifyPortfolioChange("12R6XdCSw3HX59CX2kmCYzAkVrf5u4AZd7YExSjwMLNzm2da", { domain: 'hydration', label: '', token: 'HDX' }, 0.3, true)
+// KK verifyPortfolioChange("12ZuLmUFrpmWW9CHTED925mnuZnK5JyZPqnsooq9pjuWBSYX", { domain: 'hydration', label: '', token: 'HDX' }) 
+// OK verifyPortfolioChange("133cogzsFo7jnwp7jENBnygfj5GxnQi4hSZdNQtzuteULt4S", { domain: 'hydration', label: '', token: 'HDX' })
+// OK verifyPortfolioChange("14XhPq7NHe6vGGxuQ21hcosA2XwTNtA9mWr5n5FNXkQZDS7U", { domain: 'hydration', label: '', token: 'HDX' })
+// OK verifyPortfolioChange("13sJGSFAPsKbXrkXuZe4KU6Vb611NXtRjRwnp4e8bQNELhYV", { domain: 'hydration', label: '', token: 'HDX' })
+// OK verifyPortfolioChange("1Zn6CU4CCHLDtrgxGsKYt65Ujd1vc72ydAxL5cUpymGHZoF", { domain: 'hydration', label: '', token: 'HDX' });
+// OK verifyPortfolioChange("13BnzcNSL59RgCTXy4NZug78WXa4Yp6S2AxfAx34qsWEMvDR", { domain: 'hydration', label: '', token: 'HDX' })
+// OK verifyPortfolioChange("1244idMo96seN3NTMVFpnfsXXHqx4zrztysAfww7UMMgaj2v", { domain: 'hydration', label: '', token: 'HDX' })
+// OK verifyPortfolioChange("13jFF8C4JzKQt42qiPyTaBAVF5QdwnzFw6d8t7WUxdKSB4Yo", { domain: 'hydration', label: '', token: 'HDX' })
+// OK verifyPortfolioChange("1xueyfG9g4is3jVsnkH73x31vWpKHHRowtKvyqb2scQkdC3", { domain: 'hydration', label: '', token: 'HDX' })
+// OK verifyPortfolioChange("14QLEDMkLp7wt6ZfyvZA5mq59xHzMUTQrXSikFM2RZ78Cf3K", { domain: 'hydration', label: '', token: 'HDX' })
+// OK verifyPortfolioChange("12YGU15jahiyNje51yP2JA7x6fWv4S1Kr3DgpjBPH2GN184r", { domain: 'hydration', label: '', token: 'HDX' })
+// OK verifyPortfolioChange("13VyzGJCffWkeyrtaEtJtW6ySXACb34onwVJL7cYiTHWGEJK", { domain: 'hydration', label: '', token: 'HDX' }) 
 
 /**
- * USDC mixup between USDC Wormhole and USDC native.
- * unique id identical between assethub and hydration!
- * 40k HDX out of nowhere
- */
-// verifyPortfolioChange("1HGnvAkk9nbfZ58CzUJhjcrLdEDMkr5qNkqqYkyD5BF5v6Y", { domain: 'hydration', label: '', token: 'HDX' })
-/**
- * failed transfer of 200 DOT but the DOT as deposited anyway.
- * https://hydration.subscan.io/xcm_message/polkadot-09ef67bec117f87c1746ebe99d44c94fc311b665
+ * XCM: outgoing of 484.637955 USDC never lead to withdrawal of USDC...
+ * https://polkadot.subscan.io/xcm_message/polkadot-8f3a407ccc0a5d3e5c4e24b71da81c8e6ed9da55
  */
 // verifyPortfolioChange("1CEZAcr7sGqC7Sx6jwWJ5JBALa8iqwS18kj3Y9RzmZacL33", { domain: 'hydration', label: '', token: 'HDX' })
 /**
- * Issue xcm -> DAI -> DAI.wh (Acala) vs DAI.wh (Moonbeam)
- * Also "fake" HDX cross-chain transfer: https://hydration.subscan.io/xcm_message/polkadot-3461cadc89dcfe9ac5434f634d1d01cce325b8cd
+ * XCM: USDC mixup between USDC Wormhole and USDC native.
+ * 40k HDX out of nowhere
  */
+// verifyPortfolioChange("1HGnvAkk9nbfZ58CzUJhjcrLdEDMkr5qNkqqYkyD5BF5v6Y", { domain: 'hydration', label: '', token: 'HDX' })
 // verifyPortfolioChange("131d4YS25qpuXiHrfJibuFYXwZrzwxpvU1ahvr3TJFNYcmfk", { domain: 'hydration', label: '', token: 'HDX' }) // jakub
-// verifyPortfolioChange("12R6XdCSw3HX59CX2kmCYzAkVrf5u4AZd7YExSjwMLNzm2da", { domain: 'hydration', label: '', token: 'HDX' }, 0.3, true)
+verifyPortfolioChange("13b6hRRYPHTxFzs9prvL2YGHQepvd4YhdDb9Tc7khySp3hMN", { domain: 'hydration', label: '', token: 'HDX' }) 
+/**
+ * ok except DOT/asset_registry/28a5c2818590ee3c4d5d93a448190f3397144303 
+ * XCM from nowhere (no sender address)
+ * https://hydration.subscan.io/xcm_message/polkadot-bb0409f78a40c96fd8f0d1a7938d5b5cbba74fe5
+ */
+// verifyPortfolioChange("15rSJtfCbB3MtWmW5pNnRhNeJENSQX9hLXUikkAee6mJVC9j", { domain: 'hydration', label: '', token: 'HDX' })
+
+/**
+ * XCM without sender but the event is not indexed...https://hydration.subscan.io/extrinsic/7347162-3?tab=xcm_transfer
+ */
+//verifyPortfolioChange("16MRsnWMXvBiHK8FUu9GMNBaVFbY9RpVcCWbviRjL1ogGWQ7", { domain: 'hydration', label: '', token: 'HDX' })
+// verifyPortfolioChange("12ZuLmUSUP6gHGboHBoBGPwC8KtxLLwizLhWSdJMbPuzvMhv", { domain: 'hydration', label: '', token: 'HDX' }) 
 
 
 // Bifrost
@@ -542,6 +592,8 @@ const ahZoomIntoError = async (
 // OK! verifyPortfolioChange("12TiTLQYFBsb2EUdaxFdcvo78gpkhajnuv7Jm8Aoy7c4z1YV", { domain: 'bifrost', label: '', token: 'BNC' })
 
 
+
+
 // phala
 // verifyAssetHubPortfolioChange("1eo82wr76n25UXYHNa9hym1ZTHeK4oBrNMcz97m71H85qfP", { domain: 'phala', label: '', token: 'PHA' }) 
 // verifyAssetHubPortfolioChange("14EAEgGrbX3KCgyjBZRyB5qgYpuFHLB5AC8TX7hYLPRT1YPN", { domain: 'phala', label: '', token: 'PHA' }) 
@@ -554,10 +606,12 @@ const ahZoomIntoError = async (
 // verifyAssetHubPortfolioChange("129ahoNBbD53JrHC3aP6XXdWvTKxVyQo1PjqMcQ698sp3FdM", { domain: 'phala', label: '', token: 'PHA' }) 
 // verifyAssetHubPortfolioChange("16M3S6cVeZ4pEjhUjErzp43NvmCCNnAMJhocYsBG3v8nFw9t", { domain: 'phala', label: '', token: 'PHA' }) 
 
+
+// PEAQ
 /**
  * Mostly EVM transactions...
  */
-// PEAQ -> issue with cross chain transfers -> DAI -> DAI.wh. xcm messages ignored for now
+// XCM: PEAQ -> issue with cross chain transfers -> DAI -> DAI.wh. xcm messages ignored for now
 // verifyAssetHubPortfolioChange("1333RgL47QYYkmJk1BHzfEF4hRE7Bd2Yf8P2HdV8Cn3p9hVh", { domain: 'peaq', label: '', token: 'PEAQ' })
 /**
  * XCM of Moonbeam but not recognizable as such...
@@ -566,6 +620,7 @@ const ahZoomIntoError = async (
 // verifyAssetHubPortfolioChange("14ztyLQdP2B5ahuH9AipKSqvf29wXSf7jWhJ9mEP8cJXfmVw", { domain: 'peaq', label: '', token: 'PEAQ' })
 // NOK withdrawals / deposits...
 // verifyAssetHubPortfolioChange("15GMzoTZjgj1957aE7NPVUdZpdYfgntM5ryFobHLJWVwp4VP", { domain: 'peaq', label: '', token: 'PEAQ' })
+
 
 // Unique
 /**
@@ -580,13 +635,15 @@ const ahZoomIntoError = async (
 // verifyAssetHubPortfolioChange("16MVJ7qYwZJdFc9XbXyrndn31xXhxQ9XkctUvmGKzeZACq2Q", { domain: 'unique', label: '', token: 'UNQ' })
 // verifyAssetHubPortfolioChange("15iSPt39ba3nBN4ttyx9cCUFRnVxpALcUR5vHnqGzT46wjTd", { domain: 'unique', label: '', token: 'UNQ' })
 
+
 // pendulum
 // XCM transfers completely different!
 // verifyAssetHubPortfolioChange("16aPu5eDzW5XTHQvixUUfZCAXiRXpFdiuRi49rcr4DGJmJmM", { domain: 'pendulum', label: '', token: 'PEN' })
 
+
 // spiritnet
 // verifyAssetHubPortfolioChange("12n5xSTNDB2WGTtv8Fcst2PeZPnJaM1zchR5w1ZJdDrbgqnV", { domain: 'spiritnet', label: '', token: 'KILT' })
-//verifyAssetHubPortfolioChange("14igNr9LabUkxmMys8CSTqUyJaHWum4bjBCSPqZPgXdmFTPc", { domain: 'spiritnet', label: '', token: 'KILT' })
+// verifyAssetHubPortfolioChange("14igNr9LabUkxmMys8CSTqUyJaHWum4bjBCSPqZPgXdmFTPc", { domain: 'spiritnet', label: '', token: 'KILT' })
 /**
  * balances upgraded -> balance doubled? "event_index": "5776680-279"
  * 4sjKoUyu8Bn5kkQAyqn82DscY7o55tQH65DficCPphxMwaWY

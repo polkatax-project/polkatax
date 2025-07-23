@@ -84,9 +84,9 @@ export class StakingRewardsService {
             minDate,
             maxDate,
           );
-        case 'mythos':
-        case 'acala':
-          return [] // staking rewards are transfers as well -> prevent duplicates
+        case "mythos":
+        case "acala":
+          return []; // staking rewards are transfers as well -> prevent duplicates
         default:
           const token = await this.subscanService.fetchNativeToken(chainName);
           const rawRewards = await this.subscanService.fetchAllStakingRewards({

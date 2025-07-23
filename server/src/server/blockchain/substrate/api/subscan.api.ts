@@ -43,7 +43,12 @@ export class SubscanApi {
         return await query();
       } catch (e) {
         logger.warn(e);
-        if (i === retries - 1 || (e as HttpError).statusCode !== 429) throw e;
+        if (
+          i === retries - 1 ||
+          ((e as HttpError).statusCode !== 429 &&
+            (e as HttpError).statusCode !== 500)
+        )
+          throw e;
         await new Promise((res) => setTimeout(res, backOff[i]));
       }
     }
@@ -177,6 +182,7 @@ export class SubscanApi {
         return {
           ...asset,
           ...(asset?.metadata || {}),
+          id: asset.unique_id,
         };
       }),
       hasNext: list.length >= 100,
@@ -228,6 +234,7 @@ export class SubscanApi {
         return {
           ...asset,
           ...(asset?.metadata || {}),
+          id: asset.unique_id,
         };
       }),
       hasNext: list.length >= 100,
@@ -317,6 +324,7 @@ export class SubscanApi {
       },
     );
     const list = response.data.blocks.map((b) => ({
+      id: b.block_num,
       block_num: b.block_num,
       timestamp: b.block_timestamp * 1000,
     }));
@@ -331,6 +339,7 @@ export class SubscanApi {
   ): RawStakingReward[] {
     return (rawResponseList || []).map((entry) => {
       return {
+        id: entry.event_index,
         event_id: entry.event_id,
         amount: BigNumber(entry.amount),
         timestamp: entry.block_timestamp * 1000, // convert from sec to ms
@@ -407,6 +416,15 @@ export class SubscanApi {
     minDate: number,
     after_id?: number,
   ): Promise<{ list: RawXcmMessage[]; hasNext: boolean }> {
+    logger.info(
+      `XCM request: ${JSON.stringify({
+        row: 100,
+        page,
+        address,
+        filter_para_id,
+        after_id,
+      })}`,
+    );
     const json = await this.request(
       `https://${chainName}.api.subscan.io/api/scan/xcm/list`,
       `post`,

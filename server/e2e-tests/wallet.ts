@@ -149,9 +149,7 @@ export class Wallet {
             );
       }
 
-      function convert(
-        balanceInfo: Record<string, any>,
-      ): {
+      function convert(balanceInfo: Record<string, any>): {
         asset_unique_id: string;
         symbol: string;
         balance: number;

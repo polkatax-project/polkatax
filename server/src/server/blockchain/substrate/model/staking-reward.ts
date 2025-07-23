@@ -1,6 +1,7 @@
 import { BigNumber } from "bignumber.js";
 
 export interface RawStakingReward {
+  id: string;
   event_id: "Reward" | "Slash";
   amount: BigNumber;
   timestamp: number;

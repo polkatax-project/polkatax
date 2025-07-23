@@ -13,14 +13,14 @@ const endpoints = {
   mythos: "wss://polkadot-mythos-rpc.polkadot.io",
   unique: "wss://unique.ibp.network",
   pendulum: "wss://rpc-pendulum.prd.pendulumchain.tech",
-  'collectives-polkadot': "wss://collectives-polkadot-rpc.dwellir.com",
-  'people-polkadot': "wss://sys.ibp.network/people-polkadot",
+  "collectives-polkadot": "wss://collectives-polkadot-rpc.dwellir.com",
+  "people-polkadot": "wss://sys.ibp.network/people-polkadot",
   energywebx: "wss://public-rpc.mainnet.energywebx.com",
   phala: "wss://phala-rpc.dwellir.com",
   neuroweb: "wss://parachain-rpc.origin-trail.network",
   spiritnet: "wss://spiritnet.kilt.io",
   darwinia: "wss://rpc.darwinia.network",
-  "alephzero": "wss://aleph-zero.api.onfinality.io/public-ws"
+  alephzero: "wss://aleph-zero.api.onfinality.io/public-ws",
 };
 
 export async function creatApi(domain: string) {

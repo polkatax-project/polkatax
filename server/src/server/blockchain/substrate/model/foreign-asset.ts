@@ -1,4 +1,5 @@
 export interface ForeignAsset {
+  id: string;
   asset_id: string;
   unique_id: string;
   symbol: string;

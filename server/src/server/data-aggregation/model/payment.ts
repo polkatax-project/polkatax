@@ -10,7 +10,7 @@ export interface Payment {
   feeUsedFiat?: number;
   tipFiat?: number;
   xcmFee?: number;
-  events: { moduleId: string; eventId: string, eventIndex: string }[];
+  events: { moduleId: string; eventId: string; eventIndex: string }[];
   label?: string;
   provenance?: string;
   transfers: {

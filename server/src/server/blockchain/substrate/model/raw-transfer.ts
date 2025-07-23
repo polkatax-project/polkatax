@@ -1,4 +1,5 @@
 export interface RawSubstrateTransferDto {
+  id: number;
   transfer_id: number;
   from: string;
   from_account_display: {
@@ -47,7 +48,6 @@ export interface RawEvmTransferDto {
 }
 
 export interface Transfer {
-  id?: string;
   symbol: string;
   amount: number;
   from: string;

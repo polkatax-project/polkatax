@@ -20,7 +20,9 @@ export const fetchPayments = async (
         chain,
         address,
         currency,
-        minDate: new Date(Date.UTC(new Date().getFullYear() - 1, 0, 1)).getTime(), // new Date(Date.UTC(2025, 4, 1)).getTime(), //
+        minDate: new Date(Date.UTC(2025, 3, 15)).getTime() /*new Date(
+          Date.UTC(new Date().getFullYear() - 1, 0, 1),
+        ).getTime(), // new Date(Date.UTC(2025, 6, 15)).getTime(), */
       });
     if (payments.length === 0) {
       return { payments: [] };

@@ -5,7 +5,7 @@ import { WsError } from "../model/ws-error";
 import { JobRepository } from "./job.repository";
 
 export class JobsService {
-  pendingJobs$: Observable<Job[]>
+  pendingJobs$: Observable<Job[]>;
 
   constructor(private jobRepository: JobRepository) {
     this.pendingJobs$ = this.jobRepository.pendingJobsChanged$.pipe(

@@ -1,5 +1,5 @@
 export interface Transaction {
-  id?: string;
+  id: string;
   hash: string;
   from: string;
   to?: string;

@@ -12,6 +12,7 @@ import { Asset } from "../../blockchain/substrate/model/asset";
 import { isEvmAddress } from "../../data-aggregation/helper/is-evm-address";
 import { getAddress } from "ethers";
 import BigNumber from "bignumber.js";
+import { XcmTransfer } from "../../blockchain/substrate/model/xcm-transfer";
 
 interface EventDerivedTransfer extends Transfer {
   event_id: string;
@@ -26,27 +27,50 @@ interface AssetInfos {
 
 const getPropertyValue = (property: string | string[], event: EventDetails) => {
   if (!Array.isArray(property)) {
-    property = [property]
+    property = [property];
   }
-  return event.params.find(
-    (p) => property.includes(p.name),
-  )?.value;
-}
+  return event.params.find((p) => property.includes(p.name))?.value;
+};
 
 const extractAddress = (property: string | string[], event: EventDetails) => {
-  const value = getPropertyValue(property, event)
+  const value = getPropertyValue(property, event);
   return mapKeyToCanonicalAddress(value);
-}
+};
 
-const extractAsset = (property: string | string[], event: EventDetails, tokens: Asset[]) => {
-  const value = getPropertyValue(property, event)
-  return tokens.find((t) => value == t.asset_id || isEqual(value, t.asset_id));
-}
+const extractAsset = (
+  property: string | string[],
+  event: EventDetails,
+  tokens: Asset[],
+) => {
+  const value = getPropertyValue(property, event);
+  return tokens.find(
+    (t) =>
+      value == t.asset_id || value === t.token_id || isEqual(value, t.asset_id),
+  );
+};
 
-const extractForeignAsset = (property: string | string[], event: EventDetails, tokens: ForeignAsset[]) => {
-  const value = getPropertyValue(property, event)
-  return tokens.find((t) => value == t.asset_id || isEqual(value, t.multi_location) || isEqual(value, t.asset_id));
-}
+const extractToken = (
+  property: string | string[],
+  event: EventDetails,
+  tokens: Asset[],
+) => {
+  const value = getPropertyValue(property, event);
+  return tokens.find((t) => value === t.token_id);
+};
+
+const extractForeignAsset = (
+  property: string | string[],
+  event: EventDetails,
+  tokens: ForeignAsset[],
+) => {
+  const value = getPropertyValue(property, event);
+  return tokens.find(
+    (t) =>
+      value == t.asset_id ||
+      isEqual(value, t.multi_location) ||
+      isEqual(value, t.asset_id),
+  );
+};
 
 const mapKeyToCanonicalAddress = (key: string) => {
   if (isEvmAddress(key)) {
@@ -55,9 +79,15 @@ const mapKeyToCanonicalAddress = (key: string) => {
   return mapPublicKeyToAddress(key);
 };
 
-const toTransfer = (event: EventDetails, from: string, to: string, amount: number, token: { symbol: string, decimals: number, unique_id: string }) => {
+const toTransfer = (
+  event: EventDetails,
+  from: string,
+  to: string,
+  amount: number,
+  token: { symbol: string; decimals: number; unique_id: string },
+) => {
   if (to === undefined || from === undefined || !token || !amount) {
-    throw `Missing data: to: ${to}, from: ${from}, token: ${token}, amount: ${amount}`
+    throw `Missing data: to: ${to}, from: ${from}, token: ${token}, amount: ${amount}`;
   }
   return {
     event_id: event.event_id,
@@ -72,51 +102,68 @@ const toTransfer = (event: EventDetails, from: string, to: string, amount: numbe
     to,
     from,
     asset_unique_id: token.unique_id,
-  }
-}
+  };
+};
 
 export class SpecialEventsToTransfersService {
   eventConfigs: {
     chains;
     event: string | string[];
-    condition?: (event: SubscanEvent, peerEvents: SubscanEvent[]) => boolean,
+    condition?: (
+      event: SubscanEvent,
+      peerEvents: SubscanEvent[],
+      xcmList: XcmTransfer[],
+    ) => boolean;
     handler: (
       chain: { domain: string; token: string },
       e: EventDetails,
-      context: AssetInfos & { events: SubscanEvent[] },
+      context: AssetInfos & { events: SubscanEvent[] } & {
+        xcmList: XcmTransfer[];
+      },
     ) => Promise<EventDerivedTransfer | EventDerivedTransfer[]>;
   }[] = [
-    { 
+    {
       chains: ["coretime-polkadot", "coretime-kusama"],
       event: "brokerPurchased",
       handler: (c, e, context) => this.onCoretimePurchased(e, context),
     },
-    { 
+    {
       chains: ["coretime-polkadot", "coretime-kusama"],
       event: "brokerRenewed",
       handler: (c, e, context) => this.onCoretimePurchased(e, context),
     },
-    { 
-        chains: ["*"],
-        event: "balancesReserveRepatriated",
-        handler: (c, e, context) => this.onReserveRepatriated(e, context),
+    {
+      chains: ["*"],
+      event: "balancesReserveRepatriated",
+      handler: (c, e, context) => this.onReserveRepatriated(e, context),
     },
-    { 
-        chains: ["energywebx"],
-        event: "balancesDeposit",
-        handler: (c, e, context) => this.onBalancesDeposit(e, context),
-        condition: (event, events) => !!events.find(e => e.module_id + e.event_id === "tokenmanagerAVTLifted"), 
+    {
+      chains: ["energywebx"],
+      event: "balancesDeposit",
+      handler: (c, e, context) => this.onBalancesDeposit(e, context),
+      condition: (event, events) =>
+        !!events.find(
+          (e) => e.module_id + e.event_id === "tokenmanagerAVTLifted",
+        ),
     },
-    { 
-        chains: ["energywebx"],
-        event: "balancesWithdraw",
-        handler: (c, e, context) => this.onBalancesWithdraw(e, context),
-        condition: (event, events) => !!events.find(e => e.module_id + e.event_id === "tokenmanagerAvtLowered"), 
+    {
+      chains: ["energywebx"],
+      event: "balancesWithdraw",
+      handler: (c, e, context) => this.onBalancesWithdraw(e, context),
+      condition: (event, events) =>
+        !!events.find(
+          (e) => e.module_id + e.event_id === "tokenmanagerAvtLowered",
+        ),
     },
     {
       chains: ["acala"],
       event: "earningBonded",
       handler: (c, e, context) => this.onBalancesDeposit(e, context),
+    },
+    {
+      chains: ["hydration"],
+      event: "stableswapLiquidityRemoved",
+      handler: (c, e, context) => this.onHydrationLiquidityRemoved(e, context),
     },
     {
       chains: ["hydration"],
@@ -128,17 +175,19 @@ export class SpecialEventsToTransfersService {
       event: "balancesUnlocked",
       handler: (c, e, context) => this.onBalancesWithdraw(e, context),
     },
-    { 
+    {
       chains: ["polkadot", "kusama"],
       event: "balancesBurned",
       handler: (c, e, context) => this.onBalancesWithdraw(e, context),
-      condition: (event, events) => !!events.find(e => e.module_id + e.event_id === "identitymigratorIdentityReaped"), 
+      condition: (event, events) =>
+        !!events.find(
+          (e) => e.module_id + e.event_id === "identitymigratorIdentityReaped",
+        ),
     },
     {
       chains: ["bifrost"],
       event: "balancesIssued",
-      handler: (c, e, context) =>
-        this.onBalancesDeposit(e, context),
+      handler: (c, e, context) => this.onBalancesDeposit(e, context),
     },
     {
       chains: ["bifrost"],
@@ -157,16 +206,41 @@ export class SpecialEventsToTransfersService {
     },
     {
       chains: ["assethub-polkadot", "assethub-kusama"],
-      event: "assetconversionSwapExecuted",  // SwapCreditExecuted
+      event: "assetconversionSwapExecuted",
       handler: (c, e, context) => this.onAssethubSwapExecuted(e, context),
     },
     {
       chains: ["assethub-polkadot", "assethub-kusama"],
       event: "foreignassetsIssued",
-      handler: (c, e, context) => this.onAssethubForeignAssetsIssued(e, context),
+      handler: (c, e, context) =>
+        this.onAssethubForeignAssetsIssued(e, context),
     },
     {
-      chains: ["assethub-polkadot", "assethub-kusama", "coretime-polkadot", "coretime-kusama"],
+      chains: ["hydration"],
+      event: "tokensDeposited",
+      handler: (c, e, context) =>
+        this.onHydrationCurrenciesDeposited(e, context),
+    },
+    {
+      chains: ["hydration"],
+      event: "xtokensTransferredAssets",
+      handler: (c, e, context) =>
+        this.onHydrationXTokensTransferredAssets(e, context),
+      condition: (event, events, xmlList) =>
+        !!xmlList.find(
+          (xcm) =>
+            (xcm.timestamp === event.timestamp || xcm.extrinsic_index === event.extrinsic_index) &&
+            !xcm.transfers[0].from &&
+            xcm.transfers[0].fromChain === "hydration",
+        ),
+    },
+    {
+      chains: [
+        "assethub-polkadot",
+        "assethub-kusama",
+        "coretime-polkadot",
+        "coretime-kusama",
+      ],
       event: "assetsIssued",
       handler: (c, e, context) => this.onAssethubAssetsIssued(e, context),
     },
@@ -174,17 +248,28 @@ export class SpecialEventsToTransfersService {
       chains: ["*"],
       event: "balancesDeposit",
       handler: (c, e, context) => this.onBalancesDeposit(e, context),
-      condition: (event, events) => !!events.find(e => e.module_id + e.event_id === "systemNewAccount"), 
+      condition: (event, events) =>
+        !!events.find((e) => e.module_id + e.event_id === "systemNewAccount"),
     },
     {
       chains: ["*"],
       event: "balancesWithdraw",
       handler: (c, e, context) => this.onBalancesWithdraw(e, context),
-      condition: (event, events) => !!events.find(e => e.module_id + e.event_id === "systemKilledAccount"), 
+      condition: (event, events) =>
+        !!events.find(
+          (e) => e.module_id + e.event_id === "systemKilledAccount",
+        ),
     },
     {
-      chains: ["assethub-polkadot", "assethub-kusama", "coretime-polkadot", "coretime-kusama", "people-polkadot", "people-kusama",
-        "collectives-polkadot", "collectives-kusama"
+      chains: [
+        "assethub-polkadot",
+        "assethub-kusama",
+        "coretime-polkadot",
+        "coretime-kusama",
+        "people-polkadot",
+        "people-kusama",
+        "collectives-polkadot",
+        "collectives-kusama",
       ],
       event: "balancesMinted",
       handler: (c, e, context) => this.onBalancesDeposit(e, context),
@@ -203,7 +288,7 @@ export class SpecialEventsToTransfersService {
       chains: ["polkadot", "kusama"],
       event: "delegatedstakingMigratedDelegation",
       handler: (c, e, context) => this.migratedDelegation(c, e, context),
-    }
+    },
   ];
 
   constructor(private subscanService: SubscanService) {}
@@ -214,7 +299,8 @@ export class SpecialEventsToTransfersService {
   ) {
     return this.eventConfigs.find(
       (h) =>
-        (h.chains.includes("*") || h.chains.includes(chain)) && (ev.module_id + ev.event_id) === h.event
+        (h.chains.includes("*") || h.chains.includes(chain)) &&
+        ev.module_id + ev.event_id === h.event,
     );
   }
 
@@ -236,10 +322,9 @@ export class SpecialEventsToTransfersService {
         const foreignAssets = await this.subscanService.fetchForeignAssets(
           chainInfo.domain,
         );
-        const tokens = await this.subscanService.scanAssets(
-          chainInfo.domain,
-        );
+        const tokens = await this.subscanService.scanAssets(chainInfo.domain);
         tokens.push({
+          id: chainInfo.token,
           symbol: chainInfo.token,
           decimals: token.token_decimals,
           native: true,
@@ -249,8 +334,9 @@ export class SpecialEventsToTransfersService {
         extra = { foreignAssets, tokens };
         break;
       case "peaq":
-        extra.tokens =  await this.subscanService.scanAssets(chainInfo.domain);
+        extra.tokens = await this.subscanService.scanAssets(chainInfo.domain);
         extra.tokens.push({
+          id: chainInfo.token,
           symbol: chainInfo.token,
           decimals: token.token_decimals,
           native: true,
@@ -265,9 +351,10 @@ export class SpecialEventsToTransfersService {
       case "mythos":
       case "energywebx":
       case "unique":
-      case 'spiritnet':
+      case "spiritnet":
         extra.tokens = await this.subscanService.scanTokens(chainInfo.domain);
         extra.tokens.push({
+          id: chainInfo.token,
           name: chainInfo.token,
           decimals: token.token_decimals,
           symbol: chainInfo.token,
@@ -285,7 +372,8 @@ export class SpecialEventsToTransfersService {
       case "people-kusama":
       case "coretime-kusama":
       case "collectives-kusama":
-          extra.tokens.push({
+        extra.tokens.push({
+          id: chainInfo.token,
           name: chainInfo.token,
           decimals: token.token_decimals,
           symbol: chainInfo.token,
@@ -301,42 +389,56 @@ export class SpecialEventsToTransfersService {
   async handleEvents(
     chainInfo: { token: string; domain: string },
     events: SubscanEvent[],
+    xcmList: XcmTransfer[],
   ): Promise<EventDerivedTransfer[]> {
-
-    const groupedEvents: Record<string, SubscanEvent[]> = {}
-    events.forEach(e => {
-        if (!groupedEvents[e.extrinsic_index ?? e.timestamp]) {
-            groupedEvents[e.extrinsic_index ?? e.timestamp] = []
-        }
-        groupedEvents[e.extrinsic_index ?? e.timestamp].push(e)
-    })
+    const groupedEvents: Record<string, SubscanEvent[]> = {};
+    events.forEach((e) => {
+      if (!groupedEvents[e.extrinsic_index ?? e.timestamp]) {
+        groupedEvents[e.extrinsic_index ?? e.timestamp] = [];
+      }
+      groupedEvents[e.extrinsic_index ?? e.timestamp].push(e);
+    });
 
     const eventsOfInterest = events.filter((e) => {
-      const config = this.findMatchingConfig(chainInfo.domain, e)
+      const config = this.findMatchingConfig(chainInfo.domain, e);
       if (!config) {
-        return false
+        return false;
       }
       if (!config.condition) {
-        return true
+        return true;
       }
-      return config.condition(e, groupedEvents[e.extrinsic_index ?? e.timestamp])
-    })
+      return config.condition(
+        e,
+        groupedEvents[e.extrinsic_index ?? e.timestamp],
+        xcmList,
+      );
+    });
 
     const eventDetails = await this.subscanService.fetchEventDetails(
       chainInfo.domain,
       eventsOfInterest,
     );
     const extras = await this.fetchTokens(chainInfo);
+
     const transfersFromEvents = (
       await Promise.all(
         eventDetails.map(async (details) => {
           try {
-            const originalEvent = events.find(e => e.event_index === details.original_event_index)
-            const eventsInTx = groupedEvents[originalEvent.extrinsic_index ?? originalEvent.timestamp]
+            const originalEvent = events.find(
+              (e) => e.event_index === details.original_event_index,
+            );
+            const eventsInTx =
+              groupedEvents[
+                originalEvent.extrinsic_index ?? originalEvent.timestamp
+              ];
             return await this.findMatchingConfig(
               chainInfo.domain,
               details,
-            ).handler(chainInfo, details, { ...extras, events: eventsInTx });
+            ).handler(chainInfo, details, {
+              ...extras,
+              events: eventsInTx,
+              xcmList,
+            });
           } catch (error) {
             logger.error(
               `Error mapping event to transfer: ${details.extrinsic_index}, ${details.original_event_index}, ${details.module_id} ${details.event_id}`,
@@ -369,9 +471,9 @@ export class SpecialEventsToTransfersService {
       tokens,
     }: { foreignAssets: ForeignAsset[]; tokens: Asset[] },
   ): Promise<EventDerivedTransfer[]> {
-    const from = extractAddress("who", event)
-    const to = extractAddress("send_to", event)
-    const route: { col1: any; col2: any }[] = getPropertyValue("path", event)
+    const from = extractAddress("who", event);
+    const to = extractAddress("send_to", event);
+    const route: { col1: any; col2: any }[] = getPropertyValue("path", event);
     const assets = route
       .map((r) => r.col1)
       .map((location) => {
@@ -409,11 +511,15 @@ export class SpecialEventsToTransfersService {
     const fromAsset = assets[0];
     const toAsset = assets[assets.length - 1];
 
-    const amount_in = Number(getPropertyValue("amount_in", event)) / Math.pow(10, fromAsset?.decimals)
-    const amount_out = Number(getPropertyValue("amount_out", event)) / Math.pow(10, toAsset?.decimals)
+    const amount_in =
+      Number(getPropertyValue("amount_in", event)) /
+      Math.pow(10, fromAsset?.decimals);
+    const amount_out =
+      Number(getPropertyValue("amount_out", event)) /
+      Math.pow(10, toAsset?.decimals);
     return [
       toTransfer(event, from, "", amount_in, fromAsset),
-      toTransfer(event, "", to, amount_out, toAsset)
+      toTransfer(event, "", to, amount_out, toAsset),
     ];
   }
 
@@ -421,106 +527,120 @@ export class SpecialEventsToTransfersService {
     event: EventDetails,
     { foreignAssets }: { foreignAssets: ForeignAsset[] },
   ): Promise<EventDerivedTransfer> {
-    const owner = extractAddress("owner", event)
-    const asset = extractForeignAsset("asset_id", event, foreignAssets)
-    const amount = Number(getPropertyValue("amount", event)) / Math.pow(10, asset?.decimals);
-    return toTransfer(event, "", owner, amount, asset)
+    const owner = extractAddress("owner", event);
+    const asset = extractForeignAsset("asset_id", event, foreignAssets);
+    const amount =
+      Number(getPropertyValue("amount", event)) / Math.pow(10, asset?.decimals);
+    return toTransfer(event, "", owner, amount, asset);
   }
 
   private async onAssethubAssetsIssued(
     event: EventDetails,
+    { tokens, xcmList }: { tokens: Asset[]; xcmList: XcmTransfer[] },
+  ): Promise<EventDerivedTransfer> {
+    const owner = extractAddress("owner", event);
+    const asset = extractAsset("asset_id", event, tokens);
+    const amount =
+      Number(getPropertyValue("amount", event)) / Math.pow(10, asset?.decimals);
+    return toTransfer(event, "", owner, amount, asset);
+  }
+
+  private async onHydrationCurrenciesDeposited(
+    event: EventDetails,
     { tokens }: { tokens: Asset[] },
   ): Promise<EventDerivedTransfer> {
-    const owner = extractAddress("owner", event)
-    const asset = extractAsset("asset_id", event, tokens)
-    const amount = Number(getPropertyValue("amount", event)) / Math.pow(10, asset?.decimals);
-    return toTransfer(event, "", owner, amount, asset)
+    const owner = extractAddress("who", event);
+    const asset = extractToken("currency_id", event, tokens);
+    const amount =
+      Number(getPropertyValue("amount", event)) / Math.pow(10, asset?.decimals);
+    return toTransfer(event, "", owner, amount, asset);
+  }
+
+  private async onHydrationLiquidityRemoved(
+    event: EventDetails,
+    { tokens }: { tokens: Asset[] },
+  ): Promise<EventDerivedTransfer> {
+    const owner = extractAddress("who", event);
+    const asset = extractToken("pool_id", event, tokens);
+    const amount =
+      Number(getPropertyValue("shares", event)) / Math.pow(10, asset?.decimals);
+    return toTransfer(event, owner, "", amount, asset);
   }
 
   private async onBalancesDeposit(
     event: EventDetails,
     { tokens }: { tokens: Asset[] },
   ): Promise<EventDerivedTransfer> {
-    const address = extractAddress("who", event)
+    const address = extractAddress("who", event);
     const tokenInfo = tokens.find((t) => t.native);
-    const amount = Number(getPropertyValue("amount", event)) / Math.pow(10, tokenInfo?.decimals);
-    return toTransfer(event, "", address, amount, tokenInfo)
+    const amount =
+      Number(getPropertyValue("amount", event)) /
+      Math.pow(10, tokenInfo?.decimals);
+    return toTransfer(event, "", address, amount, tokenInfo);
   }
 
   private async onBalancesWithdraw(
     event: EventDetails,
-    { tokens }: { tokens: Asset[] },
+    { tokens, events }: { tokens: Asset[]; events: SubscanEvent[] },
   ): Promise<EventDerivedTransfer> {
-    const address = extractAddress("who", event)
+    if (event.extrinsic_index === "8424902-2") {
+      console.log(JSON.stringify(events));
+    }
+    const address = extractAddress("who", event);
     const tokenInfo = tokens.find((t) => t.native);
-    const amount = Number(getPropertyValue("amount", event)) / Math.pow(10, tokenInfo?.decimals);
-    return toTransfer(event, address, "", amount, tokenInfo)
+    const amount =
+      Number(getPropertyValue("amount", event)) /
+      Math.pow(10, tokenInfo?.decimals);
+    return toTransfer(event, address, "", amount, tokenInfo);
   }
-
-  private async onPeaqBalancesBurned(
-    event: EventDetails,
-    { tokens }: { tokens: Asset[] },
-  ): Promise<EventDerivedTransfer> {
-    const address = extractAddress("who", event)
-    const asset = extractAsset("asset_id", event, tokens)
-    const amount = Number(getPropertyValue("amount", event)) / Math.pow(10, asset?.decimals);
-    return toTransfer(event, address, "", amount, asset)
-  }
-
-  private async onPeaqBalancesIssued(
-    event: EventDetails,
-    { tokens }: { tokens: Asset[] },
-  ): Promise<EventDerivedTransfer> {
-    const address = extractAddress("who", event)
-    const asset = extractAsset("asset_id", event, tokens)
-    const amount = Number(getPropertyValue("amount", event)) / Math.pow(10, asset?.decimals);
-    return toTransfer(event, "", address, amount, asset)
-  }
-
   private async onCoretimePurchased(
     event: EventDetails,
     { tokens }: { tokens: Asset[] },
   ): Promise<EventDerivedTransfer> {
-    const address = extractAddress("who", event)
+    const address = extractAddress("who", event);
     const tokenInfo = tokens.find((t) => t.native);
-    const amount = Number(getPropertyValue("price", event)) / Math.pow(10, tokenInfo?.decimals);
-    return toTransfer(event, address, "", amount, tokenInfo)
+    const amount =
+      Number(getPropertyValue("price", event)) /
+      Math.pow(10, tokenInfo?.decimals);
+    return toTransfer(event, address, "", amount, tokenInfo);
   }
 
   private async bifrostMintedVToken(
     event: EventDetails,
     { tokens }: { tokens: Asset[] },
   ): Promise<EventDerivedTransfer> {
-    const address = extractAddress(["minter", "address", "rebonder"], event)
-    const tokenId = getPropertyValue(["currency_id", "token_id"], event)
+    const address = extractAddress(["minter", "address", "rebonder"], event);
+    const tokenId = getPropertyValue(["currency_id", "token_id"], event);
     const vTokenId = {};
     Object.keys(tokenId).forEach((property) => {
       vTokenId["V" + property] = tokenId[property];
     });
     const token = tokens.find((t) => isEqual(t.asset_id, vTokenId));
     const amount = new BigNumber(
-      getPropertyValue(["v_currency_amount", "vtoken_amount"], event)
+      getPropertyValue(["v_currency_amount", "vtoken_amount"], event),
     )
       .multipliedBy(Math.pow(10, -token.decimals))
       .toNumber();
-    return toTransfer(event, "", address, amount, token)
+    return toTransfer(event, "", address, amount, token);
   }
 
   private async bifrostRedeemedVToken(
     event: EventDetails,
     { tokens }: { tokens: Asset[] },
   ): Promise<EventDerivedTransfer> {
-    const address = extractAddress(["redeemer", "address"], event)
-    const tokenId = getPropertyValue(["currency_id", "token_id"], event)
+    const address = extractAddress(["redeemer", "address"], event);
+    const tokenId = getPropertyValue(["currency_id", "token_id"], event);
     const vTokenId = {};
     Object.keys(tokenId).forEach((property) => {
       vTokenId["V" + property] = tokenId[property];
     });
     const token = tokens.find((t) => isEqual(t.asset_id, vTokenId));
-    const amount = new BigNumber(getPropertyValue(["v_currency_amount", "vtoken_amount"], event))
+    const amount = new BigNumber(
+      getPropertyValue(["v_currency_amount", "vtoken_amount"], event),
+    )
       .multipliedBy(Math.pow(10, -token.decimals))
       .toNumber();
-    return toTransfer(event, address, "", amount, token)
+    return toTransfer(event, address, "", amount, token);
   }
 
   private async migratedDelegation(
@@ -528,24 +648,52 @@ export class SpecialEventsToTransfersService {
     event: EventDetails,
     { tokens }: { tokens: Asset[] },
   ): Promise<EventDerivedTransfer> {
-    const address = extractAddress("delegator", event)
+    const address = extractAddress("delegator", event);
     const token = tokens.find((t) => t.symbol === chainInfo.token);
     const amount = new BigNumber(getPropertyValue("amount", event))
       .multipliedBy(Math.pow(10, -token.decimals))
       .toNumber();
-    return toTransfer(event, "", address, amount, token)
+    return toTransfer(event, "", address, amount, token);
   }
 
   private async onReserveRepatriated(
     event: EventDetails,
     { tokens }: { tokens: Asset[] },
   ): Promise<EventDerivedTransfer> {
-    const to = extractAddress("to", event)
-    const from = extractAddress("from", event)
+    const to = extractAddress("to", event);
+    const from = extractAddress("from", event);
     const tokenInfo = tokens.find((t) => t.native);
-    const amount = Number(getPropertyValue("amount", event)) / Math.pow(10, tokenInfo?.decimals);
-    return toTransfer(event, from, to, amount, tokenInfo)
-
+    const amount =
+      Number(getPropertyValue("amount", event)) /
+      Math.pow(10, tokenInfo?.decimals);
+    return toTransfer(event, from, to, amount, tokenInfo);
   }
 
+  async onHydrationXTokensTransferredAssets(
+    event: EventDetails,
+    context: { xcmList: XcmTransfer[] },
+  ): Promise<EventDerivedTransfer[]> {
+    const xcmTransfer = context.xcmList.find(
+      (xcm) => xcm.timestamp === event.timestamp && !xcm.transfers[0].from,
+    );
+    if (!xcmTransfer) {
+      return undefined;
+    }
+    const sender = extractAddress("sender", event);
+    xcmTransfer.transfers.forEach((t) => (t.from = sender)); // prevent reuse of the same transfer...
+    return xcmTransfer.transfers.map((t) => {
+      return {
+        ...t,
+        event_id: event.event_id,
+        module_id: event.module_id,
+        original_event_id: event.original_event_index,
+        block: event.block_num,
+        hash: event.extrinsic_hash,
+        extrinsic_index: event.extrinsic_index,
+        from: sender,
+        timestamp: xcmTransfer.timestamp,
+        provenance: "event->xcm",
+      };
+    });
+  }
 }

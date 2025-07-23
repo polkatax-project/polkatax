@@ -11,11 +11,11 @@ import { TransactionsService } from "./substrate/services/transactions.service";
 export const registerServices = (container: AwilixContainer) => {
   container.register({
     subscanService: asClass(SubscanService, {
-        lifetime: Lifetime.SINGLETON,
-      }),
+      lifetime: Lifetime.SINGLETON,
+    }),
     subscanApi: asClass(SubscanApi, {
-        lifetime: Lifetime.SINGLETON,
-      }),
+      lifetime: Lifetime.SINGLETON,
+    }),
     transactionsService: asClass(TransactionsService),
     stakingRewardsService: asClass(StakingRewardsService),
     evmSwapsAndPaymentsService: asClass(EvmSwapsAndPaymentsService),

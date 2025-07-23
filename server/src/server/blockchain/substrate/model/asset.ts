@@ -1,4 +1,5 @@
 export interface Asset {
+  id: string;
   asset_id: any;
   unique_id: string;
   symbol: string;

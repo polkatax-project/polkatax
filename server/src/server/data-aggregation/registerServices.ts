@@ -25,6 +25,6 @@ export const registerServices = (container: AwilixContainer) => {
     chainDataAccumulationService: asClass(ChainDataAccumulationService),
     transferMerger: asClass(TransferMerger),
     coingeckoIdLookupService: asClass(CoingeckoIdLookupService),
-    xcmTokenResolutionService: asClass(XcmTokenResolutionService)
+    xcmTokenResolutionService: asClass(XcmTokenResolutionService),
   });
 };

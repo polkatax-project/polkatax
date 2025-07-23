@@ -15,12 +15,11 @@ import { ForeignAsset } from "../model/foreign-asset";
 import { Asset } from "../model/asset";
 import { ResponseCache } from "./response.cache";
 
-
 export class SubscanService {
-  private scanTokensCache = new ResponseCache()
-  private assetsCache = new ResponseCache()
-  private foreignAssetsCache = new ResponseCache()
-  private nativeTokenCache = new ResponseCache()
+  private scanTokensCache = new ResponseCache();
+  private assetsCache = new ResponseCache();
+  private foreignAssetsCache = new ResponseCache();
+  private nativeTokenCache = new ResponseCache();
 
   constructor(private subscanApi: SubscanApi) {}
 
@@ -40,7 +39,9 @@ export class SubscanService {
   }
 
   async fetchNativeToken(chainName: string): Promise<Token> {
-    return this.nativeTokenCache.getData(chainName, () => this.subscanApi.fetchNativeToken(chainName));
+    return this.nativeTokenCache.getData(chainName, () =>
+      this.subscanApi.fetchNativeToken(chainName),
+    );
   }
 
   async searchAllEvents({
@@ -84,10 +85,18 @@ export class SubscanService {
     return result;
   }
 
-  private async iterateOverPagesParallel<T>(
+  private async iterateOverPagesParallel<T extends { id: any }>(
     fetchPages: (page, after_id?) => Promise<{ list: T[]; hasNext: boolean }>,
     options?: { count?: number; withAfterId?: boolean },
   ): Promise<T[]> {
+    function deduplicateById<T extends { id: any }>(items: T[]): T[] {
+      const map = new Map<string | number, T>();
+      for (const item of items) {
+        map.set(item.id, item); // later items overwrite earlier ones
+      }
+      return Array.from(map.values());
+    }
+
     const count = options?.count ?? 5;
     const withAfterId = options?.withAfterId ?? false;
     const parallelFn = [...Array(count).keys()].map(
@@ -105,22 +114,29 @@ export class SubscanService {
       );
       hasNext = intermediate_results[intermediate_results.length - 1].hasNext;
       page += count;
-      if (page >= 100 && withAfterId) {
-        const lowestId = result.reduce((curr, next) => {
-          return Math.min(curr, next.id);
-        }, Number.MAX_SAFE_INTEGER);
+      if (page >= 100 && withAfterId && hasNext) {
+        const withoutDuplicates = deduplicateById(result);
+        const lastResults =
+          intermediate_results[intermediate_results.length - 1].list;
+        const oldestId = (lastResults[lastResults.length - 1] as any).id;
+
+        if (!oldestId) {
+          throw `Found more than ${withoutDuplicates.length} entries. But there is not 'id' property to continue.`;
+        }
+
         logger.info(
-          `Found more than ${result.length} entries. Fetching remaining values via after_id from ${lowestId}.`,
+          `Found more than ${withoutDuplicates.length} entries. Fetching remaining values via after_id from ${oldestId}.`,
         );
-        const remaining = await this.fetchWithAfterId(fetchPages, lowestId);
-        remaining.forEach((r) => result.push(r));
+        const remaining = await this.fetchWithAfterId(fetchPages, oldestId);
+        remaining.forEach((r) => withoutDuplicates.push(r));
         logger.info(
-          `iterateOverPagesParallel: Found ${result.length} entries.`,
+          `iterateOverPagesParallel: Found ${withoutDuplicates.length} entries.`,
         );
-        return result;
+        return withoutDuplicates;
       }
     } while (hasNext);
-    return result;
+    const withoutDuplicates = deduplicateById(result);
+    return withoutDuplicates;
   }
 
   private async fetchWithAfterId<T extends { id?: number }>(
@@ -132,7 +148,8 @@ export class SubscanService {
     do {
       intermediate_result = await fetchPages(0, after_id);
       intermediate_result.list.forEach((entry) => result.push(entry));
-      after_id = Math.min(...intermediate_result.list.map((e) => e.id));
+      after_id =
+        intermediate_result.list[intermediate_result.list.length - 1].id; // Math.min(...intermediate_result.list.map((e) => e.id));
       if (result.length >= 250000) {
         logger.info(`Found more than ${result.length} entries. Aborting...`);
         return result;
@@ -345,19 +362,27 @@ export class SubscanService {
   }
 
   async fetchForeignAssets(chainName: string): Promise<ForeignAsset[]> {
-    return this.foreignAssetsCache.getData<Asset[]>(chainName, () => this.iterateOverPagesParallel<ForeignAsset>((page) =>
-      this.subscanApi.fetchForeignAssets(chainName, page), { count: 1 }
-    ));
+    return this.foreignAssetsCache.getData<Asset[]>(chainName, () =>
+      this.iterateOverPagesParallel<ForeignAsset>(
+        (page) => this.subscanApi.fetchForeignAssets(chainName, page),
+        { count: 1 },
+      ),
+    );
   }
 
   async scanTokens(chainName: string): Promise<Asset[]> {
-    return this.scanTokensCache.getData<Asset[]>(chainName, () => this.subscanApi.scanTokens(chainName));
+    return this.scanTokensCache.getData<Asset[]>(chainName, () =>
+      this.subscanApi.scanTokens(chainName),
+    );
   }
 
   async scanAssets(chainName: string): Promise<Asset[]> {
-    return this.assetsCache.getData<Asset[]>(chainName, () => this.iterateOverPagesParallel<Asset>((page) =>
-      this.subscanApi.scanAssets(chainName, page), { count: 1 }
-    ));
+    return this.assetsCache.getData<Asset[]>(chainName, () =>
+      this.iterateOverPagesParallel<Asset>(
+        (page) => this.subscanApi.scanAssets(chainName, page),
+        { count: 1 },
+      ),
+    );
   }
 
   async fetchNativeTokens(

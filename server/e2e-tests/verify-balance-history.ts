@@ -116,7 +116,7 @@ const verifyMany = async () => {
   // 
   // await veryNativeBalanceHistory("1HGnvAkk9nbfZ58CzUJhjcrLdEDMkr5qNkqqYkyD5BF5v6Y", { domain: "polkadot", label: "", token: "DOT" })
 
-  //await veryNativeBalanceHistory("13fvj4bNfrTo8oW6U8525soRp6vhjAFLum6XBdtqq9yP22E7", { domain: "polkadot", label: "", token: "DOT" })
+  // await veryNativeBalanceHistory("13fvj4bNfrTo8oW6U8525soRp6vhjAFLum6XBdtqq9yP22E7", { domain: "polkadot", label: "", token: "DOT" })
 
   // await veryNativeBalanceHistory("1eGtATyy4ayn77dsrhdW8N3Vs1yjqjzJcintksNmScqy31j", { domain: "polkadot", label: "", token: "DOT" })
 
@@ -128,7 +128,7 @@ const verifyMany = async () => {
   // one unexplained event 
   // await veryNativeBalanceHistory("17VdcY2F3WvhSLFHBGZreubzQNQ3NZzLbQsugGzHmzzprSG", { domain: "polkadot", label: "", token: "DOT" })
 
-  // await veryNativeBalanceHistory("12s37eSMQPEN5cuVyBxk2UypUHntwumqBHy7sJkoKpZ1v3HV", { domain: "polkadot", label: "", token: "DOT" })
+  await veryNativeBalanceHistory("12s37eSMQPEN5cuVyBxk2UypUHntwumqBHy7sJkoKpZ1v3HV", { domain: "polkadot", label: "", token: "DOT" })
 
   // await veryNativeBalanceHistory("14gEYLb4pzg3RvYS72MPRWWGAUBDdBpp9U6Wh4uMZhdQRis2", { domain: "polkadot", label: "", token: "DOT" })
 

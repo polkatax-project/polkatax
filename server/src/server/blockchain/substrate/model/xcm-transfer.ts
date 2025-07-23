@@ -49,6 +49,7 @@ export interface XcmTransfer {
   fee: number;
   extrinsic_index?: string;
   transfers: {
+    rawAmount?: string;
     symbol: string;
     amount: number;
     from: string;
