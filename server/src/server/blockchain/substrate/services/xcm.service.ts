@@ -29,6 +29,7 @@ export class XcmService {
     xcmList: XcmTransfer[],
     chain: string,
   ): { xcmMapToTransfer: XcmTransfer[]; xcmForEventContext: XcmTransfer[] } {
+
     const xcmMapToTransfer = [];
     const xcmForEventContext = [];
 
@@ -211,6 +212,10 @@ export class XcmService {
     xcmMapToTransfer: XcmTransfer[];
     xcmForEventContext: XcmTransfer[];
   }> {
+    if (process.env['XCM_DISABLED'] === 'true') {
+      logger.info('Skipping fetchXcmTransfers')
+      return { xcmMapToTransfer: [], xcmForEventContext: [] }
+    }
     logger.info(
       `Enter fetchXcmTransfers from ${data.chainName} for address ${data.address}, from ${new Date(data.minDate).toUTCString()}`,
     );
