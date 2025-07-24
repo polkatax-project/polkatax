@@ -8,6 +8,8 @@ import { isEvmAddress } from "../../../data-aggregation/helper/is-evm-address";
 import { XcmAssetTransfer, XcmTransfer } from "../model/xcm-transfer";
 import { getAddress } from "ethers";
 import { Asset } from "../model/asset";
+import { EthTokenInfoService } from "../../evm/service/eth.token-info.service";
+import { getNestedValue } from "../../../../common/util/find-property-value-nested";
 
 const ignoreIncoming = [
   "hydration",
@@ -23,7 +25,7 @@ const ignoreIncoming = [
 ];
 
 export class XcmService {
-  constructor(private subscanService: SubscanService) {}
+  constructor(private subscanService: SubscanService, private ethTokenInfoService: EthTokenInfoService) {}
 
   private slitXcmTransfers(
     xcmList: XcmTransfer[],
@@ -41,9 +43,6 @@ export class XcmService {
         if (xcm.transfers[0].destChain === chain) {
           return true;
         }
-      }
-      if (!xcm.transfers[0].from && chain === xcm.transfers[0].fromChain) {
-        return true;
       }
       return false;
     };
@@ -80,9 +79,10 @@ export class XcmService {
     /**
      * case 1: asset_id refers to an asset in the token list of the source chain
      * case 2: asset_id refers to the relay chain token symbol, e.g. "DOT"
-     * case 3: no asset_id or symbol given, indicating transfer of the native token, e.g. ETH or GLMR
-     * case 4: asset_id refers to a different chain, e.g. "ethereum/0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9"
-     * case 5: other / unkown case. Work with symbol.
+     * case 3: asset_id refers to a different chain, e.g. "ethereum/0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9"
+     * case 4: raw value refers to different chain (e.g. Ethereum)
+     * case 5: no asset_id or symbol given, indicating transfer of the native token, e.g. ETH or GLMR
+     * case 6: other / unkown case. Work with symbol.
      */
 
     // case 1
@@ -105,6 +105,22 @@ export class XcmService {
     }
 
     // case 3
+    if (assetTransfer?.asset_unique_id?.startsWith('ethereum/')) {
+      const address = assetTransfer.asset_unique_id.split('/')[1]
+      const { symbol, decimals } = await this.ethTokenInfoService.fetchTokenInfo(address)
+      return { symbol, decimals }
+    }
+
+    // case 4 
+    if (assetTransfer.raw && getNestedValue(assetTransfer.raw, 'interior.X2.col0.GlobalConsensus.Ethereum')) {
+      const address = getNestedValue(assetTransfer.raw, 'interior.X2.col1.AccountKey20.key')
+      if (address) {
+        const { symbol, decimals } = await this.ethTokenInfoService.fetchTokenInfo(address)
+        return { symbol, decimals }
+      }
+    }
+
+    // case 5
     if (!assetTransfer.symbol) {
       const nativeTokenSymbol = this.getSymbolNativeToken(fromChain);
       if (nativeTokenSymbol) {

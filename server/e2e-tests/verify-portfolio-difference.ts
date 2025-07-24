@@ -8,6 +8,7 @@ import { SubscanEvent } from "../src/server/blockchain/substrate/model/subscan-e
 import { SubscanService } from "../src/server/blockchain/substrate/api/subscan.service";
 import { SpecialEventsToTransfersService } from "../src/server/data-aggregation/services/special-events-to-transfers.service";
 import { Payment } from "../src/server/data-aggregation/model/payment";
+import { EthTokenInfoService } from "../src/server/blockchain/evm/service/eth.token-info.service";
 
 
 const checkPoolTokens = async () => {
@@ -405,7 +406,7 @@ const zoomIntoError = async (
     { payments: { payments, unmatchedEvents, minBlock, maxBlock } },
   );
 };
-// zoomIntoError("16MRsnWMXvBiHK8FUu9GMNBaVFbY9RpVcCWbviRjL1ogGWQ7", { domain: 'hydration', label: '', token: 'HDX' }, 'asset_registry/28a5c2818590ee3c4d5d93a448190f3397144303', 'DOT', 0)
+// zoomIntoError("131d4YS25qpuXiHrfJibuFYXwZrzwxpvU1ahvr3TJFNYcmfk", { domain: 'hydration', label: '', token: 'HDX' }, 'HDX', 'HDX', 0)
 
 const ahZoomIntoError = async (
   address: string,
@@ -545,30 +546,12 @@ const fetchTransfers = async () => {
 // OK verifyPortfolioChange("14QLEDMkLp7wt6ZfyvZA5mq59xHzMUTQrXSikFM2RZ78Cf3K", { domain: 'hydration', label: '', token: 'HDX' })
 // OK verifyPortfolioChange("12YGU15jahiyNje51yP2JA7x6fWv4S1Kr3DgpjBPH2GN184r", { domain: 'hydration', label: '', token: 'HDX' })
 // OK verifyPortfolioChange("13VyzGJCffWkeyrtaEtJtW6ySXACb34onwVJL7cYiTHWGEJK", { domain: 'hydration', label: '', token: 'HDX' }) 
-
-/**
- * XCM: outgoing of 484.637955 USDC never lead to withdrawal of USDC...
- * https://polkadot.subscan.io/xcm_message/polkadot-8f3a407ccc0a5d3e5c4e24b71da81c8e6ed9da55
- */
 // verifyPortfolioChange("1CEZAcr7sGqC7Sx6jwWJ5JBALa8iqwS18kj3Y9RzmZacL33", { domain: 'hydration', label: '', token: 'HDX' })
-/**
- * XCM: USDC mixup between USDC Wormhole and USDC native.
- * 40k HDX out of nowhere
- */
-// verifyPortfolioChange("1HGnvAkk9nbfZ58CzUJhjcrLdEDMkr5qNkqqYkyD5BF5v6Y", { domain: 'hydration', label: '', token: 'HDX' })
-// verifyPortfolioChange("131d4YS25qpuXiHrfJibuFYXwZrzwxpvU1ahvr3TJFNYcmfk", { domain: 'hydration', label: '', token: 'HDX' }) // jakub
-verifyPortfolioChange("13b6hRRYPHTxFzs9prvL2YGHQepvd4YhdDb9Tc7khySp3hMN", { domain: 'hydration', label: '', token: 'HDX' }) 
-/**
- * ok except DOT/asset_registry/28a5c2818590ee3c4d5d93a448190f3397144303 
- * XCM from nowhere (no sender address)
- * https://hydration.subscan.io/xcm_message/polkadot-bb0409f78a40c96fd8f0d1a7938d5b5cbba74fe5
- */
+// OK verifyPortfolioChange("1HGnvAkk9nbfZ58CzUJhjcrLdEDMkr5qNkqqYkyD5BF5v6Y", { domain: 'hydration', label: '', token: 'HDX' })
+verifyPortfolioChange("131d4YS25qpuXiHrfJibuFYXwZrzwxpvU1ahvr3TJFNYcmfk", { domain: 'hydration', label: '', token: 'HDX' }) // jakub
+// verifyPortfolioChange("13b6hRRYPHTxFzs9prvL2YGHQepvd4YhdDb9Tc7khySp3hMN", { domain: 'hydration', label: '', token: 'HDX' }) 
 // verifyPortfolioChange("15rSJtfCbB3MtWmW5pNnRhNeJENSQX9hLXUikkAee6mJVC9j", { domain: 'hydration', label: '', token: 'HDX' })
-
-/**
- * XCM without sender but the event is not indexed...https://hydration.subscan.io/extrinsic/7347162-3?tab=xcm_transfer
- */
-//verifyPortfolioChange("16MRsnWMXvBiHK8FUu9GMNBaVFbY9RpVcCWbviRjL1ogGWQ7", { domain: 'hydration', label: '', token: 'HDX' })
+// verifyPortfolioChange("16MRsnWMXvBiHK8FUu9GMNBaVFbY9RpVcCWbviRjL1ogGWQ7", { domain: 'hydration', label: '', token: 'HDX' })
 // verifyPortfolioChange("12ZuLmUSUP6gHGboHBoBGPwC8KtxLLwizLhWSdJMbPuzvMhv", { domain: 'hydration', label: '', token: 'HDX' }) 
 
 

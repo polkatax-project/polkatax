@@ -8,6 +8,7 @@ import { Transaction } from "../../blockchain/substrate/model/transaction";
 import { Transfer } from "../../blockchain/substrate/model/raw-transfer";
 import { EventEnrichedXcmTransfer } from "../model/EventEnrichedXcmTransfer";
 import { logger } from "../../logger/logger";
+import { XcmTransfer } from "../../blockchain/substrate/model/xcm-transfer";
 
 export class ChainDataAccumulationService {
   constructor(
@@ -75,7 +76,7 @@ export class ChainDataAccumulationService {
       hashIndexedEvents,
     );
 
-    const xcmPayments = this.enrichXcmTransfers(xcmList, indexedTx);
+    const xcmPayments = this.enrichXcmTransfers(context.chain.domain, xcmList, indexedTx);
     for (let xcmPayment of xcmPayments) {
       if (!indexedPayments[xcmPayment.extrinsic_index]) {
         indexedPayments[xcmPayment.extrinsic_index] = xcmPayment;
@@ -278,23 +279,32 @@ export class ChainDataAccumulationService {
   }
 
   private enrichXcmTransfers(
+    chainName: string,
     xcmTransfers: EventEnrichedXcmTransfer[],
     indexedTx: Record<string, Transaction>,
   ): Payment[] {
+    const xcmWithoutSender: XcmTransfer[] = []
     const payments: Payment[] = [];
     xcmTransfers.forEach((xcmTransfer) => {
       const tx = xcmTransfer.extrinsic_index
         ? indexedTx[xcmTransfer.extrinsic_index]
         : undefined;
-      payments.push({
-        ...xcmTransfer,
-        provenance: "xcm",
-        xcmFee: xcmTransfer.fee,
-        extrinsic_index: tx?.extrinsic_index ?? xcmTransfer.extrinsic_index,
-        tip: tx?.tip ?? 0,
-        feeUsed: tx?.feeUsed ?? 0,
-        hash: tx?.hash,
-      });
+      xcmTransfer.transfers.filter(t => !t.from && t.fromChain === chainName).forEach(t => {
+        t.from = tx.from
+      })
+      if (xcmTransfer.transfers.some(t => !t.from && t.fromChain === chainName)) {
+        xcmWithoutSender.push(xcmTransfer)
+      } else {
+        payments.push({
+          ...xcmTransfer,
+          provenance: "xcm",
+          xcmFee: xcmTransfer.fee,
+          extrinsic_index: tx?.extrinsic_index ?? xcmTransfer.extrinsic_index,
+          tip: tx?.tip ?? 0,
+          feeUsed: tx?.feeUsed ?? 0,
+          hash: tx?.hash,
+        });
+      }
     });
     return payments;
   }

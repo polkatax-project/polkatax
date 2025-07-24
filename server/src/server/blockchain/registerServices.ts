@@ -7,6 +7,7 @@ import { EvmSwapsAndPaymentsService } from "./evm/service/evm-swaps-and-payments
 import { StakingRewardsViaEventsService } from "./substrate/services/staking-rewards-via-events.service";
 import { XcmService } from "./substrate/services/xcm.service";
 import { TransactionsService } from "./substrate/services/transactions.service";
+import { EthTokenInfoService } from "./evm/service/eth.token-info.service";
 
 export const registerServices = (container: AwilixContainer) => {
   container.register({
@@ -22,5 +23,6 @@ export const registerServices = (container: AwilixContainer) => {
     evmTxService: asClass(EvmTxService),
     stakingRewardsViaEventsService: asClass(StakingRewardsViaEventsService),
     xcmService: asClass(XcmService),
+    ethTokenInfoService: asClass(EthTokenInfoService),
   });
 };

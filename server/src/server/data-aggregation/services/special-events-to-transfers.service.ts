@@ -222,19 +222,6 @@ export class SpecialEventsToTransfersService {
         this.onHydrationCurrenciesDeposited(e, context),
     },
     {
-      chains: ["hydration"],
-      event: "xtokensTransferredAssets",
-      handler: (c, e, context) =>
-        this.onHydrationXTokensTransferredAssets(e, context),
-      condition: (event, events, xmlList) =>
-        !!xmlList.find(
-          (xcm) =>
-            (xcm.timestamp === event.timestamp || xcm.extrinsic_index === event.extrinsic_index) &&
-            !xcm.transfers[0].from &&
-            xcm.transfers[0].fromChain === "hydration",
-        ),
-    },
-    {
       chains: [
         "assethub-polkadot",
         "assethub-kusama",
@@ -669,31 +656,4 @@ export class SpecialEventsToTransfersService {
     return toTransfer(event, from, to, amount, tokenInfo);
   }
 
-  async onHydrationXTokensTransferredAssets(
-    event: EventDetails,
-    context: { xcmList: XcmTransfer[] },
-  ): Promise<EventDerivedTransfer[]> {
-    const xcmTransfer = context.xcmList.find(
-      (xcm) => xcm.timestamp === event.timestamp && !xcm.transfers[0].from,
-    );
-    if (!xcmTransfer) {
-      return undefined;
-    }
-    const sender = extractAddress("sender", event);
-    xcmTransfer.transfers.forEach((t) => (t.from = sender)); // prevent reuse of the same transfer...
-    return xcmTransfer.transfers.map((t) => {
-      return {
-        ...t,
-        event_id: event.event_id,
-        module_id: event.module_id,
-        original_event_id: event.original_event_index,
-        block: event.block_num,
-        hash: event.extrinsic_hash,
-        extrinsic_index: event.extrinsic_index,
-        from: sender,
-        timestamp: xcmTransfer.timestamp,
-        provenance: "event->xcm",
-      };
-    });
-  }
 }

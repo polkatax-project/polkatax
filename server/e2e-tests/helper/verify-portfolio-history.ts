@@ -72,8 +72,8 @@ export const verifyPortfolioHistory = (
         p.transfers.forEach((t) => {
           if (
             t.asset_unique_id === token.asset_unique_id ||
-            (t.symbol.toUpperCase() === token.symbol.toUpperCase() &&
-              t.module === "xcm")
+            ((!t.asset_unique_id && t.symbol.toUpperCase() === token.symbol.toUpperCase() &&
+              t.module === "xcm"))
           ) {
             expectedChange += t?.amount ?? 0;
             history.push(p);
