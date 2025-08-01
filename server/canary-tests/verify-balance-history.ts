@@ -98,18 +98,18 @@ export const verifyNativeBalanceHistory = async (
   if (unexplainedChanges.length > 0) {
     console.log("NOK!");
     fs.writeFileSync(
-      `./canary-tests/out/${address}-unexplainedChanges.json`,
+      `./canary-tests/out-temp/${address}-unexplainedChanges.json`,
       JSON.stringify(unexplainedChanges, null, 2),
     );
     fs.writeFileSync(
-      `./canary-tests/out/${address}-diffSheet.json`,
+      `./canary-tests/out-temp/${address}-diffSheet.json`,
       JSON.stringify(diffSheet, null, 2),
     );
     fs.writeFileSync(
-      `./canary-tests/out/${address}-portfolioMovements.json`,
+      `./canary-tests/out-temp/${address}-portfolioMovements.json`,
       JSON.stringify(portfolioMovements, null, 2),
     );
-    console.log("Output fils were stored under /canary-tests/out/");
+    console.log("Output fils were stored under /canary-tests/out-temp/");
   }
   return unexplainedChanges;
 };

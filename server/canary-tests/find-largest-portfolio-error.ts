@@ -236,17 +236,17 @@ const zoomIntoErrorTokens = async (
   tolerance = 0.5,
 ) => {
   const { portfolioMovements, unmatchedEvents, minBlock, maxBlock } =
-    fs.existsSync(`./canary-tests/out/all.json`)
+    fs.existsSync(`./canary-tests/out-temp/all.json`)
       ? JSON.parse(
           fs.readFileSync(
-            `./canary-tests/out/portfolio-movements.json`,
+            `./canary-tests/out-temp/portfolio-movements.json`,
             "utf-8",
           ),
         )
       : await fetchPortfolioMovements(address, chainInfo);
-  if (!fs.existsSync(`./canary-tests/out/portfolio-movements.json`)) {
+  if (!fs.existsSync(`./canary-tests/out-temp/portfolio-movements.json`)) {
     fs.writeFileSync(
-      `./canary-tests/out/portfolio-movements.json`,
+      `./canary-tests/out-temp/portfolio-movements.json`,
       JSON.stringify(
         { portfolioMovements, unmatchedEvents, minBlock, maxBlock },
         null,
@@ -281,17 +281,17 @@ const zoomIntoErrorAssets = async (
   tolerance = 0.1,
 ) => {
   const { portfolioMovements, unmatchedEvents, minBlock, maxBlock } =
-    fs.existsSync(`./canary-tests/out/portfolio-movements.json`)
+    fs.existsSync(`./canary-tests/out-temp/portfolio-movements.json`)
       ? JSON.parse(
           fs.readFileSync(
-            `./canary-tests/out/portfolio-movements.json`,
+            `./canary-tests/out-temp/portfolio-movements.json`,
             "utf-8",
           ),
         )
       : await fetchPortfolioMovements(address, chainInfo);
-  if (!fs.existsSync(`./canary-tests/out/portfolio-movements.json`)) {
+  if (!fs.existsSync(`./canary-tests/out-temp/portfolio-movements.json`)) {
     fs.writeFileSync(
-      `./canary-tests/out/portfolio-movements.json`,
+      `./canary-tests/out-temp/portfolio-movements.json`,
       JSON.stringify(
         { portfolioMovements, unmatchedEvents, minBlock, maxBlock },
         null,

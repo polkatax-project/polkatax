@@ -43,6 +43,8 @@ export class ChainDataAccumulationService {
           context.chain.domain,
         );
 
+    // TODO: remove staking rewards from hydration
+
     const indexedPortfolioMovements: IndexedPortfolioMovements =
       this.transferMerger.mergeTranfers(
         transfersList,
@@ -123,25 +125,8 @@ export class ChainDataAccumulationService {
         return current;
       }, {});
 
-    /**
-     * TODO: how to avoid duplicated (reward/transfer)?
-     */
-    Object.keys(indexedStakingRewards).forEach((extrinsic_index) => {
-      if (!indexedPortfolioMovements[extrinsic_index]) {
-        indexedPortfolioMovements[extrinsic_index] = {
-          ...indexedStakingRewards[extrinsic_index][0],
-          transfers: [],
-        };
-      }
-      indexedStakingRewards[extrinsic_index].forEach((r) =>
-        r.transfers.forEach((t) => {
-          indexedPortfolioMovements[extrinsic_index].transfers.push(t);
-        }),
-      );
-    });
-
-    const otherTransactions = this.enrichTxWithEvents(
-      transactions.filter((t) => !indexedPortfolioMovements[t.extrinsic_index]),
+      const otherTransactions = this.enrichTxWithEvents(
+      transactions.filter((t) => !indexedPortfolioMovements[t.extrinsic_index] && !indexedStakingRewards[t.extrinsic_index]),
       extrinsicIndexedEvents,
       hashIndexedEvents,
     );
@@ -160,7 +145,7 @@ export class ChainDataAccumulationService {
     );
     logger.info("Exit ChainDataAccumulationService.combine");
     return {
-      portfolioMovements: Object.values(indexedPortfolioMovements),
+      portfolioMovements: Object.values(indexedPortfolioMovements).concat(stakingRewardPayments),
       unmatchedEvents,
     };
   }
@@ -188,6 +173,7 @@ export class ChainDataAccumulationService {
         feeUsed: matchingTx?.feeUsed,
         tip: matchingTx?.tip,
         provenance: "stakingRewards",
+        label: "stakingRewards",
         transfers: [
           {
             provenance: "stakingReward",

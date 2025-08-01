@@ -14,7 +14,7 @@ import {
 
 const checkPoolTokens = () => {
   const { portfolioMovements } = JSON.parse(
-    fs.readFileSync(`./canary-tests/out/portfolio-movements.json`, "utf-8"),
+    fs.readFileSync(`./canary-tests/out-temp/portfolio-movements.json`, "utf-8"),
   );
   let pool2Change = 0;
   let pool4Change = 0;
@@ -69,7 +69,7 @@ export const fetchTokenChangesExpectedVSActual = async (
   const { portfolioMovements, minBlock, maxBlock, unmatchedEvents } =
     await fetchPortfolioMovements(address, chain, minDate);
   fs.writeFileSync(
-    `./canary-tests/out/portfolio-movements.json`,
+    `./canary-tests/out-temp/portfolio-movements.json`,
     JSON.stringify(
       { portfolioMovements, unmatchedEvents, minBlock, maxBlock },
       null,
@@ -123,7 +123,7 @@ export const fetchAssetChangesExpectedVSActual = async (
   const { portfolioMovements, minBlock, maxBlock, unmatchedEvents } =
     await fetchPortfolioMovements(address, chain, minDate);
   fs.writeFileSync(
-    `./canary-tests/out/portfolio-movements.json`,
+    `./canary-tests/out-temp/portfolio-movements.json`,
     JSON.stringify(
       { portfolioMovements, unmatchedEvents, minBlock, maxBlock },
       null,
