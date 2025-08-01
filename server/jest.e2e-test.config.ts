@@ -4,9 +4,10 @@ export default {
   reporters: [
     "default",
     [
-      "jest-json-reporter",
+      "jest-stare",
       {
-        outputPath: "test-results/e2e-test-results.json",
+        resultDir: "test-results",
+        reportTitle: "e2e Test Results",
       },
     ],
   ],

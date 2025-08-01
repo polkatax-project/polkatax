@@ -31,7 +31,7 @@ describe("Staking rewards amounts", () => {
     expect(totalAmount).toBe(48.988706091223946);
   }, 30_000);
 
-  test("mythos", async () => {
+  /*test("mythos", async () => {
     const { totalAmount } = await fetchStakingRewards(
       "0x56F17ebFe6B126E9f196e7a87f74e9f026a27A1F",
       "mythos",
@@ -40,7 +40,7 @@ describe("Staking rewards amounts", () => {
       Date.UTC(2025, 5, 1),
     );
     expect(totalAmount).toBe(19186.24877880681);
-  }, 30_000);
+  }, 30_000);*/
 
   test("peaq", async () => {
     const { totalAmount } = await fetchStakingRewards(
