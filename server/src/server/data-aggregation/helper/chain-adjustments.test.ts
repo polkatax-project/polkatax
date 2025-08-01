@@ -1,7 +1,7 @@
 import { expect, it, describe, beforeEach } from "@jest/globals";
 
 import { ChainAdjustments } from "./chain-adjustments";
-import { Payment } from "../model/payment";
+import { PortfolioMovement } from "../model/portfolio-movement";
 
 describe("ChainAdjustments.handleHydration", () => {
   let chainAdjustments: ChainAdjustments;
@@ -11,7 +11,7 @@ describe("ChainAdjustments.handleHydration", () => {
   });
 
   it("should remove '2-pool' if it's among multiple sold tokens", () => {
-    const payments: Payment[] = [
+    const payments: PortfolioMovement[] = [
       {
         transfers: [
           { amount: -100, symbol: "2-pool" },
@@ -29,7 +29,7 @@ describe("ChainAdjustments.handleHydration", () => {
   });
 
   it("should remove '4-pool' if it's among multiple bought tokens", () => {
-    const payments: Payment[] = [
+    const payments: PortfolioMovement[] = [
       {
         transfers: [
           { amount: -200, symbol: "USDT" },
@@ -47,7 +47,7 @@ describe("ChainAdjustments.handleHydration", () => {
   });
 
   it("should not remove pool tokens if only one is sold or bought", () => {
-    const payments: Payment[] = [
+    const payments: PortfolioMovement[] = [
       {
         transfers: [
           { amount: -100, symbol: "2-pool" },
@@ -63,7 +63,7 @@ describe("ChainAdjustments.handleHydration", () => {
   });
 
   it("should not alter swaps with 2 or fewer transfers", () => {
-    const payments: Payment[] = [
+    const payments: PortfolioMovement[] = [
       {
         transfers: [
           { amount: -50, symbol: "DAI" },
@@ -79,7 +79,7 @@ describe("ChainAdjustments.handleHydration", () => {
   });
 
   it("should remove both '2-pool' and '4-pool' if applicable", () => {
-    const payment: Payment[] = [
+    const payment: PortfolioMovement[] = [
       {
         transfers: [
           { amount: -50, symbol: "2-pool" },

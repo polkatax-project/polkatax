@@ -49,17 +49,3 @@ export async function getNativeTokenBalance(api: ApiPromise, address: string) {
     reserved: Number(BigInt(json.data?.reserved ?? 0n)),
   };
 }
-
-export async function getAssetBalances(
-  api: ApiPromise,
-  address: string,
-  assetIds: number[],
-) {
-  const tokenBalances = [];
-  for (let assetId of assetIds) {
-    const balanceInfo: any = await api.query.assets.account(assetId, address);
-    tokenBalances.push(balanceInfo.toJSON()?.balance ?? 0);
-  }
-  console.log(`Balances: ${tokenBalances.join(", ")}`);
-  return tokenBalances;
-}

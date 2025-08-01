@@ -24,7 +24,7 @@ export class WebSocketWrapper {
     };
 
     this.socket.onmessage = (event) => {
-      this.wsMsgReceived$.next(JSON.parse(event.data));
+      this.wsMsgReceived$.next(JSON.parse(event.data as string));
     };
   }
 

@@ -3,17 +3,22 @@ import { newDb } from "pg-mem";
 
 const createDb = async (client: Client) => {
   await (client as any).none(`CREATE TABLE IF NOT EXISTS jobs (
-        status TEXT,
-        wallet TEXT,
-        blockchain TEXT,
-        last_modified TIMESTAMPTZ,
-        data JSONB,
-        error JSONB,
-        sync_from_date TIMESTAMPTZ,
-        currency TEXT,
-        synced_until TIMESTAMPTZ,
-        req_id TEXT
-        );`);
+    status TEXT,
+    wallet TEXT,
+    blockchain TEXT,
+    last_modified TIMESTAMPTZ,
+    data JSONB,
+    error JSONB,
+    sync_from_date TIMESTAMPTZ,
+    currency TEXT,
+    synced_until TIMESTAMPTZ,
+    req_id TEXT
+    );`);
+  await (client as any).none(`CREATE TABLE fetched_data (
+    key TEXT PRIMARY KEY, 
+    data JSONB,
+    created_at TIMESTAMPTZ,
+    expires_at TIMESTAMPTZ)`);
 };
 
 function parseNotifyCommand(input: string): {

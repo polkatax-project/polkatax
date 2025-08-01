@@ -44,6 +44,7 @@ export interface RawXcmMessage {
 }
 
 export interface XcmTransfer {
+  messageHash: string;
   timestamp: number;
   block: number;
   fee: number;

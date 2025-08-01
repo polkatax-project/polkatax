@@ -16,9 +16,12 @@ import { HttpError } from "../../../../common/error/HttpError";
 import { RawXcmMessage } from "../model/xcm-transfer";
 import { ForeignAsset } from "../model/foreign-asset";
 import { Asset } from "../model/asset";
+import { FetchedDataRepository } from "../../../../common/util/fetched-data.repository";
+import { ResponseCache } from "../../../../common/util/response.cache";
 
 export class SubscanApi {
   private requestHelper: RequestHelper;
+  private responseCache: ResponseCache;
 
   constructor() {
     if (!process.env["SUBSCAN_API_KEY"]) {
@@ -31,6 +34,10 @@ export class SubscanApi {
       "Content-Type": "application/json",
       "x-api-key": process.env["SUBSCAN_API_KEY"],
     };
+    this.responseCache = new ResponseCache(
+      new FetchedDataRepository(),
+      this.requestHelper,
+    );
   }
 
   private async retry<T>(
@@ -54,9 +61,18 @@ export class SubscanApi {
     }
   }
 
-  private request(url: string, method: string, body: any) {
+  private request(
+    url: string,
+    method: string,
+    body: any,
+    cacheDurationInHours?: number,
+  ) {
     return apiThrottleQueue.add(() =>
-      this.retry(() => this.requestHelper.req(url, method, body)),
+      this.retry(() =>
+        cacheDurationInHours
+          ? this.responseCache.fetchData(url, method, body)
+          : this.requestHelper.req(url, method, body),
+      ),
     );
   }
 
@@ -175,6 +191,7 @@ export class SubscanApi {
         page,
         row: 100,
       },
+      24,
     );
     const list = response?.data?.list ?? [];
     return {
@@ -199,8 +216,9 @@ export class SubscanApi {
       `https://${chainName}.api.subscan.io/api/v2/scan/tokens`,
       `post`,
       {},
+      24,
     );
-    return response.data.tokens.map((t) => {
+    return (response?.data?.tokens ?? []).map((t) => {
       return {
         ...t,
         asset_id: t.currency_id,
@@ -227,6 +245,7 @@ export class SubscanApi {
         page,
         row: 100,
       },
+      24,
     );
     const list = response?.data?.list ?? [];
     return {
@@ -266,9 +285,10 @@ export class SubscanApi {
       `https://${chainName}.api.subscan.io/api/scan/token`,
       `post`,
       {},
+      24,
     );
     const data = response.data;
-    return Object.values(data.detail).find(
+    return Object.values(data?.detail ?? {}).find(
       (value: Token & { asset_type: string }) => value.asset_type === `native`,
     ) as Token;
   }
@@ -293,12 +313,17 @@ export class SubscanApi {
       : response.data;
   }
 
-  async fetchBlock(chainName: string, blockNum: number): Promise<Block> {
+  async fetchBlock(
+    chainName: string,
+    block_num?: number,
+    block_timestamp?: number,
+  ): Promise<Block> {
     const response = await this.request(
       `https://${chainName}.api.subscan.io/api/scan/block`,
       `post`,
       {
-        block_num: blockNum,
+        block_num,
+        block_timestamp,
         only_head: true,
       },
     );
@@ -412,19 +437,25 @@ export class SubscanApi {
     chainName: string,
     address: string,
     page: number = 0,
-    filter_para_id: number,
     minDate: number,
-    after_id?: number,
+    after_id?: string | number,
   ): Promise<{ list: RawXcmMessage[]; hasNext: boolean }> {
-    logger.info(
-      `XCM request: ${JSON.stringify({
-        row: 100,
-        page,
+    if (process.env["DELEGATE_XCM_REQUESTS_TO"]) {
+      logger.info(
+        `Delegated XCM transfer to ${process.env["DELEGATE_XCM_REQUESTS_TO"]} for address ${address} and chain ${chainName}`,
+      );
+      return this.request(process.env["DELEGATE_XCM_REQUESTS_TO"], `post`, {
+        chainName,
         address,
-        filter_para_id,
+        page,
+        minDate,
         after_id,
-      })}`,
-    );
+      });
+    }
+    if (process.env["XCM_DISABLED"] === "true") {
+      logger.info("Skipping fetchXcmTransfers");
+      return { hasNext: false, list: [] };
+    }
     const json = await this.request(
       `https://${chainName}.api.subscan.io/api/scan/xcm/list`,
       `post`,
@@ -432,9 +463,10 @@ export class SubscanApi {
         row: 100,
         page,
         address,
-        filter_para_id,
         after_id,
+        status: "success",
       },
+      6,
     );
     const list = (json?.data?.list || []).map((xcm) => {
       return {

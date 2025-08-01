@@ -1,4 +1,4 @@
-export interface PaymentsRequest {
+export interface FetchPortfolioMovementsRequest {
   chain: {
     domain: string;
     label: string;

@@ -11,6 +11,7 @@ import { HttpError } from "../common/error/HttpError";
 import { WebSocketManager } from "./endpoints/websocket.manager";
 import { createDIContainer } from "./di-container";
 import { JobManager } from "./job-management/job.manager";
+import { registerXcmEndpoint } from "./endpoints/xcm.endpoint";
 
 export const polkataxServer = {
   init: async () => {
@@ -68,6 +69,10 @@ export const polkataxServer = {
       DIContainer.resolve("webSocketManager");
     fastify.get("/ws", { websocket: true }, webSocketManager.wsHandler);
     webSocketManager.startJobNotificationChannel();
+
+    if (!process.env["XCM_DISABLED"]) {
+      registerXcmEndpoint(fastify, DIContainer);
+    }
 
     fastify.listen(
       { port: Number(process.env["PORT"] || 3001), host: "0.0.0.0" },

@@ -1,4 +1,4 @@
-import { Payment } from "../model/payment";
+import { PortfolioMovement } from "../model/portfolio-movement";
 
 export type PaymentLabel =
   | "transfer"
@@ -85,7 +85,7 @@ const classificationMap: Record<
 
 export const determineLabelForPayment = (
   chain: string,
-  transfer: Payment,
+  transfer: PortfolioMovement,
 ): PaymentLabel | undefined => {
   const classifcations =
     classificationMap[chain] ?? classificationMap["default"];

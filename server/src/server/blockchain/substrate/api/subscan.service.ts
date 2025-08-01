@@ -13,14 +13,8 @@ import { RawXcmMessage } from "../model/xcm-transfer";
 import { Block } from "../model/block";
 import { ForeignAsset } from "../model/foreign-asset";
 import { Asset } from "../model/asset";
-import { ResponseCache } from "./response.cache";
 
 export class SubscanService {
-  private scanTokensCache = new ResponseCache();
-  private assetsCache = new ResponseCache();
-  private foreignAssetsCache = new ResponseCache();
-  private nativeTokenCache = new ResponseCache();
-
   constructor(private subscanApi: SubscanApi) {}
 
   async mapToSubstrateAccount(
@@ -39,9 +33,7 @@ export class SubscanService {
   }
 
   async fetchNativeToken(chainName: string): Promise<Token> {
-    return this.nativeTokenCache.getData(chainName, () =>
-      this.subscanApi.fetchNativeToken(chainName),
-    );
+    return this.subscanApi.fetchNativeToken(chainName);
   }
 
   async searchAllEvents({
@@ -214,7 +206,6 @@ export class SubscanService {
           relayChainName,
           address,
           page,
-          filter_para_id,
           minDate,
           after_id,
         ),
@@ -223,7 +214,12 @@ export class SubscanService {
     logger.info(
       `Exit fetchXcmList for ${relayChainName} and address ${address} and para_id ${filter_para_id} with ${result.length} messages.`,
     );
-    return result;
+    const filteredOnParaId = result.filter(
+      (xcm) =>
+        xcm.origin_para_id === filter_para_id ||
+        xcm.dest_para_id === filter_para_id,
+    );
+    return filteredOnParaId;
   }
 
   async fetchEventDetails(
@@ -362,26 +358,20 @@ export class SubscanService {
   }
 
   async fetchForeignAssets(chainName: string): Promise<ForeignAsset[]> {
-    return this.foreignAssetsCache.getData<Asset[]>(chainName, () =>
-      this.iterateOverPagesParallel<ForeignAsset>(
-        (page) => this.subscanApi.fetchForeignAssets(chainName, page),
-        { count: 1 },
-      ),
+    return this.iterateOverPagesParallel<ForeignAsset>(
+      (page) => this.subscanApi.fetchForeignAssets(chainName, page),
+      { count: 1 },
     );
   }
 
   async scanTokens(chainName: string): Promise<Asset[]> {
-    return this.scanTokensCache.getData<Asset[]>(chainName, () =>
-      this.subscanApi.scanTokens(chainName),
-    );
+    return this.subscanApi.scanTokens(chainName);
   }
 
   async scanAssets(chainName: string): Promise<Asset[]> {
-    return this.assetsCache.getData<Asset[]>(chainName, () =>
-      this.iterateOverPagesParallel<Asset>(
-        (page) => this.subscanApi.scanAssets(chainName, page),
-        { count: 1 },
-      ),
+    return this.iterateOverPagesParallel<Asset>(
+      (page) => this.subscanApi.scanAssets(chainName, page),
+      { count: 1 },
     );
   }
 

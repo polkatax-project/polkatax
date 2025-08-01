@@ -1,8 +1,8 @@
-import { createDIContainer } from "../src/server/di-container";
+import { createDIContainer } from "../../src/server/di-container";
 import { creatApi, getApiAt, getNativeTokenBalance } from "./get-balances-at";
 import dotenv from "dotenv";
 dotenv.config({ path: __dirname + "/../.env" });
-import { SubscanApi } from "../src/server/blockchain/substrate/api/subscan.api";
+import { SubscanApi } from "../../src/server/blockchain/substrate/api/subscan.api";
 
 export interface Portfolio {
   block: number;
@@ -17,6 +17,9 @@ export interface Portfolio {
 }
 
 export class Wallet {
+  /**
+   * For chains which store their wallet token balances under "assets" pallet
+   */
   async getAssetBalances(
     chain: string,
     nativeToken: string,
@@ -120,7 +123,10 @@ export class Wallet {
     }
   }
 
-  async fetchPortfolios(
+  /**
+   * For chains which store their wallet token balances under "tokens" pallet
+   */
+  async fetchTokenBalances(
     chain: string,
     nativeToken: string,
     address: string,

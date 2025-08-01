@@ -146,7 +146,7 @@ export class XcmTokenResolutionService {
             );
             if (bySymbol.length === 1) {
               transfer.symbol = bySymbol[0].symbol;
-              transfer.asset_unique_id = bySymbol[0].asset_id;
+              transfer.asset_unique_id = bySymbol[0].unique_id;
               transfer.amount = new BigNumber(transfer.rawAmount)
                 .multipliedBy(
                   new BigNumber(Math.pow(10, -bySymbol[0].decimals)),

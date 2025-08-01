@@ -18,6 +18,9 @@ interface EventDerivedTransfer extends Transfer {
   event_id: string;
   module_id: string;
   original_event_id: string;
+  fromChain?: string;
+  destChain?: string;
+  messageHash?: string;
 }
 
 interface AssetInfos {
@@ -85,7 +88,8 @@ const toTransfer = (
   to: string,
   amount: number,
   token: { symbol: string; decimals: number; unique_id: string },
-) => {
+  xcm?: XcmTransfer,
+): EventDerivedTransfer => {
   if (to === undefined || from === undefined || !token || !amount) {
     throw `Missing data: to: ${to}, from: ${from}, token: ${token}, amount: ${amount}`;
   }
@@ -102,8 +106,22 @@ const toTransfer = (
     to,
     from,
     asset_unique_id: token.unique_id,
+    fromChain: xcm?.transfers[0]?.fromChain,
+    destChain: xcm?.transfers[0]?.destChain,
+    messageHash: xcm?.messageHash,
   };
 };
+
+function findMatchingXcm(
+  event: EventDetails,
+  xcmList: XcmTransfer[],
+): XcmTransfer {
+  return xcmList.find(
+    (xcm) =>
+      (event.event_index && event.extrinsic_index === xcm.extrinsic_index) ||
+      event.timestamp === xcm.timestamp,
+  );
+}
 
 export class SpecialEventsToTransfersService {
   eventConfigs: {
@@ -351,14 +369,7 @@ export class SpecialEventsToTransfersService {
           native: true,
         });
         break;
-      case "polkadot":
-      case "kusama":
-      case "coretime-polkadot":
-      case "collectives-polkadot":
-      case "people-polkadot":
-      case "people-kusama":
-      case "coretime-kusama":
-      case "collectives-kusama":
+      default:
         extra.tokens.push({
           id: chainInfo.token,
           name: chainInfo.token,
@@ -512,13 +523,23 @@ export class SpecialEventsToTransfersService {
 
   private async onAssethubForeignAssetsIssued(
     event: EventDetails,
-    { foreignAssets }: { foreignAssets: ForeignAsset[] },
+    {
+      foreignAssets,
+      xcmList,
+    }: { foreignAssets: ForeignAsset[]; xcmList: XcmTransfer[] },
   ): Promise<EventDerivedTransfer> {
     const owner = extractAddress("owner", event);
     const asset = extractForeignAsset("asset_id", event, foreignAssets);
     const amount =
       Number(getPropertyValue("amount", event)) / Math.pow(10, asset?.decimals);
-    return toTransfer(event, "", owner, amount, asset);
+    return toTransfer(
+      event,
+      "",
+      owner,
+      amount,
+      asset,
+      findMatchingXcm(event, xcmList),
+    );
   }
 
   private async onAssethubAssetsIssued(
@@ -529,18 +550,32 @@ export class SpecialEventsToTransfersService {
     const asset = extractAsset("asset_id", event, tokens);
     const amount =
       Number(getPropertyValue("amount", event)) / Math.pow(10, asset?.decimals);
-    return toTransfer(event, "", owner, amount, asset);
+    return toTransfer(
+      event,
+      "",
+      owner,
+      amount,
+      asset,
+      findMatchingXcm(event, xcmList),
+    );
   }
 
   private async onHydrationCurrenciesDeposited(
     event: EventDetails,
-    { tokens }: { tokens: Asset[] },
+    { tokens, xcmList }: { tokens: Asset[]; xcmList: XcmTransfer[] },
   ): Promise<EventDerivedTransfer> {
     const owner = extractAddress("who", event);
     const asset = extractToken("currency_id", event, tokens);
     const amount =
       Number(getPropertyValue("amount", event)) / Math.pow(10, asset?.decimals);
-    return toTransfer(event, "", owner, amount, asset);
+    return toTransfer(
+      event,
+      "",
+      owner,
+      amount,
+      asset,
+      findMatchingXcm(event, xcmList),
+    );
   }
 
   private async onHydrationLiquidityRemoved(
@@ -568,18 +603,23 @@ export class SpecialEventsToTransfersService {
 
   private async onBalancesWithdraw(
     event: EventDetails,
-    { tokens, events }: { tokens: Asset[]; events: SubscanEvent[] },
+    { tokens, xcmList }: { tokens: Asset[]; xcmList: XcmTransfer[] },
   ): Promise<EventDerivedTransfer> {
-    if (event.extrinsic_index === "8424902-2") {
-      console.log(JSON.stringify(events));
-    }
     const address = extractAddress("who", event);
     const tokenInfo = tokens.find((t) => t.native);
     const amount =
       Number(getPropertyValue("amount", event)) /
       Math.pow(10, tokenInfo?.decimals);
-    return toTransfer(event, address, "", amount, tokenInfo);
+    return toTransfer(
+      event,
+      address,
+      "",
+      amount,
+      tokenInfo,
+      findMatchingXcm(event, xcmList),
+    );
   }
+
   private async onCoretimePurchased(
     event: EventDetails,
     { tokens }: { tokens: Asset[] },
@@ -655,5 +695,4 @@ export class SpecialEventsToTransfersService {
       Math.pow(10, tokenInfo?.decimals);
     return toTransfer(event, from, to, amount, tokenInfo);
   }
-
 }

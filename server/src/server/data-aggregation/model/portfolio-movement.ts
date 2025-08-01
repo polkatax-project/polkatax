@@ -1,4 +1,4 @@
-export interface Payment {
+export interface PortfolioMovement {
   hash?: string;
   block?: number;
   timestamp: number;

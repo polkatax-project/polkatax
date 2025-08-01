@@ -1,30 +1,30 @@
 import { asClass, AwilixContainer } from "awilix";
 import { StakingRewardsWithFiatService } from "./services/staking-rewards-with-fiat.service";
-import { PaymentsService } from "./services/substrate-payments.service";
+import { PortfolioMovementsService } from "./services/portfolio-movments.service";
 import { TokenPriceConversionService } from "./services/token-price-conversion.service";
 import { CryptoCurrencyPricesService } from "./services/crypto-currency-prices.service";
 import { FiatExchangeRateService } from "./services/fiat-exchange-rate.service";
 import { ChainAdjustments } from "./helper/chain-adjustments";
 import { TransferMerger } from "./helper/transfer-merger";
-import { CoingeckoIdLookupService } from "./services/coingecko-id-lookup.service";
-import { AddFiatValuesToPaymentsService } from "./services/add-fiat-values-to-payments.service";
+import { AddFiatValuesToPortfolioMovementsService } from "./services/add-fiat-values-to-portfolio-movements.service";
 import { ChainDataAccumulationService } from "./services/chain-data-accumulation.service";
 import { SpecialEventsToTransfersService } from "./services/special-events-to-transfers.service";
 import { XcmTokenResolutionService } from "./services/xcm-token-resolution.service";
 
 export const registerServices = (container: AwilixContainer) => {
   container.register({
-    addFiatValuesToPaymentsService: asClass(AddFiatValuesToPaymentsService),
+    addFiatValuesToPortfolioMovementsService: asClass(
+      AddFiatValuesToPortfolioMovementsService,
+    ),
     specialEventsToTransfersService: asClass(SpecialEventsToTransfersService),
     stakingRewardsWithFiatService: asClass(StakingRewardsWithFiatService),
     cryptoCurrencyPricesService: asClass(CryptoCurrencyPricesService),
     fiatExchangeRateService: asClass(FiatExchangeRateService),
     tokenPriceConversionService: asClass(TokenPriceConversionService),
-    paymentsService: asClass(PaymentsService),
+    portfolioMovementsService: asClass(PortfolioMovementsService),
     chainAdjustments: asClass(ChainAdjustments),
     chainDataAccumulationService: asClass(ChainDataAccumulationService),
     transferMerger: asClass(TransferMerger),
-    coingeckoIdLookupService: asClass(CoingeckoIdLookupService),
     xcmTokenResolutionService: asClass(XcmTokenResolutionService),
   });
 };

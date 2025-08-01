@@ -1,8 +1,11 @@
-import { IndexedPayments, TransferMerger } from "../helper/transfer-merger";
+import {
+  IndexedPortfolioMovements,
+  TransferMerger,
+} from "../helper/transfer-merger";
 import { SubscanService } from "../../blockchain/substrate/api/subscan.service";
 import { isEvmAddress } from "../helper/is-evm-address";
 import { SubscanEvent } from "../../blockchain/substrate/model/subscan-event";
-import { Payment } from "../model/payment";
+import { PortfolioMovement } from "../model/portfolio-movement";
 import { StakingReward } from "../../blockchain/substrate/model/staking-reward";
 import { Transaction } from "../../blockchain/substrate/model/transaction";
 import { Transfer } from "../../blockchain/substrate/model/raw-transfer";
@@ -23,7 +26,10 @@ export class ChainDataAccumulationService {
     xcmList: EventEnrichedXcmTransfer[],
     events: SubscanEvent[],
     stakingRewards: StakingReward[],
-  ): Promise<{ payments: Payment[]; unmatchedEvents: SubscanEvent[] }> {
+  ): Promise<{
+    portfolioMovements: PortfolioMovement[];
+    unmatchedEvents: SubscanEvent[];
+  }> {
     logger.info("Entry ChainDataAccumulationService.combine");
     const aliases = isEvmAddress(context.address)
       ? [
@@ -37,11 +43,12 @@ export class ChainDataAccumulationService {
           context.chain.domain,
         );
 
-    const indexedPayments: IndexedPayments = this.transferMerger.mergeTranfers(
-      transfersList,
-      context.address,
-      aliases,
-    );
+    const indexedPortfolioMovements: IndexedPortfolioMovements =
+      this.transferMerger.mergeTranfers(
+        transfersList,
+        context.address,
+        aliases,
+      );
 
     const extrinsicIndexedEvents: Record<string, SubscanEvent[]> =
       events.reduce((current, event) => {
@@ -70,26 +77,34 @@ export class ChainDataAccumulationService {
     );
 
     this.enrichTransfers(
-      indexedPayments,
+      indexedPortfolioMovements,
       indexedTx,
       extrinsicIndexedEvents,
       hashIndexedEvents,
     );
 
-    const xcmPayments = this.enrichXcmTransfers(context.chain.domain, xcmList, indexedTx);
+    const xcmPayments = this.enrichXcmTransfers(
+      context.chain.domain,
+      xcmList,
+      indexedTx,
+    );
     for (let xcmPayment of xcmPayments) {
-      if (!indexedPayments[xcmPayment.extrinsic_index]) {
-        indexedPayments[xcmPayment.extrinsic_index] = xcmPayment;
+      if (!indexedPortfolioMovements[xcmPayment.extrinsic_index]) {
+        indexedPortfolioMovements[xcmPayment.extrinsic_index] = xcmPayment;
       } else {
         xcmPayment.transfers
           .filter((t) => {
             // avoiding duplicates
-            return !indexedPayments[xcmPayment.extrinsic_index].transfers.some(
+            return !indexedPortfolioMovements[
+              xcmPayment.extrinsic_index
+            ].transfers.some(
               (other) => other.amount === t.amount && other.symbol === t.symbol,
             );
           })
           .forEach((t) => {
-            indexedPayments[xcmPayment.extrinsic_index].transfers.push(t);
+            indexedPortfolioMovements[
+              xcmPayment.extrinsic_index
+            ].transfers.push(t);
           });
       }
     }
@@ -101,7 +116,7 @@ export class ChainDataAccumulationService {
       context.address,
       extrinsicIndexedEvents,
     );
-    const indexedStakingRewards: Record<string, Payment[]> =
+    const indexedStakingRewards: Record<string, PortfolioMovement[]> =
       stakingRewardPayments.reduce((current, stakingRewards) => {
         current[stakingRewards.extrinsic_index] ??= [];
         current[stakingRewards.extrinsic_index].push(stakingRewards);
@@ -112,36 +127,42 @@ export class ChainDataAccumulationService {
      * TODO: how to avoid duplicated (reward/transfer)?
      */
     Object.keys(indexedStakingRewards).forEach((extrinsic_index) => {
-      if (!indexedPayments[extrinsic_index]) {
-        indexedPayments[extrinsic_index] = {
+      if (!indexedPortfolioMovements[extrinsic_index]) {
+        indexedPortfolioMovements[extrinsic_index] = {
           ...indexedStakingRewards[extrinsic_index][0],
           transfers: [],
         };
       }
       indexedStakingRewards[extrinsic_index].forEach((r) =>
         r.transfers.forEach((t) => {
-          indexedPayments[extrinsic_index].transfers.push(t);
+          indexedPortfolioMovements[extrinsic_index].transfers.push(t);
         }),
       );
     });
 
     const otherTransactions = this.enrichTxWithEvents(
-      transactions.filter((t) => !indexedPayments[t.extrinsic_index]),
+      transactions.filter((t) => !indexedPortfolioMovements[t.extrinsic_index]),
       extrinsicIndexedEvents,
       hashIndexedEvents,
     );
 
     otherTransactions.forEach((tx) => {
-      indexedPayments[tx.extrinsic_index] = {
+      indexedPortfolioMovements[tx.extrinsic_index] = {
         ...tx,
         provenance: "tx",
         transfers: [],
       };
     });
 
-    const unmatchedEvents = this.findUnmatchedEvents(events, indexedPayments);
+    const unmatchedEvents = this.findUnmatchedEvents(
+      events,
+      indexedPortfolioMovements,
+    );
     logger.info("Exit ChainDataAccumulationService.combine");
-    return { payments: Object.values(indexedPayments), unmatchedEvents };
+    return {
+      portfolioMovements: Object.values(indexedPortfolioMovements),
+      unmatchedEvents,
+    };
   }
 
   private enrichStakingRewards(
@@ -150,7 +171,7 @@ export class ChainDataAccumulationService {
     indexedTx: Record<string, Transaction>,
     walletAddress: string,
     indexedEvents: Record<string, SubscanEvent[]>,
-  ): Payment[] {
+  ): PortfolioMovement[] {
     return (stakingRewards || []).map((stakingReward) => {
       const matchingTx = indexedTx[stakingReward.extrinsic_index];
       return {
@@ -186,7 +207,7 @@ export class ChainDataAccumulationService {
 
   private findUnmatchedEvents(
     events: SubscanEvent[],
-    indexedPayments: IndexedPayments,
+    indexedPayments: IndexedPortfolioMovements,
   ): SubscanEvent[] {
     const hashes = {};
     Object.values(indexedPayments)
@@ -207,10 +228,10 @@ export class ChainDataAccumulationService {
     transactions: Transaction[],
     extrinsicIndexedEvents: Record<string, SubscanEvent[]>,
     hashIndexedEvents: Record<string, SubscanEvent[]>,
-  ): Payment[] {
-    const result: Payment[] = [];
+  ): PortfolioMovement[] {
+    const result: PortfolioMovement[] = [];
     transactions.forEach((tx) => {
-      const enrichedTx: Payment = {
+      const enrichedTx: PortfolioMovement = {
         ...tx,
         provenance: "tx",
         events: [],
@@ -241,14 +262,14 @@ export class ChainDataAccumulationService {
   }
 
   private enrichTransfers(
-    indexedPayments: IndexedPayments,
+    indexedPortfolioMovements: IndexedPortfolioMovements,
     indexedTx: Record<string, Transaction>,
     extrinsicIndexedEvents: Record<string, SubscanEvent[]>,
     hashIndexedEvents: Record<string, SubscanEvent[]>,
   ): void {
-    Object.keys(indexedPayments).forEach((key) => {
-      const transfers = indexedPayments[key];
-      const hash = indexedPayments[key].hash;
+    Object.keys(indexedPortfolioMovements).forEach((key) => {
+      const transfers = indexedPortfolioMovements[key];
+      const hash = indexedPortfolioMovements[key].hash;
       transfers.provenance = "transfer";
       if (extrinsicIndexedEvents[key]) {
         extrinsicIndexedEvents[key].forEach((event) => {
@@ -282,18 +303,26 @@ export class ChainDataAccumulationService {
     chainName: string,
     xcmTransfers: EventEnrichedXcmTransfer[],
     indexedTx: Record<string, Transaction>,
-  ): Payment[] {
-    const xcmWithoutSender: XcmTransfer[] = []
-    const payments: Payment[] = [];
+  ): PortfolioMovement[] {
+    const xcmWithoutSender: XcmTransfer[] = [];
+    const payments: PortfolioMovement[] = [];
     xcmTransfers.forEach((xcmTransfer) => {
       const tx = xcmTransfer.extrinsic_index
         ? indexedTx[xcmTransfer.extrinsic_index]
         : undefined;
-      xcmTransfer.transfers.filter(t => !t.from && t.fromChain === chainName).forEach(t => {
-        t.from = tx.from
-      })
-      if (xcmTransfer.transfers.some(t => !t.from && t.fromChain === chainName)) {
-        xcmWithoutSender.push(xcmTransfer)
+      xcmTransfer.transfers
+        .filter((t) => !t.from && t.fromChain === chainName)
+        .forEach((t) => {
+          t.from = tx.from;
+          xcmTransfer.timestamp = tx.timestamp;
+        });
+      if (
+        xcmTransfer.transfers.some((t) => !t.from && t.fromChain === chainName)
+      ) {
+        logger.warn(
+          `Discarding xcm with hash ${xcmTransfer.messageHash} and extrinsic index ${xcmTransfer.extrinsic_index} because it has no sender.`,
+        );
+        xcmWithoutSender.push(xcmTransfer);
       } else {
         payments.push({
           ...xcmTransfer,

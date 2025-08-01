@@ -1,15 +1,15 @@
 import { Transfer } from "../../blockchain/substrate/model/raw-transfer";
 import { mapToGenericSubstrateAddress } from "../../blockchain/substrate/util/map-to-generic-substrate-address";
 import { logger } from "../../logger/logger";
-import { Payment } from "../model/payment";
+import { PortfolioMovement } from "../model/portfolio-movement";
 
-export interface IndexedPayments {
-  [key: string]: Payment;
+export interface IndexedPortfolioMovements {
+  [key: string]: PortfolioMovement;
 }
 
 export class TransferMerger {
   private merge(
-    target: IndexedPayments,
+    target: IndexedPortfolioMovements,
     address: string,
     transferList: Transfer[],
     isMyAccount: (acc: string) => boolean,
@@ -70,7 +70,7 @@ export class TransferMerger {
     transferList: Transfer[],
     address: string,
     aliases: string[],
-  ): IndexedPayments {
+  ): IndexedPortfolioMovements {
     const isMyAccount = (addressToTest: string) =>
       address.toLowerCase() === addressToTest.toLowerCase() ||
       aliases.indexOf(addressToTest) > -1;
@@ -93,7 +93,7 @@ export class TransferMerger {
       indexedTransfers[transfer.extrinsic_index].push(transfer);
     }
 
-    const mergedTransfers: IndexedPayments = {};
+    const mergedTransfers: IndexedPortfolioMovements = {};
     Object.keys(indexedTransfers).forEach((key: string) => {
       this.merge(mergedTransfers, address, indexedTransfers[key], isMyAccount);
     });
