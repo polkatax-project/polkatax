@@ -1,14 +1,13 @@
 import { Job } from "../../model/job";
-import { StakingRewardsWithFiatService } from "../data-aggregation/services/staking-rewards-with-fiat.service";
 import { logger } from "../logger/logger";
 import { JobsService } from "./jobs.service";
 import * as subscanChains from "../../../res/gen/subscan-chains.json";
-import { StakingRewardsResponse } from "../data-aggregation/model/staking-rewards.response";
+import { PortfolioMovementsService } from "../data-aggregation/services/portfolio-movments.service";
 
 export class JobConsumer {
   constructor(
     private jobsService: JobsService,
-    private stakingRewardsWithFiatService: StakingRewardsWithFiatService,
+    private portfolioMovementsService: PortfolioMovementsService,
   ) {}
 
   async process(job: Job): Promise<void> {
@@ -36,22 +35,23 @@ export class JobConsumer {
 
     try {
       const result =
-        await this.stakingRewardsWithFiatService.fetchStakingRewardsViaSubscan({
+        await this.portfolioMovementsService.fetchPortfolioMovements({
           chain,
           address: job.wallet,
           currency: job.currency,
           minDate: job.syncFromDate,
         });
+      const portfolioMovements = result.portfolioMovements;
 
       // Merge previously synced values (if any)
       if (job.data) {
-        const previous = (job.data as StakingRewardsResponse).values.filter(
+        const previous = job.data.values.filter(
           (v) => v.timestamp < job.syncFromDate,
         );
-        // TODO:! result.values.push(...previous);
+        portfolioMovements.push(...previous);
       }
 
-      await this.jobsService.setDone(result, job);
+      await this.jobsService.setDone(portfolioMovements, job);
       logger.info("JobConsumer: finished processing job", {
         ...job,
         data: undefined,

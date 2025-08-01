@@ -8,10 +8,9 @@ import {
   WebSocketIncomingMessageSchema,
 } from "./incoming-message-schema";
 import { JobRepository } from "../job-management/job.repository";
-import { Job, JobId } from "../../model/job";
+import { JobId } from "../../model/job";
 import { convertToCanonicalAddress } from "../../common/util/convert-to-generic-address";
 import { dataPlatformChains } from "../data-platform-api/model/data-platform-chains";
-import { StakingRewardsWithFiatService } from "../data-aggregation/services/staking-rewards-with-fiat.service";
 import { isValidEvmAddress } from "../../common/util/is-valid-address";
 
 interface Subscription {
@@ -26,7 +25,6 @@ export class WebSocketManager {
   constructor(
     private jobManager: JobManager,
     private jobRepository: JobRepository,
-    private stakingRewardsWithFiatService: StakingRewardsWithFiatService,
   ) {}
 
   private match(sub1: Subscription, sub2: Subscription): boolean {
@@ -48,60 +46,6 @@ export class WebSocketManager {
     );
   }
 
-  /**
-   * TODO: reactivate
-   */
-  private async fetchRewardsFromPlatformApi(
-    socket: WebSocket,
-    reqId: string,
-    wallet: string,
-    currency: string,
-  ) {
-    /*dataPlatformChains.forEach((c) => {
-      const message: WebSocketOutgoingMessage = {
-        reqId: reqId,
-        payload: [
-          {
-            wallet,
-            blockchain: c.domain,
-            currency,
-            status: "in_progress",
-            reqId: reqId,
-            lastModified: Date.now(),
-          },
-        ],
-        timestamp: Date.now(),
-        type: "data",
-      };
-      socket.send(JSON.stringify(message));
-    });
-
-    const aggregatedResults =
-      await this.stakingRewardsWithFiatService.fetchStakingRewardsViaPlatformApi(
-        chain,
-        wallet,
-        currency,
-      );
-    const resultsAsJobs: Job[] = aggregatedResults.map((rewards) => {
-      return {
-        wallet,
-        status: "done",
-        data: { token: rewards.token, values: rewards.values },
-        lastModified: Date.now(),
-        blockchain: rewards.chain,
-        currency: rewards.currency,
-        reqId: reqId,
-      };
-    });
-    const message: WebSocketOutgoingMessage = {
-      reqId: reqId,
-      payload: resultsAsJobs,
-      timestamp: Date.now(),
-      type: "data",
-    };
-    socket.send(JSON.stringify(message));*/
-  }
-
   private async handleFetchDataRequest(
     socket: WebSocket,
     msg: WebSocketIncomingMessage,
@@ -118,13 +62,6 @@ export class WebSocketManager {
           (b) => !dataPlatformChains.some((c) => c.domain === b),
         )
       : blockchains;
-
-    /**
-     * fetch part of data directly if aggregated data is used from db. No additional caching in this case.
-     */
-    if (process.env["USE_DATA_PLATFORM_API"]) {
-      this.fetchRewardsFromPlatformApi(socket, msg.reqId, wallet, currency);
-    }
 
     const jobs = await this.jobManager.enqueue(
       msg.reqId,
