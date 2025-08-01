@@ -16,6 +16,8 @@ import { SpecialEventsToTransfersService } from "./special-events-to-transfers.s
 import { XcmTokenResolutionService } from "./xcm-token-resolution.service";
 import { EventEnrichedXcmTransfer } from "../model/EventEnrichedXcmTransfer";
 import { XcmTransfer } from "../../blockchain/substrate/model/xcm-transfer";
+import { StakingRewardsWithFiatService } from "./staking-rewards-with-fiat.service";
+import { TaxableEvent } from "../model/portfolio-movement";
 
 const ignoreIncomingXcm = [
   "hydration",
@@ -35,7 +37,7 @@ export class PortfolioMovementsService {
     private transactionsService: TransactionsService,
     private subscanService: SubscanService,
     private xcmService: XcmService,
-    private stakingRewardsService: StakingRewardsService,
+    private stakingRewardsWithFiatService: StakingRewardsWithFiatService,
     private chainDataAccumulationService: ChainDataAccumulationService,
     private specialEventsToTransfersService: SpecialEventsToTransfersService,
     private addFiatValuesToPortfolioMovementsService: AddFiatValuesToPortfolioMovementsService,
@@ -97,7 +99,7 @@ export class PortfolioMovementsService {
         this.transactionsService.fetchTx(dataRequest),
         this.subscanService.searchAllEvents(dataRequest),
         this.xcmService.fetchXcmTransfers(dataRequest),
-        this.stakingRewardsService.fetchStakingRewards(dataRequest),
+        this.stakingRewardsWithFiatService.fetchStakingRewards(dataRequest),
       ]);
 
     xcmList = await this.xcmTokenResolutionService.resolveTokens(
@@ -126,7 +128,7 @@ export class PortfolioMovementsService {
         transfers,
         xcmMapToTransfer as EventEnrichedXcmTransfer[],
         events,
-        stakingRewards,
+        stakingRewards.rawStakingRewards,
       );
 
     if (paymentsRequest.chain.domain === "hydration") {
@@ -138,18 +140,20 @@ export class PortfolioMovementsService {
       portfolioMovements,
     );
 
-    const paymentsSorted = portfolioMovements.sort(
-      (a, b) => -a.timestamp + b.timestamp,
-    );
-
-    paymentsSorted.forEach(
+    portfolioMovements.forEach(
       (p) =>
         (p.label = determineLabelForPayment(paymentsRequest.chain.domain, p)),
     );
 
+    const taxableEvents = (portfolioMovements as TaxableEvent[]).concat(
+      stakingRewards.aggregatedRewards,
+    );
+
+    const sorted = taxableEvents.sort((a, b) => -a.timestamp + b.timestamp);
+
     logger.info(
       `PortfolioMovementsService: Exit fetchPortfolioMovements with ${portfolioMovements.length} entries for ${paymentsRequest.chain.domain} and wallet ${paymentsRequest.address}`,
     );
-    return { portfolioMovements, unmatchedEvents };
+    return { portfolioMovements: sorted, unmatchedEvents };
   }
 }

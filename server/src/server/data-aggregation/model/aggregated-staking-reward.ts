@@ -1,4 +1,4 @@
-export interface AggregatedReward {
+export interface AggregatedStakingReward {
   timestamp: number;
   label?: string;
   provenance?: string;

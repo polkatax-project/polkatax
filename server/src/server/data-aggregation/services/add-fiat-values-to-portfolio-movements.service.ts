@@ -13,7 +13,7 @@ export class AddFiatValuesToPortfolioMovementsService {
     private fiatExchangeRateService: FiatExchangeRateService,
   ) {}
 
-  addFiatValuesForTxFeesAndStakingRewards(
+  addFiatValuesForTxFees(
     portfolioMovements: PortfolioMovement[],
     quotes: CurrencyQuotes,
   ): PortfolioMovement[] {
@@ -26,12 +26,6 @@ export class AddFiatValuesToPortfolioMovementsService {
         portfolioMovement.tipFiat = portfolioMovement.tip
           ? portfolioMovement.tip * quotes.quotes[isoDate]
           : undefined;
-        if (portfolioMovement.provenance === "stakingRewards") {
-          portfolioMovement.transfers.forEach((t) => {
-            t.fiatValue ??= t.amount * quotes.quotes[isoDate];
-            t.price ??= quotes.quotes[isoDate];
-          });
-        }
       } else {
         logger.warn(
           `No quote found for ${quotes.currency} for date ${isoDate}`,
@@ -70,10 +64,7 @@ export class AddFiatValuesToPortfolioMovementsService {
       );
     }
 
-    // add quotes to fees and staking rewards
-    this.addFiatValuesForTxFeesAndStakingRewards(
-      portfolioMovements,
-      quotes[coingeckoId],
-    );
+    // add quotes to fees
+    this.addFiatValuesForTxFees(portfolioMovements, quotes[coingeckoId]);
   }
 }

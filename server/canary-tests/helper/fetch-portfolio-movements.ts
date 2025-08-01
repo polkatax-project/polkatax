@@ -33,18 +33,21 @@ export const fetchPortfolioMovements = async (
   try {
     const today = new Date();
     const pastDate = new Date();
-    pastDate.setDate(today.getDate() - 30); 
+    pastDate.setDate(today.getDate() - 30);
 
     const currency = "usd";
     const portfolioMovementsService: PortfolioMovementsService =
       container.resolve("portfolioMovementsService");
     const { portfolioMovements, unmatchedEvents } =
-      await portfolioMovementsService.fetchPortfolioMovements({
+      (await portfolioMovementsService.fetchPortfolioMovements({
         chain,
         address,
         currency,
         minDate: minDate ?? pastDate.getTime(),
-      });
+      })) as {
+        portfolioMovements: PortfolioMovement[];
+        unmatchedEvents: SubscanEvent[];
+      };
     if (portfolioMovements.length === 0) {
       return { portfolioMovements: [] };
     }

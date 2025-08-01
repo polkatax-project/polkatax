@@ -48,7 +48,7 @@ export class JobConsumer {
         const previous = (job.data as StakingRewardsResponse).values.filter(
           (v) => v.timestamp < job.syncFromDate,
         );
-        result.values.push(...previous);
+        // TODO:! result.values.push(...previous);
       }
 
       await this.jobsService.setDone(result, job);

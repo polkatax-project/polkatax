@@ -14,7 +14,10 @@ import {
 
 const checkPoolTokens = () => {
   const { portfolioMovements } = JSON.parse(
-    fs.readFileSync(`./canary-tests/out-temp/portfolio-movements.json`, "utf-8"),
+    fs.readFileSync(
+      `./canary-tests/out-temp/portfolio-movements.json`,
+      "utf-8",
+    ),
   );
   let pool2Change = 0;
   let pool4Change = 0;

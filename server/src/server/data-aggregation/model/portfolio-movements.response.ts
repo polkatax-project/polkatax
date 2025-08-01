@@ -1,7 +1,7 @@
 import { SubscanEvent } from "../../blockchain/substrate/model/subscan-event";
-import { PortfolioMovement } from "./portfolio-movement";
+import { TaxableEvent } from "./portfolio-movement";
 
 export interface PortfolioMovementsResponse {
-  portfolioMovements: PortfolioMovement[];
+  portfolioMovements: TaxableEvent[];
   unmatchedEvents: SubscanEvent[];
 }

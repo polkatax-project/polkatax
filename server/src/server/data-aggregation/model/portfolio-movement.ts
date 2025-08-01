@@ -1,3 +1,5 @@
+import { AggregatedStakingReward } from "./aggregated-staking-reward";
+
 export interface PortfolioMovement {
   hash?: string;
   block?: number;
@@ -29,3 +31,5 @@ export interface PortfolioMovement {
     asset_unique_id?: string;
   }[];
 }
+
+export type TaxableEvent = PortfolioMovement | AggregatedStakingReward;

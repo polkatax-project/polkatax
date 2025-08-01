@@ -125,8 +125,12 @@ export class ChainDataAccumulationService {
         return current;
       }, {});
 
-      const otherTransactions = this.enrichTxWithEvents(
-      transactions.filter((t) => !indexedPortfolioMovements[t.extrinsic_index] && !indexedStakingRewards[t.extrinsic_index]),
+    const otherTransactions = this.enrichTxWithEvents(
+      transactions.filter(
+        (t) =>
+          !indexedPortfolioMovements[t.extrinsic_index] &&
+          !indexedStakingRewards[t.extrinsic_index],
+      ),
       extrinsicIndexedEvents,
       hashIndexedEvents,
     );
@@ -145,7 +149,9 @@ export class ChainDataAccumulationService {
     );
     logger.info("Exit ChainDataAccumulationService.combine");
     return {
-      portfolioMovements: Object.values(indexedPortfolioMovements).concat(stakingRewardPayments),
+      portfolioMovements: Object.values(indexedPortfolioMovements).concat(
+        stakingRewardPayments,
+      ),
       unmatchedEvents,
     };
   }

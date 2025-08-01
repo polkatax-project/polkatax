@@ -1,18 +1,35 @@
 import { formatDate } from "../../../common/util/date-utils";
 import { CurrencyQuotes } from "../../../model/crypto-currency-prices/crypto-currency-quotes";
+import { StakingReward } from "../../blockchain/substrate/model/staking-reward";
 import { logger } from "../../logger/logger";
-import { PricedStakingReward } from "../model/priced-staking-reward";
+import { AggregatedStakingReward } from "../model/aggregated-staking-reward";
 
 export const addFiatValuesToStakingRewards = (
-  values: PricedStakingReward[],
+  values: StakingReward[],
   quotes: CurrencyQuotes,
-): PricedStakingReward[] => {
+): StakingReward[] => {
   if (!quotes) {
     return values;
   }
   const currentIsoDate = formatDate(new Date());
   for (let d of values) {
     addFiatValueToTransfer(d, quotes, currentIsoDate, d.timestamp);
+  }
+  return values;
+};
+
+export const addFiatValuesToAggregatedStakingRewards = (
+  values: AggregatedStakingReward[],
+  quotes: CurrencyQuotes,
+): AggregatedStakingReward[] => {
+  if (!quotes) {
+    return values;
+  }
+  const currentIsoDate = formatDate(new Date());
+  for (let v of values) {
+    v.transfers.forEach((t) => {
+      addFiatValueToTransfer(t, quotes, currentIsoDate, v.timestamp);
+    });
   }
   return values;
 };

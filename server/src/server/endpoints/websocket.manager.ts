@@ -48,13 +48,16 @@ export class WebSocketManager {
     );
   }
 
+  /**
+   * TODO: reactivate
+   */
   private async fetchRewardsFromPlatformApi(
     socket: WebSocket,
     reqId: string,
     wallet: string,
     currency: string,
   ) {
-    dataPlatformChains.forEach((c) => {
+    /*dataPlatformChains.forEach((c) => {
       const message: WebSocketOutgoingMessage = {
         reqId: reqId,
         payload: [
@@ -75,6 +78,7 @@ export class WebSocketManager {
 
     const aggregatedResults =
       await this.stakingRewardsWithFiatService.fetchStakingRewardsViaPlatformApi(
+        chain,
         wallet,
         currency,
       );
@@ -95,7 +99,7 @@ export class WebSocketManager {
       timestamp: Date.now(),
       type: "data",
     };
-    socket.send(JSON.stringify(message));
+    socket.send(JSON.stringify(message));*/
   }
 
   private async handleFetchDataRequest(
