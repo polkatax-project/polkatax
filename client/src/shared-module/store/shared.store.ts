@@ -16,7 +16,7 @@ import { fetchCurrency } from '../service/fetch-currency';
 import { wsMsgReceived$, wsSendMsg } from '../service/ws-connection';
 import { JobResult } from '../model/job-result';
 import { fetchSubscanChains } from '../service/fetch-subscan-chains';
-import { mapRawValuesToRewards, sortJobs } from './helper/job.service';
+import { addMetaData, sortJobs } from './helper/job.service';
 import { filterOnLastYear } from './helper/filter-on-last-year';
 import { addIsoDate } from './helper/add-iso-date';
 import { convertToCanonicalAddress } from '../util/convert-to-canonical-address';
@@ -40,9 +40,8 @@ wsMsgReceived$
       if (newJobResult.data) {
         newJobResult.data.values = addIsoDate(newJobResult.data.values);
         filterOnLastYear(newJobResult.data);
-        newJobResult.data = mapRawValuesToRewards(
+        newJobResult.data = addMetaData(
           newJobResult,
-          newJobResult.data.token,
           newJobResult.data.values
         );
       }

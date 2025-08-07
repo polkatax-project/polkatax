@@ -1,29 +1,30 @@
 import { JobResult } from '../../model/job-result';
-import { Reward, Rewards } from '../../model/rewards';
-import { calculateRewardSummary } from './calculate-reward-summary';
-import { groupRewardsByDay } from './group-rewards-by-day';
+import { TaxData } from '../../model/tax-data';
+import { TaxableEvent } from '../../model/taxable-event';
 
 export function sortJobs(jobs: JobResult[]) {
   return jobs.sort((a, b) => a.wallet.localeCompare(b.wallet));
 }
 
-export function sortRewards(rewards: Rewards) {
-  rewards.values.sort((a, b) => a.timestamp - b.timestamp);
+export function sortRewards(data: TaxData) {
+  data.values.sort((a, b) => a.timestamp - b.timestamp);
 }
 
-export function mapRawValuesToRewards(
+export function addId(events: TaxableEvent[]) {
+  let id = 0;
+  events.forEach(t => { t.id = id; id++ })
+  return events
+}
+
+export function addMetaData(
   job: JobResult,
-  tokenSymbol: string,
-  rewards: Reward[]
-): Rewards {
+  taxableEvents: TaxableEvent[]
+): TaxData {
   const enriched = {
-    values: rewards,
-    summary: calculateRewardSummary(rewards),
+    values: addId(taxableEvents),
     chain: job.blockchain,
-    token: tokenSymbol,
     currency: job.currency,
-    address: job.wallet,
-    dailyValues: groupRewardsByDay(rewards),
+    address: job.wallet
   };
   sortRewards(enriched);
   return enriched;

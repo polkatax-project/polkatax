@@ -304,6 +304,7 @@ export class ChainDataAccumulationService {
         : undefined;
       xcmTransfer.transfers
         .filter((t) => !t.from && t.fromChain === chainName)
+        .filter(t => !!tx)
         .forEach((t) => {
           t.from = tx.from;
           xcmTransfer.timestamp = tx.timestamp;

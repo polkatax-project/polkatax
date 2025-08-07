@@ -29,7 +29,7 @@ export const useConnectedBlockchainsStore = defineStore(
     const syncedChains$: Observable<JobResult[]> = jobsMatchingWallet$.pipe(
       map((jobs) =>
         jobs
-          .filter((j) => j.error || (j.data?.summary?.amount ?? 0) > 0)
+          .filter((j) => j.error || (j.data?.values.length ?? 0) > 0)
           .sort((a, b) => (a.blockchain > b.blockchain ? 1 : -1))
       )
     );

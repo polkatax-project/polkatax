@@ -65,6 +65,10 @@ export class AddFiatValuesToPortfolioMovementsService {
     }
 
     // add quotes to fees
-    this.addFiatValuesForTxFees(portfolioMovements, quotes[coingeckoId]);
+    if (!quotes[coingeckoId]) {
+      logger.error("No quotes found for token " + coingeckoId + " - " + context.chain.domain)
+    } else {
+      this.addFiatValuesForTxFees(portfolioMovements, quotes[coingeckoId]);
+    }
   }
 }

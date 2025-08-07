@@ -7,7 +7,6 @@ import { XcmService } from "../../blockchain/substrate/services/xcm.service";
 import { SubscanService } from "../../blockchain/substrate/api/subscan.service";
 import { TransactionsService } from "../../blockchain/substrate/services/transactions.service";
 import { ChainAdjustments } from "../helper/chain-adjustments";
-import { StakingRewardsService } from "../../blockchain/substrate/services/staking-rewards.service";
 import { AddFiatValuesToPortfolioMovementsService } from "./add-fiat-values-to-portfolio-movements.service";
 import { ChainDataAccumulationService } from "./chain-data-accumulation.service";
 import { determineLabelForPayment } from "../helper/determine-label-for-payment";
@@ -18,6 +17,7 @@ import { EventEnrichedXcmTransfer } from "../model/EventEnrichedXcmTransfer";
 import { XcmTransfer } from "../../blockchain/substrate/model/xcm-transfer";
 import { StakingRewardsWithFiatService } from "./staking-rewards-with-fiat.service";
 import { TaxableEvent } from "../model/portfolio-movement";
+import * as fs from 'fs';
 
 const ignoreIncomingXcm = [
   "hydration",
@@ -108,7 +108,7 @@ export class PortfolioMovementsService {
       events,
     );
 
-    const { xcmMapToTransfer, xcmForEventContext } = this.slitXcmTransfers(
+    const { xcmMapToTransfer } = this.slitXcmTransfers(
       xcmList,
       paymentsRequest.chain.domain,
     );
@@ -117,7 +117,7 @@ export class PortfolioMovementsService {
       await this.specialEventsToTransfersService.handleEvents(
         paymentsRequest.chain,
         events,
-        xcmForEventContext,
+        xcmList,
       );
     transfers.push(...specialEventTransfers);
 
@@ -130,8 +130,16 @@ export class PortfolioMovementsService {
         events,
         stakingRewards.rawStakingRewards,
       );
+    fs.writeFileSync(
+          `./portfolio-movements-${paymentsRequest.chain.domain}.json`,
+          JSON.stringify(
+            portfolioMovements,
+            null,
+            2,
+          ),
+        )
 
-    if (paymentsRequest.chain.domain === "hydration") {
+    if (paymentsRequest.chain.domain === "hydration" || paymentsRequest.chain.domain === "basilisk") {
       new ChainAdjustments().handleHydration(portfolioMovements);
     }
 

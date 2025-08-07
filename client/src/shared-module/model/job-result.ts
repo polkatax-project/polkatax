@@ -1,12 +1,11 @@
-import { Rewards } from './rewards';
+import { TaxData } from "./tax-data";
 
 export interface JobResult {
   wallet: string;
   syncedUntil?: number;
   currency: string;
-  type: 'staking_rewards' | 'transactions';
   error: any;
-  data: Rewards;
+  data: TaxData;
   lastModified: number;
   blockchain: string;
   status: string;

@@ -179,17 +179,17 @@ export class SpecialEventsToTransfersService {
       handler: (c, e, context) => this.onBalancesDeposit(e, context),
     },
     {
-      chains: ["hydration"],
+      chains: ["hydration", "basilisk"],
       event: "stableswapLiquidityRemoved",
       handler: (c, e, context) => this.onHydrationLiquidityRemoved(e, context),
     },
     {
-      chains: ["hydration"],
+      chains: ["hydration", "basilisk"],
       event: "balancesLocked",
       handler: (c, e, context) => this.onBalancesDeposit(e, context),
     },
     {
-      chains: ["hydration"],
+      chains: ["hydration", "basilisk"],
       event: "balancesUnlocked",
       handler: (c, e, context) => this.onBalancesWithdraw(e, context),
     },
@@ -203,22 +203,22 @@ export class SpecialEventsToTransfersService {
         ),
     },
     {
-      chains: ["bifrost"],
+      chains: ["bifrost", "bifrost-kusama"],
       event: "balancesIssued",
       handler: (c, e, context) => this.onBalancesDeposit(e, context),
     },
     {
-      chains: ["bifrost"],
+      chains: ["bifrost", "bifrost-kusama"],
       event: "vtokenmintingRedeemed",
       handler: (c, e, context) => this.bifrostRedeemedVToken(e, context),
     },
     {
-      chains: ["bifrost"],
+      chains: ["bifrost", "bifrost-kusama"],
       event: "vtokenmintingMinted",
       handler: (c, e, context) => this.bifrostMintedVToken(e, context),
     },
     {
-      chains: ["bifrost"],
+      chains: ["bifrost", "bifrost-kusama"],
       event: "vtokenmintingRebondedByUnlockId",
       handler: (c, e, context) => this.bifrostMintedVToken(e, context),
     },
@@ -234,7 +234,7 @@ export class SpecialEventsToTransfersService {
         this.onAssethubForeignAssetsIssued(e, context),
     },
     {
-      chains: ["hydration"],
+      chains: ["hydration", "basilisk"],
       event: "tokensDeposited",
       handler: (c, e, context) =>
         this.onHydrationCurrenciesDeposited(e, context),
@@ -253,16 +253,16 @@ export class SpecialEventsToTransfersService {
       chains: ["*"],
       event: "balancesDeposit",
       handler: (c, e, context) => this.onBalancesDeposit(e, context),
-      condition: (event, events) =>
-        !!events.find((e) => e.module_id + e.event_id === "systemNewAccount"),
+      condition: (event, events, xcmList) =>
+        !!events.find((e) => e.module_id + e.event_id === "systemNewAccount") && !xcmList.find(xcm => xcm.extrinsic_index === event.extrinsic_index),
     },
     {
       chains: ["*"],
       event: "balancesWithdraw",
       handler: (c, e, context) => this.onBalancesWithdraw(e, context),
-      condition: (event, events) =>
+      condition: (event, events, xcmList) =>
         !!events.find(
-          (e) => e.module_id + e.event_id === "systemKilledAccount",
+          (e) => e.module_id + e.event_id === "systemKilledAccount" && !xcmList.find(xcm => xcm.extrinsic_index === event.extrinsic_index),
         ),
     },
     {
@@ -350,7 +350,9 @@ export class SpecialEventsToTransfersService {
         });
         break;
       case "bifrost":
+      case 'bifrost-kusama':
       case "hydration":
+      case 'basilisk':
       case "acala":
       case "astar":
       case "mythos":
@@ -638,11 +640,16 @@ export class SpecialEventsToTransfersService {
   ): Promise<EventDerivedTransfer> {
     const address = extractAddress(["minter", "address", "rebonder"], event);
     const tokenId = getPropertyValue(["currency_id", "token_id"], event);
-    const vTokenId = {};
-    Object.keys(tokenId).forEach((property) => {
-      vTokenId["V" + property] = tokenId[property];
-    });
-    const token = tokens.find((t) => isEqual(t.asset_id, vTokenId));
+    let token = undefined
+    if (isEqual(tokenId, { Native: "BNC" })) {
+      token = tokens.find((t) => isEqual(t.token_id, { VToken: "BNC" }));
+    } else {
+      const vTokenId = {};
+      Object.keys(tokenId).forEach((property) => {
+        vTokenId["V" + property] = tokenId[property];
+      });
+      token = tokens.find((t) => isEqual(t.token_id, vTokenId));
+    }
     const amount = new BigNumber(
       getPropertyValue(["v_currency_amount", "vtoken_amount"], event),
     )
@@ -657,11 +664,16 @@ export class SpecialEventsToTransfersService {
   ): Promise<EventDerivedTransfer> {
     const address = extractAddress(["redeemer", "address"], event);
     const tokenId = getPropertyValue(["currency_id", "token_id"], event);
-    const vTokenId = {};
-    Object.keys(tokenId).forEach((property) => {
-      vTokenId["V" + property] = tokenId[property];
-    });
-    const token = tokens.find((t) => isEqual(t.asset_id, vTokenId));
+    let token = undefined
+    if (isEqual(tokenId, { Native: "BNC" })) {
+      token = tokens.find((t) => isEqual(t.token_id, { VToken: "BNC" }));
+    } else {
+      const vTokenId = {};
+      Object.keys(tokenId).forEach((property) => {
+        vTokenId["V" + property] = tokenId[property];
+      });
+      token = tokens.find((t) => isEqual(t.token_id, vTokenId));
+    }
     const amount = new BigNumber(
       getPropertyValue(["v_currency_amount", "vtoken_amount"], event),
     )

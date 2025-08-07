@@ -24,6 +24,13 @@ export class JobManager {
       .map((c) => c.domain);
   }
 
+  getChains(wallet: string): string[] {
+    const isEvm = isEvmAddress(wallet);
+    return subscanChains.chains
+      .filter((c) => !isEvm || c.evmPallet || c.evmAddressSupport)
+      .map((c) => c.domain);
+  }
+
   isOutdated(job: Job): boolean {
     return Date.now() - job.lastModified > ONE_DAY_MS;
   }
@@ -39,7 +46,7 @@ export class JobManager {
     const syncFromDate = getBeginningLastYear();
     const chains = blockchains.length
       ? blockchains
-      : this.getStakingChains(wallet);
+      : this.getChains(wallet);
     const jobs = await this.jobsService.fetchJobs(wallet);
     const matchingJobs = jobs.filter(
       (j) => chains.includes(j.blockchain) && j.currency === currency,

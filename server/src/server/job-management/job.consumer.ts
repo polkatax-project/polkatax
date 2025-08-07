@@ -51,7 +51,7 @@ export class JobConsumer {
         portfolioMovements.push(...previous);
       }
 
-      await this.jobsService.setDone(portfolioMovements, job);
+      await this.jobsService.setDone({ values: portfolioMovements }, job);
       logger.info("JobConsumer: finished processing job", {
         ...job,
         data: undefined,
