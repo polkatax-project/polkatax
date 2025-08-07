@@ -2,8 +2,6 @@ import { createDIContainer } from "../src/server/di-container";
 import { SubscanApi } from "../src/server/blockchain/substrate/api/subscan.api";
 import {
   fetchPortfolioMovements,
-  startStubs,
-  stopStubs,
 } from "./helper/fetch-portfolio-movements";
 import { Wallet } from "./helper/wallet";
 import * as fs from "fs";
@@ -11,6 +9,7 @@ import {
   analysePortfolioChanges,
   PortfolioVerificationResult,
 } from "./helper/analyze-portfolio-changes";
+import { createApi, getApiClient } from "./helper/get-balances-at";
 
 const checkPoolTokens = () => {
   const { portfolioMovements } = JSON.parse(
@@ -45,17 +44,22 @@ export const fetchPortfolioChangesExpectedVSActual = async (
   minDate?: number,
   useFees = false,
 ) => {
-  switch (chain.domain) {
-    case "hydration":
-    case "bifrost":
-      return await fetchTokenChangesExpectedVSActual(
-        address,
-        chain,
-        useFees,
-        minDate,
-      );
-    default:
-      return fetchAssetChangesExpectedVSActual(address, chain, minDate);
+  createApi(chain.domain);
+  try {
+    switch (chain.domain) {
+      case "hydration":
+      case "bifrost":
+        return await fetchTokenChangesExpectedVSActual(
+          address,
+          chain,
+          useFees,
+          minDate,
+        );
+      default:
+        return await fetchAssetChangesExpectedVSActual(address, chain, minDate);
+    }
+  } finally {
+    getApiClient().disconnect()
   }
 };
 
@@ -91,7 +95,7 @@ export const fetchTokenChangesExpectedVSActual = async (
   ) {
     const block = await subscanApi.fetchBlock(chain.domain, blockNum);
     timestamps.push(block.timestamp);
-    blocksToFetch.push(blockNum);
+    blocksToFetch.push(block.block_num);
   }
   const portfolios = await new Wallet().fetchTokenBalances(
     chain.domain,
@@ -165,14 +169,14 @@ export const fetchAssetChangesExpectedVSActual = async (
   for (
     let blockNumber = minBlock;
     blockNumber <= maxBlock;
-    blockNumber += Math.ceil((maxBlock - minBlock) / numberChunks)
+    blockNumber += Math.max(1, Math.ceil((maxBlock - minBlock) / numberChunks))
   ) {
     const block = await subscanApi.fetchBlock(chain.domain, blockNumber);
     const portfolio = await new Wallet().getAssetBalances(
       chain.domain,
       chain.token,
       address,
-      blockNumber,
+      block.block_num,
       relevantTokens,
     );
     portfolios.push({

@@ -478,7 +478,7 @@ export class SpecialEventsToTransfersService {
       .map((r) => r.col1)
       .map((location) => {
         if (location.interior?.Here === "NULL") {
-          return tokens.find((t) => t.symbol === "DOT");
+          return tokens.find((t) => t.asset_id === "DOT");
         }
         const foreign = foreignAssets.find((t) =>
           isEqual(t.multi_location, location),

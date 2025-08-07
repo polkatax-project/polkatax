@@ -5,7 +5,7 @@ const endpoints = {
   bifrost: "wss://bifrost.public.curie.radiumblock.co/ws",
   polkadot: "wss://polkadot.api.onfinality.io/public-ws",
   kusama: "wss://kusama.api.onfinality.io/public-ws",
-  hydration: "wss://hydradx.paras.ibp.network",
+  hydration: "wss://hydration.dotters.network",
   "coretime-polkadot": "wss://coretime-polkadot.dotters.network",
   acala: "wss://acala-rpc.dwellir.com",
   astar: "wss://rpc.astar.network",
@@ -16,27 +16,33 @@ const endpoints = {
   "collectives-polkadot": "wss://collectives-polkadot-rpc.dwellir.com",
   "people-polkadot": "wss://sys.ibp.network/people-polkadot",
   energywebx: "wss://public-rpc.mainnet.energywebx.com",
-  phala: "wss://phala-rpc.dwellir.com",
+  phala: "wss://rpc.helikon.io/phala",
   neuroweb: "wss://parachain-rpc.origin-trail.network",
   spiritnet: "wss://spiritnet.kilt.io",
   darwinia: "wss://rpc.darwinia.network",
-  alephzero: "wss://aleph-zero.api.onfinality.io/public-ws",
+  alephzero: "wss://aleph-zero.api.onfinality.io/public-ws"
 };
 
-export async function creatApi(domain: string) {
+export let api: ApiPromise
+export async function createApi(domain: string, ) {
   const provider = new WsProvider(endpoints[domain]);
-  const api = await ApiPromise.create({ provider });
-  return api;
+  api = await ApiPromise.create({ provider, noInitWarn: true });
 }
 
-export async function getApiAt(api: ApiPromise, blockNumber: number) {
+export function getApiClient() {
+  return api
+}
+
+export async function getApiAt(blockNumber: number) {
+  console.info("Enter getApiAt: " + blockNumber)
   const blockHash = await api.rpc.chain.getBlockHash(blockNumber);
   const apiAt = (await api.at(blockHash)) as any;
+  console.info("Exit getApiAt: " + blockNumber)
   return apiAt;
 }
 
-export async function getNativeTokenBalance(api: ApiPromise, address: string) {
-  const accountInfo: any = await api.query.system.account(address);
+export async function getNativeTokenBalance(apiAt, address: string) {
+  const accountInfo: any = await apiAt.query.system.account(address);
   const json = accountInfo.toJSON();
   const nativeBalance =
     Number(BigInt(json.data.free)) +

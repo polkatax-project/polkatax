@@ -6,6 +6,7 @@ import { Wallet } from "./helper/wallet";
 import { analysePortfolioChanges } from "./helper/analyze-portfolio-changes";
 import * as subscanChains from "../res/gen/subscan-chains.json";
 import { startStubs, stopStubs } from "./helper/fetch-portfolio-movements";
+import { createApi, getApiClient } from "./helper/get-balances-at";
 
 const zoomIntoErrorAssetsChange = async (
   address: string,
@@ -96,7 +97,7 @@ const zoomIntoErrorAssetsChange = async (
   const max = Math.max(...badIntervals.map((i) => i.deviationAbs));
   const intervalOfChoice = badIntervals.find((i) => i.deviationAbs === max);
   if (intervalOfChoice.endBlock - intervalOfChoice.startBlock > 1) {
-    zoomIntoErrorAssetsChange(
+    await zoomIntoErrorAssetsChange(
       address,
       chain,
       tokenOfInterest,
@@ -299,7 +300,7 @@ const zoomIntoErrorAssets = async (
       ),
     );
   }
-  zoomIntoErrorAssetsChange(
+  await zoomIntoErrorAssetsChange(
     address,
     chainInfo,
     token,
@@ -319,7 +320,7 @@ const zoomIntoErrorAssets = async (
 const findLargestPortfolioError = async () => {
   console.log("ENTRY findLargestPortfolioError");
   await startStubs();
-
+  
   try {
     const wallet = process.env["wallet"];
     const chain = process.env["chain"];
@@ -328,6 +329,7 @@ const findLargestPortfolioError = async () => {
     if (!wallet || !chain || !tokenSymbol) {
       console.error("wallet, chain and, token_symbol are mandatory.");
     }
+    createApi(chain)
 
     const nativeToken = subscanChains.chains.find(
       (t) => t.domain === chain,
@@ -353,6 +355,7 @@ const findLargestPortfolioError = async () => {
     }
   } finally {
     await stopStubs();
+    getApiClient()?.disconnect()
     console.log("EXIT findLargestPortfolioError");
   }
 };

@@ -1,5 +1,5 @@
 import { createDIContainer } from "../../src/server/di-container";
-import { creatApi, getApiAt, getNativeTokenBalance } from "./get-balances-at";
+import { getApiAt, getNativeTokenBalance } from "./get-balances-at";
 import dotenv from "dotenv";
 dotenv.config({ path: __dirname + "/../.env" });
 import { SubscanApi } from "../../src/server/blockchain/substrate/api/subscan.api";
@@ -32,95 +32,83 @@ export class Wallet {
       asset_id?: number;
     }[],
   ): Promise<Portfolio> {
-    const api = await creatApi(chain);
-    try {
-      const subscanApi: SubscanApi = createDIContainer().resolve("subscanApi");
-      const nativeTokenInfo = await subscanApi.fetchNativeToken(chain);
-      const apiAt = await getApiAt(api, block);
-      const tokenBalances: {
-        asset_unique_id: string;
-        symbol: string;
-        balance: number;
-      }[] = [];
-      for (let token of tokens) {
-        if (token.symbol === nativeToken) {
-          tokenBalances.push({
-            asset_unique_id: nativeToken,
-            symbol: nativeToken,
-            balance:
-              (await getNativeTokenBalance(apiAt, address)).nativeBalance /
-              Math.pow(10, nativeTokenInfo.token_decimals),
-          });
-        } else {
-          const balanceInfo: any = await apiAt.query.assets.account(
-            token.asset_id ?? token.asset_unique_id,
-            address,
-          );
-          tokenBalances.push({
-            asset_unique_id: token.asset_unique_id ?? String(token.asset_id),
-            symbol: token.symbol,
-            balance:
-              Number(balanceInfo.toJSON()?.balance ?? 0) /
-              Math.pow(10, token.decimals),
-          });
-        }
+    const subscanApi: SubscanApi = createDIContainer().resolve("subscanApi");
+    const nativeTokenInfo = await subscanApi.fetchNativeToken(chain);
+    const apiAt = await getApiAt(block);
+    const tokenBalances: {
+      asset_unique_id: string;
+      symbol: string;
+      balance: number;
+    }[] = [];
+    for (let token of tokens) {
+      if (token.symbol === nativeToken) {
+        tokenBalances.push({
+          asset_unique_id: nativeToken,
+          symbol: nativeToken,
+          balance:
+            (await getNativeTokenBalance(apiAt, address)).nativeBalance /
+            Math.pow(10, nativeTokenInfo.token_decimals),
+        });
+      } else {
+        const balanceInfo: any = await apiAt.query.assets.account(
+          token.asset_id ?? token.asset_unique_id,
+          address,
+        );
+        tokenBalances.push({
+          asset_unique_id: token.asset_unique_id ?? String(token.asset_id),
+          symbol: token.symbol,
+          balance:
+            Number(balanceInfo.toJSON()?.balance ?? 0) /
+            Math.pow(10, token.decimals),
+        });
       }
-      return { block, values: tokenBalances };
-    } finally {
-      await api.disconnect();
     }
+    return { block, values: tokenBalances };
   }
 
   async fetchNativeTokenBalances(
     chain: string,
     nativeToken: string,
     address: string,
-    blocks: (number | undefined)[],
+    blocks: number[],
   ): Promise<Portfolio[]> {
-    const api = await creatApi(chain);
-    try {
-      const subscanApi: SubscanApi = createDIContainer().resolve("subscanApi");
-      const nativeTokenInfo = await subscanApi.fetchNativeToken(chain);
-      const portfolios: Portfolio[] = [];
-      for (let block of blocks) {
-        if (block) {
-          const apiAt = await getApiAt(api, block);
-          const portfolio: Portfolio = {
-            block,
-            values: [
-              {
-                asset_unique_id: nativeToken,
-                symbol: nativeToken,
-                balance:
-                  (await getNativeTokenBalance(apiAt, address)).nativeBalance /
-                  Math.pow(10, nativeTokenInfo.token_decimals),
-              },
-            ],
-          };
-          portfolios.push(portfolio);
-        } else {
-          const portfolio: Portfolio = {
-            block,
-            values: [
-              {
-                asset_unique_id: nativeToken,
-                symbol: nativeToken,
-                balance:
-                  (await getNativeTokenBalance(api, address)).nativeBalance /
-                  Math.pow(10, nativeTokenInfo.token_decimals),
-              },
-            ],
-          };
-          portfolios.push(portfolio);
-        }
+    const subscanApi: SubscanApi = createDIContainer().resolve("subscanApi");
+    const nativeTokenInfo = await subscanApi.fetchNativeToken(chain);
+    const portfolios: Portfolio[] = [];
+    for (let block of blocks) {
+      if (block) {
+        const apiAt = await getApiAt(block);
+        const portfolio: Portfolio = {
+          block,
+          values: [
+            {
+              asset_unique_id: nativeToken,
+              symbol: nativeToken,
+              balance:
+                (await getNativeTokenBalance(apiAt, address)).nativeBalance /
+                Math.pow(10, nativeTokenInfo.token_decimals),
+            },
+          ],
+        };
+        portfolios.push(portfolio);
+      } else {
+        console.warn("No block in fetchNativeTokenBalances")
+        /*const portfolio: Portfolio = {
+          block,
+          values: [
+            {
+              asset_unique_id: nativeToken,
+              symbol: nativeToken,
+              balance:
+                (await getNativeTokenBalance(api, address)).nativeBalance /
+                Math.pow(10, nativeTokenInfo.token_decimals),
+            },
+          ],
+        };
+        portfolios.push(portfolio);*/
       }
-      return portfolios;
-    } catch (error) {
-      console.error(error);
-      return [];
-    } finally {
-      await api.disconnect();
     }
+    return portfolios;
   }
 
   /**
@@ -130,9 +118,8 @@ export class Wallet {
     chain: string,
     nativeToken: string,
     address: string,
-    blocks: (number | undefined)[],
+    blocks: number[],
   ): Promise<Portfolio[]> {
-    const api = await creatApi(chain);
     try {
       const subscanApi: SubscanApi = createDIContainer().resolve("subscanApi");
       const tokens = await subscanApi.scanTokens(chain);
@@ -195,7 +182,7 @@ export class Wallet {
       const portfolios: Portfolio[] = [];
       for (let block of blocks) {
         if (block) {
-          const apiAt = await getApiAt(api, block);
+          const apiAt = await getApiAt(block);
           const portfolio: Portfolio = {
             values: convert(await apiAt.query.tokens.accounts.entries(address)),
             block,
@@ -213,7 +200,8 @@ export class Wallet {
           });
           portfolios.push(portfolio);
         } else {
-          const { nativeBalance, free, frozen, reserved } =
+          console.warn("No block available?! fetchTokenBalances")
+          /*const { nativeBalance, free, frozen, reserved } =
             await getNativeTokenBalance(api, address);
           const decMul = Math.pow(10, nativeTokenInfo.token_decimals);
           const portfolio: Portfolio = {
@@ -228,15 +216,13 @@ export class Wallet {
             frozen: frozen / decMul,
             reserved: reserved / decMul,
           });
-          portfolios.push(portfolio);
+          portfolios.push(portfolio);*/
         }
       }
       return portfolios;
     } catch (error) {
       console.error(error);
       return [];
-    } finally {
-      await api.disconnect();
-    }
+    } 
   }
 }

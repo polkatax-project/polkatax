@@ -12,6 +12,7 @@ import { Transfer } from "../../blockchain/substrate/model/raw-transfer";
 import { EventEnrichedXcmTransfer } from "../model/EventEnrichedXcmTransfer";
 import { logger } from "../../logger/logger";
 import { XcmTransfer } from "../../blockchain/substrate/model/xcm-transfer";
+import { convertToCanonicalAddress } from "../../../common/util/convert-to-generic-address";
 
 export class ChainDataAccumulationService {
   constructor(
@@ -306,7 +307,7 @@ export class ChainDataAccumulationService {
         .filter((t) => !t.from && t.fromChain === chainName)
         .filter(t => !!tx)
         .forEach((t) => {
-          t.from = tx.from;
+          t.from = convertToCanonicalAddress(tx.from);
           xcmTransfer.timestamp = tx.timestamp;
         });
       if (
