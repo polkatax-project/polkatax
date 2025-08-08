@@ -12,8 +12,11 @@ export function sortRewards(data: TaxData) {
 
 export function addId(events: TaxableEvent[]) {
   let id = 0;
-  events.forEach(t => { t.id = id; id++ })
-  return events
+  events.forEach((t) => {
+    t.id = id;
+    id++;
+  });
+  return events;
 }
 
 export function addMetaData(
@@ -24,7 +27,7 @@ export function addMetaData(
     values: addId(taxableEvents),
     chain: job.blockchain,
     currency: job.currency,
-    address: job.wallet
+    address: job.wallet,
   };
   sortRewards(enriched);
   return enriched;

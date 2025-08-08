@@ -24,7 +24,6 @@ export interface Rewards {
   dailyValues: DailyRewards;
 }
 
-
 export interface RewardDto {
   timestamp: number;
   amount: number;

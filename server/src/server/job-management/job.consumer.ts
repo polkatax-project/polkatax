@@ -2,7 +2,7 @@ import { Job } from "../../model/job";
 import { logger } from "../logger/logger";
 import { JobsService } from "./jobs.service";
 import * as subscanChains from "../../../res/gen/subscan-chains.json";
-import { PortfolioMovementsService } from "../data-aggregation/services/portfolio-movments.service";
+import { PortfolioMovementsService } from "../data-aggregation/services/portfolio-movements.service";
 
 export class JobConsumer {
   constructor(

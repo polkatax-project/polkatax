@@ -38,7 +38,7 @@ export class StakingRewardsWithFiatService {
     });
   }
 
-  async fetchStakingRewardsViaPlatformApi(
+  private async fetchStakingRewardsViaPlatformApi(
     stakingRewardsRequest: StakingRewardsRequest,
   ): Promise<AggregatedStakingReward[]> {
     const aggregatedRewards: AggregatedStakingReward[] =
@@ -57,18 +57,15 @@ export class StakingRewardsWithFiatService {
         )
       : Promise.resolve({}));
 
-    return aggregatedRewards.map((reward) => {
-      return {
-        ...reward,
-        rewards: addFiatValuesToAggregatedStakingRewards(
-          aggregatedRewards,
-          quotes[coingeckoId],
-        ),
-      };
-    });
+    addFiatValuesToAggregatedStakingRewards(
+        aggregatedRewards,
+        quotes[coingeckoId],
+      )
+
+    return aggregatedRewards
   }
 
-  async fetchStakingRewardsViaSubscan(
+  public async fetchStakingRewardsViaSubscan(
     stakingRewardsRequest: StakingRewardsRequest,
   ): Promise<StakingReward[]> {
     let { chain, currency } = stakingRewardsRequest;

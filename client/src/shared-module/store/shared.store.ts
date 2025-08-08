@@ -40,10 +40,7 @@ wsMsgReceived$
       if (newJobResult.data) {
         newJobResult.data.values = addIsoDate(newJobResult.data.values);
         filterOnLastYear(newJobResult.data);
-        newJobResult.data = addMetaData(
-          newJobResult,
-          newJobResult.data.values
-        );
+        newJobResult.data = addMetaData(newJobResult, newJobResult.data.values);
       }
       jobs = jobs.filter(
         (j) =>

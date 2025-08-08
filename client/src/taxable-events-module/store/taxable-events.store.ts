@@ -19,15 +19,15 @@ const currency$ = new ReplaySubject<string>(1);
 
 const year$ = new BehaviorSubject(new Date().getFullYear() - 1);
 
-const visibleTokens$ = new ReplaySubject<{ name: string, value: boolean }[]>(1)
+const visibleTokens$ = new ReplaySubject<{ name: string; value: boolean }[]>(1);
 
 const eventTypeFilter$ = new BehaviorSubject<Record<string, boolean>>({
   'Staking rewards': true,
   'Incoming transfers': false,
   'Outgoing transfers': true,
-  'Swaps': true,
+  Swaps: true,
   'Tx without asset movement': true,
-})
+});
 
 const taxData$ = combineLatest([
   useSharedStore().jobs$,
@@ -44,17 +44,21 @@ const taxData$ = combineLatest([
     );
   }),
   map((jobResult) => jobResult?.data),
-  filter(data => !!data),
-  distinctUntilChanged((prev, curr) => curr.values.length === prev.values.length),
-  tap(data => {
+  filter((data) => !!data),
+  distinctUntilChanged(
+    (prev, curr) => curr.values.length === prev.values.length
+  ),
+  tap((data) => {
     if (data) {
-    const tokens: string[] = []
-    data.values.forEach((e: TaxableEvent) => e.transfers.forEach(t => {
-      if (tokens.indexOf(t.symbol) === -1) {
-        tokens.push(t.symbol)
-      }
-    }))
-    visibleTokens$.next(tokens.map(t => ({ name: t, value: true })))
+      const tokens: string[] = [];
+      data.values.forEach((e: TaxableEvent) =>
+        e.transfers.forEach((t) => {
+          if (tokens.indexOf(t.symbol) === -1) {
+            tokens.push(t.symbol);
+          }
+        })
+      );
+      visibleTokens$.next(tokens.map((t) => ({ name: t, value: true })));
     }
   })
 );
@@ -63,25 +67,44 @@ const visibleTaxData$ = combineLatest([
   taxData$,
   eventTypeFilter$,
   visibleTokens$,
-]).pipe(map(([taxData, eventTypeFilter, visibleTokens]) => {
-  const visibleTaxableEvents = taxData?.values.filter(v => {
-    const isStakingReward = v.label === 'staking'
-    const incomingTransfer = v.transfers.some(t => t.amount > 0) && !v.transfers.some(t => t.amount < 0)
-    const outgoingTransfer = v.transfers.some(t => t.amount < 0) && !v.transfers.some(t => t.amount > 0)
-    const swap = v.transfers.some(t => t.amount < 0) && v.transfers.some(t => t.amount > 0);
-    return (isStakingReward && eventTypeFilter['Staking rewards']) ||
-    (v.transfers.length === 0 && eventTypeFilter['Tx without asset movement']) ||
-    (!isStakingReward && incomingTransfer && eventTypeFilter['Incoming transfers']) ||
-    (!isStakingReward && outgoingTransfer && eventTypeFilter['Outgoing transfers']) ||
-    (swap && eventTypeFilter['Swaps'])
-    }).filter(e => {
-      return e.transfers.some(t => visibleTokens.find(v => v.name === t.symbol)?.value)
-    })
+]).pipe(
+  map(([taxData, eventTypeFilter, visibleTokens]) => {
+    const visibleTaxableEvents = taxData?.values
+      .filter((v) => {
+        const isStakingReward = v.label === 'staking';
+        const incomingTransfer =
+          v.transfers.some((t) => t.amount > 0) &&
+          !v.transfers.some((t) => t.amount < 0);
+        const outgoingTransfer =
+          v.transfers.some((t) => t.amount < 0) &&
+          !v.transfers.some((t) => t.amount > 0);
+        const swap =
+          v.transfers.some((t) => t.amount < 0) &&
+          v.transfers.some((t) => t.amount > 0);
+        return (
+          (isStakingReward && eventTypeFilter['Staking rewards']) ||
+          (v.transfers.length === 0 &&
+            eventTypeFilter['Tx without asset movement']) ||
+          (!isStakingReward &&
+            incomingTransfer &&
+            eventTypeFilter['Incoming transfers']) ||
+          (!isStakingReward &&
+            outgoingTransfer &&
+            eventTypeFilter['Outgoing transfers']) ||
+          (swap && eventTypeFilter['Swaps'])
+        );
+      })
+      .filter((e) => {
+        return e.transfers.some(
+          (t) => visibleTokens.find((v) => v.name === t.symbol)?.value
+        );
+      });
     return {
       ...taxData,
-      values: visibleTaxableEvents
-    }
-}));
+      values: visibleTaxableEvents,
+    };
+  })
+);
 
 export const useTaxableEventStore = defineStore('taxable-events', {
   state: (): {
@@ -90,7 +113,7 @@ export const useTaxableEventStore = defineStore('taxable-events', {
     year$: Observable<number>;
     excludedEntries: TaxableEvent[];
     visibleTokens$: Observable<{ name: string; value: boolean }[]>;
-    eventTypeFilter$: Observable<Record<string, boolean>>
+    eventTypeFilter$: Observable<Record<string, boolean>>;
   } => {
     return {
       taxData$,
@@ -98,7 +121,7 @@ export const useTaxableEventStore = defineStore('taxable-events', {
       year$: year$.asObservable(),
       excludedEntries: [],
       visibleTokens$: visibleTokens$.asObservable(),
-      eventTypeFilter$: eventTypeFilter$.asObservable()
+      eventTypeFilter$: eventTypeFilter$.asObservable(),
     };
   },
   actions: {
@@ -115,35 +138,37 @@ export const useTaxableEventStore = defineStore('taxable-events', {
       year$.next(year);
     },
     async toggleAllVisibleTokens() {
-      const tokens = await firstValueFrom(visibleTokens$)
-      const allVisible = tokens.every(t => t.value)
-      tokens.forEach(t => t.value = !allVisible)
-      visibleTokens$.next(tokens)
+      const tokens = await firstValueFrom(visibleTokens$);
+      const allVisible = tokens.every((t) => t.value);
+      tokens.forEach((t) => (t.value = !allVisible));
+      visibleTokens$.next(tokens);
     },
     async toggleTokenVisibility(symbol: string) {
       const tokens = await firstValueFrom(visibleTokens$);
-      tokens.filter(t => t.name === symbol).forEach(t => t.value = !t.value)
-      visibleTokens$.next(tokens)
+      tokens
+        .filter((t) => t.name === symbol)
+        .forEach((t) => (t.value = !t.value));
+      visibleTokens$.next(tokens);
     },
     async toggleEventFilter(filterName: string) {
-      const filter = await firstValueFrom(eventTypeFilter$)
-      filter[filterName] = !filter[filterName]
-      eventTypeFilter$.next(filter)
+      const filter = await firstValueFrom(eventTypeFilter$);
+      filter[filterName] = !filter[filterName];
+      eventTypeFilter$.next(filter);
     },
     async resetFilters() {
-      const filter = await firstValueFrom(eventTypeFilter$)
-      Object.keys(filter).forEach(k => filter[k] = true)
-      eventTypeFilter$.next(filter)
+      const filter = await firstValueFrom(eventTypeFilter$);
+      Object.keys(filter).forEach((k) => (filter[k] = true));
+      eventTypeFilter$.next(filter);
 
       const tokens = await firstValueFrom(visibleTokens$);
-      tokens.forEach(t => t.value = true)
-      visibleTokens$.next(tokens)
+      tokens.forEach((t) => (t.value = true));
+      visibleTokens$.next(tokens);
     },
     async toggleAllEventTypeFilters() {
-      const filters = await firstValueFrom(eventTypeFilter$)
-      const allActive = Object.keys(filters).every(key => filters[key])
-      Object.keys(filters).forEach(key => filters[key] = !allActive)
-      eventTypeFilter$.next(filters)
+      const filters = await firstValueFrom(eventTypeFilter$);
+      const allActive = Object.keys(filters).every((key) => filters[key]);
+      Object.keys(filters).forEach((key) => (filters[key] = !allActive));
+      eventTypeFilter$.next(filters);
     },
   },
 });

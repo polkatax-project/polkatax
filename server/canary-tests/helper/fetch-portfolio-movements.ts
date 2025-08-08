@@ -3,7 +3,7 @@ import { startStub as cryptoPricesStub } from "../../src/crypto-currency-prices/
 import { startStub as fiatPricesStub } from "../../src/fiat-exchange-rates/stub";
 import { SubscanEvent } from "../../src/server/blockchain/substrate/model/subscan-event";
 import { PortfolioMovement } from "../../src/server/data-aggregation/model/portfolio-movement";
-import { PortfolioMovementsService } from "../../src/server/data-aggregation/services/portfolio-movments.service";
+import { PortfolioMovementsService } from "../../src/server/data-aggregation/services/portfolio-movements.service";
 import { createDIContainer } from "../../src/server/di-container";
 
 let cryptoPriceServer: FastifyInstance;

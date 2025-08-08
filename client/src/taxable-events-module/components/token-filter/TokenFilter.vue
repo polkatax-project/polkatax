@@ -8,7 +8,11 @@
         label="All"
       />
       <div v-for="token in visibleTokens" v-bind:key="token.name">
-        <q-checkbox :model-value="token.value" @update:model-value="onCheckBoxClicked(token.name)" :label="token.name.toUpperCase()" />
+        <q-checkbox
+          :model-value="token.value"
+          @update:model-value="onCheckBoxClicked(token.name)"
+          :label="token.name.toUpperCase()"
+        />
       </div>
     </div>
   </q-card>
@@ -19,25 +23,25 @@ import { useTaxableEventStore } from '../../store/taxable-events.store';
 
 const store = useTaxableEventStore();
 
-const visibleTokens: Ref<{ name: string, value: boolean}[]> = ref([])
+const visibleTokens: Ref<{ name: string; value: boolean }[]> = ref([]);
 
-const subscription = store.visibleTokens$.subscribe(t => {
-  visibleTokens.value = [...t]
-})
+const subscription = store.visibleTokens$.subscribe((t) => {
+  visibleTokens.value = [...t];
+});
 
 onBeforeUnmount(() => {
-  subscription.unsubscribe()
-})
+  subscription.unsubscribe();
+});
 
 const all = computed(() => {
   return visibleTokens.value.every((t: { value: boolean }) => t.value);
 });
 
 function toggleAll() {
-  store.toggleAllVisibleTokens()
+  store.toggleAllVisibleTokens();
 }
 
 function onCheckBoxClicked(token: string) {
-  store.toggleTokenVisibility(token)
+  store.toggleTokenVisibility(token);
 }
 </script>

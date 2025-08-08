@@ -1,6 +1,6 @@
 import { asClass, AwilixContainer } from "awilix";
 import { StakingRewardsWithFiatService } from "./services/staking-rewards-with-fiat.service";
-import { PortfolioMovementsService } from "./services/portfolio-movments.service";
+import { PortfolioMovementsService } from "./services/portfolio-movements.service";
 import { TokenPriceConversionService } from "./services/token-price-conversion.service";
 import { CryptoCurrencyPricesService } from "./services/crypto-currency-prices.service";
 import { FiatExchangeRateService } from "./services/fiat-exchange-rate.service";

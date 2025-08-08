@@ -1,4 +1,4 @@
-import { TaxableEvent } from "./taxable-event";
+import { TaxableEvent } from './taxable-event';
 
 export interface TaxData {
   chain: string;

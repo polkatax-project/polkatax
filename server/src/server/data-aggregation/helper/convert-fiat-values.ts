@@ -15,8 +15,8 @@ export const convertFiatValues = (
     const isoDate = formatDate(new Date(portfolioMovement.timestamp));
     if (exchangeRates[isoDate]) {
       portfolioMovement.transfers.forEach((t) => {
-        t.price ??= t.price * exchangeRates[isoDate][targetCurrency];
-        t.fiatValue ??= t.fiatValue * exchangeRates[isoDate][targetCurrency];
+        t.price = t.price * exchangeRates[isoDate][targetCurrency];
+        t.fiatValue = t.fiatValue * exchangeRates[isoDate][targetCurrency];
       });
     } else {
       logger.warn(`No fiat exchange rate found for date ${isoDate}`);

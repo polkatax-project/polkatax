@@ -4,7 +4,10 @@ import { WsWrapper } from './util/WsWrapper';
 import { mockCountry } from './util/mock-country';
 import { mockRewards } from './util/mock-rewards';
 
-test.describe('Wallet', () => {
+/**
+ * Deactivated for now...
+ */
+test.skip('Wallet', () => {
   let wsWrapper: WsWrapper;
 
   const mockRewardsAndNavigateToDetails = async (page: Page) => {

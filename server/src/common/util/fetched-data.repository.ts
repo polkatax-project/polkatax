@@ -52,7 +52,7 @@ export class FetchedDataRepository {
     return result;
   }
 
-  private generateCacheKey(path: string, method: string, body?: any): string {
+  public generateCacheKey(path: string, method: string, body?: any): string {
     const input = JSON.stringify({ path, method, body });
     return crypto.createHash("md5").update(input).digest("hex");
   }

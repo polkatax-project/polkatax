@@ -1,7 +1,6 @@
 import { expect, it, describe, jest, beforeEach } from "@jest/globals";
 import { JobsService } from "./jobs.service";
 import { AwilixContainer } from "awilix";
-import * as subscanChains from "../../../res/gen/subscan-chains.json";
 import { Job } from "../../model/job";
 import { JobManager } from "./job.manager";
 

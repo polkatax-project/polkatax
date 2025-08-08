@@ -1,4 +1,4 @@
-import { TaxData } from "./tax-data";
+import { TaxData } from './tax-data';
 
 export interface JobResult {
   wallet: string;

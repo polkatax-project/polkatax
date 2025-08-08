@@ -1,8 +1,8 @@
 <template>
   <div>
     <div class="content q-mx-auto">
-      <EventTypeFilter/>
-      <TokenFilter/>
+      <EventTypeFilter />
+      <TokenFilter />
     </div>
     <TaxableEventsTable />
   </div>

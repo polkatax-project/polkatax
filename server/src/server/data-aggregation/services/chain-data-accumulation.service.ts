@@ -71,7 +71,7 @@ export class ChainDataAccumulationService {
     const indexedTx: Record<string, Transaction> = transactions.reduce(
       (current, tx) => {
         if (!tx.extrinsic_index) {
-          throw "All tx need extrinsic_index";
+          throw new Error("All tx need extrinsic_index");
         }
         current[tx.extrinsic_index] = tx;
         return current;

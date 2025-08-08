@@ -67,9 +67,7 @@
               </q-badge>
             </q-td>
             <q-td key="taxableEventsCount" :props="props">
-              {{
-                getEventCount(props.row)
-              }}
+              {{ getEventCount(props.row) }}
             </q-td>
             <q-td key="timeFrame" :props="props">
               {{ timeFrame }}
@@ -247,17 +245,28 @@ onUnmounted(() => {
 });
 
 const columns = ref([
-  { name: 'status', align: 'left', label: 'Status', sortable: true, field: 'status' },
+  {
+    name: 'status',
+    align: 'left',
+    label: 'Status',
+    sortable: true,
+    field: 'status',
+  },
   { name: 'wallet', align: 'left', label: 'Wallet' },
   {
     name: 'blockchain',
     align: 'left',
     field: 'chain',
     label: 'Blockchain',
-    sortable: true
+    sortable: true,
   },
   { name: 'currency', label: 'Currency' },
-  { name: 'taxableEventsCount', label: 'Total taxable events', sortable: true, field: (row: JobResult) => getEventCount(row) },
+  {
+    name: 'taxableEventsCount',
+    label: 'Total taxable events',
+    sortable: true,
+    field: (row: JobResult) => getEventCount(row),
+  },
   { name: 'timeFrame', label: 'Time frame' },
   { name: 'lastSynchronized', label: 'Synchronized on' },
   { name: 'actions', label: 'Actions' },
