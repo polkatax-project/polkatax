@@ -2,10 +2,7 @@ import { PortfolioMovement } from "../model/portfolio-movement";
 
 export class ChainAdjustments {
   handleAdjustments(domain: string, swaps: PortfolioMovement[]) {
-    if (
-      domain === "hydration" ||
-      domain === "basilisk"
-    ) {
+    if (domain === "hydration" || domain === "basilisk") {
       this.handleHydration(swaps);
     }
   }

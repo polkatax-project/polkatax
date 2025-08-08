@@ -98,6 +98,9 @@ export class SubscanApi {
     minDate: number,
     after_id?: number,
   ): Promise<{ list: SubscanEvent[]; hasNext: boolean }> {
+    logger.info(
+      `Enter searchEvents on ${chainName} for address ${address}, page ${page} ${module ?? ""}${event_id ?? ""}`,
+    );
     const response = await this.request(
       `https://${chainName}.api.subscan.io/api/v2/scan/events`,
       "post",
@@ -116,6 +119,7 @@ export class SubscanApi {
       ...e,
       timestamp: e.block_timestamp * 1000,
     }));
+    logger.info("Exit searchEvents");
     return {
       list: data,
       hasNext: data.length >= 100 && data[data.length - 1].timestamp >= minDate,

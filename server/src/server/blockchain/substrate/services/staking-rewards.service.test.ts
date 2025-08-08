@@ -28,12 +28,17 @@ describe("StakingRewardsService", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    service = new StakingRewardsService(mockSubscanService, mockViaEventsService);
+    service = new StakingRewardsService(
+      mockSubscanService,
+      mockViaEventsService,
+    );
   });
 
   it("should map EVM address to substrate and return rewards from subscan", async () => {
     (isEvmAddress as jest.Mock).mockReturnValue(true);
-    mockSubscanService.mapToSubstrateAccount.mockResolvedValue("substrateAddress");
+    mockSubscanService.mapToSubstrateAccount.mockResolvedValue(
+      "substrateAddress",
+    );
     mockSubscanService.fetchNativeToken.mockResolvedValue({
       token_decimals: 10,
     } as any);
@@ -65,7 +70,10 @@ describe("StakingRewardsService", () => {
       minDate: 1690000000,
     });
 
-    expect(mockSubscanService.mapToSubstrateAccount).toHaveBeenCalledWith("polkadot", "0xEvmAddress");
+    expect(mockSubscanService.mapToSubstrateAccount).toHaveBeenCalledWith(
+      "polkadot",
+      "0xEvmAddress",
+    );
     expect(mockSubscanService.fetchAllStakingRewards).toHaveBeenCalledWith({
       chainName: "polkadot",
       address: "substrateAddress",

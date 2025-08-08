@@ -1,10 +1,21 @@
-import { expect, it, jest, describe, beforeEach, afterEach } from "@jest/globals";
+import {
+  expect,
+  it,
+  jest,
+  describe,
+  beforeEach,
+  afterEach,
+} from "@jest/globals";
 import * as dateUtils from "../../../common/util/date-utils";
 import { logger } from "../../logger/logger";
 import { CurrencyQuotes } from "../../../model/crypto-currency-prices/crypto-currency-quotes";
 import { StakingReward } from "../../blockchain/substrate/model/staking-reward";
 import { AggregatedStakingReward } from "../model/aggregated-staking-reward";
-import { addFiatValuesToAggregatedStakingRewards, addFiatValuesToStakingRewards, addFiatValueToTransfer } from "./add-fiat-values-to-staking-rewards";
+import {
+  addFiatValuesToAggregatedStakingRewards,
+  addFiatValuesToStakingRewards,
+  addFiatValueToTransfer,
+} from "./add-fiat-values-to-staking-rewards";
 
 jest.mock("../../logger/logger", () => ({
   logger: { warn: jest.fn() },
@@ -36,7 +47,12 @@ describe("addFiatValueToTransfer", () => {
   it("uses latest quote if date is today", () => {
     const transfer = { amount: 2 } as any;
 
-    addFiatValueToTransfer(transfer, quotes, latestDate, new Date("2025-08-08").getTime());
+    addFiatValueToTransfer(
+      transfer,
+      quotes,
+      latestDate,
+      new Date("2025-08-08").getTime(),
+    );
 
     expect(transfer.price).toBe(10);
     expect(transfer.fiatValue).toBe(20);
@@ -45,7 +61,12 @@ describe("addFiatValueToTransfer", () => {
   it("uses historical quote if date is in the past", () => {
     const transfer = { amount: 3 } as any;
 
-    addFiatValueToTransfer(transfer, quotes, latestDate, new Date("2025-07-01").getTime());
+    addFiatValueToTransfer(
+      transfer,
+      quotes,
+      latestDate,
+      new Date("2025-07-01").getTime(),
+    );
 
     expect(transfer.price).toBe(5);
     expect(transfer.fiatValue).toBe(15);
@@ -61,9 +82,16 @@ describe("addFiatValueToTransfer", () => {
       },
     } as any;
 
-    addFiatValueToTransfer(transfer, badQuotes, latestDate, new Date("2025-07-01").getTime());
+    addFiatValueToTransfer(
+      transfer,
+      badQuotes,
+      latestDate,
+      new Date("2025-07-01").getTime(),
+    );
 
-    expect(logger.warn).toHaveBeenCalledWith("No quote found for USD for date 2025-07-01");
+    expect(logger.warn).toHaveBeenCalledWith(
+      "No quote found for USD for date 2025-07-01",
+    );
   });
 });
 
@@ -142,7 +170,10 @@ describe("addFiatValuesToAggregatedStakingRewards", () => {
       },
     ] as any;
 
-    const result = addFiatValuesToAggregatedStakingRewards(rewards, undefined as any);
+    const result = addFiatValuesToAggregatedStakingRewards(
+      rewards,
+      undefined as any,
+    );
 
     expect(result).toBe(rewards);
   });

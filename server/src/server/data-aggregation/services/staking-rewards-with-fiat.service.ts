@@ -58,11 +58,11 @@ export class StakingRewardsWithFiatService {
       : Promise.resolve({}));
 
     addFiatValuesToAggregatedStakingRewards(
-        aggregatedRewards,
-        quotes[coingeckoId],
-      )
+      aggregatedRewards,
+      quotes[coingeckoId],
+    );
 
-    return aggregatedRewards
+    return aggregatedRewards;
   }
 
   public async fetchStakingRewardsViaSubscan(

@@ -82,13 +82,11 @@ describe("XcmTokenResolver", () => {
   });
 
   it("Case 4: nested Ethereum interior.X2 → resolves via EthTokenInfoService", async () => {
-    jest
-      .spyOn(findProp, "getNestedValue")
-      .mockImplementation((obj, path) => {
-        if (path === "interior.X2.col0.GlobalConsensus.Ethereum") return true;
-        if (path === "interior.X2.col1.AccountKey20.key") return "0xdef";
-        return undefined;
-      });
+    jest.spyOn(findProp, "getNestedValue").mockImplementation((obj, path) => {
+      if (path === "interior.X2.col0.GlobalConsensus.Ethereum") return true;
+      if (path === "interior.X2.col1.AccountKey20.key") return "0xdef";
+      return undefined;
+    });
 
     ethTokenInfoService.fetchTokenInfo.mockResolvedValue({
       symbol: "USDC",
@@ -114,7 +112,9 @@ describe("XcmTokenResolver", () => {
   });
 
   it("Case 5: no symbol provided → fallback to native token symbol and decimals", async () => {
-    subscanService.fetchNativeToken.mockResolvedValue({ token_decimals: 18 } as any);
+    subscanService.fetchNativeToken.mockResolvedValue({
+      token_decimals: 18,
+    } as any);
 
     const result = await resolver.determineOriginToken(
       {

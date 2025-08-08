@@ -37,7 +37,7 @@ describe("EthTokenInfoService", () => {
 
   it("should return ETH info for zero address", async () => {
     const result = await service.fetchTokenInfo(
-      "0x0000000000000000000000000000000000000000"
+      "0x0000000000000000000000000000000000000000",
     );
     expect(result).toEqual({ symbol: "ETH", decimals: 18 });
   });

@@ -49,11 +49,12 @@ export class PortfolioMovementsService {
   ) {}
 
   private isForEventContextOnly(xcm: XcmTransfer, chain: string): boolean {
-  return (
-    xcm.transfers.length === 0 ||
-    (ignoreIncomingXcm.includes(chain) && xcm.transfers[0].destChain === chain)
-  );
-}
+    return (
+      xcm.transfers.length === 0 ||
+      (ignoreIncomingXcm.includes(chain) &&
+        xcm.transfers[0].destChain === chain)
+    );
+  }
 
   private splitXcmTransfers(
     xcmList: XcmTransfer[],
@@ -88,23 +89,27 @@ export class PortfolioMovementsService {
       chainName: request.chain.domain,
     };
     return Promise.all([
-        this.subscanService.fetchAllTransfers(chainExtendedRequest),
-        this.transactionsService.fetchTx(chainExtendedRequest),
-        this.subscanService.searchAllEvents(chainExtendedRequest),
-        this.xcmService.fetchXcmTransfers(chainExtendedRequest),
-        this.stakingRewardsWithFiatService.fetchStakingRewards(chainExtendedRequest),
-      ]);
+      this.subscanService.fetchAllTransfers(chainExtendedRequest),
+      this.transactionsService.fetchTx(chainExtendedRequest),
+      this.subscanService.searchAllEvents(chainExtendedRequest),
+      this.xcmService.fetchXcmTransfers(chainExtendedRequest),
+      this.stakingRewardsWithFiatService.fetchStakingRewards(
+        chainExtendedRequest,
+      ),
+    ]);
   }
 
-  private async transform(request: FetchPortfolioMovementsRequest, 
+  private async transform(
+    request: FetchPortfolioMovementsRequest,
     transfers: Transfer[],
-    transactions: Transaction[], 
-    events: SubscanEvent[], 
-    xcmList: XcmTransfer[], 
+    transactions: Transaction[],
+    events: SubscanEvent[],
+    xcmList: XcmTransfer[],
     stakingRewards: {
-        rawStakingRewards: StakingReward[];
-        aggregatedRewards: AggregatedStakingReward[];
-      }) {
+      rawStakingRewards: StakingReward[];
+      aggregatedRewards: AggregatedStakingReward[];
+    },
+  ) {
     xcmList = await this.xcmTokenResolutionService.resolveTokens(
       request.chain,
       xcmList,
@@ -134,20 +139,25 @@ export class PortfolioMovementsService {
         stakingRewards.rawStakingRewards,
       );
 
-    new ChainAdjustments().handleAdjustments(request.chain.domain, portfolioMovements);
+    new ChainAdjustments().handleAdjustments(
+      request.chain.domain,
+      portfolioMovements,
+    );
 
     await this.addFiatValuesToPortfolioMovementsService.addFiatValues(
       request,
       portfolioMovements,
     );
 
-    return { portfolioMovements, unmatchedEvents }
+    return { portfolioMovements, unmatchedEvents };
   }
 
-  private addLabels(request: FetchPortfolioMovementsRequest, portfolioMovements: PortfolioMovement[]) {
+  private addLabels(
+    request: FetchPortfolioMovementsRequest,
+    portfolioMovements: PortfolioMovement[],
+  ) {
     portfolioMovements.forEach(
-      (p) =>
-        (p.label = determineLabelForPayment(request.chain.domain, p)),
+      (p) => (p.label = determineLabelForPayment(request.chain.domain, p)),
     );
   }
 
@@ -158,17 +168,27 @@ export class PortfolioMovementsService {
       `PortfolioMovementsService: Enter fetchPortfolioMovements for ${request.chain.domain} and wallet ${request.address}`,
     );
     this.validate(request);
-    let [transfers, transactions, events, xcmList, stakingRewards] = await this.fetchData(request)
+    let [transfers, transactions, events, xcmList, stakingRewards] =
+      await this.fetchData(request);
 
-    const { portfolioMovements, unmatchedEvents } = await this.transform(request, transfers, transactions, events, xcmList, stakingRewards)
+    const { portfolioMovements, unmatchedEvents } = await this.transform(
+      request,
+      transfers,
+      transactions,
+      events,
+      xcmList,
+      stakingRewards,
+    );
 
-    this.addLabels(request, portfolioMovements)
+    this.addLabels(request, portfolioMovements);
 
     const taxableEvents = (portfolioMovements as TaxableEvent[]).concat(
       stakingRewards.aggregatedRewards,
     );
 
-    const sortedTaxableEvents = taxableEvents.sort((a, b) => -a.timestamp + b.timestamp);
+    const sortedTaxableEvents = taxableEvents.sort(
+      (a, b) => -a.timestamp + b.timestamp,
+    );
 
     logger.info(
       `PortfolioMovementsService: Exit fetchPortfolioMovements with ${portfolioMovements.length} entries for ${request.chain.domain} and wallet ${request.address}`,

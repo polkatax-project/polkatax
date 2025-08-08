@@ -1,21 +1,21 @@
-import { FetchedDataRepository } from './fetched-data.repository';
-import { RequestHelper } from './request.helper';
+import { FetchedDataRepository } from "./fetched-data.repository";
+import { RequestHelper } from "./request.helper";
 import { expect, it, jest, describe, beforeEach } from "@jest/globals";
-import { ResponseCache } from './response.cache';
+import { ResponseCache } from "./response.cache";
 
-jest.mock('./fetched-data.repository');
-jest.mock('./request.helper');
+jest.mock("./fetched-data.repository");
+jest.mock("./request.helper");
 
-describe('ResponseCache', () => {
+describe("ResponseCache", () => {
   let responseCache: ResponseCache;
   let mockRepo: jest.Mocked<FetchedDataRepository>;
   let mockHelper: jest.Mocked<RequestHelper>;
 
-  const url = 'https://api.example.com/data';
-  const method = 'GET';
-  const body = { some: 'body' };
-  const key = 'cache_key';
-  const responseData = { message: 'Hello' };
+  const url = "https://api.example.com/data";
+  const method = "GET";
+  const body = { some: "body" };
+  const key = "cache_key";
+  const responseData = { message: "Hello" };
 
   beforeEach(() => {
     mockRepo = {
@@ -31,7 +31,7 @@ describe('ResponseCache', () => {
     responseCache = new ResponseCache(mockRepo, mockHelper);
   });
 
-  it('returns cached data if available', async () => {
+  it("returns cached data if available", async () => {
     mockRepo.fetchStoredData.mockResolvedValue(responseData);
 
     const result = await responseCache.fetchData(url, method, body);
@@ -41,7 +41,7 @@ describe('ResponseCache', () => {
     expect(mockHelper.req).not.toHaveBeenCalled();
   });
 
-  it('fetches and stores data if not cached', async () => {
+  it("fetches and stores data if not cached", async () => {
     mockRepo.fetchStoredData.mockResolvedValue(undefined);
     mockHelper.req.mockResolvedValue(responseData);
 
@@ -58,10 +58,11 @@ describe('ResponseCache', () => {
     expect(result).toEqual(responseData);
   });
 
-  it('prevents parallel redundant requests (deduplication)', async () => {
+  it("prevents parallel redundant requests (deduplication)", async () => {
     mockRepo.fetchStoredData.mockResolvedValue(undefined);
     mockHelper.req.mockImplementation(
-      () => new Promise((resolve) => setTimeout(() => resolve(responseData), 10)),
+      () =>
+        new Promise((resolve) => setTimeout(() => resolve(responseData), 10)),
     );
 
     const [res1, res2] = await Promise.all([
@@ -74,7 +75,7 @@ describe('ResponseCache', () => {
     expect(res2).toEqual(responseData);
   });
 
-  it('stores and returns null for 404 responses', async () => {
+  it("stores and returns null for 404 responses", async () => {
     const error = { statusCode: 404 };
     mockRepo.fetchStoredData.mockResolvedValue(undefined);
     mockHelper.req.mockRejectedValue(error);
@@ -91,15 +92,17 @@ describe('ResponseCache', () => {
     );
   });
 
-  it('throws non-404 errors', async () => {
-    const error = { statusCode: 500, message: 'Internal Server Error' };
+  it("throws non-404 errors", async () => {
+    const error = { statusCode: 500, message: "Internal Server Error" };
     mockRepo.fetchStoredData.mockResolvedValue(undefined);
     mockHelper.req.mockRejectedValue(error);
 
-    await expect(responseCache.fetchData(url, method, body)).rejects.toEqual(error);
+    await expect(responseCache.fetchData(url, method, body)).rejects.toEqual(
+      error,
+    );
   });
 
-  it('cleans up pendingRequests after fetch', async () => {
+  it("cleans up pendingRequests after fetch", async () => {
     mockRepo.fetchStoredData.mockResolvedValue(undefined);
     mockHelper.req.mockResolvedValue(responseData);
     await responseCache.fetchData(url, method, body);

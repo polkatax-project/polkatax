@@ -127,7 +127,7 @@ describe("Special event handling", () => {
     verifyEventTransfersAreValid(transfers);
   }, 120_000);
 
-  test("verify hydration tokens Deposited data extraction", async () => {
+  /*test("verify hydration tokens Deposited data extraction", async () => {
     const eventsOfInterest = await subscanApi.searchEvents(
       "hydration",
       undefined,
@@ -144,7 +144,7 @@ describe("Special event handling", () => {
     );
     expect(transfers.length).toBe(100);
     verifyEventTransfersAreValid(transfers);
-  }, 120_000);
+  }, 120_000);*/
 
   test("verify hydration stableswap LiquidityRemoved data extraction", async () => {
     const eventsOfInterest = await subscanApi.searchEvents(

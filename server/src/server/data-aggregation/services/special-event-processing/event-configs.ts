@@ -13,7 +13,6 @@ import { onBalancesWithdraw } from "./on-balances-withdraw";
 import { onBifrostMintedVToken } from "./on-bifrost-minted-vtoken";
 import { onBifrostRedeemedVToken } from "./on-bifrost-redeemed-vtoken";
 import { onCoretimePurchased } from "./on-coretime-purchased";
-import { onHydrationCurrenciesDeposited } from "./on-hydration-currencies-deposited";
 import { onHydrationLiquidityRemoved } from "./on-hydration-liquidity-removed";
 import { onMigratedDelegation } from "./on-migrated-delegation";
 import { onReserveRepatriated } from "./on-reserve-repatriated";
@@ -126,11 +125,11 @@ export const eventConfigs: {
     event: "foreignassetsIssued",
     handler: (c, e, context) => onAssethubForeignAssetsIssued(e, context),
   },
-  {
+  /*{
     chains: ["hydration", "basilisk"],
     event: "tokensDeposited",
     handler: (c, e, context) => onHydrationCurrenciesDeposited(e, context),
-  },
+  },*/
   {
     chains: [
       "assethub-polkadot",

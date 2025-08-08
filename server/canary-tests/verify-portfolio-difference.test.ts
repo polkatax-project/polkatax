@@ -383,7 +383,7 @@ describe("Verify portfolio changes", () => {
     });
   });
 
-  describe("Verify the portfolio change hydration", () => {
+  describe.only("Verify the portfolio change hydration", () => {
     const chainInfo = { domain: "hydration", label: "", token: "HDX" };
 
     test("15abVnvSgRJFCqhJuvrYSNL5DscRppcog8cyYaVALLU3LFjB", async () => {

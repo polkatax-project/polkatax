@@ -1,6 +1,13 @@
 import { logger } from "../../logger/logger";
 import * as dateUtils from "../../../common/util/date-utils";
-import { expect, it, jest, describe, beforeAll, afterEach } from "@jest/globals";
+import {
+  expect,
+  it,
+  jest,
+  describe,
+  beforeAll,
+  afterEach,
+} from "@jest/globals";
 import { PortfolioMovement } from "../model/portfolio-movement";
 import { convertFiatValues } from "./convert-fiat-values";
 import { formatDate } from "../../../common/util/date-utils";
@@ -13,9 +20,8 @@ jest.mock("../../logger/logger", () => ({
 }));
 
 describe.only("convertFiatValues", () => {
-  const timestamp = Date.now()
+  const timestamp = Date.now();
   const fixedDate = formatDate(new Date(timestamp));
-  
 
   beforeAll(() => {
     // Stub formatDate to ensure deterministic ISO date
@@ -28,24 +34,22 @@ describe.only("convertFiatValues", () => {
 
   it("converts price and fiatValue using exchange rate", () => {
     const exchangeRates = {
-        [fixedDate]: {
+      [fixedDate]: {
         EUR: 0.9,
-        },
+      },
     };
-    console.log(fixedDate)
+    console.log(fixedDate);
 
     const movements: PortfolioMovement[] = [
       {
         timestamp,
-        transfers: [
-          { price: 100, fiatValue: 200 },
-        ],
+        transfers: [{ price: 100, fiatValue: 200 }],
       },
     ] as any;
 
     const result = convertFiatValues("EUR", movements, exchangeRates);
 
-    expect(result[0].transfers[0].price).toBeCloseTo(90);      // 100 * 0.9
+    expect(result[0].transfers[0].price).toBeCloseTo(90); // 100 * 0.9
     expect(result[0].transfers[0].fiatValue).toBeCloseTo(180); // 200 * 0.9
   });
 
@@ -58,9 +62,9 @@ describe.only("convertFiatValues", () => {
     ] as any;
 
     const exchangeRates = {
-        ['2020-01-01']: {
+      ["2020-01-01"]: {
         EUR: 0.9,
-        },
+      },
     };
 
     convertFiatValues("EUR", movements, exchangeRates);

@@ -1,9 +1,9 @@
 import { FetchedDataRepository } from "./fetched-data.repository";
 import { RequestHelper } from "./request.helper";
-import { firstValueFrom, ReplaySubject, Subject } from 'rxjs'
+import { firstValueFrom, ReplaySubject, Subject } from "rxjs";
 
 export class ResponseCache {
-  private pendingRequests: Record<string, Subject<any>> = {}
+  private pendingRequests: Record<string, Subject<any>> = {};
 
   constructor(
     private fetchedDataRepository: FetchedDataRepository,
@@ -25,19 +25,15 @@ export class ResponseCache {
       return cachedData;
     }
 
-    const key = this.fetchedDataRepository.generateCacheKey(
-      url,
-      method,
-      body,
-    )
+    const key = this.fetchedDataRepository.generateCacheKey(url, method, body);
     if (this.pendingRequests[key]) {
-      return firstValueFrom(this.pendingRequests[key])
-    } 
-    this.pendingRequests[key] = new ReplaySubject<any>(1)
+      return firstValueFrom(this.pendingRequests[key]);
+    }
+    this.pendingRequests[key] = new ReplaySubject<any>(1);
 
     try {
       const json = await this.requestHelper.req(url, method, body);
-      this.pendingRequests[key].next(json)
+      this.pendingRequests[key].next(json);
       await this.fetchedDataRepository.storeFetchedResult(
         url,
         method,
@@ -51,7 +47,7 @@ export class ResponseCache {
         /**
          * 404 errors can happen when a chain is removed from subscan indexing.
          */
-        this.pendingRequests[key].next(null)
+        this.pendingRequests[key].next(null);
         await this.fetchedDataRepository.storeFetchedResult(
           url,
           method,
@@ -63,7 +59,7 @@ export class ResponseCache {
       }
       throw error;
     } finally {
-      delete this.pendingRequests[key]
+      delete this.pendingRequests[key];
     }
   }
 }
