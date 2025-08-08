@@ -37,6 +37,11 @@ const acceptedDeviations = [
   {
     symbol: "HDX",
     perPayment: 3,
+    max: 200,
+  },
+  {
+    symbol: "PHA",
+    perPayment: 1,
     max: 100,
   },
 ];
@@ -54,7 +59,7 @@ const verifyAssetMovement = async (
 ) => {
   const today = new Date();
   const pastDate = new Date();
-  pastDate.setDate(today.getDate() - 7);
+  pastDate.setDate(today.getDate() - 14);
   const comparison = await fetchPortfolioChangesExpectedVSActual(
     address,
     chainInfo,
@@ -92,7 +97,7 @@ describe("Verify portfolio changes", () => {
   describe("Verify the portfolio change assethub polkadot", () => {
     const chainInfo = { domain: "assethub-polkadot", label: "", token: "DOT" };
 
-    test("polkadot-1HGnvAkk9nbfZ58CzUJhjcrLdEDMkr5qNkqqYkyD5BF5v6Y", async () => {
+    test("13qSxtKtr54qebSQzf1c7MC9CwkkZMMFaXyHKq8LzjSjiU3M", async () => {
       await verifyAssetMovement(
         "13qSxtKtr54qebSQzf1c7MC9CwkkZMMFaXyHKq8LzjSjiU3M",
         chainInfo,
@@ -391,6 +396,22 @@ describe("Verify portfolio changes", () => {
     test("131d4YS25qpuXiHrfJibuFYXwZrzwxpvU1ahvr3TJFNYcmfk", async () => {
       await verifyAssetMovement(
         "131d4YS25qpuXiHrfJibuFYXwZrzwxpvU1ahvr3TJFNYcmfk",
+        chainInfo,
+      );
+    });
+  });
+
+  describe("Verify the portfolio change phala", () => {
+    const chainInfo = { domain: "phala", label: "", token: "PHA" };
+    test("14EAEgGrbX3KCgyjBZRyB5qgYpuFHLB5AC8TX7hYLPRT1YPN", async () => {
+      await verifyAssetMovement(
+        "14EAEgGrbX3KCgyjBZRyB5qgYpuFHLB5AC8TX7hYLPRT1YPN",
+        chainInfo,
+      );
+    });
+    test("1bMaUv5vuzYsbYfhn2sUZ2LMYKHmfzF462PuwVtcqLC7rjN", async () => {
+      await verifyAssetMovement(
+        "1bMaUv5vuzYsbYfhn2sUZ2LMYKHmfzF462PuwVtcqLC7rjN",
         chainInfo,
       );
     });

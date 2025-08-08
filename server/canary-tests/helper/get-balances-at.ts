@@ -20,24 +20,22 @@ const endpoints = {
   neuroweb: "wss://parachain-rpc.origin-trail.network",
   spiritnet: "wss://spiritnet.kilt.io",
   darwinia: "wss://rpc.darwinia.network",
-  alephzero: "wss://aleph-zero.api.onfinality.io/public-ws"
+  alephzero: "wss://aleph-zero.api.onfinality.io/public-ws",
 };
 
-export let api: ApiPromise
-export async function createApi(domain: string, ) {
+export let api: ApiPromise;
+export async function createApi(domain: string) {
   const provider = new WsProvider(endpoints[domain]);
   api = await ApiPromise.create({ provider, noInitWarn: true });
 }
 
 export function getApiClient() {
-  return api
+  return api;
 }
 
 export async function getApiAt(blockNumber: number) {
-  console.info("Enter getApiAt: " + blockNumber)
   const blockHash = await api.rpc.chain.getBlockHash(blockNumber);
   const apiAt = (await api.at(blockHash)) as any;
-  console.info("Exit getApiAt: " + blockNumber)
   return apiAt;
 }
 

@@ -6,7 +6,7 @@ import { waitForPortToBeFree } from "../e2e-tests/util/wait-for-port-to-be-free"
 async function verify(address, chain) {
   const today = new Date();
   const pastDate = new Date();
-  pastDate.setDate(today.getDate() - 7);
+  pastDate.setDate(today.getDate() - 14);
   const chainInfo =
     chain === "polkadot"
       ? { domain: "polkadot", label: "", token: "DOT" }

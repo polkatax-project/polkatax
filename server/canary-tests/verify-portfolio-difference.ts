@@ -1,8 +1,6 @@
 import { createDIContainer } from "../src/server/di-container";
 import { SubscanApi } from "../src/server/blockchain/substrate/api/subscan.api";
-import {
-  fetchPortfolioMovements,
-} from "./helper/fetch-portfolio-movements";
+import { fetchPortfolioMovements } from "./helper/fetch-portfolio-movements";
 import { Wallet } from "./helper/wallet";
 import * as fs from "fs";
 import {
@@ -59,7 +57,7 @@ export const fetchPortfolioChangesExpectedVSActual = async (
         return await fetchAssetChangesExpectedVSActual(address, chain, minDate);
     }
   } finally {
-    getApiClient().disconnect()
+    getApiClient().disconnect();
   }
 };
 

@@ -11,13 +11,13 @@ import { AddFiatValuesToPortfolioMovementsService } from "./add-fiat-values-to-p
 import { ChainDataAccumulationService } from "./chain-data-accumulation.service";
 import { determineLabelForPayment } from "../helper/determine-label-for-payment";
 import { PortfolioMovementsResponse } from "../model/portfolio-movements.response";
-import { SpecialEventsToTransfersService } from "./special-events-to-transfers.service";
+import { SpecialEventsToTransfersService } from "./special-event-processing/special-events-to-transfers.service";
 import { XcmTokenResolutionService } from "./xcm-token-resolution.service";
 import { EventEnrichedXcmTransfer } from "../model/EventEnrichedXcmTransfer";
 import { XcmTransfer } from "../../blockchain/substrate/model/xcm-transfer";
 import { StakingRewardsWithFiatService } from "./staking-rewards-with-fiat.service";
 import { TaxableEvent } from "../model/portfolio-movement";
-import * as fs from 'fs';
+import * as fs from "fs";
 
 const ignoreIncomingXcm = [
   "hydration",
@@ -131,15 +131,14 @@ export class PortfolioMovementsService {
         stakingRewards.rawStakingRewards,
       );
     fs.writeFileSync(
-          `./portfolio-movements-${paymentsRequest.chain.domain}.json`,
-          JSON.stringify(
-            portfolioMovements,
-            null,
-            2,
-          ),
-        )
+      `./portfolio-movements-${paymentsRequest.chain.domain}.json`,
+      JSON.stringify(portfolioMovements, null, 2),
+    );
 
-    if (paymentsRequest.chain.domain === "hydration" || paymentsRequest.chain.domain === "basilisk") {
+    if (
+      paymentsRequest.chain.domain === "hydration" ||
+      paymentsRequest.chain.domain === "basilisk"
+    ) {
       new ChainAdjustments().handleHydration(portfolioMovements);
     }
 

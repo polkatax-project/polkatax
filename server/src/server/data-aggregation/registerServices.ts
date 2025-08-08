@@ -8,7 +8,7 @@ import { ChainAdjustments } from "./helper/chain-adjustments";
 import { TransferMerger } from "./helper/transfer-merger";
 import { AddFiatValuesToPortfolioMovementsService } from "./services/add-fiat-values-to-portfolio-movements.service";
 import { ChainDataAccumulationService } from "./services/chain-data-accumulation.service";
-import { SpecialEventsToTransfersService } from "./services/special-events-to-transfers.service";
+import { SpecialEventsToTransfersService } from "./services/special-event-processing/special-events-to-transfers.service";
 import { XcmTokenResolutionService } from "./services/xcm-token-resolution.service";
 
 export const registerServices = (container: AwilixContainer) => {

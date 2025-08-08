@@ -320,7 +320,7 @@ const zoomIntoErrorAssets = async (
 const findLargestPortfolioError = async () => {
   console.log("ENTRY findLargestPortfolioError");
   await startStubs();
-  
+
   try {
     const wallet = process.env["wallet"];
     const chain = process.env["chain"];
@@ -329,7 +329,7 @@ const findLargestPortfolioError = async () => {
     if (!wallet || !chain || !tokenSymbol) {
       console.error("wallet, chain and, token_symbol are mandatory.");
     }
-    createApi(chain)
+    createApi(chain);
 
     const nativeToken = subscanChains.chains.find(
       (t) => t.domain === chain,
@@ -355,7 +355,7 @@ const findLargestPortfolioError = async () => {
     }
   } finally {
     await stopStubs();
-    getApiClient()?.disconnect()
+    getApiClient()?.disconnect();
     console.log("EXIT findLargestPortfolioError");
   }
 };

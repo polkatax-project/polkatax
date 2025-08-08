@@ -9,9 +9,10 @@ export default {
   reporters: [
     "default",
     [
-      "jest-json-reporter",
+      "jest-stare",
       {
-        outputPath: "test-results/unit-test-results.json",
+        resultDir: "test-results",
+        reportTitle: "Unit test Results",
       },
     ],
   ],

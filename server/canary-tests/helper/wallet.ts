@@ -76,37 +76,20 @@ export class Wallet {
     const nativeTokenInfo = await subscanApi.fetchNativeToken(chain);
     const portfolios: Portfolio[] = [];
     for (let block of blocks) {
-      if (block) {
-        const apiAt = await getApiAt(block);
-        const portfolio: Portfolio = {
-          block,
-          values: [
-            {
-              asset_unique_id: nativeToken,
-              symbol: nativeToken,
-              balance:
-                (await getNativeTokenBalance(apiAt, address)).nativeBalance /
-                Math.pow(10, nativeTokenInfo.token_decimals),
-            },
-          ],
-        };
-        portfolios.push(portfolio);
-      } else {
-        console.warn("No block in fetchNativeTokenBalances")
-        /*const portfolio: Portfolio = {
-          block,
-          values: [
-            {
-              asset_unique_id: nativeToken,
-              symbol: nativeToken,
-              balance:
-                (await getNativeTokenBalance(api, address)).nativeBalance /
-                Math.pow(10, nativeTokenInfo.token_decimals),
-            },
-          ],
-        };
-        portfolios.push(portfolio);*/
-      }
+      const apiAt = await getApiAt(block);
+      const portfolio: Portfolio = {
+        block,
+        values: [
+          {
+            asset_unique_id: nativeToken,
+            symbol: nativeToken,
+            balance:
+              (await getNativeTokenBalance(apiAt, address)).nativeBalance /
+              Math.pow(10, nativeTokenInfo.token_decimals),
+          },
+        ],
+      };
+      portfolios.push(portfolio);
     }
     return portfolios;
   }
@@ -181,48 +164,28 @@ export class Wallet {
       }
       const portfolios: Portfolio[] = [];
       for (let block of blocks) {
-        if (block) {
-          const apiAt = await getApiAt(block);
-          const portfolio: Portfolio = {
-            values: convert(await apiAt.query.tokens.accounts.entries(address)),
-            block,
-          };
-          const { nativeBalance, free, frozen, reserved } =
-            await getNativeTokenBalance(apiAt, address);
-          const decMul = Math.pow(10, nativeTokenInfo.token_decimals);
-          portfolio.values.push({
-            asset_unique_id: nativeToken,
-            symbol: nativeToken,
-            balance: nativeBalance / decMul,
-            free: free / decMul,
-            frozen: frozen / decMul,
-            reserved: reserved / decMul,
-          });
-          portfolios.push(portfolio);
-        } else {
-          console.warn("No block available?! fetchTokenBalances")
-          /*const { nativeBalance, free, frozen, reserved } =
-            await getNativeTokenBalance(api, address);
-          const decMul = Math.pow(10, nativeTokenInfo.token_decimals);
-          const portfolio: Portfolio = {
-            values: convert(await api.query.tokens.accounts.entries(address)),
-            block,
-          };
-          portfolio.values.push({
-            asset_unique_id: nativeToken,
-            symbol: nativeToken,
-            balance: nativeBalance / decMul,
-            free: free / decMul,
-            frozen: frozen / decMul,
-            reserved: reserved / decMul,
-          });
-          portfolios.push(portfolio);*/
-        }
+        const apiAt = await getApiAt(block);
+        const portfolio: Portfolio = {
+          values: convert(await apiAt.query.tokens.accounts.entries(address)),
+          block,
+        };
+        const { nativeBalance, free, frozen, reserved } =
+          await getNativeTokenBalance(apiAt, address);
+        const decMul = Math.pow(10, nativeTokenInfo.token_decimals);
+        portfolio.values.push({
+          asset_unique_id: nativeToken,
+          symbol: nativeToken,
+          balance: nativeBalance / decMul,
+          free: free / decMul,
+          frozen: frozen / decMul,
+          reserved: reserved / decMul,
+        });
+        portfolios.push(portfolio);
       }
       return portfolios;
     } catch (error) {
       console.error(error);
       return [];
-    } 
+    }
   }
 }

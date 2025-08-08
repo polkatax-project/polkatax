@@ -305,7 +305,7 @@ export class ChainDataAccumulationService {
         : undefined;
       xcmTransfer.transfers
         .filter((t) => !t.from && t.fromChain === chainName)
-        .filter(t => !!tx)
+        .filter((t) => !!tx)
         .forEach((t) => {
           t.from = convertToCanonicalAddress(tx.from);
           xcmTransfer.timestamp = tx.timestamp;

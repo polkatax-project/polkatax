@@ -44,9 +44,7 @@ export class JobManager {
     logger.info(`Enter enqueue jobs ${reqId}, ${wallet}, ${currency}`);
 
     const syncFromDate = getBeginningLastYear();
-    const chains = blockchains.length
-      ? blockchains
-      : this.getChains(wallet);
+    const chains = blockchains.length ? blockchains : this.getChains(wallet);
     const jobs = await this.jobsService.fetchJobs(wallet);
     const matchingJobs = jobs.filter(
       (j) => chains.includes(j.blockchain) && j.currency === currency,
