@@ -237,7 +237,7 @@ const zoomIntoErrorTokens = async (
   tolerance = 0.5,
 ) => {
   const { portfolioMovements, unmatchedEvents, minBlock, maxBlock } =
-    fs.existsSync(`./canary-tests/out-temp/all.json`)
+    fs.existsSync(`./canary-tests/out-temp/portfolio-movements.json`)
       ? JSON.parse(
           fs.readFileSync(
             `./canary-tests/out-temp/portfolio-movements.json`,
