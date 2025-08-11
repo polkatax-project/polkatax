@@ -1,5 +1,5 @@
 import path from "path";
 
 export const envFile = path.normalize(
-  __dirname + "/../../" + (process.env["ENV_FILE"] || ".env"),
+  process.cwd() + "/" + (process.env["ENV_FILE"] || ".env"),
 );
