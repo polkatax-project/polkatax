@@ -70,7 +70,7 @@ describe.only("convertFiatValues", () => {
     convertFiatValues("EUR", movements, exchangeRates);
 
     expect(logger.warn).toHaveBeenCalledWith(
-      "No fiat exchange rate found for date 2025-08-08",
+      "No fiat exchange rate found for date " + fixedDate,
     );
   });
 });
