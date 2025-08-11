@@ -70,9 +70,33 @@
       "paraId": 2037
     },
     {
+      "domain": "tanssi",
+      "label": "Tanssi\t",
+      "token": "TANSSI",
+      "stakingPallets": ["PooledStaking"],
+      "evmPallet": false,
+      "assetPallet": false,
+      "foreignAssetsPallet": false,
+      "standardStaking": false,
+      "parachainStaking": false,
+      "delegatedStaking": false
+    },
+    {
       "domain": "stafi",
       "label": "Stafi",
       "token": "FIS",
+      "stakingPallets": ["Staking"],
+      "evmPallet": false,
+      "assetPallet": false,
+      "foreignAssetsPallet": false,
+      "standardStaking": true,
+      "parachainStaking": false,
+      "delegatedStaking": false
+    },
+    {
+      "domain": "sxt",
+      "label": "Space and Time",
+      "token": "SXT",
       "stakingPallets": ["Staking"],
       "evmPallet": false,
       "assetPallet": false,
@@ -148,6 +172,18 @@
       "delegatedStaking": false,
       "relay": "polkadot",
       "paraId": 3388
+    },
+    {
+      "domain": "reef",
+      "label": "Reef",
+      "token": "REEF",
+      "stakingPallets": ["Staking"],
+      "evmPallet": true,
+      "assetPallet": false,
+      "foreignAssetsPallet": false,
+      "standardStaking": true,
+      "parachainStaking": false,
+      "delegatedStaking": false
     },
     {
       "domain": "polymesh",
@@ -548,9 +584,9 @@
       "paraId": 2046
     },
     {
-      "domain": "dancebox",
-      "label": "Dancebox",
-      "token": "DANCE",
+      "domain": "dancelight",
+      "label": "Dancelight",
+      "token": "STAR",
       "stakingPallets": ["PooledStaking"],
       "evmPallet": false,
       "assetPallet": false,

@@ -14,7 +14,7 @@ export const fetchStakingRewards = async (
 ): Promise<{
   totalAmount: number;
   totalFiat: number;
-  rewards: { token: string, values: StakingReward[] };
+  rewards: { token: string; values: StakingReward[] };
 }> => {
   const container = createDIContainer();
   const stakingRewardsWithFiatService: StakingRewardsWithFiatService =

@@ -251,6 +251,18 @@
     {
       "token": "PICA",
       "coingeckoId": "picasso"
+    }, 
+    {
+      "token": "TANSSI",
+      "coingeckoId": "tanssi"
+    }, 
+    {
+      "token": "SXT",
+      "coingeckoId": "space-and-time"
+    }, 
+    {
+      "token": "REEF",
+      "coingeckoId": "reef"
     }
   ]
 }
