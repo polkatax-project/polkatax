@@ -1,16 +1,18 @@
 import { Job, JobId } from "../../model/job";
-import { from, shareReplay, switchMap } from "rxjs";
+import { from, Observable, shareReplay, switchMap } from "rxjs";
 import { logger } from "../logger/logger";
 import { WsError } from "../model/ws-error";
 import { JobRepository } from "./job.repository";
 
 export class JobsService {
-  pendingJobs$ = this.jobRepository.pendingJobsChanged$.pipe(
-    switchMap((_) => from(this.jobRepository.fetchAllPendingJobs())),
-    shareReplay(1),
-  );
+  pendingJobs$: Observable<Job[]>;
 
-  constructor(private jobRepository: JobRepository) {}
+  constructor(private jobRepository: JobRepository) {
+    this.pendingJobs$ = this.jobRepository.pendingJobsChanged$.pipe(
+      switchMap((_) => from(this.jobRepository.fetchAllPendingJobs())),
+      shareReplay(1),
+    );
+  }
 
   async addJob(
     reqId: string,

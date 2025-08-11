@@ -22,7 +22,7 @@ export const currencyFormatter = (currency: string | undefined) =>
     currencyDisplay: 'symbol',
   });
 
-export const formatCurrency = (value: number, currency: string) => {
+export const formatCurrency = (value: number | undefined, currency: string) => {
   if (value === undefined || isNaN(value)) {
     return '-';
   }

@@ -1,0 +1,44 @@
+{
+  "chains": [
+    {
+      "domain": "interlay",
+      "label": "interlay",
+      "token": "INTR",
+      "relay": "polkadot",
+      "paraId": 2032,
+      "tokenDecimals": 18
+    },
+    {
+      "domain": "zeitgeist",
+      "label": "Zeitgeist",
+      "token": "ZTG",
+      "relay": "polkadot",
+      "paraId": 2032,
+      "tokenDecimals": 18
+    },
+    {
+      "domain": "subsocial",
+      "label": "subsocial",
+      "token": "SUB",
+      "relay": "polkadot",
+      "paraId": 2101,
+      "tokenDecimals": 10
+    },
+    {
+      "domain": "laos",
+      "label": "laos",
+      "token": "LAOS",
+      "relay": "polkadot",
+      "paraId": 3370,
+      "tokenDecimals": 18
+    },
+    {
+      "domain": "ajuna",
+      "label": "ajuna",
+      "token": "AJUN",
+      "relay": "polkadot",
+      "paraId": 2051,
+      "tokenDecimals": 12
+    }
+  ]
+}

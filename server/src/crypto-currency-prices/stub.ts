@@ -1,4 +1,4 @@
-import Fastify, { FastifyRequest } from "fastify";
+import Fastify, { FastifyInstance, FastifyRequest } from "fastify";
 import { logger } from "./logger/logger";
 import dotenv from "dotenv";
 dotenv.config({ path: __dirname + "/../../.env" });
@@ -26,7 +26,7 @@ const createHistoricMockdata = (currency): CurrencyQuotes => {
   return result;
 };
 
-export const startStub = async () => {
+export const startStub = async (): Promise<FastifyInstance> => {
   const fastify = Fastify({
     loggerInstance: logger,
   });

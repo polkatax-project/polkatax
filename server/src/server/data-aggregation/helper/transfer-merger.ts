@@ -1,123 +1,102 @@
+import { convertToCanonicalAddress } from "../../../common/util/convert-to-generic-address";
+import { Transfer } from "../../blockchain/substrate/model/raw-transfer";
 import { logger } from "../../logger/logger";
-import { PricedTransaction } from "../model/priced-transaction";
-import { PricedTransfer } from "../model/priced-transfer";
+import { PortfolioMovement } from "../model/portfolio-movement";
 
-export interface MergedTransfers {
-  [hash: string]: {
-    tokens: { [tokenId: string]: PricedTransfer };
-    label?: string;
-  };
+export interface IndexedPortfolioMovements {
+  [key: string]: PortfolioMovement;
 }
 
 export class TransferMerger {
   private merge(
-    target: MergedTransfers,
-    nativeToken: string,
+    target: IndexedPortfolioMovements,
     address: string,
-    transferList: PricedTransfer[],
+    transferList: Transfer[],
     isMyAccount: (acc: string) => boolean,
-    tx?: PricedTransaction,
   ): void {
-    if (tx && tx.amount > 0) {
-      transferList.push({
-        ...tx,
-        from: tx.from,
-        to: tx.to,
-        symbol: nativeToken,
-        tokenId: nativeToken,
-      });
-    }
-    let hash = undefined;
+    let key = undefined;
     transferList.forEach((entry) => {
-      hash ??= entry.hash;
-      if (!entry.hash) {
-        return;
-      }
+      key ??= entry.extrinsic_index;
+      entry.from = convertToCanonicalAddress(entry.from);
+      entry.to = convertToCanonicalAddress(entry.to);
       const otherAddress = isMyAccount(entry.from) ? entry.to : entry.from;
-      if (!target[entry.hash]) {
-        target[entry.hash] = { tokens: {} };
-      }
-      if (!target[entry.hash].tokens[entry.tokenId]) {
-        target[entry.hash].tokens[entry.tokenId] = {
-          ...entry,
-          amount: 0,
+      if (!target[key]) {
+        target[key] = {
+          transfers: [],
+          events: [],
+          hash: entry.hash,
+          extrinsic_index: entry.extrinsic_index,
+          block: entry.block,
+          timestamp: entry.timestamp,
         };
       }
-      const currentTransfer = target[entry.hash].tokens[entry.tokenId];
+      let matchingTransfer =
+        undefined; /* TODO: this makes debugging easier. Maybe no merging is needed? target[key].transfers.find(
+        (t) => t.asset_unique_id === entry.asset_unique_id,
+      ); */
+      if (!matchingTransfer) {
+        matchingTransfer = {
+          ...entry,
+          amount: 0,
+          fiatValue: 0,
+        };
+        target[key].transfers.push(matchingTransfer);
+      }
       if (isMyAccount(entry.to)) {
-        currentTransfer.amount += Number(entry.amount);
+        matchingTransfer.amount += Number(entry.amount);
+        matchingTransfer.fiatValue += entry.fiatValue;
       } else if (isMyAccount(entry.from)) {
-        currentTransfer.amount -= Number(entry.amount);
+        matchingTransfer.amount -= Number(entry.amount);
+        matchingTransfer.fiatValue -= entry.fiatValue;
       } else {
         logger.warn("no match for transfer!");
       }
-      if (currentTransfer.amount > 0) {
-        currentTransfer.to = address;
-        currentTransfer.from = otherAddress;
+      if (matchingTransfer.amount > 0) {
+        matchingTransfer.to = address;
+        matchingTransfer.from = otherAddress;
       } else {
-        currentTransfer.from = address;
-        currentTransfer.to = otherAddress;
+        matchingTransfer.from = address;
+        matchingTransfer.to = otherAddress;
       }
     });
-    const toRemove = [];
-    Object.entries(target[hash]?.tokens || []).forEach(
-      ([token, priceTransfer]) => {
-        if (priceTransfer.amount === 0) {
-          toRemove.push(token);
-        }
-      },
-    );
-    toRemove.forEach((t) => delete target[hash].tokens[t]);
-    if (tx && target[tx.hash]) {
-      target[tx.hash].label = tx.label;
+    if (target[key]?.transfers) {
+      target[key].transfers = target[key]?.transfers.filter(
+        (t) => t.amount !== 0,
+      );
     }
   }
 
-  mergeTxAndTranfersToObject(
-    nativeToken: string,
-    transferList: PricedTransfer[],
-    txList: PricedTransaction[],
+  mergeTranfers(
+    transferList: Transfer[],
     address: string,
     aliases: string[],
-  ): MergedTransfers {
+  ): IndexedPortfolioMovements {
     const isMyAccount = (addressToTest: string) =>
       address.toLowerCase() === addressToTest.toLowerCase() ||
       aliases.indexOf(addressToTest) > -1;
 
-    const mergedTransfers: MergedTransfers = {};
+    transferList = transferList.filter((t) => {
+      if (!t.extrinsic_index) {
+        logger.warn(
+          `Transfer without extrinsic_index found: block ${t.block}, timestamp ${t.timestamp}. Skipping transfer`,
+        );
+        return false;
+      }
+      return true;
+    });
 
-    const hashToTransferMap = {};
+    const indexedTransfers: Record<string, Transfer[]> = {};
     for (let transfer of transferList) {
-      if (!transfer.hash) {
-        continue;
+      if (!indexedTransfers[transfer.extrinsic_index]) {
+        indexedTransfers[transfer.extrinsic_index] = [];
       }
-      if (!hashToTransferMap[transfer.hash]) {
-        hashToTransferMap[transfer.hash] = [];
-      }
-      hashToTransferMap[transfer.hash].push(transfer);
+      indexedTransfers[transfer.extrinsic_index].push(transfer);
     }
 
-    for (let tx of txList) {
-      this.merge(
-        mergedTransfers,
-        nativeToken,
-        address,
-        hashToTransferMap[tx.hash] || [],
-        isMyAccount,
-        tx,
-      );
-    }
-
-    const remainingUnprocessedTransfers = transferList.filter(
-      (t) => !mergedTransfers[t.hash],
-    );
-    this.merge(
-      mergedTransfers,
-      nativeToken,
-      address,
-      remainingUnprocessedTransfers,
-      isMyAccount,
-    );
+    const mergedTransfers: IndexedPortfolioMovements = {};
+    Object.keys(indexedTransfers).forEach((key: string) => {
+      this.merge(mergedTransfers, address, indexedTransfers[key], isMyAccount);
+    });
 
     return mergedTransfers;
   }

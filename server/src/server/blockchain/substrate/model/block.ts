@@ -1,4 +1,6 @@
 export interface Block {
+  id: number;
   block_num: number;
-  block_timestamp: number;
+  timestamp: number;
+  hash: string;
 }

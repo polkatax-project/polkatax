@@ -3,30 +3,29 @@ import { StakingRewardsService } from "../../blockchain/substrate/services/staki
 import { TokenPriceConversionService } from "./token-price-conversion.service";
 import { SubscanService } from "../../blockchain/substrate/api/subscan.service";
 import { DataPlatformService } from "../../data-platform-api/data-platform.service";
+import {
+  expect,
+  it,
+  jest,
+  describe,
+  beforeEach,
+  afterEach,
+} from "@jest/globals";
 import { StakingRewardsRequest } from "../model/staking-rewards.request";
-import { PricedStakingReward } from "../model/priced-staking-reward";
-import { expect, it, jest, describe, beforeEach } from "@jest/globals";
+import { StakingReward } from "../../blockchain/substrate/model/staking-reward";
+import { AggregatedStakingReward } from "../model/aggregated-staking-reward";
 
 jest.mock("../helper/add-fiat-values-to-staking-rewards", () => ({
-  addFiatValuesToStakingRewards: jest.fn((rewards: any, quote: any) => {
-    return rewards.map((r) => ({
-      ...r,
-      fiatValue: r.amount * (quote?.price || 1),
-    }));
-  }),
+  addFiatValuesToAggregatedStakingRewards: jest.fn((rewards, quote) => rewards),
+  addFiatValuesToStakingRewards: jest.fn(),
 }));
 
 jest.mock("../helper/find-coingecko-id-for-native-token", () => ({
-  findCoingeckoIdForNativeToken: (domain: string) => {
-    const map = {
-      polkadot: "polkadot",
-    };
-    return map[domain];
-  },
+  findCoingeckoIdForNativeToken: jest.fn(() => "coingecko-dot"),
 }));
 
 jest.mock("../helper/is-evm-address", () => ({
-  isEvmAddress: (address: string) => address.startsWith("0x"),
+  isEvmAddress: jest.fn(() => false),
 }));
 
 describe("StakingRewardsWithFiatService", () => {
@@ -36,21 +35,28 @@ describe("StakingRewardsWithFiatService", () => {
   let subscanService: jest.Mocked<SubscanService>;
   let dataPlatformService: jest.Mocked<DataPlatformService>;
 
+  const dummyRequest: StakingRewardsRequest = {
+    address: "addr",
+    chain: { domain: "polkadot" } as any,
+    currency: "USD",
+    minDate: 0,
+  };
+
   beforeEach(() => {
     stakingRewardsService = {
-      fetchStakingRewards: jest.fn<any>(),
+      fetchStakingRewards: jest.fn(),
     } as any;
 
     tokenPriceConversionService = {
-      fetchQuotesForTokens: jest.fn<any>(),
+      fetchQuotesForTokens: jest.fn(),
     } as any;
 
     subscanService = {
-      mapToSubstrateAccount: jest.fn<any>(),
+      mapToSubstrateAccount: jest.fn(),
     } as any;
 
     dataPlatformService = {
-      fetchAggregatedStakingRewards: jest.fn<any>(),
+      fetchAggregatedStakingRewardsForChain: jest.fn(),
     } as any;
 
     service = new StakingRewardsWithFiatService(
@@ -61,45 +67,68 @@ describe("StakingRewardsWithFiatService", () => {
     );
   });
 
-  it("fetchStakingRewardsViaSubscan returns fiat-priced rewards", async () => {
-    const mockRequest: StakingRewardsRequest = {
-      chain: { domain: "polkadot", token: "DOT", label: "" },
-      currency: "usd",
-      address: "0x123abc",
-      startDate: Date.now(),
-    };
+  afterEach(() => {
+    delete process.env.USE_DATA_PLATFORM_API;
+    jest.clearAllMocks();
+  });
 
-    // Simulate address mapping
-    subscanService.mapToSubstrateAccount.mockResolvedValue("substrate123");
+  it("uses data platform when USE_DATA_PLATFORM_API is set and chain is polkadot", async () => {
+    process.env.USE_DATA_PLATFORM_API = "1";
 
-    const mockRewards: PricedStakingReward[] = [
-      { amount: 10, timestamp: 1234567890 },
-      { amount: 5, timestamp: 1234567891 },
+    const rewards: AggregatedStakingReward[] = [
+      { timestamp: 1, rewards: [] } as any,
     ];
-
-    stakingRewardsService.fetchStakingRewards.mockResolvedValue(
-      mockRewards as any,
+    dataPlatformService.fetchAggregatedStakingRewardsForChain.mockResolvedValue(
+      rewards,
     );
-
     tokenPriceConversionService.fetchQuotesForTokens.mockResolvedValue({
-      polkadot: { price: 7.5 }, // 1 DOT = 7.5 USD
+      "coingecko-dot": { price: 10 } as any,
+    });
+
+    const result = await service.fetchStakingRewards(dummyRequest);
+
+    expect(
+      dataPlatformService.fetchAggregatedStakingRewardsForChain,
+    ).toHaveBeenCalledWith("addr", "polkadot");
+    expect(result.rawStakingRewards).toEqual([]);
+    expect(result.aggregatedRewards).toEqual(rewards);
+  });
+
+  it("fetches from Subscan when USE_DATA_PLATFORM_API is not set", async () => {
+    const rawRewards: StakingReward[] = [{ amount: 1 } as any];
+    stakingRewardsService.fetchStakingRewards.mockResolvedValue(rawRewards);
+    tokenPriceConversionService.fetchQuotesForTokens.mockResolvedValue({
+      "coingecko-dot": { price: 100 },
     } as any);
 
-    const result = await service.fetchStakingRewardsViaSubscan(mockRequest);
+    const result = await service.fetchStakingRewards(dummyRequest);
 
-    expect(subscanService.mapToSubstrateAccount).toHaveBeenCalledWith(
-      "polkadot",
-      "0x123abc",
-    );
-    expect(
-      tokenPriceConversionService.fetchQuotesForTokens,
-    ).toHaveBeenCalledWith(["polkadot"], "usd");
-    expect(result).toEqual({
-      values: [
-        { amount: 10, timestamp: 1234567890, fiatValue: 75 },
-        { amount: 5, timestamp: 1234567891, fiatValue: 37.5 },
-      ],
-      token: "DOT",
+    expect(stakingRewardsService.fetchStakingRewards).toHaveBeenCalledWith({
+      chainName: "polkadot",
+      address: "addr",
+      minDate: 0,
     });
+    expect(result.rawStakingRewards).toEqual(rawRewards);
+    expect(result.aggregatedRewards).toEqual([]);
+  });
+
+  it("fetches from Subscan for non-platform chains regardless of env", async () => {
+    process.env.USE_DATA_PLATFORM_API = "1";
+    const request: StakingRewardsRequest = {
+      ...dummyRequest,
+      chain: { domain: "some-other-chain" } as any,
+    };
+
+    const rawRewards: StakingReward[] = [{ amount: 5 } as any];
+    stakingRewardsService.fetchStakingRewards.mockResolvedValue(rawRewards);
+    tokenPriceConversionService.fetchQuotesForTokens.mockResolvedValue({
+      "coingecko-dot": { price: 50 },
+    } as any);
+
+    const result = await service.fetchStakingRewards(request);
+
+    expect(stakingRewardsService.fetchStakingRewards).toHaveBeenCalled();
+    expect(result.rawStakingRewards).toEqual(rawRewards);
+    expect(result.aggregatedRewards).toEqual([]);
   });
 });

@@ -1,5 +1,5 @@
 import { getAddress } from "ethers";
-import { expect, it, jest, describe } from "@jest/globals";
+import { expect, it, describe } from "@jest/globals";
 import { WebSocketIncomingMessageSchema } from "./incoming-message-schema";
 
 describe("WebSocketIncomingMessageSchema", () => {

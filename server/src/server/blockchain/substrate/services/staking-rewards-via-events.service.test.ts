@@ -1,115 +1,136 @@
 import { expect, it, jest, describe, beforeEach } from "@jest/globals";
-import { StakingRewardsViaEventsService } from "./staking-rewards-via-events.service";
 import { SubscanService } from "../api/subscan.service";
 import { SubscanEvent } from "../model/subscan-event";
+import { StakingRewardsViaEventsService } from "./staking-rewards-via-events.service";
 import { Transfer } from "../model/raw-transfer";
 
-jest.mock("../api/subscan.service");
+// Create mocked SubscanService
+const mockSubscanService: jest.Mocked<SubscanService> = {
+  searchAllEvents: jest.fn(),
+  fetchAllTransfers: jest.fn(),
+  fetchXcmList: jest.fn(),
+  fetchNativeToken: jest.fn(),
+  scanTokens: jest.fn(),
+  scanAssets: jest.fn(),
+  fetchForeignAssets: jest.fn(),
+} as any;
 
 describe("StakingRewardsViaEventsService", () => {
   let service: StakingRewardsViaEventsService;
-  let subscanService: jest.Mocked<SubscanService>;
 
   beforeEach(() => {
-    subscanService = new SubscanService(null) as jest.Mocked<SubscanService>;
-    service = new StakingRewardsViaEventsService(subscanService);
+    jest.clearAllMocks();
+    service = new StakingRewardsViaEventsService(mockSubscanService);
   });
 
-  it("should return matching staking rewards from transfers and events", async () => {
+  it("should return filtered and mapped staking rewards", async () => {
     const mockEvents: SubscanEvent[] = [
-      { extrinsic_hash: "hash1" } as SubscanEvent,
-      { extrinsic_hash: "hash2" } as SubscanEvent,
-    ];
-
-    const mockTransfers: Transfer[] = [
       {
-        hash: "hash1",
-        amount: 1000,
-        timestamp: 111111,
-        extrinsic_index: "123-1",
-        from: "a",
-        to: "b",
-        symbol: "DOT",
-        block: 123,
-        label: "Reward",
+        extrinsic_hash: "0xabc",
+        event_index: "1-1",
       },
       {
-        hash: "hash2",
-        amount: -500,
-        timestamp: 222222,
-        extrinsic_index: "124-1",
-        from: "a",
-        to: "b",
-        symbol: "DOT",
-        block: 124,
-        label: "Slash",
-      },
-      {
-        hash: "hash3",
-        amount: 999,
-        timestamp: 333333,
-        extrinsic_index: "125-1",
-        from: "a",
-        to: "b",
-        symbol: "DOT",
-        block: 125,
-        label: "Ignored",
+        extrinsic_hash: "0xdef",
+        event_index: "1-2",
       },
     ] as any;
 
-    subscanService.searchAllEvents.mockResolvedValue(mockEvents);
-    subscanService.fetchAllTransfersFrom.mockResolvedValue(mockTransfers);
+    const mockTransfers: Transfer[] = [
+      {
+        amount: 10,
+        timestamp: 1690000000,
+        block: 100,
+        hash: "0xabc",
+        extrinsic_index: "1-1",
+        fiatValue: 20,
+        price: 2,
+        asset_unique_id: "DOT",
+      },
+      {
+        amount: -5,
+        timestamp: 1690000050,
+        block: 101,
+        hash: "0xdef",
+        extrinsic_index: "1-2",
+        fiatValue: 10,
+        price: 2,
+        asset_unique_id: "DOT",
+      },
+      {
+        amount: 20,
+        timestamp: 1690000100,
+        block: 102,
+        hash: "0xghi", // Not in events
+        extrinsic_index: "1-3",
+        fiatValue: 40,
+        price: 2,
+        asset_unique_id: "DOT",
+      },
+    ] as any;
+
+    mockSubscanService.searchAllEvents.mockResolvedValue(mockEvents);
+    mockSubscanService.fetchAllTransfers.mockResolvedValue(mockTransfers);
 
     const result = await service.fetchStakingRewards(
       "polkadot",
-      "address1",
+      "0xaddress",
       "staking",
       "Reward",
-      0,
+      1690000000,
     );
 
-    expect(result).toEqual([
-      {
-        event_id: "Reward",
-        amount: 1000,
-        timestamp: 111111,
-        block: 123,
-        hash: "hash1",
-      },
-      {
-        event_id: "Slash",
-        amount: -500,
-        timestamp: 222222,
-        block: 124,
-        hash: "hash2",
-      },
-    ]);
+    expect(result).toHaveLength(2);
+
+    expect(result[0]).toEqual({
+      event_id: "Reward",
+      amount: 10,
+      timestamp: 1690000000,
+      block: 100,
+      hash: "0xabc",
+      event_index: "1-1",
+      extrinsic_index: "1-1",
+      fiatValue: 20,
+      price: 2,
+      asset_unique_id: "DOT",
+    });
+
+    expect(result[1]).toEqual({
+      event_id: "Slash",
+      amount: -5,
+      timestamp: 1690000050,
+      block: 101,
+      hash: "0xdef",
+      event_index: "1-2",
+      extrinsic_index: "1-2",
+      fiatValue: 10,
+      price: 2,
+      asset_unique_id: "DOT",
+    });
   });
 
   it("should return an empty array if no matching hashes", async () => {
-    subscanService.searchAllEvents.mockResolvedValue([
-      { extrinsic_hash: "hash999" } as SubscanEvent,
-    ]);
-    subscanService.fetchAllTransfersFrom.mockResolvedValue([
+    mockSubscanService.searchAllEvents.mockResolvedValue([
+      { extrinsic_hash: "0x111", event_index: "0-1" },
+    ] as any);
+    mockSubscanService.fetchAllTransfers.mockResolvedValue([
       {
-        hash: "hash1",
-        amount: 1000,
-        timestamp: 111111,
-        extrinsic_index: "123-1",
-        from: "a",
-        to: "b",
-        symbol: "DOT",
-        block: 123,
-        label: "Reward",
+        amount: 50,
+        timestamp: 1690000000,
+        block: 99,
+        hash: "0x222", // not in events
+        extrinsic_index: "0-2",
+        fiatValue: 100,
+        price: 2,
+        asset_unique_id: "KSM",
       },
     ] as any);
 
     const result = await service.fetchStakingRewards(
-      "polkadot",
-      "address1",
+      "kusama",
+      "0xaddr",
       "staking",
       "Reward",
-      0,
+      1680000000,
     );
 
     expect(result).toEqual([]);

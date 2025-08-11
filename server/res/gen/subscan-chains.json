@@ -6,9 +6,13 @@
       "token": "PEAQ",
       "stakingPallets": ["ParachainStaking"],
       "evmPallet": true,
+      "assetPallet": true,
+      "foreignAssetsPallet": false,
       "standardStaking": false,
       "parachainStaking": true,
-      "delegatedStaking": false
+      "delegatedStaking": false,
+      "relay": "polkadot",
+      "paraId": 3338
     },
     {
       "domain": "krest",
@@ -19,6 +23,8 @@
         "StakingCoefficientRewardCalculator"
       ],
       "evmPallet": true,
+      "assetPallet": true,
+      "foreignAssetsPallet": false,
       "standardStaking": false,
       "parachainStaking": true,
       "delegatedStaking": false
@@ -29,9 +35,13 @@
       "token": "ZTG",
       "stakingPallets": ["ParachainStaking"],
       "evmPallet": false,
+      "assetPallet": false,
+      "foreignAssetsPallet": false,
       "standardStaking": false,
       "parachainStaking": true,
-      "delegatedStaking": false
+      "delegatedStaking": false,
+      "relay": "polkadot",
+      "paraId": 2092
     },
     {
       "domain": "vara",
@@ -39,6 +49,8 @@
       "token": "VARA",
       "stakingPallets": ["Staking", "StakingRewards"],
       "evmPallet": false,
+      "assetPallet": false,
+      "foreignAssetsPallet": false,
       "standardStaking": true,
       "parachainStaking": false,
       "delegatedStaking": false
@@ -49,9 +61,13 @@
       "token": "UNQ",
       "stakingPallets": [],
       "evmPallet": true,
+      "assetPallet": false,
+      "foreignAssetsPallet": true,
       "standardStaking": false,
       "parachainStaking": false,
-      "delegatedStaking": false
+      "delegatedStaking": false,
+      "relay": "polkadot",
+      "paraId": 2037
     },
     {
       "domain": "stafi",
@@ -59,6 +75,8 @@
       "token": "FIS",
       "stakingPallets": ["Staking"],
       "evmPallet": false,
+      "assetPallet": false,
+      "foreignAssetsPallet": false,
       "standardStaking": true,
       "parachainStaking": false,
       "delegatedStaking": false
@@ -69,9 +87,13 @@
       "token": "SDN",
       "stakingPallets": ["DappStaking"],
       "evmPallet": true,
+      "assetPallet": true,
+      "foreignAssetsPallet": false,
       "standardStaking": false,
       "parachainStaking": false,
-      "delegatedStaking": false
+      "delegatedStaking": false,
+      "relay": "kusama",
+      "paraId": 2007
     },
     {
       "domain": "shibuya",
@@ -79,6 +101,8 @@
       "token": "SBY",
       "stakingPallets": ["DappStaking"],
       "evmPallet": true,
+      "assetPallet": true,
+      "foreignAssetsPallet": false,
       "standardStaking": false,
       "parachainStaking": false,
       "delegatedStaking": false
@@ -89,9 +113,13 @@
       "token": "XOR",
       "stakingPallets": ["Staking", "CeresStaking"],
       "evmPallet": false,
+      "assetPallet": true,
+      "foreignAssetsPallet": false,
       "standardStaking": true,
       "parachainStaking": false,
-      "delegatedStaking": false
+      "delegatedStaking": false,
+      "relay": "polkadot",
+      "paraId": 2025
     },
     {
       "domain": "robonomics-freemium",
@@ -99,9 +127,13 @@
       "token": "XRT",
       "stakingPallets": [],
       "evmPallet": false,
+      "assetPallet": true,
+      "foreignAssetsPallet": false,
       "standardStaking": false,
       "parachainStaking": false,
-      "delegatedStaking": false
+      "delegatedStaking": false,
+      "relay": "kusama",
+      "paraId": 2048
     },
     {
       "domain": "robonomics",
@@ -109,9 +141,13 @@
       "token": "XRT",
       "stakingPallets": [],
       "evmPallet": false,
+      "assetPallet": true,
+      "foreignAssetsPallet": false,
       "standardStaking": false,
       "parachainStaking": false,
-      "delegatedStaking": false
+      "delegatedStaking": false,
+      "relay": "polkadot",
+      "paraId": 3388
     },
     {
       "domain": "polymesh",
@@ -119,6 +155,8 @@
       "token": "POLYX",
       "stakingPallets": ["Staking"],
       "evmPallet": false,
+      "assetPallet": false,
+      "foreignAssetsPallet": false,
       "standardStaking": true,
       "parachainStaking": false,
       "delegatedStaking": false
@@ -129,9 +167,14 @@
       "token": "DOT",
       "stakingPallets": ["Staking"],
       "evmPallet": false,
+      "assetPallet": false,
+      "foreignAssetsPallet": false,
       "standardStaking": true,
       "parachainStaking": false,
-      "delegatedStaking": false
+      "delegatedStaking": false,
+      "relay": "polkadot",
+      "isRelay": true,
+      "paraId": 0
     },
     {
       "domain": "phala",
@@ -139,9 +182,13 @@
       "token": "PHA",
       "stakingPallets": [],
       "evmPallet": false,
+      "assetPallet": true,
+      "foreignAssetsPallet": false,
       "standardStaking": false,
       "parachainStaking": false,
-      "delegatedStaking": false
+      "delegatedStaking": false,
+      "relay": "polkadot",
+      "paraId": 2035
     },
     {
       "domain": "people-polkadot",
@@ -149,9 +196,13 @@
       "token": "DOT",
       "stakingPallets": [],
       "evmPallet": false,
+      "assetPallet": false,
+      "foreignAssetsPallet": false,
       "standardStaking": false,
       "parachainStaking": false,
-      "delegatedStaking": false
+      "delegatedStaking": false,
+      "relay": "polkadot",
+      "paraId": 1004
     },
     {
       "domain": "people-kusama",
@@ -159,9 +210,13 @@
       "token": "KSM",
       "stakingPallets": [],
       "evmPallet": false,
+      "assetPallet": false,
+      "foreignAssetsPallet": false,
       "standardStaking": false,
       "parachainStaking": false,
-      "delegatedStaking": false
+      "delegatedStaking": false,
+      "relay": "kusama",
+      "paraId": 1004
     },
     {
       "domain": "pendulum",
@@ -169,9 +224,13 @@
       "token": "PEN",
       "stakingPallets": ["ParachainStaking", "VaultStaking"],
       "evmPallet": false,
+      "assetPallet": false,
+      "foreignAssetsPallet": false,
       "standardStaking": false,
       "parachainStaking": true,
-      "delegatedStaking": false
+      "delegatedStaking": false,
+      "relay": "polkadot",
+      "paraId": 2094
     },
     {
       "domain": "opal",
@@ -179,6 +238,8 @@
       "token": "OPL",
       "stakingPallets": [],
       "evmPallet": true,
+      "assetPallet": false,
+      "foreignAssetsPallet": true,
       "standardStaking": false,
       "parachainStaking": false,
       "delegatedStaking": false
@@ -189,9 +250,13 @@
       "token": "NODL",
       "stakingPallets": [],
       "evmPallet": false,
+      "assetPallet": false,
+      "foreignAssetsPallet": false,
       "standardStaking": false,
       "parachainStaking": false,
-      "delegatedStaking": false
+      "delegatedStaking": false,
+      "relay": "polkadot",
+      "paraId": 2026
     },
     {
       "domain": "neuroweb",
@@ -199,9 +264,13 @@
       "token": "NEURO",
       "stakingPallets": [],
       "evmPallet": true,
+      "assetPallet": true,
+      "foreignAssetsPallet": false,
       "standardStaking": false,
       "parachainStaking": false,
-      "delegatedStaking": false
+      "delegatedStaking": false,
+      "relay": "polkadot",
+      "paraId": 2043
     },
     {
       "domain": "mythos",
@@ -209,9 +278,13 @@
       "token": "MYTH",
       "stakingPallets": ["CollatorStaking"],
       "evmPallet": false,
+      "assetPallet": false,
+      "foreignAssetsPallet": false,
       "standardStaking": false,
       "parachainStaking": false,
       "delegatedStaking": false,
+      "relay": "polkadot",
+      "paraId": 3369,
       "evmAddressSupport": true
     },
     {
@@ -220,9 +293,13 @@
       "token": "MOVR",
       "stakingPallets": ["ParachainStaking"],
       "evmPallet": true,
+      "assetPallet": true,
+      "foreignAssetsPallet": false,
       "standardStaking": false,
       "parachainStaking": true,
-      "delegatedStaking": false
+      "delegatedStaking": false,
+      "relay": "kusama",
+      "paraId": 2023
     },
     {
       "domain": "moonbeam",
@@ -230,9 +307,13 @@
       "token": "GLMR",
       "stakingPallets": ["ParachainStaking"],
       "evmPallet": true,
+      "assetPallet": true,
+      "foreignAssetsPallet": false,
       "standardStaking": false,
       "parachainStaking": true,
-      "delegatedStaking": false
+      "delegatedStaking": false,
+      "relay": "polkadot",
+      "paraId": 2004
     },
     {
       "domain": "manta",
@@ -240,9 +321,13 @@
       "token": "MANTA",
       "stakingPallets": ["ParachainStaking"],
       "evmPallet": false,
+      "assetPallet": true,
+      "foreignAssetsPallet": false,
       "standardStaking": false,
       "parachainStaking": true,
-      "delegatedStaking": false
+      "delegatedStaking": false,
+      "relay": "polkadot",
+      "paraId": 2104
     },
     {
       "domain": "kusama",
@@ -250,9 +335,14 @@
       "token": "KSM",
       "stakingPallets": ["Staking", "DelegatedStaking"],
       "evmPallet": false,
+      "assetPallet": false,
+      "foreignAssetsPallet": false,
       "standardStaking": true,
       "parachainStaking": false,
-      "delegatedStaking": true
+      "delegatedStaking": true,
+      "relay": "kusama",
+      "isRelay": true,
+      "paraId": 0
     },
     {
       "domain": "kintsugi",
@@ -260,9 +350,13 @@
       "token": "KINT",
       "stakingPallets": ["VaultStaking"],
       "evmPallet": true,
+      "assetPallet": false,
+      "foreignAssetsPallet": false,
       "standardStaking": false,
       "parachainStaking": false,
       "delegatedStaking": false,
+      "relay": "kusama",
+      "paraId": 2092,
       "pseudoStaking": true
     },
     {
@@ -271,9 +365,13 @@
       "token": "PHA",
       "stakingPallets": [],
       "evmPallet": false,
+      "assetPallet": true,
+      "foreignAssetsPallet": false,
       "standardStaking": false,
       "parachainStaking": false,
-      "delegatedStaking": false
+      "delegatedStaking": false,
+      "relay": "kusama",
+      "paraId": 2004
     },
     {
       "domain": "karura",
@@ -281,9 +379,13 @@
       "token": "KAR",
       "stakingPallets": [],
       "evmPallet": true,
+      "assetPallet": false,
+      "foreignAssetsPallet": false,
       "standardStaking": false,
       "parachainStaking": false,
-      "delegatedStaking": false
+      "delegatedStaking": false,
+      "relay": "kusama",
+      "paraId": 2000
     },
     {
       "domain": "spiritnet",
@@ -291,9 +393,13 @@
       "token": "KILT",
       "stakingPallets": ["ParachainStaking"],
       "evmPallet": false,
+      "assetPallet": false,
+      "foreignAssetsPallet": false,
       "standardStaking": false,
       "parachainStaking": true,
-      "delegatedStaking": false
+      "delegatedStaking": false,
+      "relay": "polkadot",
+      "paraId": 2086
     },
     {
       "domain": "integritee",
@@ -301,9 +407,13 @@
       "token": "TEER",
       "stakingPallets": [],
       "evmPallet": false,
+      "assetPallet": true,
+      "foreignAssetsPallet": false,
       "standardStaking": false,
       "parachainStaking": false,
-      "delegatedStaking": false
+      "delegatedStaking": false,
+      "relay": "kusama",
+      "paraId": 2015
     },
     {
       "domain": "hydration",
@@ -311,9 +421,13 @@
       "token": "HDX",
       "stakingPallets": ["Staking"],
       "evmPallet": true,
+      "assetPallet": false,
+      "foreignAssetsPallet": false,
       "standardStaking": true,
       "parachainStaking": false,
       "delegatedStaking": false,
+      "relay": "polkadot",
+      "paraId": 2034,
       "pseudoStaking": true
     },
     {
@@ -322,6 +436,8 @@
       "token": "HMND",
       "stakingPallets": [],
       "evmPallet": true,
+      "assetPallet": false,
+      "foreignAssetsPallet": false,
       "standardStaking": false,
       "parachainStaking": false,
       "delegatedStaking": false
@@ -332,9 +448,13 @@
       "token": "HEI",
       "stakingPallets": ["ParachainStaking", "ScoreStaking"],
       "evmPallet": true,
+      "assetPallet": true,
+      "foreignAssetsPallet": false,
       "standardStaking": false,
       "parachainStaking": true,
-      "delegatedStaking": false
+      "delegatedStaking": false,
+      "relay": "polkadot",
+      "paraId": 2013
     },
     {
       "domain": "gasp",
@@ -342,6 +462,8 @@
       "token": "GASP",
       "stakingPallets": ["ParachainStaking", "SequencerStaking"],
       "evmPallet": false,
+      "assetPallet": false,
+      "foreignAssetsPallet": false,
       "standardStaking": false,
       "parachainStaking": true,
       "delegatedStaking": false
@@ -352,9 +474,14 @@
       "token": "ENJ",
       "stakingPallets": ["Staking"],
       "evmPallet": false,
+      "assetPallet": false,
+      "foreignAssetsPallet": false,
       "standardStaking": true,
       "parachainStaking": false,
-      "delegatedStaking": false
+      "delegatedStaking": false,
+      "relay": "enjin",
+      "isRelay": true,
+      "paraId": 0
     },
     {
       "domain": "matrix",
@@ -362,6 +489,8 @@
       "token": "ENJ",
       "stakingPallets": ["CollatorStaking"],
       "evmPallet": false,
+      "assetPallet": false,
+      "foreignAssetsPallet": false,
       "standardStaking": false,
       "parachainStaking": false,
       "delegatedStaking": false
@@ -372,9 +501,13 @@
       "token": "EWT",
       "stakingPallets": ["ParachainStaking"],
       "evmPallet": false,
+      "assetPallet": true,
+      "foreignAssetsPallet": false,
       "standardStaking": false,
       "parachainStaking": true,
-      "delegatedStaking": false
+      "delegatedStaking": false,
+      "relay": "polkadot",
+      "paraId": 3345
     },
     {
       "domain": "dock",
@@ -382,6 +515,8 @@
       "token": "DOCK",
       "stakingPallets": ["Staking", "StakingRewards"],
       "evmPallet": true,
+      "assetPallet": false,
+      "foreignAssetsPallet": false,
       "standardStaking": true,
       "parachainStaking": false,
       "delegatedStaking": false
@@ -392,6 +527,8 @@
       "token": "DBC",
       "stakingPallets": ["Staking"],
       "evmPallet": true,
+      "assetPallet": true,
+      "foreignAssetsPallet": false,
       "standardStaking": true,
       "parachainStaking": false,
       "delegatedStaking": false
@@ -402,9 +539,13 @@
       "token": "RING",
       "stakingPallets": ["DarwiniaStaking"],
       "evmPallet": true,
+      "assetPallet": true,
+      "foreignAssetsPallet": false,
       "standardStaking": false,
       "parachainStaking": false,
-      "delegatedStaking": false
+      "delegatedStaking": false,
+      "relay": "polkadot",
+      "paraId": 2046
     },
     {
       "domain": "dancebox",
@@ -412,16 +553,8 @@
       "token": "DANCE",
       "stakingPallets": ["PooledStaking"],
       "evmPallet": false,
-      "standardStaking": false,
-      "parachainStaking": false,
-      "delegatedStaking": false
-    },
-    {
-      "domain": "shadow",
-      "label": "Crust Shadow",
-      "token": "CSM",
-      "stakingPallets": [],
-      "evmPallet": false,
+      "assetPallet": false,
+      "foreignAssetsPallet": true,
       "standardStaking": false,
       "parachainStaking": false,
       "delegatedStaking": false
@@ -432,9 +565,13 @@
       "token": "CRU",
       "stakingPallets": [],
       "evmPallet": false,
+      "assetPallet": true,
+      "foreignAssetsPallet": false,
       "standardStaking": false,
       "parachainStaking": false,
-      "delegatedStaking": false
+      "delegatedStaking": false,
+      "relay": "polkadot",
+      "paraId": 2008
     },
     {
       "domain": "crust",
@@ -442,6 +579,8 @@
       "token": "CRU",
       "stakingPallets": ["Staking"],
       "evmPallet": false,
+      "assetPallet": false,
+      "foreignAssetsPallet": false,
       "standardStaking": true,
       "parachainStaking": false,
       "delegatedStaking": false
@@ -452,6 +591,8 @@
       "token": "CTC",
       "stakingPallets": ["Staking"],
       "evmPallet": false,
+      "assetPallet": false,
+      "foreignAssetsPallet": false,
       "standardStaking": true,
       "parachainStaking": false,
       "delegatedStaking": false
@@ -462,9 +603,13 @@
       "token": "DOT",
       "stakingPallets": [],
       "evmPallet": false,
+      "assetPallet": false,
+      "foreignAssetsPallet": false,
       "standardStaking": false,
       "parachainStaking": false,
-      "delegatedStaking": false
+      "delegatedStaking": false,
+      "relay": "polkadot",
+      "paraId": 1005
     },
     {
       "domain": "coretime-kusama",
@@ -472,9 +617,13 @@
       "token": "KSM",
       "stakingPallets": [],
       "evmPallet": false,
+      "assetPallet": false,
+      "foreignAssetsPallet": false,
       "standardStaking": false,
       "parachainStaking": false,
-      "delegatedStaking": false
+      "delegatedStaking": false,
+      "relay": "kusama",
+      "paraId": 1005
     },
     {
       "domain": "collectives-polkadot",
@@ -482,9 +631,13 @@
       "token": "DOT",
       "stakingPallets": [],
       "evmPallet": false,
+      "assetPallet": false,
+      "foreignAssetsPallet": false,
       "standardStaking": false,
       "parachainStaking": false,
-      "delegatedStaking": false
+      "delegatedStaking": false,
+      "relay": "polkadot",
+      "paraId": 1001
     },
     {
       "domain": "clover",
@@ -492,9 +645,13 @@
       "token": "CLV",
       "stakingPallets": ["Staking"],
       "evmPallet": false,
+      "assetPallet": false,
+      "foreignAssetsPallet": false,
       "standardStaking": true,
       "parachainStaking": false,
-      "delegatedStaking": false
+      "delegatedStaking": false,
+      "relay": "polkadot",
+      "paraId": 2002
     },
     {
       "domain": "centrifuge",
@@ -502,9 +659,13 @@
       "token": "CFG",
       "stakingPallets": [],
       "evmPallet": true,
+      "assetPallet": false,
+      "foreignAssetsPallet": false,
       "standardStaking": false,
       "parachainStaking": false,
-      "delegatedStaking": false
+      "delegatedStaking": false,
+      "relay": "polkadot",
+      "paraId": 2031
     },
     {
       "domain": "calamari",
@@ -512,9 +673,13 @@
       "token": "KMA",
       "stakingPallets": ["ParachainStaking"],
       "evmPallet": false,
+      "assetPallet": true,
+      "foreignAssetsPallet": false,
       "standardStaking": false,
       "parachainStaking": true,
-      "delegatedStaking": false
+      "delegatedStaking": false,
+      "relay": "kusama",
+      "paraId": 2084
     },
     {
       "domain": "bridgehub-polkadot",
@@ -522,9 +687,13 @@
       "token": "DOT",
       "stakingPallets": [],
       "evmPallet": false,
+      "assetPallet": false,
+      "foreignAssetsPallet": false,
       "standardStaking": false,
       "parachainStaking": false,
-      "delegatedStaking": false
+      "delegatedStaking": false,
+      "relay": "polkadot",
+      "paraId": 1002
     },
     {
       "domain": "bridgehub-kusama",
@@ -532,9 +701,13 @@
       "token": "KSM",
       "stakingPallets": [],
       "evmPallet": false,
+      "assetPallet": false,
+      "foreignAssetsPallet": false,
       "standardStaking": false,
       "parachainStaking": false,
-      "delegatedStaking": false
+      "delegatedStaking": false,
+      "relay": "kusama",
+      "paraId": 1002
     },
     {
       "domain": "bifrost-kusama",
@@ -546,9 +719,13 @@
         "LeverageStaking"
       ],
       "evmPallet": false,
+      "assetPallet": false,
+      "foreignAssetsPallet": false,
       "standardStaking": false,
       "parachainStaking": true,
-      "delegatedStaking": false
+      "delegatedStaking": false,
+      "relay": "kusama",
+      "paraId": 2001
     },
     {
       "domain": "bifrost",
@@ -560,9 +737,13 @@
         "LeverageStaking"
       ],
       "evmPallet": true,
+      "assetPallet": false,
+      "foreignAssetsPallet": false,
       "standardStaking": false,
       "parachainStaking": true,
-      "delegatedStaking": false
+      "delegatedStaking": false,
+      "relay": "polkadot",
+      "paraId": 2030
     },
     {
       "domain": "basilisk",
@@ -570,9 +751,13 @@
       "token": "BSX",
       "stakingPallets": [],
       "evmPallet": false,
+      "assetPallet": false,
+      "foreignAssetsPallet": false,
       "standardStaking": false,
       "parachainStaking": false,
       "delegatedStaking": false,
+      "relay": "kusama",
+      "paraId": 2090,
       "pseudoStaking": true
     },
     {
@@ -581,6 +766,8 @@
       "token": "AVAIL",
       "stakingPallets": ["Staking"],
       "evmPallet": false,
+      "assetPallet": false,
+      "foreignAssetsPallet": false,
       "standardStaking": true,
       "parachainStaking": false,
       "delegatedStaking": false
@@ -591,6 +778,8 @@
       "token": "AI3",
       "stakingPallets": [],
       "evmPallet": false,
+      "assetPallet": false,
+      "foreignAssetsPallet": false,
       "standardStaking": false,
       "parachainStaking": false,
       "delegatedStaking": false
@@ -601,9 +790,13 @@
       "token": "ASTR",
       "stakingPallets": ["DappStaking"],
       "evmPallet": true,
+      "assetPallet": true,
+      "foreignAssetsPallet": false,
       "standardStaking": false,
       "parachainStaking": false,
-      "delegatedStaking": false
+      "delegatedStaking": false,
+      "relay": "polkadot",
+      "paraId": 2006
     },
     {
       "domain": "assethub-polkadot",
@@ -611,9 +804,13 @@
       "token": "DOT",
       "stakingPallets": [],
       "evmPallet": false,
+      "assetPallet": true,
+      "foreignAssetsPallet": true,
       "standardStaking": false,
       "parachainStaking": false,
-      "delegatedStaking": false
+      "delegatedStaking": false,
+      "relay": "polkadot",
+      "paraId": 1000
     },
     {
       "domain": "assethub-kusama",
@@ -621,9 +818,13 @@
       "token": "KSM",
       "stakingPallets": [],
       "evmPallet": false,
+      "assetPallet": true,
+      "foreignAssetsPallet": true,
       "standardStaking": false,
       "parachainStaking": false,
-      "delegatedStaking": false
+      "delegatedStaking": false,
+      "relay": "kusama",
+      "paraId": 1000
     },
     {
       "domain": "altair",
@@ -631,9 +832,13 @@
       "token": "AIR",
       "stakingPallets": [],
       "evmPallet": true,
+      "assetPallet": false,
+      "foreignAssetsPallet": false,
       "standardStaking": false,
       "parachainStaking": false,
-      "delegatedStaking": false
+      "delegatedStaking": false,
+      "relay": "kusama",
+      "paraId": 2088
     },
     {
       "domain": "alephzero",
@@ -641,6 +846,8 @@
       "token": "AZERO",
       "stakingPallets": ["Staking"],
       "evmPallet": false,
+      "assetPallet": false,
+      "foreignAssetsPallet": false,
       "standardStaking": true,
       "parachainStaking": false,
       "delegatedStaking": false
@@ -651,9 +858,13 @@
       "token": "ACA",
       "stakingPallets": [],
       "evmPallet": true,
+      "assetPallet": false,
+      "foreignAssetsPallet": false,
       "standardStaking": false,
       "parachainStaking": false,
-      "delegatedStaking": false
+      "delegatedStaking": false,
+      "relay": "polkadot",
+      "paraId": 2000
     }
   ]
 }

@@ -1,7 +1,7 @@
 import { expect, it, describe, beforeEach } from "@jest/globals";
 
-import { Swap } from "../model/swap";
 import { ChainAdjustments } from "./chain-adjustments";
+import { PortfolioMovement } from "../model/portfolio-movement";
 
 describe("ChainAdjustments.handleHydration", () => {
   let chainAdjustments: ChainAdjustments;
@@ -11,7 +11,7 @@ describe("ChainAdjustments.handleHydration", () => {
   });
 
   it("should remove '2-pool' if it's among multiple sold tokens", () => {
-    const swaps: Swap[] = [
+    const payments: PortfolioMovement[] = [
       {
         transfers: [
           { amount: -100, symbol: "2-pool" },
@@ -21,15 +21,15 @@ describe("ChainAdjustments.handleHydration", () => {
       } as any,
     ];
 
-    chainAdjustments.handleHydration(swaps);
+    chainAdjustments.handleHydration(payments);
 
-    const symbols = swaps[0].transfers.map((t) => t.symbol);
+    const symbols = payments[0].transfers.map((t) => t.symbol);
     expect(symbols).not.toContain("2-pool");
     expect(symbols).toEqual(["DAI", "USDC"]);
   });
 
   it("should remove '4-pool' if it's among multiple bought tokens", () => {
-    const swaps: Swap[] = [
+    const payments: PortfolioMovement[] = [
       {
         transfers: [
           { amount: -200, symbol: "USDT" },
@@ -39,15 +39,15 @@ describe("ChainAdjustments.handleHydration", () => {
       } as any,
     ];
 
-    chainAdjustments.handleHydration(swaps);
+    chainAdjustments.handleHydration(payments);
 
-    const symbols = swaps[0].transfers.map((t) => t.symbol);
+    const symbols = payments[0].transfers.map((t) => t.symbol);
     expect(symbols).not.toContain("4-pool");
     expect(symbols).toEqual(["USDT", "DAI"]);
   });
 
   it("should not remove pool tokens if only one is sold or bought", () => {
-    const swaps: Swap[] = [
+    const payments: PortfolioMovement[] = [
       {
         transfers: [
           { amount: -100, symbol: "2-pool" },
@@ -56,14 +56,14 @@ describe("ChainAdjustments.handleHydration", () => {
       } as any,
     ];
 
-    chainAdjustments.handleHydration(swaps);
+    chainAdjustments.handleHydration(payments);
 
-    const symbols = swaps[0].transfers.map((t) => t.symbol);
+    const symbols = payments[0].transfers.map((t) => t.symbol);
     expect(symbols).toEqual(["2-pool", "DAI"]);
   });
 
   it("should not alter swaps with 2 or fewer transfers", () => {
-    const swaps: Swap[] = [
+    const payments: PortfolioMovement[] = [
       {
         transfers: [
           { amount: -50, symbol: "DAI" },
@@ -72,14 +72,14 @@ describe("ChainAdjustments.handleHydration", () => {
       } as any,
     ];
 
-    chainAdjustments.handleHydration(swaps);
+    chainAdjustments.handleHydration(payments);
 
-    const symbols = swaps[0].transfers.map((t) => t.symbol);
+    const symbols = payments[0].transfers.map((t) => t.symbol);
     expect(symbols).toEqual(["DAI", "USDC"]);
   });
 
   it("should remove both '2-pool' and '4-pool' if applicable", () => {
-    const swaps: Swap[] = [
+    const payment: PortfolioMovement[] = [
       {
         transfers: [
           { amount: -50, symbol: "2-pool" },
@@ -90,9 +90,9 @@ describe("ChainAdjustments.handleHydration", () => {
       } as any,
     ];
 
-    chainAdjustments.handleHydration(swaps);
+    chainAdjustments.handleHydration(payment);
 
-    const symbols = swaps[0].transfers.map((t) => t.symbol);
+    const symbols = payment[0].transfers.map((t) => t.symbol);
     expect(symbols).toEqual(["DAI", "USDC"]);
   });
 });

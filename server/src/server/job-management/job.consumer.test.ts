@@ -1,122 +1,142 @@
-import { JobsService } from "./jobs.service";
 import { expect, it, describe, jest, beforeEach } from "@jest/globals";
-import { StakingRewardsWithFiatService } from "../data-aggregation/services/staking-rewards-with-fiat.service";
-import { Job } from "../../model/job";
-import { StakingRewardsResponse } from "../data-aggregation/model/staking-rewards.response";
+
 import { JobConsumer } from "./job.consumer";
+import { JobsService } from "./jobs.service";
+import { PortfolioMovementsService } from "../data-aggregation/services/portfolio-movements.service";
+import { Job } from "../../model/job";
+import subscanChains from "../../../res/gen/subscan-chains.json";
 
-// Mock dependencies
-const mockJobsService = {
-  setInProgress: jest.fn<any>(),
-  setDone: jest.fn<any>(),
-  setError: jest.fn<any>(),
-};
-
-const mockStakingService = {
-  fetchStakingRewardsViaSubscan: jest.fn<any>(),
-};
-
-const createJob = (overrides: Partial<Job> = {}): Job =>
-  ({
-    wallet: "wallet-abc",
-    currency: "USD",
-    blockchain: "polkadot",
-    syncFromDate: 1700000000,
-    reqId: "req-123",
-    data: undefined,
-    ...overrides,
-  }) as any;
+jest.mock("../logger/logger", () => ({
+  logger: {
+    info: jest.fn(),
+    error: jest.fn(),
+  },
+}));
 
 describe("JobConsumer", () => {
-  let jobConsumer: JobConsumer;
+  let jobsService: jest.Mocked<JobsService>;
+  let portfolioMovementsService: jest.Mocked<PortfolioMovementsService>;
+  let consumer: JobConsumer;
+
+  const baseJob: Job = {
+    reqId: "req123",
+    wallet: "0xABC",
+    blockchain: subscanChains.chains[0].domain,
+    currency: "ETH",
+    status: "pending",
+    lastModified: Date.now(),
+    syncFromDate: 1000,
+    data: undefined,
+  };
 
   beforeEach(() => {
-    jest.clearAllMocks();
-    jobConsumer = new JobConsumer(
-      mockJobsService as unknown as JobsService,
-      mockStakingService as unknown as StakingRewardsWithFiatService,
-    );
+    jobsService = {
+      setError: jest.fn<any>(),
+      setInProgress: jest.fn(),
+      setDone: jest.fn(),
+    } as any;
+
+    portfolioMovementsService = {
+      fetchPortfolioMovements: jest.fn(),
+    } as any;
+
+    consumer = new JobConsumer(jobsService, portfolioMovementsService);
   });
 
-  it("should set error if chain is not found", async () => {
-    const job = createJob({ blockchain: "non-existent" });
+  it("should set error if chain not found", async () => {
+    const job = { ...baseJob, blockchain: "nonexistent-chain" };
+    await consumer.process(job);
 
-    await jobConsumer.process(job);
-
-    expect(mockJobsService.setError).toHaveBeenCalledWith(
-      expect.objectContaining({
-        code: 400,
-        msg: expect.stringContaining("not found"),
-      }),
+    expect(jobsService.setError).toHaveBeenCalledWith(
+      { code: 400, msg: expect.stringContaining("not found") },
       job,
     );
   });
 
-  it("should return early if setInProgress returns false", async () => {
-    const job = createJob();
-    mockJobsService.setInProgress.mockResolvedValue(false);
+  it("should skip processing if job already claimed", async () => {
+    jobsService.setInProgress.mockResolvedValue(false);
 
-    await jobConsumer.process(job);
+    await consumer.process(baseJob);
 
+    expect(jobsService.setInProgress).toHaveBeenCalledWith(baseJob);
     expect(
-      mockStakingService.fetchStakingRewardsViaSubscan,
+      portfolioMovementsService.fetchPortfolioMovements,
     ).not.toHaveBeenCalled();
-    expect(mockJobsService.setDone).not.toHaveBeenCalled();
+    expect(jobsService.setDone).not.toHaveBeenCalled();
   });
 
-  it("should process job and set it to done", async () => {
-    const job = createJob();
-    mockJobsService.setInProgress.mockResolvedValue(true);
-    mockStakingService.fetchStakingRewardsViaSubscan.mockResolvedValue({
-      values: [{ timestamp: 1800000000 }],
-    });
+  it("should process job and set done without previous data", async () => {
+    jobsService.setInProgress.mockResolvedValue(true);
+    portfolioMovementsService.fetchPortfolioMovements.mockResolvedValue({
+      portfolioMovements: [{ timestamp: 2000 }],
+    } as any);
 
-    await jobConsumer.process(job);
+    await consumer.process(baseJob);
 
-    expect(
-      mockStakingService.fetchStakingRewardsViaSubscan,
-    ).toHaveBeenCalledWith(
-      expect.objectContaining({
-        address: job.wallet,
-        currency: job.currency,
-        startDate: job.syncFromDate,
-      }),
+    expect(jobsService.setDone).toHaveBeenCalledWith(
+      { values: [{ timestamp: 2000 }] },
+      baseJob,
     );
-    expect(mockJobsService.setDone).toHaveBeenCalled();
   });
 
-  it("should merge previously synced values if job.data exists", async () => {
-    const previousValue = { timestamp: 1600000000 };
-    const job = createJob({
-      data: { values: [previousValue] } as StakingRewardsResponse,
-    });
+  it("should process job and merge with previous data", async () => {
+    const jobWithPrevious: Job = {
+      ...baseJob,
+      data: {
+        values: [
+          { timestamp: 500 },
+          { timestamp: 900 }, // before syncFromDate
+          { timestamp: 1500 }, // after syncFromDate
+        ],
+      },
+    };
 
-    mockJobsService.setInProgress.mockResolvedValue(true);
-    mockStakingService.fetchStakingRewardsViaSubscan.mockResolvedValue({
-      values: [{ timestamp: 1800000000 }],
-    });
+    jobsService.setInProgress.mockResolvedValue(true);
+    portfolioMovementsService.fetchPortfolioMovements.mockResolvedValue({
+      portfolioMovements: [{ timestamp: 2000 }],
+    } as any);
 
-    await jobConsumer.process(job);
+    await consumer.process(jobWithPrevious);
 
-    const result: any = mockJobsService.setDone.mock.calls[0][0];
-    expect(result.values).toContainEqual(previousValue);
-    expect(result.values.length).toBe(2);
-  });
-
-  it("should handle and report processing errors", async () => {
-    const job = createJob();
-    const error = new Error("Unexpected failure");
-
-    mockJobsService.setInProgress.mockResolvedValue(true);
-    mockStakingService.fetchStakingRewardsViaSubscan.mockRejectedValue(error);
-
-    await jobConsumer.process(job);
-
-    expect(mockJobsService.setError).toHaveBeenCalledWith(
-      expect.objectContaining({
-        msg: expect.stringContaining("Unexpected failure"),
-      }),
-      job,
+    expect(jobsService.setDone).toHaveBeenCalledWith(
+      {
+        values: [
+          { timestamp: 2000 },
+          { timestamp: 500 },
+          { timestamp: 900 }, // merged
+        ],
+      },
+      jobWithPrevious,
     );
+  });
+
+  it("should handle error thrown during processing", async () => {
+    const error = new Error("Oops");
+    jobsService.setInProgress.mockResolvedValue(true);
+    portfolioMovementsService.fetchPortfolioMovements.mockRejectedValue(error);
+
+    await consumer.process(baseJob);
+
+    expect(jobsService.setError).toHaveBeenCalledWith(
+      {
+        code: 500,
+        msg: expect.stringContaining("Oops"),
+      },
+      baseJob,
+    );
+  });
+
+  it("should log error if setError itself fails", async () => {
+    const error = new Error("Fetch failed");
+    const nestedError = new Error("SetError failed");
+
+    jobsService.setInProgress.mockResolvedValue(true);
+    portfolioMovementsService.fetchPortfolioMovements.mockRejectedValue(error);
+    (jobsService.setError as jest.Mock<any>).mockRejectedValue(nestedError);
+
+    await consumer.process(baseJob);
+
+    expect(jobsService.setError).toHaveBeenCalled();
+    // logger is mocked, so no assert, but we avoid crash
   });
 });

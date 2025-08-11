@@ -2,13 +2,15 @@ import { SubscanService } from "../../blockchain/substrate/api/subscan.service";
 import { StakingRewardsService } from "../../blockchain/substrate/services/staking-rewards.service";
 import { StakingRewardsRequest } from "../model/staking-rewards.request";
 import { TokenPriceConversionService } from "./token-price-conversion.service";
-import { StakingRewardsResponse } from "../model/staking-rewards.response";
-import { addFiatValuesToStakingRewards } from "../helper/add-fiat-values-to-staking-rewards";
+import {
+  addFiatValuesToAggregatedStakingRewards,
+  addFiatValuesToStakingRewards,
+} from "../helper/add-fiat-values-to-staking-rewards";
 import { findCoingeckoIdForNativeToken } from "../helper/find-coingecko-id-for-native-token";
 import { isEvmAddress } from "../helper/is-evm-address";
 import { DataPlatformService } from "../../data-platform-api/data-platform.service";
-import { PricedStakingReward } from "../model/priced-staking-reward";
-import * as subscanChains from "../../../../res/gen/subscan-chains.json";
+import { AggregatedStakingReward } from "../model/aggregated-staking-reward";
+import { StakingReward } from "../../blockchain/substrate/model/staking-reward";
 
 export class StakingRewardsWithFiatService {
   constructor(
@@ -20,8 +22,8 @@ export class StakingRewardsWithFiatService {
 
   private async fetchFromSubscan(
     stakingRewardsRequest: StakingRewardsRequest,
-  ): Promise<PricedStakingReward[]> {
-    let { chain, address, startDate } = stakingRewardsRequest;
+  ): Promise<StakingReward[]> {
+    let { chain, address, minDate } = stakingRewardsRequest;
     if (isEvmAddress(address)) {
       address =
         (await this.subscanService.mapToSubstrateAccount(
@@ -29,52 +31,43 @@ export class StakingRewardsWithFiatService {
           address,
         )) || address;
     }
-    return this.stakingRewardsService.fetchStakingRewards(
-      chain.domain,
+    return this.stakingRewardsService.fetchStakingRewards({
+      chainName: chain.domain,
       address,
-      startDate,
-    );
-  }
-
-  async fetchStakingRewardsViaPlatformApi(
-    address: string,
-    currency: string,
-  ): Promise<(StakingRewardsResponse & { currency: string; chain: string })[]> {
-    const aggregatedRewards: {
-      chain: string;
-      values: PricedStakingReward[];
-    }[] = await this.dataPlatformService.fetchAggregatedStakingRewards(address);
-    const domains = aggregatedRewards.map((a) => a.chain);
-    const coingeckoIds = domains
-      .map((d) => findCoingeckoIdForNativeToken(d))
-      .filter((id) => !!id);
-
-    const quotes = await (coingeckoIds.length > 0
-      ? this.tokenPriceConversionService.fetchQuotesForTokens(
-          coingeckoIds,
-          currency,
-        )
-      : Promise.resolve({}));
-
-    return aggregatedRewards.map((rewards) => {
-      const chainInfo = subscanChains.chains.find(
-        (c) => c.domain === rewards.chain,
-      );
-      return {
-        values: addFiatValuesToStakingRewards(
-          rewards.values,
-          quotes[findCoingeckoIdForNativeToken(rewards.chain)],
-        ),
-        token: chainInfo.token,
-        currency,
-        chain: rewards.chain,
-      };
+      minDate,
     });
   }
 
-  async fetchStakingRewardsViaSubscan(
+  private async fetchStakingRewardsViaPlatformApi(
     stakingRewardsRequest: StakingRewardsRequest,
-  ): Promise<StakingRewardsResponse> {
+  ): Promise<AggregatedStakingReward[]> {
+    const aggregatedRewards: AggregatedStakingReward[] =
+      await this.dataPlatformService.fetchAggregatedStakingRewardsForChain(
+        stakingRewardsRequest.address,
+        stakingRewardsRequest.chain.domain,
+      );
+    const coingeckoId = findCoingeckoIdForNativeToken(
+      stakingRewardsRequest.chain.domain,
+    );
+
+    const quotes = await (coingeckoId
+      ? this.tokenPriceConversionService.fetchQuotesForTokens(
+          [coingeckoId],
+          stakingRewardsRequest.currency,
+        )
+      : Promise.resolve({}));
+
+    addFiatValuesToAggregatedStakingRewards(
+      aggregatedRewards,
+      quotes[coingeckoId],
+    );
+
+    return aggregatedRewards;
+  }
+
+  public async fetchStakingRewardsViaSubscan(
+    stakingRewardsRequest: StakingRewardsRequest,
+  ): Promise<StakingReward[]> {
     let { chain, currency } = stakingRewardsRequest;
 
     const coingeckoId = findCoingeckoIdForNativeToken(chain.domain);
@@ -89,9 +82,44 @@ export class StakingRewardsWithFiatService {
       this.fetchFromSubscan(stakingRewardsRequest),
     ]);
 
-    return {
-      values: addFiatValuesToStakingRewards(rewards, quotes[coingeckoId]),
-      token: chain.token,
-    };
+    addFiatValuesToStakingRewards(rewards, quotes[coingeckoId]);
+
+    return rewards;
+  }
+
+  async fetchStakingRewards(
+    stakingRewardsRequest: StakingRewardsRequest,
+  ): Promise<{
+    rawStakingRewards: StakingReward[];
+    aggregatedRewards: AggregatedStakingReward[];
+  }> {
+    switch (stakingRewardsRequest.chain.domain) {
+      case "polkadot":
+      case "kusama":
+      case "hydration":
+      case "enjin":
+        if (process.env["USE_DATA_PLATFORM_API"]) {
+          return {
+            rawStakingRewards: [],
+            aggregatedRewards: await this.fetchStakingRewardsViaPlatformApi(
+              stakingRewardsRequest,
+            ),
+          };
+        } else {
+          return {
+            rawStakingRewards: await this.fetchStakingRewardsViaSubscan(
+              stakingRewardsRequest,
+            ),
+            aggregatedRewards: [],
+          };
+        }
+      default:
+        return {
+          rawStakingRewards: await this.fetchStakingRewardsViaSubscan(
+            stakingRewardsRequest,
+          ),
+          aggregatedRewards: [],
+        };
+    }
   }
 }

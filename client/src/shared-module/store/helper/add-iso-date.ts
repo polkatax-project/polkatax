@@ -1,7 +1,7 @@
-import { Reward, RewardDto } from '../../model/rewards';
+import { TaxableEvent } from '../../model/taxable-event';
 import { formatDate } from '../../util/date-utils';
 
-export const addIsoDate = (values: RewardDto[]): Reward[] => {
+export const addIsoDate = (values: TaxableEvent[]): TaxableEvent[] => {
   return values.map((v) => ({
     ...v,
     /**

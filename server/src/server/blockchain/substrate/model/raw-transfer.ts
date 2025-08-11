@@ -1,4 +1,5 @@
 export interface RawSubstrateTransferDto {
+  id: number;
   transfer_id: number;
   from: string;
   from_account_display: {
@@ -48,13 +49,17 @@ export interface RawEvmTransferDto {
 
 export interface Transfer {
   symbol: string;
-  tokenId: string;
   amount: number;
   from: string;
   to: string;
-  label?: string;
+  module?: string;
   block?: number;
   timestamp: number;
-  hash: string;
+  hash?: string;
   extrinsic_index?: string;
+  price?: number;
+  fiatValue?: number;
+  asset_type?: string;
+  asset_unique_id: string;
+  coingeckoId?: string;
 }

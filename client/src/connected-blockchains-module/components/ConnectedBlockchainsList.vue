@@ -66,12 +66,8 @@
                 {{ props.row.currency }}
               </q-badge>
             </q-td>
-            <q-td key="amountRewards" :props="props">
-              {{
-                formatAmount(calculateTotalReward(props.row), '-') +
-                ' ' +
-                (props.row?.data?.token ?? '')
-              }}
+            <q-td key="taxableEventsCount" :props="props">
+              {{ getEventCount(props.row) }}
             </q-td>
             <q-td key="timeFrame" :props="props">
               {{ timeFrame }}
@@ -195,7 +191,6 @@ import { exportDefaultCsv } from '../../shared-module/service/export-default-csv
 import { exportKoinlyCsv } from '../../shared-module/service/export-koinly-csv';
 import { extractStakingRewardsPerYear } from '../../shared-module/util/extract-staking-rewards-per-year';
 import { useConnectedBlockchainsStore } from '../store/connected-blockchains.store';
-import { formatCryptoAmount } from '../../shared-module/util/number-formatters';
 import { Rewards } from '../../shared-module/model/rewards';
 
 const store = useConnectedBlockchainsStore();
@@ -250,15 +245,28 @@ onUnmounted(() => {
 });
 
 const columns = ref([
-  { name: 'status', align: 'left', label: 'Status' },
+  {
+    name: 'status',
+    align: 'left',
+    label: 'Status',
+    sortable: true,
+    field: 'status',
+  },
   { name: 'wallet', align: 'left', label: 'Wallet' },
   {
     name: 'blockchain',
     align: 'left',
+    field: 'chain',
     label: 'Blockchain',
+    sortable: true,
   },
   { name: 'currency', label: 'Currency' },
-  { name: 'amountRewards', label: 'Total staking rewards' },
+  {
+    name: 'taxableEventsCount',
+    label: 'Total taxable events',
+    sortable: true,
+    field: (row: JobResult) => getEventCount(row),
+  },
   { name: 'timeFrame', label: 'Time frame' },
   { name: 'lastSynchronized', label: 'Synchronized on' },
   { name: 'actions', label: 'Actions' },
@@ -274,8 +282,8 @@ function showTaxableEvents(row: JobResult) {
   router.push(`/wallets/${row.wallet}/${row.currency}/${row.blockchain}`);
 }
 
-function calculateTotalReward(jobResult: JobResult) {
-  return jobResult.data?.summary?.amount;
+function getEventCount(jobResult: JobResult) {
+  return jobResult.data?.values.length;
 }
 
 const timeFrame = computed(() => {
@@ -286,13 +294,6 @@ const timeFrame = computed(() => {
 
 function retry(job: JobResult) {
   store.retry(job);
-}
-
-function formatAmount(amount: number | undefined, alt: string) {
-  if (amount === undefined) {
-    return alt;
-  }
-  return formatCryptoAmount(amount);
 }
 </script>
 <style lang="scss">

@@ -1,7 +1,13 @@
-import { Swap } from "../model/swap";
+import { PortfolioMovement } from "../model/portfolio-movement";
 
 export class ChainAdjustments {
-  handleHydration(swaps: Swap[]) {
+  handleAdjustments(domain: string, swaps: PortfolioMovement[]) {
+    if (domain === "hydration" || domain === "basilisk") {
+      this.handleHydration(swaps);
+    }
+  }
+
+  handleHydration(swaps: PortfolioMovement[]) {
     swaps.forEach((s) => {
       if (s.transfers.length > 2) {
         const sold = s.transfers
