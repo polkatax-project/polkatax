@@ -18,12 +18,14 @@ export const onHydrationCurrenciesDeposited = async (
   const asset = extractToken("currency_id", event, tokens);
   const amount =
     Number(getPropertyValue("amount", event)) / Math.pow(10, asset?.decimals);
+  const xcm = findMatchingXcm(event, xcmList);
   return toTransfer(
     event,
     "",
     owner,
     amount,
     asset,
-    findMatchingXcm(event, xcmList),
+    xcm,
+    xcm ? "XCM transfer" : undefined,
   );
 };

@@ -1,6 +1,7 @@
 import { convertToCanonicalAddress } from "../../../common/util/convert-to-generic-address";
 import { Transfer } from "../../blockchain/substrate/model/raw-transfer";
 import { logger } from "../../logger/logger";
+import { EventDerivedTransfer } from "../model/event-derived-transfer";
 import { PortfolioMovement } from "../model/portfolio-movement";
 
 export interface IndexedPortfolioMovements {
@@ -30,10 +31,11 @@ export class TransferMerger {
           timestamp: entry.timestamp,
         };
       }
-      let matchingTransfer =
-        undefined; /* TODO: this makes debugging easier. Maybe no merging is needed? target[key].transfers.find(
+      target[key].label =
+        target[key].label ?? (entry as EventDerivedTransfer)?.label;
+      let matchingTransfer = target[key].transfers.find(
         (t) => t.asset_unique_id === entry.asset_unique_id,
-      ); */
+      );
       if (!matchingTransfer) {
         matchingTransfer = {
           ...entry,

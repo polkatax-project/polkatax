@@ -2,15 +2,11 @@ import { BigNumber } from "bignumber.js";
 import { SubscanService } from "../api/subscan.service";
 import { StakingReward } from "../model/staking-reward";
 import { logger } from "../../../logger/logger";
-import { StakingRewardsViaEventsService } from "./staking-rewards-via-events.service";
 import { isEvmAddress } from "../../../data-aggregation/helper/is-evm-address";
 import { getNativeToken } from "../../../data-aggregation/helper/get-native-token";
 
 export class StakingRewardsService {
-  constructor(
-    private subscanService: SubscanService,
-    private stakingRewardsViaEventsService: StakingRewardsViaEventsService,
-  ) {}
+  constructor(private subscanService: SubscanService) {}
 
   private async mapRawRewards(
     nativeToken: string,
@@ -23,7 +19,7 @@ export class StakingRewardsService {
       hash: reward.hash,
       event_index: reward.event_index,
       extrinsic_index: reward.extrinsic_index,
-      asset_unique_id: reward.asset_unique_id ?? nativeToken,
+      asset_unique_id: nativeToken,
     }));
   }
 
@@ -48,45 +44,12 @@ export class StakingRewardsService {
     }
     const rewardsSlashes = await (async () => {
       switch (chainName) {
-        /*case "mythos":
-          return this.stakingRewardsViaEventsService.fetchStakingRewards(
-            chainName,
-            address,
-            "collatorstaking",
-            "StakingRewardReceived",
-            minDate,
-            maxDate,
-          );*/ // TODO: reactivate?!
-        case "energywebx":
-          return this.stakingRewardsViaEventsService.fetchStakingRewards(
-            chainName,
-            address,
-            "parachainstaking",
-            "Rewarded",
-            minDate,
-            maxDate,
-          );
-        case "darwinia":
-          return this.stakingRewardsViaEventsService.fetchStakingRewards(
-            chainName,
-            address,
-            "darwiniastaking",
-            "RewardAllocated",
-            minDate,
-            maxDate,
-          );
-        case "robonomics-freemium":
-          return this.stakingRewardsViaEventsService.fetchStakingRewards(
-            chainName,
-            address,
-            "staking",
-            "reward",
-            minDate,
-            maxDate,
-          );
         case "mythos":
         case "acala":
-          return []; // staking rewards are transfers as well -> prevent duplicates
+        case "energywebx":
+        case "darwinia":
+        case "robonomics-freemium":
+          return []; // staking rewards are return as transfers for these chains.
         default:
           const token = await this.subscanService.fetchNativeToken(chainName);
           const rawRewards = await this.subscanService.fetchAllStakingRewards({

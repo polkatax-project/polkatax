@@ -71,7 +71,7 @@ const visibleTaxData$ = combineLatest([
   map(([taxData, eventTypeFilter, visibleTokens]) => {
     const visibleTaxableEvents = taxData?.values
       .filter((v) => {
-        const isStakingReward = v.label === 'staking';
+        const isStakingReward = v.label === 'Staking reward';
         const incomingTransfer =
           v.transfers.some((t) => t.amount > 0) &&
           !v.transfers.some((t) => t.amount < 0);

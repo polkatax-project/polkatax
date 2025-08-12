@@ -21,12 +21,14 @@ export const onAssethubForeignAssetsIssued = async (
   const asset = extractForeignAsset("asset_id", event, foreignAssets);
   const amount =
     Number(getPropertyValue("amount", event)) / Math.pow(10, asset?.decimals);
+  const xcm = findMatchingXcm(event, xcmList);
   return toTransfer(
     event,
     "",
     owner,
     amount,
     asset,
-    findMatchingXcm(event, xcmList),
+    xcm,
+    xcm ? "XCM transfer" : undefined,
   );
 };

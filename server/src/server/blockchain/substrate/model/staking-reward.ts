@@ -20,5 +20,5 @@ export interface StakingReward {
   extrinsic_index: string;
   price?: number;
   fiatValue?: number;
-  asset_unique_id: string;
+  asset_unique_id?: string;
 }

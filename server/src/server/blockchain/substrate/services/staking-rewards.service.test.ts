@@ -4,15 +4,9 @@ jest.mock("../../../data-aggregation/helper/is-evm-address", () => ({
   isEvmAddress: jest.fn(),
 }));
 
-jest.mock("../../../data-aggregation/helper/get-native-token", () => ({
-  getNativeToken: jest.fn(() => "DOT"),
-}));
-
 import { isEvmAddress } from "../../../data-aggregation/helper/is-evm-address";
-import { getNativeToken } from "../../../data-aggregation/helper/get-native-token";
 import { StakingRewardsService } from "./staking-rewards.service";
 import { SubscanService } from "../api/subscan.service";
-import { StakingRewardsViaEventsService } from "./staking-rewards-via-events.service";
 
 describe("StakingRewardsService", () => {
   let service: StakingRewardsService;
@@ -22,16 +16,9 @@ describe("StakingRewardsService", () => {
     fetchAllStakingRewards: jest.fn(),
   } as unknown as jest.Mocked<SubscanService>;
 
-  const mockViaEventsService = {
-    fetchStakingRewards: jest.fn(),
-  } as unknown as jest.Mocked<StakingRewardsViaEventsService>;
-
   beforeEach(() => {
     jest.clearAllMocks();
-    service = new StakingRewardsService(
-      mockSubscanService,
-      mockViaEventsService,
-    );
+    service = new StakingRewardsService(mockSubscanService);
   });
 
   it("should map EVM address to substrate and return rewards from subscan", async () => {
@@ -101,67 +88,5 @@ describe("StakingRewardsService", () => {
         asset_unique_id: "DOT",
       },
     ]);
-  });
-
-  it("should fetch via StakingRewardsViaEventsService for energywebx", async () => {
-    (isEvmAddress as jest.Mock).mockReturnValue(false);
-    mockViaEventsService.fetchStakingRewards.mockResolvedValue([
-      {
-        amount: 1,
-        timestamp: 1690000000,
-        block: 123,
-        hash: "0xabc",
-        event_index: "1-1",
-        extrinsic_index: "1-1",
-      },
-    ] as any);
-
-    const result = await service.fetchStakingRewards({
-      chainName: "energywebx",
-      address: "0x123",
-      minDate: 1690000000,
-    });
-
-    expect(mockViaEventsService.fetchStakingRewards).toHaveBeenCalledWith(
-      "energywebx",
-      "0x123",
-      "parachainstaking",
-      "Rewarded",
-      1690000000,
-      undefined,
-    );
-
-    expect(result).toEqual([
-      {
-        amount: 1,
-        timestamp: 1690000000,
-        block: 123,
-        hash: "0xabc",
-        event_index: "1-1",
-        extrinsic_index: "1-1",
-        asset_unique_id: "DOT",
-      },
-    ]);
-  });
-
-  it("should return empty for acala and mythos", async () => {
-    (isEvmAddress as jest.Mock).mockReturnValue(false);
-
-    const mythosResult = await service.fetchStakingRewards({
-      chainName: "mythos",
-      address: "0xabc",
-      minDate: 1690000000,
-    });
-
-    const acalaResult = await service.fetchStakingRewards({
-      chainName: "acala",
-      address: "0xabc",
-      minDate: 1690000000,
-    });
-
-    expect(mythosResult).toEqual([]);
-    expect(acalaResult).toEqual([]);
-    expect(mockSubscanService.fetchAllStakingRewards).not.toHaveBeenCalled();
-    expect(mockViaEventsService.fetchStakingRewards).not.toHaveBeenCalled();
   });
 });

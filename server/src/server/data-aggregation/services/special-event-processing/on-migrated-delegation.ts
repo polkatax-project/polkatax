@@ -15,5 +15,13 @@ export const onMigratedDelegation = async (
   const amount = new BigNumber(getPropertyValue("amount", event))
     .multipliedBy(Math.pow(10, -token.decimals))
     .toNumber();
-  return toTransfer(event, "", address, amount, token);
+  return toTransfer(
+    event,
+    "",
+    address,
+    amount,
+    token,
+    undefined,
+    "Migrated delegation",
+  );
 };

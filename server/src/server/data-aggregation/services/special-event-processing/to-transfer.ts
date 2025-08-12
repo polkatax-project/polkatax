@@ -1,6 +1,7 @@
 import { EventDetails } from "../../../blockchain/substrate/model/subscan-event";
 import { XcmTransfer } from "../../../blockchain/substrate/model/xcm-transfer";
 import { EventDerivedTransfer } from "../../model/event-derived-transfer";
+import { Label } from "../../model/portfolio-movement";
 
 export const toTransfer = (
   event: EventDetails,
@@ -9,6 +10,7 @@ export const toTransfer = (
   amount: number,
   token: { symbol: string; decimals: number; unique_id: string },
   xcm?: XcmTransfer,
+  label?: Label,
 ): EventDerivedTransfer => {
   if (to === undefined || from === undefined || !token || !amount) {
     throw `Missing data: to: ${to}, from: ${from}, token: ${JSON.stringify(token)}, amount: ${amount}, event: ${event.original_event_index}, extrinsic: ${event.extrinsic_index}`;
@@ -29,5 +31,6 @@ export const toTransfer = (
     fromChain: xcm?.transfers[0]?.fromChain,
     destChain: xcm?.transfers[0]?.destChain,
     messageHash: xcm?.messageHash,
+    label,
   };
 };

@@ -44,8 +44,6 @@ export class ChainDataAccumulationService {
           context.chain.domain,
         );
 
-    // TODO: remove staking rewards from hydration
-
     const indexedPortfolioMovements: IndexedPortfolioMovements =
       this.transferMerger.mergeTranfers(
         transfersList,
@@ -139,7 +137,7 @@ export class ChainDataAccumulationService {
     otherTransactions.forEach((tx) => {
       indexedPortfolioMovements[tx.extrinsic_index] = {
         ...tx,
-        provenance: "tx",
+        provenance: "tx" as const,
         transfers: [],
       };
     });
@@ -179,11 +177,10 @@ export class ChainDataAccumulationService {
           })) ?? [],
         feeUsed: matchingTx?.feeUsed,
         tip: matchingTx?.tip,
-        provenance: "stakingRewards",
-        label: "stakingRewards",
+        provenance: "stakingRewards" as const,
+        label: stakingReward.amount > 0 ? "Staking reward" : "Staking slashed",
         transfers: [
           {
-            provenance: "stakingReward",
             symbol: stakingRewardsToken,
             amount: stakingReward.amount,
             from: undefined,
@@ -226,7 +223,7 @@ export class ChainDataAccumulationService {
     transactions.forEach((tx) => {
       const enrichedTx: PortfolioMovement = {
         ...tx,
-        provenance: "tx",
+        provenance: "tx" as const,
         events: [],
         transfers: [],
       };
@@ -263,7 +260,7 @@ export class ChainDataAccumulationService {
     Object.keys(indexedPortfolioMovements).forEach((key) => {
       const transfers = indexedPortfolioMovements[key];
       const hash = indexedPortfolioMovements[key].hash;
-      transfers.provenance = "transfer";
+      transfers.provenance = "transfer" as const;
       if (extrinsicIndexedEvents[key]) {
         extrinsicIndexedEvents[key].forEach((event) => {
           transfers.events.push({
@@ -320,7 +317,7 @@ export class ChainDataAccumulationService {
       } else {
         payments.push({
           ...xcmTransfer,
-          provenance: "xcm",
+          provenance: "xcm" as const,
           xcmFee: xcmTransfer.fee,
           extrinsic_index: tx?.extrinsic_index ?? xcmTransfer.extrinsic_index,
           tip: tx?.tip ?? 0,
