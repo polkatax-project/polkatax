@@ -383,7 +383,7 @@ describe("Verify portfolio changes", () => {
     });
   });
 
-  describe.only("Verify the portfolio change hydration", () => {
+  describe("Verify the portfolio change hydration", () => {
     const chainInfo = { domain: "hydration", label: "", token: "HDX" };
 
     test("15abVnvSgRJFCqhJuvrYSNL5DscRppcog8cyYaVALLU3LFjB", async () => {
@@ -412,6 +412,23 @@ describe("Verify portfolio changes", () => {
     test("1bMaUv5vuzYsbYfhn2sUZ2LMYKHmfzF462PuwVtcqLC7rjN", async () => {
       await verifyAssetMovement(
         "1bMaUv5vuzYsbYfhn2sUZ2LMYKHmfzF462PuwVtcqLC7rjN",
+        chainInfo,
+      );
+    });
+  });
+
+  describe("Verify the portfolio change manta", () => {
+    const chainInfo = { domain: "manta", label: "", token: "MANTA" };
+    test("13ziS42MVCDz1biV4CdYUyBFLSYBKAfN6wBAf6nghe1hp7EQ", async () => {
+      await verifyAssetMovement(
+        "13ziS42MVCDz1biV4CdYUyBFLSYBKAfN6wBAf6nghe1hp7EQ",
+        chainInfo,
+      );
+    });
+
+    test("14V1m9Gxr2EEJpNDgvCrJ1HjSRCiFirChPKG6aBQJEyjeHDz", async () => {
+      await verifyAssetMovement(
+        "14V1m9Gxr2EEJpNDgvCrJ1HjSRCiFirChPKG6aBQJEyjeHDz",
         chainInfo,
       );
     });

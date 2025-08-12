@@ -21,6 +21,7 @@ const endpoints = {
   spiritnet: "wss://spiritnet.kilt.io",
   darwinia: "wss://rpc.darwinia.network",
   alephzero: "wss://aleph-zero.api.onfinality.io/public-ws",
+  manta: "wss://ws.manta.systems",
 };
 
 export let api: ApiPromise;

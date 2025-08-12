@@ -73,6 +73,36 @@ const eventClassifications: EventClassification[] = [
         eventId: "LiquidityAdded",
         label: "Liquidity added" as const,
       },
+      {
+        moduleId: "xyk",
+        eventId: "LiquidityAdded",
+        label: "Liquidity added" as const,
+      },
+      {
+        moduleId: "xyk",
+        eventId: "LiquidityRemoved",
+        label: "Liquidity removed" as const,
+      },
+      {
+        moduleId: "xykliquiditymining",
+        eventId: "SharesDeposited",
+        label: "Farming deposit" as const,
+      },
+      {
+        moduleId: "xykliquiditymining",
+        eventId: "SharesWithdrawn",
+        label: "Farming withdraw" as const,
+      },
+      {
+        moduleId: "xykliquiditymining",
+        eventId: "DepositDetroyed",
+        label: "Farming withdraw" as const,
+      },
+      {
+        moduleId: "xykliquiditymining",
+        eventId: "RewardClaimed",
+        label: "Reward" as const,
+      },
     ],
   },
   {
@@ -203,6 +233,15 @@ const callModuleClassifications: CallModuleClassification[] = [
         functions: [
           {
             name: "add_liquidity",
+            label: "Liquidity added" as const,
+          },
+        ],
+      },
+      {
+        module: "xykliquiditymining",
+        functions: [
+          {
+            name: "add_liquidity_and_join_farms",
             label: "Liquidity added" as const,
           },
         ],
@@ -341,6 +380,12 @@ export const determineLabelForPayment = (
     }
   }
 
+  const eventMatch = getEventClassificationRules(chain).find((c) =>
+    portfolioMovement.events.some(
+      (e) => e.eventId === c.eventId && e.moduleId === c.moduleId,
+    ),
+  );
+
   if (
     portfolioMovement.transfers.some((t) => t.amount > 0) &&
     portfolioMovement.transfers.some((t) => t.amount < 0)
@@ -348,11 +393,6 @@ export const determineLabelForPayment = (
     return "Swap";
   }
 
-  const eventMatch = getEventClassificationRules(chain).find((c) =>
-    portfolioMovement.events.some(
-      (e) => e.eventId === c.eventId && e.moduleId === c.moduleId,
-    ),
-  );
   if (eventMatch) {
     return eventMatch.label;
   }

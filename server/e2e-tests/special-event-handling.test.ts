@@ -259,4 +259,61 @@ describe("Special event handling", () => {
     expect(transfers.length).toBe(100);
     verifyEventTransfersAreValid(transfers);
   }, 120_000);
+
+  test.only("verify manta zenlinkprotocol swap data extraction", async () => {
+    const eventsOfInterest = await subscanApi.searchEvents(
+      "manta",
+      undefined,
+      "zenlinkprotocol",
+      "AssetSwap",
+      0,
+      0,
+    );
+    const transfers = await specialEventsToTransfersService.handleEvents(
+      { token: "MANTA", domain: "manta" },
+      eventsOfInterest.list,
+      [],
+      true,
+    );
+    expect(transfers.length).toBeGreaterThanOrEqual(100);
+    verifyEventTransfersAreValid(transfers);
+  }, 120_000);
+
+  test.only("verify manta zenlinkprotocol liquidity added data extraction", async () => {
+    const eventsOfInterest = await subscanApi.searchEvents(
+      "manta",
+      undefined,
+      "zenlinkprotocol",
+      "LiquidityAdded",
+      0,
+      0,
+    );
+    const transfers = await specialEventsToTransfersService.handleEvents(
+      { token: "MANTA", domain: "manta" },
+      eventsOfInterest.list,
+      [],
+      true,
+    );
+    expect(transfers.length).toBeGreaterThanOrEqual(100);
+    verifyEventTransfersAreValid(transfers);
+  }, 120_000);
+
+  test.only("verify manta zenlinkprotocol liquidity removed data extraction", async () => {
+    const eventsOfInterest = await subscanApi.searchEvents(
+      "manta",
+      undefined,
+      "zenlinkprotocol",
+      "LiquidityRemoved",
+      0,
+      0,
+    );
+    const transfers = await specialEventsToTransfersService.handleEvents(
+      { token: "MANTA", domain: "manta" },
+      eventsOfInterest.list,
+      [],
+      true,
+    );
+    expect(transfers.length).toBeGreaterThanOrEqual(100);
+    verifyEventTransfersAreValid(transfers);
+  }, 120_000);
 });

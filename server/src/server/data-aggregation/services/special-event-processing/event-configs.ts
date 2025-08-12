@@ -17,11 +17,11 @@ import { onCoretimePurchased } from "./on-coretime-purchased";
 import { onHydrationLiquidityRemoved } from "./on-hydration-liquidity-removed";
 import { onMigratedDelegation } from "./on-migrated-delegation";
 import { onReserveRepatriated } from "./on-reserve-repatriated";
-
-/**
- * TODO: https://manta.subscan.io/event?extrinsic=2191862-4 zenlinkprotocol (AssetSwap)
- *
- */
+import {
+  onZenlinkProtcolAssetSwap,
+  onZenlinkProtcolLiquidityAdded,
+  onZenlinkProtcolLiquidityRemoved,
+} from "./on-zenlink-protocol-assetswap";
 
 export const eventConfigs: {
   chains;
@@ -197,5 +197,20 @@ export const eventConfigs: {
     chains: ["polkadot", "kusama"],
     event: "delegatedstakingMigratedDelegation",
     handler: (c, e, context) => onMigratedDelegation(c, e, context),
+  },
+  {
+    chains: ["manta"],
+    event: "zenlinkprotocolLiquidityRemoved",
+    handler: (c, e, context) => onZenlinkProtcolLiquidityRemoved(e, context),
+  },
+  {
+    chains: ["manta"],
+    event: "zenlinkprotocolAssetSwap",
+    handler: (c, e, context) => onZenlinkProtcolAssetSwap(e, context),
+  },
+  {
+    chains: ["manta"],
+    event: "zenlinkprotocolLiquidityAdded",
+    handler: (c, e, context) => onZenlinkProtcolLiquidityAdded(e, context),
   },
 ];
