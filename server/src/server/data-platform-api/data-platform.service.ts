@@ -69,8 +69,8 @@ export class DataPlatformService {
       const token = tokens[domain];
       const aggregatedRewards = (item.stakingResults || []).map((reward) => {
         return {
-          label: "stakingReward",
-          provenance: "aggregatedData",
+          label: "Staking reward" as const,
+          provenance: "aggregatedData" as const,
           transfers: [
             {
               symbol,
@@ -89,8 +89,8 @@ export class DataPlatformService {
       aggregatedRewards.push(
         ...(item.nominationPoolResults || []).map((reward) => {
           return {
-            label: "stakingReward",
-            provenance: "aggregatedData",
+            label: "Staking reward" as const,
+            provenance: "aggregatedData" as const,
             transfers: [
               {
                 symbol,

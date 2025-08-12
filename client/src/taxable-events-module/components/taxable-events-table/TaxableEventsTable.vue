@@ -45,7 +45,7 @@
           <div>
             {{ props.row.label }}
           </div>
-          <div v-if="props.row.callModuleDescription">
+          <div v-if="props.row.callModuleDescription && !props.row.label">
             ({{ props.row.callModuleDescription }})
           </div>
         </q-td>

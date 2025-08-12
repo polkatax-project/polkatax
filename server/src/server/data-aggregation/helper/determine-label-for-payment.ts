@@ -1,124 +1,359 @@
-import { PortfolioMovement } from "../model/portfolio-movement";
+import { Label, PortfolioMovement } from "../model/portfolio-movement";
 
-export type PaymentLabel =
-  | "transfer"
-  | "treasury_payout"
-  | "crowdloan_contribution"
-  | "xcm_transfer"
-  | "staking";
+type EventClassification = {
+  chains: string[];
+  events: {
+    moduleId: string;
+    eventId: string;
+    label: Label;
+  }[];
+};
 
-const classificationMap: Record<
-  string,
+const eventClassifications: EventClassification[] = [
   {
-    events: { moduleId: string; eventId: string; label: PaymentLabel }[];
-    modules: {
-      name: string;
-      label?: PaymentLabel;
-      functions: { name: string; label: PaymentLabel }[];
-    }[];
-    functions: { name: string; label: PaymentLabel }[];
-  }
-> = {
-  default: {
-    modules: [
-      {
-        name: "balances",
-        functions: [],
-        label: "transfer",
-      },
-      {
-        name: "treasury",
-        functions: [],
-        label: "treasury_payout",
-      },
-      {
-        name: "childbounties",
-        functions: [
-          {
-            name: "claim_child_bounty",
-            label: "treasury_payout",
-          },
-        ],
-      },
-      {
-        name: "crowdloan",
-        functions: [
-          {
-            name: "contribute",
-            label: "crowdloan_contribution",
-          },
-        ],
-      },
-      {
-        name: "xcmpallet",
-        functions: [
-          {
-            name: "reserve_transfer_assets",
-            label: "xcm_transfer",
-          },
-          {
-            name: "transfer_assets_using_type_and_then",
-            label: "xcm_transfer",
-          },
-          {
-            name: "limited_reserve_transfer_assets",
-            label: "xcm_transfer",
-          },
-          {
-            name: "limited_teleport_assets",
-            label: "xcm_transfer",
-          },
-        ],
-        label: "xcm_transfer",
-      },
-    ],
-    functions: [],
+    chains: ["bifrost", "bifrost-kusama"],
     events: [
       {
         moduleId: "childbounties",
         eventId: "Awarded",
-        label: "treasury_payout",
+        label: "Treasury grant" as const,
+      },
+      {
+        moduleId: "farming",
+        eventId: "Deposited",
+        label: "Farming deposit" as const,
+      },
+      {
+        moduleId: "farming",
+        eventId: "WithdrawClaimed",
+        label: "Farming withdraw" as const,
+      },
+      {
+        moduleId: "farming",
+        eventId: "Withdrawn",
+        label: "Farming withdraw" as const,
+      },
+      {
+        moduleId: "farming",
+        eventId: "claimed",
+        label: "Reward" as const,
+      },
+      {
+        moduleId: "stableasset",
+        eventId: "RedeemedProportion",
+        label: "Liquidity removed" as const,
+      },
+      {
+        moduleId: "stableasset",
+        eventId: "YieldCollected",
+        label: "Reward" as const,
       },
     ],
   },
+  {
+    chains: ["hydration", "basilisk"],
+    events: [
+      {
+        moduleId: "omnipoolliquiditymining",
+        eventId: "RewardClaimed",
+        label: "Reward" as const,
+      },
+      {
+        moduleId: "omnipool",
+        eventId: "LiquidityAdded",
+        label: "Liquidity added" as const,
+      },
+      {
+        moduleId: "omnipool",
+        eventId: "LiquidityRemoved",
+        label: "Liquidity removed" as const,
+      },
+      {
+        moduleId: "stableswap",
+        eventId: "LiquidityAdded",
+        label: "Liquidity added" as const,
+      },
+    ],
+  },
+  {
+    chains: ["mythos"],
+    events: [
+      {
+        moduleId: "collatorstaking",
+        eventId: "StakingRewardReceived",
+        label: "Staking reward" as const,
+      },
+    ],
+  },
+  {
+    chains: ["energywebx"],
+    events: [
+      {
+        moduleId: "parachainstaking",
+        eventId: "Rewarded",
+        label: "Staking reward" as const,
+      },
+    ],
+  },
+  {
+    chains: ["darwinia"],
+    events: [
+      {
+        moduleId: "darwiniastaking",
+        eventId: "RewardAllocated",
+        label: "Staking reward" as const,
+      },
+    ],
+  },
+  {
+    chains: ["robonomics-freemium"],
+    events: [
+      {
+        moduleId: "staking",
+        eventId: "reward",
+        label: "Staking reward" as const,
+      },
+    ],
+  },
+];
+
+/**
+ * https://hydration.subscan.io/event?module=omnipoolliquiditymining&event_id=RewardClaimed
+ * omnipoolliquiditymining (RewardClaimed)
+ */
+
+type CallFunction = {
+  name: string;
+  label: Label;
+};
+
+type CallModule = {
+  module: string;
+  functions: CallFunction[];
+  label?: Label;
+};
+
+type CallModuleClassification = {
+  chains: string[];
+  callModules: CallModule[];
+};
+
+const callModuleClassifications: CallModuleClassification[] = [
+  {
+    chains: ["bifrost", "bifrost-kusama"],
+    callModules: [
+      {
+        module: "stablepool",
+        functions: [
+          {
+            name: "add_liquidity",
+            label: "Liquidity added" as const,
+          },
+          {
+            name: "remove_liquidity",
+            label: "Liquidity removed" as const,
+          },
+          {
+            name: "redeem_proportion",
+            label: "Liquidity removed" as const,
+          },
+        ],
+      },
+      {
+        module: "farming",
+        functions: [
+          {
+            name: "deposit",
+            label: "Farming deposit" as const,
+          },
+          {
+            name: "withdraw",
+            label: "Farming withdraw" as const,
+          },
+          {
+            name: "withdraw_claim",
+            label: "Farming withdraw" as const,
+          },
+          {
+            name: "claim",
+            label: "Reward" as const,
+          },
+        ],
+      },
+      {
+        module: "stablepool",
+        functions: [
+          {
+            name: "add_liquidity",
+            label: "Liquidity added" as const,
+          },
+          {
+            name: "remove_liquidity",
+            label: "Liquidity removed" as const,
+          },
+        ],
+      },
+    ],
+  },
+  {
+    chains: ["hydration", "basilisk"],
+    callModules: [
+      {
+        module: "stableswap",
+        functions: [
+          {
+            name: "add_liquidity",
+            label: "Liquidity added" as const,
+          },
+        ],
+      },
+    ],
+  },
+  {
+    chains: ["*"],
+    callModules: [
+      {
+        module: "treasury",
+        functions: [],
+        label: "Treasury grant" as const,
+      },
+      {
+        module: "xtokens",
+        functions: [
+          {
+            name: "transfer",
+            label: "XCM transfer" as const,
+          },
+          {
+            name: "transfer_multicurrencies",
+            label: "XCM transfer" as const,
+          },
+        ],
+      },
+      {
+        module: "childbounties",
+        functions: [
+          {
+            name: "claim_child_bounty",
+            label: "Treasury grant" as const,
+          },
+        ],
+      },
+      {
+        module: "xcmpallet",
+        functions: [
+          {
+            name: "reserve_transfer_assets",
+            label: "XCM transfer" as const,
+          },
+          {
+            name: "transfer_assets_using_type_and_then",
+            label: "XCM transfer" as const,
+          },
+          {
+            name: "limited_reserve_transfer_assets",
+            label: "XCM transfer" as const,
+          },
+          {
+            name: "limited_teleport_assets",
+            label: "XCM transfer" as const,
+          },
+        ],
+        label: "XCM transfer" as const,
+      },
+    ],
+  },
+  {
+    chains: ["polkadot", "kusama"],
+    callModules: [
+      {
+        module: "crowdloan",
+        functions: [
+          {
+            name: "contribute",
+            label: "Crowdloan contribution" as const,
+          },
+        ],
+      },
+    ],
+  },
+];
+
+const getEventClassificationRules = (
+  chain: string,
+): {
+  moduleId: string;
+  eventId: string;
+  label: Label;
+}[] => {
+  return eventClassifications
+    .filter((e) => e.chains.includes(chain) || e.chains.includes("*"))
+    .map((e) => e.events)
+    .flat();
+};
+
+const getCallModuleClassificationRules = (chain: string): CallModule[] => {
+  return callModuleClassifications
+    .filter((e) => e.chains.includes(chain) || e.chains.includes("*"))
+    .map((e) => e.callModules)
+    .flat();
 };
 
 export const determineLabelForPayment = (
   chain: string,
-  transfer: PortfolioMovement,
-): PaymentLabel | undefined => {
-  const classifcations =
-    classificationMap[chain] ?? classificationMap["default"];
-  if (transfer.provenance == "stakingRewards") {
-    return "staking";
+  portfolioMovement: PortfolioMovement,
+): Label | undefined => {
+  if (portfolioMovement.label) {
+    return portfolioMovement.label;
   }
-  if (transfer.provenance == "xcm") {
-    return "xcm_transfer";
+
+  if (
+    portfolioMovement.provenance == "stakingRewards" &&
+    portfolioMovement.transfers.some((t) => t.amount > 0)
+  ) {
+    return "Staking reward";
   }
-  const rootFunctionInfo = classifcations.functions.find(
-    (f) => f.name === transfer.callModuleFunction,
-  );
-  if (rootFunctionInfo) {
-    return rootFunctionInfo.label;
+
+  if (
+    portfolioMovement.provenance == "stakingRewards" &&
+    portfolioMovement.transfers.some((t) => t.amount < 0)
+  ) {
+    return "Staking slashed";
   }
-  const moduleInfo = classifcations.modules.find(
-    (m) => m.name === transfer.callModule,
-  );
-  const functionInfo = moduleInfo?.functions.find(
-    (f) => f.name === transfer.callModuleFunction,
-  );
-  if (functionInfo) {
-    return functionInfo.label;
+
+  if (portfolioMovement.provenance == "xcm") {
+    return "XCM transfer";
   }
-  if (transfer.events && transfer.events.length > 0) {
-    const match = classifcations.events.find((e) =>
-      transfer.events.find(
-        (ev) => ev.eventId === e.eventId && ev.moduleId == e.moduleId,
-      ),
+
+  if (portfolioMovement.callModule && portfolioMovement.callModuleFunction) {
+    const moduleMatch = getCallModuleClassificationRules(chain).find(
+      (c) => c.module === portfolioMovement.callModule,
     );
-    if (match) {
-      return match.label;
+    if (moduleMatch) {
+      const functionMatch = moduleMatch.functions.find(
+        (f) => f.name === portfolioMovement.callModuleFunction,
+      );
+      if (functionMatch) {
+        return functionMatch.label;
+      } else if (moduleMatch.label) {
+        return moduleMatch.label;
+      }
     }
   }
-  return "transfer";
+
+  if (
+    portfolioMovement.transfers.some((t) => t.amount > 0) &&
+    portfolioMovement.transfers.some((t) => t.amount < 0)
+  ) {
+    return "Swap";
+  }
+
+  const eventMatch = getEventClassificationRules(chain).find((c) =>
+    portfolioMovement.events.some(
+      (e) => e.eventId === c.eventId && e.moduleId === c.moduleId,
+    ),
+  );
+  if (eventMatch) {
+    return eventMatch.label;
+  }
 };

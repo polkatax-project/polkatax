@@ -14,5 +14,13 @@ export const onReserveRepatriated = async (
   const amount =
     Number(getPropertyValue("amount", event)) /
     Math.pow(10, tokenInfo?.decimals);
-  return toTransfer(event, from, to, amount, tokenInfo);
+  return toTransfer(
+    event,
+    from,
+    to,
+    amount,
+    tokenInfo,
+    undefined,
+    "Reserve repatriated",
+  );
 };

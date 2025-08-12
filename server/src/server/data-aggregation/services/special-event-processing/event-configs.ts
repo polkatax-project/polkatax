@@ -4,6 +4,7 @@ import {
 } from "../../../blockchain/substrate/model/subscan-event";
 import { XcmTransfer } from "../../../blockchain/substrate/model/xcm-transfer";
 import { EventDerivedTransfer } from "../../model/event-derived-transfer";
+import { Label } from "../../model/portfolio-movement";
 import { AssetInfos } from "./asset-infos";
 import { onAssethubAssetsIssued } from "./on-assethub-asset-issued";
 import { onAssethubForeignAssetsIssued } from "./on-assethub-foreign-asset-issued";
@@ -16,6 +17,11 @@ import { onCoretimePurchased } from "./on-coretime-purchased";
 import { onHydrationLiquidityRemoved } from "./on-hydration-liquidity-removed";
 import { onMigratedDelegation } from "./on-migrated-delegation";
 import { onReserveRepatriated } from "./on-reserve-repatriated";
+
+/**
+ * TODO: https://manta.subscan.io/event?extrinsic=2191862-4 zenlinkprotocol (AssetSwap)
+ *
+ */
 
 export const eventConfigs: {
   chains;
@@ -30,6 +36,7 @@ export const eventConfigs: {
     e: EventDetails,
     context: AssetInfos & { events: SubscanEvent[] } & {
       xcmList: XcmTransfer[];
+      label?: Label;
     },
   ) => Promise<EventDerivedTransfer | EventDerivedTransfer[]>;
 }[] = [
@@ -51,7 +58,8 @@ export const eventConfigs: {
   {
     chains: ["energywebx"],
     event: "balancesDeposit",
-    handler: (c, e, context) => onBalancesDeposit(e, context),
+    handler: (c, e, context) =>
+      onBalancesDeposit(e, { ...context, label: "XCM transfer" }),
     condition: (event, events) =>
       !!events.find(
         (e) => e.module_id + e.event_id === "tokenmanagerAVTLifted",
@@ -60,7 +68,8 @@ export const eventConfigs: {
   {
     chains: ["energywebx"],
     event: "balancesWithdraw",
-    handler: (c, e, context) => onBalancesWithdraw(e, context),
+    handler: (c, e, context) =>
+      onBalancesWithdraw(e, { ...context, label: "XCM transfer" }),
     condition: (event, events) =>
       !!events.find(
         (e) => e.module_id + e.event_id === "tokenmanagerAvtLowered",
@@ -69,7 +78,8 @@ export const eventConfigs: {
   {
     chains: ["acala"],
     event: "earningBonded",
-    handler: (c, e, context) => onBalancesDeposit(e, context),
+    handler: (c, e, context) =>
+      onBalancesDeposit(e, { ...context, label: "Reward" }),
   },
   {
     chains: ["hydration", "basilisk"],

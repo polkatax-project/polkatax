@@ -129,7 +129,7 @@ export class PortfolioMovementsService {
       );
     transfers.push(...specialEventTransfers);
 
-    const { portfolioMovements, unmatchedEvents } =
+    let { portfolioMovements, unmatchedEvents } =
       await this.chainDataAccumulationService.combine(
         request,
         transactions,
@@ -139,7 +139,7 @@ export class PortfolioMovementsService {
         stakingRewards.rawStakingRewards,
       );
 
-    new ChainAdjustments().handleAdjustments(
+    portfolioMovements = new ChainAdjustments().handleAdjustments(
       request.chain.domain,
       portfolioMovements,
     );

@@ -13,5 +13,13 @@ export const onCoretimePurchased = async (
   const amount =
     Number(getPropertyValue("price", event)) /
     Math.pow(10, tokenInfo?.decimals);
-  return toTransfer(event, address, "", amount, tokenInfo);
+  return toTransfer(
+    event,
+    address,
+    "",
+    amount,
+    tokenInfo,
+    undefined,
+    "Coretime purchase",
+  );
 };

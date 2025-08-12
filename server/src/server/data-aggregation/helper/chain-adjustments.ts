@@ -1,14 +1,20 @@
 import { PortfolioMovement } from "../model/portfolio-movement";
 
 export class ChainAdjustments {
-  handleAdjustments(domain: string, swaps: PortfolioMovement[]) {
+  handleAdjustments(
+    domain: string,
+    portfolioMovements: PortfolioMovement[],
+  ): PortfolioMovement[] {
     if (domain === "hydration" || domain === "basilisk") {
-      this.handleHydration(swaps);
+      return this.handleHydration(portfolioMovements);
     }
+    return portfolioMovements;
   }
 
-  handleHydration(swaps: PortfolioMovement[]) {
-    swaps.forEach((s) => {
+  handleHydration(
+    portfolioMovements: PortfolioMovement[],
+  ): PortfolioMovement[] {
+    portfolioMovements.forEach((s) => {
       if (s.transfers.length > 2) {
         const sold = s.transfers
           .filter((transfer) => transfer.amount < 0)
@@ -29,5 +35,21 @@ export class ChainAdjustments {
         }
       }
     });
+
+    const movements = portfolioMovements.filter((s) => {
+      if (
+        s?.events?.find(
+          (e) =>
+            e.moduleId === "staking" &&
+            e.eventId === "RewardsClaimed" &&
+            process.env["USE_DATA_PLATFORM_API"],
+        )
+      ) {
+        return false;
+      }
+      return true;
+    });
+
+    return movements;
   }
 }

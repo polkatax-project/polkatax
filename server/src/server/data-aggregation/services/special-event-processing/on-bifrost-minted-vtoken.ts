@@ -27,5 +27,13 @@ export const onBifrostMintedVToken = async (
   )
     .multipliedBy(Math.pow(10, -token.decimals))
     .toNumber();
-  return toTransfer(event, "", address, amount, token);
+  return toTransfer(
+    event,
+    "",
+    address,
+    amount,
+    token,
+    undefined,
+    "Liquid staking token minted",
+  );
 };

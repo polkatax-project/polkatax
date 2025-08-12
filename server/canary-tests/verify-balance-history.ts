@@ -46,7 +46,7 @@ const createDiffSheet = (
     (s) =>
       diffSheet.indexOf(s) > 0 &&
       ((Math.abs(s.deviationFromExpectation) > tolerance &&
-        s.label !== "xcm_transfer") ||
+        s.label !== "XCM transfer") ||
         Math.abs(s.deviationFromExpectation) > tolerance_xcm),
   );
 

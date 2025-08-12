@@ -1,5 +1,32 @@
 import { AggregatedStakingReward } from "./aggregated-staking-reward";
 
+export type Provenance =
+  | "xcm"
+  | "transfer"
+  | "event"
+  | "stakingRewards"
+  | "tx"
+  | "aggregatedData";
+
+export type Label =
+  | "Farming deposit"
+  | "Farming withdraw"
+  | "Liquidity removed"
+  | "Liquidity added"
+  | "Swap"
+  | "Crowdloan contribution"
+  | "Liquid staking token minted"
+  | "Liquid staking token redeemed"
+  | "XCM transfer"
+  | "Treasury grant"
+  | "Reward"
+  | "Staking reward"
+  | "Staking slashed"
+  | "Coretime purchase"
+  | "Remove from Pool"
+  | "Migrated delegation"
+  | "Reserve repatriated";
+
 export interface PortfolioMovement {
   hash?: string;
   block?: number;
@@ -13,8 +40,8 @@ export interface PortfolioMovement {
   tipFiat?: number;
   xcmFee?: number;
   events: { moduleId: string; eventId: string; eventIndex: string }[];
-  label?: string;
-  provenance?: string;
+  label?: Label;
+  provenance?: Provenance;
   transfers: {
     symbol: string;
     amount: number;
