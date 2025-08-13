@@ -18,24 +18,25 @@ export const registerXcmEndpoint = (
           address: { type: "string" },
           page: { type: "number" },
           minDate: { type: "number" },
-          after_id: { type: "string" },
+          block_range: { type: "string" },
         },
       },
     },
     handler: async (request) => {
-      const { chainName, address, page, minDate, after_id } = request.body as {
-        chainName: string;
-        address: string;
-        page: number;
-        minDate: number;
-        after_id: string;
-      };
+      const { chainName, address, page, minDate, block_range } =
+        request.body as {
+          chainName: string;
+          address: string;
+          page: number;
+          minDate: number;
+          block_range: string;
+        };
       return subscanApi.fetchXcmList(
         chainName,
         address,
         page,
         minDate,
-        after_id,
+        block_range,
       );
     },
   });
