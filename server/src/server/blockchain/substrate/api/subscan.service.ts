@@ -56,7 +56,9 @@ export class SubscanService {
     );
     const result = await this.filterOnDate(
       await this.iterateOverPagesParallel<SubscanEvent>(
-        (page, after_id) =>
+        "events",
+        chainName,
+        (page, block_range) =>
           this.subscanApi.searchEvents(
             chainName,
             address,
@@ -64,9 +66,8 @@ export class SubscanService {
             event_id,
             page,
             minDate,
-            after_id,
+            block_range,
           ),
-        { withAfterId: true },
       ),
       minDate,
       maxDate,
@@ -78,9 +79,15 @@ export class SubscanService {
   }
 
   private async iterateOverPagesParallel<T extends { id: any }>(
-    fetchPages: (page, after_id?) => Promise<{ list: T[]; hasNext: boolean }>,
-    options?: { count?: number; withAfterId?: boolean },
+    dataType: string,
+    domain: string,
+    fetchPages: (
+      page,
+      block_range?,
+    ) => Promise<{ list: T[]; hasNext: boolean }>,
+    options?: { count?: number },
   ): Promise<T[]> {
+    let block_range = undefined;
     function deduplicateById<T extends { id: any }>(items: T[]): T[] {
       const map = new Map<string | number, T>();
       for (const item of items) {
@@ -90,64 +97,57 @@ export class SubscanService {
     }
 
     const count = options?.count ?? 5;
-    const withAfterId = options?.withAfterId ?? false;
     const parallelFn = [...Array(count).keys()].map(
-      (offset) => (page) => fetchPages(page + offset),
+      (offset) => (page, block_range) => fetchPages(page + offset, block_range),
     );
     let page = 0;
-    const result = [];
+    let result = [];
     let hasNext = false;
     do {
       const intermediate_results = await Promise.all(
-        parallelFn.map((fn) => fn(page)),
+        parallelFn.map((fn) => fn(page, block_range)),
       );
       intermediate_results.forEach((intermediate) =>
         result.push(...intermediate.list),
       );
       hasNext = intermediate_results[intermediate_results.length - 1].hasNext;
       page += count;
-      if (page >= 100 && withAfterId && hasNext) {
-        const withoutDuplicates = deduplicateById(result);
+      if (page >= 100 && hasNext) {
+        result = deduplicateById(result);
+        if (result.length > 300000) {
+          logger.warn(
+            `Found more than ${result.length} ${dataType}. Stopping early, returning data as is.`,
+          );
+          return result;
+        }
         const lastResults =
           intermediate_results[intermediate_results.length - 1].list;
-        const oldestId = (lastResults[lastResults.length - 1] as any).id;
-
-        if (!oldestId) {
-          throw `Found more than ${withoutDuplicates.length} entries. But there is not 'id' property to continue.`;
+        let oldestBlockNum =
+          (lastResults[lastResults.length - 1] as any)?.block_num ??
+          (lastResults[lastResults.length - 1] as any)?.block;
+        if (!oldestBlockNum) {
+          const oldestTimestamp = (lastResults[lastResults.length - 1] as any)
+            ?.timestamp;
+          const block = await this.subscanApi.fetchBlock(
+            domain,
+            undefined,
+            oldestTimestamp / 1000,
+          );
+          oldestBlockNum = block?.block_num;
+        }
+        if (!oldestBlockNum) {
+          throw `Found more than ${result.length} ${dataType}. But there is no 'block', 'block_num' or 'timestamp' property to continue.`;
         }
 
+        block_range = "0-" + oldestBlockNum;
+        page = 0;
         logger.info(
-          `Found more than ${withoutDuplicates.length} entries. Fetching remaining values via after_id from ${oldestId}.`,
+          `Found more than ${result.length} ${dataType}. Fetching remaining values with block range ${block_range}.`,
         );
-        const remaining = await this.fetchWithAfterId(fetchPages, oldestId);
-        remaining.forEach((r) => withoutDuplicates.push(r));
-        logger.info(
-          `iterateOverPagesParallel: Found ${withoutDuplicates.length} entries.`,
-        );
-        return withoutDuplicates;
       }
     } while (hasNext);
     const withoutDuplicates = deduplicateById(result);
     return withoutDuplicates;
-  }
-
-  private async fetchWithAfterId<T extends { id?: number }>(
-    fetchPages: (page, afterId?) => Promise<{ list: T[]; hasNext: boolean }>,
-    after_id: number,
-  ): Promise<T[]> {
-    const result = [];
-    let intermediate_result: { hasNext: boolean; list: T[] };
-    do {
-      intermediate_result = await fetchPages(0, after_id);
-      intermediate_result.list.forEach((entry) => result.push(entry));
-      after_id =
-        intermediate_result.list[intermediate_result.list.length - 1].id; // Math.min(...intermediate_result.list.map((e) => e.id));
-      if (result.length >= 250000) {
-        logger.info(`Found more than ${result.length} entries. Aborting...`);
-        return result;
-      }
-    } while (intermediate_result.hasNext);
-    return result;
   }
 
   private filterOnDate<T extends { timestamp: number }>(
@@ -175,7 +175,7 @@ export class SubscanService {
       `Enter fetchAllStakingRewards for ${chainName}, address ${address}, starting from ${new Date(minDate).toISOString()}`,
     );
     const rewards = this.filterOnDate(
-      await this.iterateOverPagesParallel((page) =>
+      await this.iterateOverPagesParallel("stakingRewards", chainName, (page) =>
         this.subscanApi.fetchStakingRewards(
           chainName,
           address,
@@ -201,15 +201,16 @@ export class SubscanService {
       `fetchXcmList for ${relayChainName} and address ${address} from ${new Date(minDate).toUTCString()} filtering on para_id ${filter_para_id}.`,
     );
     const result = await this.iterateOverPagesParallel<RawXcmMessage>(
-      (page, after_id) =>
+      "xcm",
+      relayChainName,
+      (page, block_range) =>
         this.subscanApi.fetchXcmList(
           relayChainName,
           address,
           page,
           minDate,
-          after_id,
+          block_range,
         ),
-      { withAfterId: true },
     );
     logger.info(
       `Exit fetchXcmList for ${relayChainName} and address ${address} and para_id ${filter_para_id} with ${result.length} messages.`,
@@ -247,7 +248,7 @@ export class SubscanService {
       `Enter fetchBlockList for ${chainName} from date ${new Date(minDate).toISOString()}`,
     );
     const result = this.filterOnDate(
-      await this.iterateOverPagesParallel<Block>((page) =>
+      await this.iterateOverPagesParallel<Block>("blocks", chainName, (page) =>
         this.subscanApi.fetchBlockList(chainName, page, minDate),
       ),
       minDate,
@@ -274,16 +275,17 @@ export class SubscanService {
     );
     const result = this.filterOnDate(
       await this.iterateOverPagesParallel<Transaction>(
-        (page, after_id) =>
+        "transactions",
+        chainName,
+        (page, block_range) =>
           this.subscanApi.fetchExtrinsics(
             chainName,
             address,
             page,
             minDate,
-            after_id,
+            block_range,
             evm,
           ),
-        { withAfterId: true },
       ),
       minDate,
       maxDate,
@@ -312,17 +314,15 @@ export class SubscanService {
     );
     const result = await this.iterateOverPagesParallel<
       RawSubstrateTransferDto & RawEvmTransferDto & { timestamp: number }
-    >(
-      (page, after_id) =>
-        this.subscanApi.fetchTransfers(
-          chainName,
-          address,
-          page,
-          minDate,
-          after_id ? [after_id] : [],
-          evm,
-        ),
-      { withAfterId: true },
+    >("transfers", chainName, (page, block_range) =>
+      this.subscanApi.fetchTransfers(
+        chainName,
+        address,
+        page,
+        minDate,
+        block_range,
+        evm,
+      ),
     );
     const filtered = this.filterOnDate(result, minDate, maxDate);
     const mapped = filtered.map((transfer) => {
@@ -359,6 +359,8 @@ export class SubscanService {
 
   async fetchForeignAssets(chainName: string): Promise<ForeignAsset[]> {
     return this.iterateOverPagesParallel<ForeignAsset>(
+      "foreignAssets",
+      chainName,
       (page) => this.subscanApi.fetchForeignAssets(chainName, page),
       { count: 1 },
     );
@@ -370,6 +372,8 @@ export class SubscanService {
 
   async scanAssets(chainName: string): Promise<Asset[]> {
     return this.iterateOverPagesParallel<Asset>(
+      "assets",
+      chainName,
       (page) => this.subscanApi.scanAssets(chainName, page),
       { count: 1 },
     );

@@ -96,7 +96,7 @@ export class SubscanApi {
     event_id: string,
     page: number,
     minDate: number,
-    after_id?: number,
+    block_range?: string,
   ): Promise<{ list: SubscanEvent[]; hasNext: boolean }> {
     const response = await this.request(
       `https://${chainName}.api.subscan.io/api/v2/scan/events`,
@@ -107,7 +107,7 @@ export class SubscanApi {
         address,
         module,
         event_id,
-        after_id,
+        block_range,
         success: true,
         finalized: true,
       },
@@ -137,46 +137,6 @@ export class SubscanApi {
         response.data.event_index.split("-")[0] +
         "-" +
         response.data.extrinsic_idx,
-    };
-  }
-
-  async searchExtrinsics(
-    chainName: string,
-    address: string,
-    module: string,
-    call: string,
-    page: number,
-    block_min: number,
-    block_max?: number,
-  ): Promise<{ list: Transaction[]; hasNext: boolean }> {
-    const responseBody = await this.request(
-      `https://${chainName}.api.subscan.io/api/v2/scan/extrinsics`,
-      `post`,
-      {
-        row: 100,
-        page,
-        address,
-        module,
-        call,
-        success: true,
-        block_range:
-          block_min !== undefined && block_max !== undefined
-            ? `${block_min}-${block_max}`
-            : undefined,
-      },
-    );
-    return {
-      list: (responseBody.data?.extrinsics ?? []).map((entry) => {
-        return {
-          hash: entry.extrinsic_hash,
-          account: entry.account_display.address,
-          block_timestamp: entry.block_timestamp * 1000,
-          block_num: entry.block_num,
-          label:
-            (entry.call_module || "") + (entry.call_module_function || "."),
-        };
-      }),
-      hasNext: (responseBody.data?.extrinsics ?? []).length >= 100,
     };
   }
 
@@ -382,6 +342,7 @@ export class SubscanApi {
     page: number = 0,
     isStash: boolean,
     minDate: number,
+    block_range?: string,
   ): Promise<{ list: RawStakingReward[]; hasNext: boolean }> {
     const responseBody = await this.request(
       `https://${chainName}.api.subscan.io/api/scan/account/reward_slash`,
@@ -391,6 +352,7 @@ export class SubscanApi {
         page,
         address,
         is_stash: isStash,
+        block_range,
       },
     );
     const list = this.mapStakingRewards(responseBody.data?.list || []);
@@ -438,7 +400,7 @@ export class SubscanApi {
     address: string,
     page: number = 0,
     minDate: number,
-    after_id?: string | number,
+    block_range?: string,
   ): Promise<{ list: RawXcmMessage[]; hasNext: boolean }> {
     if (process.env["DELEGATE_XCM_REQUESTS_TO"]) {
       logger.info(
@@ -449,7 +411,7 @@ export class SubscanApi {
         address,
         page,
         minDate,
-        after_id,
+        block_range,
       });
     }
     if (process.env["XCM_DISABLED"] === "true") {
@@ -463,7 +425,7 @@ export class SubscanApi {
         row: 100,
         page,
         address,
-        after_id,
+        block_range,
         status: "success",
       },
       6,
@@ -490,7 +452,7 @@ export class SubscanApi {
     address: string,
     page: number = 0,
     minDate: number,
-    after_id?: number,
+    block_range?: string,
     evm = false,
   ): Promise<{ list: Transaction[]; hasNext: boolean }> {
     const endpoint = evm
@@ -503,7 +465,7 @@ export class SubscanApi {
         row: 100,
         page,
         address,
-        after_id,
+        block_range,
       },
     );
     const resultList = (
@@ -551,7 +513,7 @@ export class SubscanApi {
     account: string,
     page: number = 0,
     minDate: number,
-    after_id?: number[],
+    block_range?: string,
     evm = false,
   ): Promise<{
     list: (RawSubstrateTransferDto &
@@ -569,7 +531,7 @@ export class SubscanApi {
         page,
         address: account,
         success: true,
-        after_id,
+        block_range,
       },
     );
     const list = (
