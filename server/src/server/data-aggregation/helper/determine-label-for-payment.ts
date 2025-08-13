@@ -116,16 +116,6 @@ const eventClassifications: EventClassification[] = [
     ],
   },
   {
-    chains: ["energywebx"],
-    events: [
-      {
-        moduleId: "parachainstaking",
-        eventId: "Rewarded",
-        label: "Staking reward" as const,
-      },
-    ],
-  },
-  {
     chains: ["darwinia"],
     events: [
       {
@@ -141,6 +131,16 @@ const eventClassifications: EventClassification[] = [
       {
         moduleId: "staking",
         eventId: "reward",
+        label: "Staking reward" as const,
+      },
+    ],
+  },
+  {
+    chains: ["*"],
+    events: [
+      {
+        moduleId: "parachainstaking",
+        eventId: "Rewarded",
         label: "Staking reward" as const,
       },
     ],
@@ -313,6 +313,29 @@ const callModuleClassifications: CallModuleClassification[] = [
             label: "Crowdloan contribution" as const,
           },
         ],
+      },
+    ],
+  },
+  {
+    chains: ["alephzero"],
+    callModules: [
+      {
+        module: "nominationpools",
+        functions: [
+          { name: "claim_payout", label: "Staking reward" as const },
+          { name: "withdraw_unbonded", label: "Liquidity removed" as const },
+          { name: "join", label: "Liquidity added" as const },
+          { name: "bond_extra", label: "Liquidity added" as const },
+        ],
+      },
+    ],
+  },
+  {
+    chains: ["astar"],
+    callModules: [
+      {
+        module: "Ethereum",
+        functions: [{ name: "Transact", label: "EVM Transaction" as const }],
       },
     ],
   },

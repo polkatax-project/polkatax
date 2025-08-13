@@ -9,6 +9,7 @@ export type Provenance =
   | "aggregatedData";
 
 export type Label =
+  | "EVM Transaction"
   | "Farming deposit"
   | "Farming withdraw"
   | "Liquidity removed"

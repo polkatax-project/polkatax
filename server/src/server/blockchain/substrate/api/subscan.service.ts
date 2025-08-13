@@ -175,14 +175,18 @@ export class SubscanService {
       `Enter fetchAllStakingRewards for ${chainName}, address ${address}, starting from ${new Date(minDate).toISOString()}`,
     );
     const rewards = this.filterOnDate(
-      await this.iterateOverPagesParallel("stakingRewards", chainName, (page) =>
-        this.subscanApi.fetchStakingRewards(
-          chainName,
-          address,
-          page,
-          undefined,
-          minDate,
-        ),
+      await this.iterateOverPagesParallel(
+        "stakingRewards",
+        chainName,
+        (page, block_range) =>
+          this.subscanApi.fetchStakingRewards(
+            chainName,
+            address,
+            page,
+            undefined,
+            minDate,
+            block_range,
+          ),
       ),
       minDate,
       maxDate,

@@ -49,6 +49,8 @@ export class StakingRewardsService {
         case "energywebx":
         case "darwinia":
         case "robonomics-freemium":
+        case "peaq":
+        case "hydration":
           return []; // staking rewards are return as transfers for these chains.
         default:
           const token = await this.subscanService.fetchNativeToken(chainName);
