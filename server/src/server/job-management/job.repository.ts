@@ -183,7 +183,7 @@ export class JobRepository {
 
     const values = [
       new Date(),
-      data,
+      JSON.stringify(data),
       new Date(syncedUntil),
       jobId.wallet,
       jobId.blockchain,
