@@ -433,4 +433,21 @@ describe("Verify portfolio changes", () => {
       );
     });
   });
+
+  describe("Verify the portfolio change aleph zero", () => {
+    const chainInfo = { domain: "alephzero", label: "", token: "AZERO" };
+    test("1EfV7cA9FhgQSZQc3M5Ub5pxYdXjG6j8WUZarWe9ebRn7wd", async () => {
+      await verifyAssetMovement(
+        "1EfV7cA9FhgQSZQc3M5Ub5pxYdXjG6j8WUZarWe9ebRn7wd",
+        chainInfo,
+      );
+    });
+
+    test("13igYjrX45pYDFvcVN2CRmonJ7tm6YptjPLUffJ5efakzCkC", async () => {
+      await verifyAssetMovement(
+        "13igYjrX45pYDFvcVN2CRmonJ7tm6YptjPLUffJ5efakzCkC",
+        chainInfo,
+      );
+    });
+  });
 });

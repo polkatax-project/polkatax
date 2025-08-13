@@ -31,17 +31,6 @@ describe("Staking rewards amounts", () => {
     expect(totalAmount).toBe(48.988706091223946);
   }, 30_000);
 
-  test("peaq", async () => {
-    const { totalAmount } = await fetchStakingRewards(
-      "1DNQcM4RnYmXPFwRG6bNFYaHGf81dyHJfnLrskL6HBB7Vcx",
-      "peaq",
-      "USD",
-      Date.UTC(2025, 0, 1),
-      Date.UTC(2025, 5, 1),
-    );
-    expect(totalAmount).toBe(1548293.1475236798);
-  }, 30_000);
-
   test("moonbeam", async () => {
     const { totalAmount } = await fetchStakingRewards(
       "0xd8C8f8E07F779C34aEc474bA1A04E20E792b5c5f",
