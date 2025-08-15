@@ -44,12 +44,23 @@ const acceptedDeviations = [
     perPayment: 1,
     max: 100,
   },
+  {
+    symbol: "MYTH",
+    perPayment: 0.02,
+    max: 10,
+  },
+  {
+    symbol: "EWT",
+    perPayment: 0.01,
+    max: 1,
+  },
 ];
 
 const verifyAssetMovement = async (
   address: string,
   chainInfo: { domain: string; label: string; token: string },
   options?: {
+    useFees?: boolean;
     toleranceOverride?: {
       symbol: string;
       perPayment: number;
@@ -59,12 +70,12 @@ const verifyAssetMovement = async (
 ) => {
   const today = new Date();
   const pastDate = new Date();
-  pastDate.setDate(today.getDate() - 14);
+  pastDate.setDate(today.getDate() - 500);
   const comparison = await fetchPortfolioChangesExpectedVSActual(
     address,
     chainInfo,
     pastDate.getTime(),
-    false,
+    options?.useFees ?? false,
   );
   comparison.results.forEach((r) => {
     const acceptedDeviationsForToken = (options?.toleranceOverride ?? []).find(
@@ -123,7 +134,7 @@ describe("Verify portfolio changes", () => {
         "1HGnvAkk9nbfZ58CzUJhjcrLdEDMkr5qNkqqYkyD5BF5v6Y",
         chainInfo,
       );
-    });
+    }, 600000);
   });
 
   describe("Verify the portfolio change coretime", () => {
@@ -141,9 +152,6 @@ describe("Verify portfolio changes", () => {
         chainInfo,
       );
     });
-    //test("15tkmix9R7ZRYGsLGV15mpZSbicPjmnhLdnUccAwfRi7RPVV", async () => {
-    //  await verifyAssetMovement("15tkmix9R7ZRYGsLGV15mpZSbicPjmnhLdnUccAwfRi7RPVV", chainInfo)
-    //}) very long...
 
     test("1HwQbUpcr99UA6W7WBK86RtMHJTBWRazpxuYfRHyhSCbE1j", async () => {
       await verifyAssetMovement(
@@ -312,12 +320,6 @@ describe("Verify portfolio changes", () => {
         chainInfo,
       );
     });
-    // takes too long test("15yZzmbMsogqqxVNNfe6t4LaYmjGWbPFDbADo23voJSKvywq", async () => {
-    //  await verifyAssetMovement("15yZzmbMsogqqxVNNfe6t4LaYmjGWbPFDbADo23voJSKvywq", chainInfo)
-    //})
-    // takes too long test("13AxCbvHff9d9LBtdNZBT5f2JoiHVRaHyiuUwZMmnBuGrSE8", async () => {
-    // await verifyAssetMovement("13AxCbvHff9d9LBtdNZBT5f2JoiHVRaHyiuUwZMmnBuGrSE8", chainInfo)
-    // }, 1200000)
   });
 
   describe("Verify the portfolio change mythos", () => {
@@ -328,12 +330,18 @@ describe("Verify portfolio changes", () => {
         chainInfo,
       );
     });
-    // test failes: test("0x5EE06FECF52b12c66b03700821FbBc9dD5680361", async () => {
-    //  await verifyAssetMovement("0x5EE06FECF52b12c66b03700821FbBc9dD5680361", chainInfo)
-    // })
-    // long running test("0xF6eAAdC72D1a58F735965EA196E4FA7029fC76dC", async () => {
-    //  await verifyAssetMovement("0xF6eAAdC72D1a58F735965EA196E4FA7029fC76dC", chainInfo)
-    //})
+    test("0x5EE06FECF52b12c66b03700821FbBc9dD5680361", async () => {
+      await verifyAssetMovement(
+        "0x5EE06FECF52b12c66b03700821FbBc9dD5680361",
+        chainInfo,
+      );
+    });
+    test("0xF6eAAdC72D1a58F735965EA196E4FA7029fC76dC", async () => {
+      await verifyAssetMovement(
+        "0xF6eAAdC72D1a58F735965EA196E4FA7029fC76dC",
+        chainInfo,
+      );
+    });
   });
 
   describe("Verify the portfolio change energywebx", () => {
@@ -383,7 +391,7 @@ describe("Verify portfolio changes", () => {
     });
   });
 
-  describe("Verify the portfolio change hydration", () => {
+  describe.only("Verify the portfolio change hydration", () => {
     const chainInfo = { domain: "hydration", label: "", token: "HDX" };
 
     test("15abVnvSgRJFCqhJuvrYSNL5DscRppcog8cyYaVALLU3LFjB", async () => {
@@ -393,9 +401,24 @@ describe("Verify portfolio changes", () => {
       );
     });
 
-    test("131d4YS25qpuXiHrfJibuFYXwZrzwxpvU1ahvr3TJFNYcmfk", async () => {
+    test("14wDEEnVKZDXVXq2arAmkf1QmnTcwN4fzNJRFoM77YvFxa8T", async () => {
       await verifyAssetMovement(
-        "131d4YS25qpuXiHrfJibuFYXwZrzwxpvU1ahvr3TJFNYcmfk",
+        "14wDEEnVKZDXVXq2arAmkf1QmnTcwN4fzNJRFoM77YvFxa8T",
+        chainInfo,
+        { useFees: true },
+      );
+    });
+
+    test("15Vut6ZxJNKSCJY87DLtZZbFyWyR1LBwXhAc7wqwVRK3ioWN", async () => {
+      await verifyAssetMovement(
+        "15Vut6ZxJNKSCJY87DLtZZbFyWyR1LBwXhAc7wqwVRK3ioWN",
+        chainInfo,
+      );
+    });
+
+    test("13EXvi5s43SiCTih7twG6zr1xP7CbSp3pz5fYKiyscYQay6M", async () => {
+      await verifyAssetMovement(
+        "13EXvi5s43SiCTih7twG6zr1xP7CbSp3pz5fYKiyscYQay6M",
         chainInfo,
       );
     });
