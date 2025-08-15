@@ -13,7 +13,7 @@ import { determineLabelForPayment } from "../helper/determine-label-for-payment"
 import { PortfolioMovementsResponse } from "../model/portfolio-movements.response";
 import { SpecialEventsToTransfersService } from "./special-event-processing/special-events-to-transfers.service";
 import { XcmTokenResolutionService } from "./xcm-token-resolution.service";
-import { EventEnrichedXcmTransfer } from "../model/EventEnrichedXcmTransfer";
+import { EventEnrichedXcmTransfer } from "../model/event-enriched-xcm-transfer";
 import { XcmTransfer } from "../../blockchain/substrate/model/xcm-transfer";
 import { StakingRewardsWithFiatService } from "./staking-rewards-with-fiat.service";
 import { PortfolioMovement, TaxableEvent } from "../model/portfolio-movement";
@@ -24,8 +24,6 @@ import { AggregatedStakingReward } from "../model/aggregated-staking-reward";
 import { Transaction } from "../../blockchain/substrate/model/transaction";
 
 const ignoreIncomingXcm = [
-  "hydration",
-  "basilisk",
   "assethub-polkadot",
   "assethub-kusama",
   "coretime-polkadot",
@@ -138,6 +136,13 @@ export class PortfolioMovementsService {
         events,
         stakingRewards.rawStakingRewards,
       );
+
+    /**
+     * Transactions without asset movements are ignored for now.
+     */
+    portfolioMovements = portfolioMovements.filter(
+      (p) => p.transfers.length > 0,
+    );
 
     portfolioMovements = new ChainAdjustments().handleAdjustments(
       request.chain.domain,

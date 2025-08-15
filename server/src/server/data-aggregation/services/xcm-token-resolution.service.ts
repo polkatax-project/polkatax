@@ -5,7 +5,7 @@ import {
   EventDetails,
   SubscanEvent,
 } from "../../blockchain/substrate/model/subscan-event";
-import { EventEnrichedXcmTransfer } from "../model/EventEnrichedXcmTransfer";
+import { EventEnrichedXcmTransfer } from "../model/event-enriched-xcm-transfer";
 import * as subscanChains from "../../../../res/gen/subscan-chains.json";
 import isEqual from "lodash.isequal";
 import { XcmTransfer } from "../../blockchain/substrate/model/xcm-transfer";
@@ -109,7 +109,7 @@ export class XcmTokenResolutionService {
             return;
           }
 
-          const symbol = transfer.symbol?.replace(/^xc/, "");
+          const symbol = transfer.symbol;
 
           // Find exactly one matching deposit with same symbol
           const matchingDeposits = deposits

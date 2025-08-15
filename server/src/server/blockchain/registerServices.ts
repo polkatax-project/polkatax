@@ -5,7 +5,6 @@ import { SubscanService } from "./substrate/api/subscan.service";
 import { XcmService } from "./substrate/services/xcm.service";
 import { TransactionsService } from "./substrate/services/transactions.service";
 import { EthTokenInfoService } from "./evm/service/eth.token-info.service";
-import { XcmTokenResolver } from "./substrate/services/xcm-token-resolver";
 
 export const registerServices = (container: AwilixContainer) => {
   container.register({
@@ -18,7 +17,6 @@ export const registerServices = (container: AwilixContainer) => {
     transactionsService: asClass(TransactionsService),
     stakingRewardsService: asClass(StakingRewardsService),
     xcmService: asClass(XcmService),
-    xcmTokenResolver: asClass(XcmTokenResolver),
     ethTokenInfoService: asClass(EthTokenInfoService),
   });
 };
