@@ -7,13 +7,9 @@ import { logger } from "../../../logger/logger";
 import { isEvmAddress } from "../../../data-aggregation/helper/is-evm-address";
 import { XcmTransfer } from "../model/xcm-transfer";
 import { getAddress } from "ethers";
-import { XcmTokenResolver } from "./xcm-token-resolver";
 
 export class XcmService {
-  constructor(
-    private subscanService: SubscanService,
-    private xcmTokenResolver: XcmTokenResolver,
-  ) {}
+  constructor(private subscanService: SubscanService) {}
 
   private findChainName(relayOrMain: string, paraId: number) {
     if (
@@ -94,7 +90,9 @@ export class XcmService {
         const outgoingTransfer = paraId === xcm.origin_para_id;
         const timestamp = outgoingTransfer
           ? xcm.origin_block_timestamp
-          : xcm.confirm_block_timestamp;
+          : xcm.confirm_block_timestamp ||
+            xcm.relayed_block_timestamp ||
+            xcm.origin_block_timestamp;
         const fromChain = this.findChainName(
           xcm.from_chain || chain.relay,
           xcm.s2s_origin_para_id || xcm.origin_para_id,
@@ -136,58 +134,58 @@ export class XcmService {
               ? Number(xcm.used_fee) / Math.pow(10, token.token_decimals)
               : 0,
           extrinsic_index,
-          transfers: await Promise.all([
-            ...xcm.assets.map(async (a) => {
-              const originToken =
-                await this.xcmTokenResolver.determineOriginToken(a, fromChain);
-              let symbol = originToken?.symbol ?? a.symbol;
-              const decimals = a.decimals ?? originToken?.decimals;
+          transfers: (
+            await Promise.all([
+              ...xcm.assets.map(async (a) => {
+                const symbol = a?.symbol?.replace(/^xc/, "");
 
-              if (!symbol) {
-                logger.warn(
-                  "Token symbol not found for transfer " +
-                    xcm.id +
-                    "/" +
-                    xcm.message_hash,
-                );
-                return undefined;
-              }
+                if (!symbol) {
+                  logger.warn(
+                    "Token symbol not found for transfer " +
+                      xcm.id +
+                      "/" +
+                      xcm.message_hash,
+                  );
+                  return undefined;
+                }
 
-              if (!decimals && data.chainName === fromChain) {
-                logger.warn(
-                  "Token decimals not found for transfer " +
-                    xcm.id +
-                    "/" +
-                    xcm.message_hash,
-                );
-                return undefined;
-              }
+                if (!a.decimals && data.chainName === fromChain) {
+                  logger.warn(
+                    "Token decimals not found for transfer " +
+                      xcm.id +
+                      "/" +
+                      xcm.message_hash,
+                  );
+                  return undefined;
+                }
 
-              const amount = new BigNumber(a.amount)
-                .multipliedBy(new BigNumber(Math.pow(10, -decimals)))
-                .toNumber();
-              return {
-                symbol: originToken?.symbol ?? symbol,
-                asset_unique_id: originToken?.unique_id,
-                rawAmount: a.amount,
-                amount: (fromChain === data.chainName ? -1 : 1) * amount,
-                from,
-                to,
-                module: "xcm",
-                timestamp,
-                extrinsic_index,
-                price: Number(a.current_currency_amount) / amount,
-                fiatValue: Number(a.history_currency_amount),
-                fromChain,
-                destChain,
-              };
-            }),
-          ]),
+                const amount = new BigNumber(a.amount)
+                  .multipliedBy(new BigNumber(Math.pow(10, -a.decimals)))
+                  .toNumber();
+
+                return {
+                  symbol,
+                  asset_unique_id: a?.asset_unique_id,
+                  rawAmount: a.amount,
+                  amount: (fromChain === data.chainName ? -1 : 1) * amount,
+                  from,
+                  to,
+                  module: "xcm",
+                  timestamp,
+                  extrinsic_index,
+                  price: Number(a.current_currency_amount) / amount,
+                  fiatValue: Number(a.history_currency_amount),
+                  fromChain,
+                  destChain,
+                };
+              }),
+            ])
+          ).filter((t) => !!t),
         };
       }),
     ]);
     const filtered = this.filterOnDate(
-      xcmList.filter((x) => !!x),
+      xcmList.filter((x) => !!x && x.transfers.length > 0),
       data.minDate,
       data.maxDate,
     );

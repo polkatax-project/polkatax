@@ -401,6 +401,7 @@ export class SubscanApi {
     page: number = 0,
     minDate: number,
     block_range?: string,
+    filter_para_id?: number,
   ): Promise<{ list: RawXcmMessage[]; hasNext: boolean }> {
     if (process.env["DELEGATE_XCM_REQUESTS_TO"]) {
       logger.info(
@@ -412,6 +413,7 @@ export class SubscanApi {
         page,
         minDate,
         block_range,
+        filter_para_id,
       });
     }
     if (process.env["XCM_DISABLED"] === "true") {
@@ -426,7 +428,7 @@ export class SubscanApi {
         page,
         address,
         block_range,
-        status: "success",
+        filter_para_id,
       },
       6,
     );
@@ -440,7 +442,7 @@ export class SubscanApi {
       };
     });
     return {
-      list,
+      list: list.filter((xcm) => xcm.status !== "failed"),
       hasNext:
         list.length >= 100 &&
         list[list.length - 1].origin_block_timestamp >= minDate,

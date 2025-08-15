@@ -37,6 +37,7 @@ export const fetchTokens = async (
       break;
     case "peaq":
     case "manta":
+    case "phala":
       data.tokens = await subscanService.scanAssets(chainInfo.domain);
       data.tokens.push({
         id: chainInfo.token,

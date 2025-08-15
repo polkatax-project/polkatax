@@ -135,11 +135,6 @@ export const eventConfigs: {
     event: "foreignassetsIssued",
     handler: (c, e, context) => onAssethubForeignAssetsIssued(e, context),
   },
-  /*{
-    chains: ["hydration", "basilisk"],
-    event: "tokensDeposited",
-    handler: (c, e, context) => onHydrationCurrenciesDeposited(e, context),
-  },*/
   {
     chains: [
       "assethub-polkadot",
