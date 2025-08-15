@@ -89,7 +89,7 @@ export const fetchTokenChangesExpectedVSActual = async (
   for (
     let blockNum = minBlock;
     blockNum <= maxBlock;
-    blockNum += Math.ceil((maxBlock - minBlock) / chunks)
+    blockNum += Math.max(1, Math.ceil((maxBlock - minBlock) / chunks))
   ) {
     const block = await subscanApi.fetchBlock(chain.domain, blockNum);
     timestamps.push(block.timestamp);

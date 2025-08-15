@@ -53,6 +53,7 @@ const zoomIntoErrorAssetsChange = async (
     blocks[1],
   ];
 
+  await createApi(chain.domain);
   for (let blockNumber of blocksToFetch) {
     const block = await subscanApi.fetchBlock(chain.domain, blockNumber);
     timestamps.push(block.timestamp);
@@ -153,6 +154,7 @@ const zoomIntoErrorTokensChange = async (
     const block = await subscanApi.fetchBlock(chain.domain, blockNum);
     timestamps.push(block.timestamp);
   }
+  await createApi(chain.domain);
   const portfolios = await new Wallet().fetchTokenBalances(
     chain.domain,
     chain.token,
@@ -255,7 +257,7 @@ const zoomIntoErrorTokens = async (
       ),
     );
   }
-  zoomIntoErrorTokensChange(
+  await zoomIntoErrorTokensChange(
     address,
     chainInfo,
     tokenUniqueId,
@@ -329,8 +331,6 @@ const findLargestPortfolioError = async () => {
     if (!wallet || !chain || !tokenSymbol) {
       console.error("wallet, chain and, token_symbol are mandatory.");
     }
-    createApi(chain);
-
     const nativeToken = subscanChains.chains.find(
       (t) => t.domain === chain,
     ).token;
@@ -345,6 +345,7 @@ const findLargestPortfolioError = async () => {
           tokenSymbol,
           0,
         );
+        break;
       default:
         await zoomIntoErrorAssets(
           wallet,

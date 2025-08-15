@@ -63,8 +63,7 @@ export const analysePortfolioChanges = (
         p.transfers.forEach((t) => {
           if (
             t.asset_unique_id === token.asset_unique_id ||
-            (!t.asset_unique_id &&
-              t.symbol.toUpperCase() === token.symbol.toUpperCase() &&
+            (t.symbol.toUpperCase() === token.symbol.toUpperCase() &&
               t.module === "xcm")
           ) {
             expectedChange += t?.amount ?? 0;
@@ -77,10 +76,9 @@ export const analysePortfolioChanges = (
       if (actualBalanceChange === 0 && expectedChange === 0) {
         continue;
       }
+      const numberOfTx = history.length;
       const deviationPerPayment = Math.abs(
-        history.length > 0
-          ? expectedVsActual / history.length
-          : expectedVsActual,
+        numberOfTx > 0 ? expectedVsActual / numberOfTx : expectedVsActual,
       );
       console.log(
         `${new Date(intervalStart).toISOString()} - ${new Date(intervalEnd).toISOString()}: Real balance change ${token.symbol}/${token.asset_unique_id}: ${actualBalanceChange}. Expected change: ${expectedChange}. Payments: ${history.length}. Deviation per payment: ${deviationPerPayment} ${token.symbol}`,
