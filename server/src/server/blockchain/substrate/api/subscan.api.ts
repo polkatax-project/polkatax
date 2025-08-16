@@ -43,7 +43,7 @@ export class SubscanApi {
   private async retry<T>(
     query: () => Promise<T>,
     retries = 3,
-    backOff = [2500, 4000, 8000],
+    backOff = [3000, 5000, 8000],
   ): Promise<T> {
     for (let i = 0; i < retries; i++) {
       try {
@@ -56,9 +56,7 @@ export class SubscanApi {
             (e as HttpError).statusCode !== 500)
         )
           throw e;
-        await new Promise((res) =>
-          setTimeout(res, backOff[i] + Math.floor(Math.random() + 2000)),
-        );
+        await new Promise((res) => setTimeout(res, backOff[i]));
       }
     }
   }
