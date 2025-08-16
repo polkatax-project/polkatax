@@ -1,5 +1,4 @@
 import { XcmService } from "./xcm.service";
-import { XcmTokenResolver } from "./xcm-token-resolver";
 import { expect, it, jest, describe, beforeEach } from "@jest/globals";
 import { SubscanService } from "../api/subscan.service";
 
@@ -39,19 +38,11 @@ const mockSubscanService: jest.Mocked<SubscanService> = {
   fetchForeignAssets: jest.fn(),
 } as any;
 
-const mockTokenResolver: jest.Mocked<XcmTokenResolver> = {
-  determineOriginToken: jest.fn<any>().mockResolvedValue({
-    symbol: "DOT",
-    unique_id: "DOT",
-    decimals: 10,
-  }),
-} as any;
-
 describe("XcmService", () => {
   let service: XcmService;
 
   beforeEach(() => {
-    service = new XcmService(mockSubscanService, mockTokenResolver);
+    service = new XcmService(mockSubscanService);
     jest.clearAllMocks();
   });
 
@@ -64,8 +55,6 @@ describe("XcmService", () => {
 
     expect(mockSubscanService.fetchNativeToken).toHaveBeenCalledWith("bifrost");
     expect(mockSubscanService.fetchXcmList).toHaveBeenCalled();
-
-    expect(mockTokenResolver.determineOriginToken).toHaveBeenCalled();
 
     expect(result).toHaveLength(1);
 

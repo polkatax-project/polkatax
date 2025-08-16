@@ -12,8 +12,13 @@ export class JobConsumer {
 
   async process(job: Job): Promise<void> {
     logger.info("JobConsumer: processing job", {
-      ...job,
-      data: undefined, // avoid logging large/stale data
+      reqId: job.reqId,
+      status: job.status,
+      lastModified: job.lastModified,
+      deleted: job.deleted,
+      syncedUntil: job.syncedUntil,
+      syncFromDate: job.syncFromDate,
+      error: job.error,
     });
 
     const chain = subscanChains.chains.find(
@@ -53,8 +58,13 @@ export class JobConsumer {
 
       await this.jobsService.setDone({ values: portfolioMovements }, job);
       logger.info("JobConsumer: finished processing job", {
-        ...job,
-        data: undefined,
+        reqId: job.reqId,
+        status: job.status,
+        lastModified: job.lastModified,
+        deleted: job.deleted,
+        syncedUntil: job.syncedUntil,
+        syncFromDate: job.syncFromDate,
+        error: job.error,
       });
     } catch (err) {
       logger.error("JobConsumer: error during processing");

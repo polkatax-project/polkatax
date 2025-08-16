@@ -1,8 +1,8 @@
 import { Asset } from "../../../blockchain/substrate/model/asset";
 import { EventDetails } from "../../../blockchain/substrate/model/subscan-event";
-import { EventDerivedTransfer } from "../../model/event-derived-transfer";
+import { EventDerivedAssetMovement } from "./event-derived-asset-movement";
+import { EventHandlerContext } from "./event-handler-context";
 import { mapKeyToCanonicalAddress } from "./helper";
-import { toTransfer } from "./to-transfer";
 
 export const extractZenLinkValues = async (
   event: EventDetails,
@@ -10,7 +10,7 @@ export const extractZenLinkValues = async (
 ): Promise<{
   address: string;
   assets: Asset[];
-  amounts: number[];
+  amounts: string[];
 }> => {
   let addresses = event.params
     .filter((p) => p.type_name === "AccountId")
@@ -54,20 +54,17 @@ export const extractZenLinkValues = async (
         .filter((p) => p.type_name === "AssetBalance")
         .map((p) => p.value);
 
-  const amounts = balances.map(
-    (b, idx) => Number(b) / Math.pow(10, assets[idx]?.decimals),
-  );
   return {
     address,
     assets,
-    amounts,
+    amounts: balances,
   };
 };
 
 export const onZenlinkProtcolAssetSwap = async (
   event: EventDetails,
-  { tokens }: { tokens: Asset[] },
-): Promise<EventDerivedTransfer[]> => {
+  { tokens }: EventHandlerContext,
+): Promise<EventDerivedAssetMovement[]> => {
   const { address, assets, amounts } = await extractZenLinkValues(event, {
     tokens,
   });
@@ -82,61 +79,66 @@ export const onZenlinkProtcolAssetSwap = async (
    */
   const transfers = [];
   if (assets[0].asset_id !== "0") {
-    transfers.push(toTransfer(event, address, "", amounts[0], assets[0]));
+    transfers.push({
+      event,
+      from: address,
+      rawAmount: amounts[0],
+      token: assets[0],
+    });
   }
   if (assets[1].asset_id !== "0") {
-    transfers.push(toTransfer(event, "", address, amounts[1], assets[1]));
+    transfers.push({
+      event,
+      to: address,
+      rawAmount: amounts[1],
+      token: assets[1],
+    });
   }
   if (assets.length === 3) {
-    if (assets[2].asset_id !== "0") {
-      transfers.push(toTransfer(event, "", address, amounts[2], assets[2]));
-    }
+    transfers.push({
+      event,
+      to: address,
+      rawAmount: amounts[2],
+      token: assets[2],
+    });
   }
   return transfers;
 };
 
 export const onZenlinkProtcolLiquidityRemoved = async (
   event: EventDetails,
-  { tokens }: { tokens: Asset[] },
-): Promise<EventDerivedTransfer[]> => {
+  { tokens }: EventHandlerContext,
+): Promise<EventDerivedAssetMovement[]> => {
   const { address, assets, amounts } = await extractZenLinkValues(event, {
     tokens,
   });
 
   return assets
     .filter((a) => a.asset_id !== "0")
-    .map((_, idx) =>
-      toTransfer(
-        event,
-        "",
-        address,
-        amounts[idx],
-        assets[idx],
-        undefined,
-        "Liquidity removed",
-      ),
-    );
+    .map((_, idx) => ({
+      event,
+      to: address,
+      rawAmount: amounts[idx],
+      token: assets[idx],
+      label: "Liquidity removed",
+    }));
 };
 
 export const onZenlinkProtcolLiquidityAdded = async (
   event: EventDetails,
   { tokens }: { tokens: Asset[] },
-): Promise<EventDerivedTransfer[]> => {
+): Promise<EventDerivedAssetMovement[]> => {
   const { address, assets, amounts } = await extractZenLinkValues(event, {
     tokens,
   });
 
   return assets
     .filter((a) => a.asset_id !== "0")
-    .map((_, idx) =>
-      toTransfer(
-        event,
-        address,
-        "",
-        amounts[idx],
-        assets[idx],
-        undefined,
-        "Liquidity added",
-      ),
-    );
+    .map((_, idx) => ({
+      event,
+      from: address,
+      rawAmount: amounts[idx],
+      token: assets[idx],
+      label: "Liquidity added",
+    }));
 };

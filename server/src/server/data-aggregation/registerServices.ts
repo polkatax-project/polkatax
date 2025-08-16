@@ -10,6 +10,7 @@ import { AddFiatValuesToPortfolioMovementsService } from "./services/add-fiat-va
 import { ChainDataAccumulationService } from "./services/chain-data-accumulation.service";
 import { SpecialEventsToTransfersService } from "./services/special-event-processing/special-events-to-transfers.service";
 import { XcmTokenResolutionService } from "./services/xcm-token-resolution.service";
+import { TokenFromMultiLocationService } from "./services/special-event-processing/token-from-multi-location.service";
 
 export const registerServices = (container: AwilixContainer) => {
   container.register({
@@ -26,5 +27,6 @@ export const registerServices = (container: AwilixContainer) => {
     chainDataAccumulationService: asClass(ChainDataAccumulationService),
     transferMerger: asClass(TransferMerger),
     xcmTokenResolutionService: asClass(XcmTokenResolutionService),
+    tokenFromMultiLocationService: asClass(TokenFromMultiLocationService),
   });
 };

@@ -6,12 +6,20 @@ import { SpecialEventsToTransfersService } from "../src/server/data-aggregation/
 import { SubscanService } from "../src/server/blockchain/substrate/api/subscan.service";
 import { SubscanApi } from "../src/server/blockchain/substrate/api/subscan.api";
 import { verifyEventTransfersAreValid } from "./util/verify-transfer-valid";
+import { TokenFromMultiLocationService } from "../src/server/data-aggregation/services/special-event-processing/token-from-multi-location.service";
+import { EthTokenInfoService } from "../src/server/blockchain/evm/service/eth.token-info.service";
 
 describe("Special event handling", () => {
   let subscanApi: SubscanApi = new SubscanApi();
   let subscanService: SubscanService = new SubscanService(subscanApi);
   let specialEventsToTransfersService: SpecialEventsToTransfersService =
-    new SpecialEventsToTransfersService(subscanService);
+    new SpecialEventsToTransfersService(
+      subscanService,
+      new TokenFromMultiLocationService(
+        subscanService,
+        new EthTokenInfoService(),
+      ),
+    );
 
   test("verify assetconversion SwapExecuted data extraction", async () => {
     const eventsOfInterest = await subscanApi.searchEvents(

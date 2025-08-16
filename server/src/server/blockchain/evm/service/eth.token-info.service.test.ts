@@ -37,6 +37,7 @@ describe("EthTokenInfoService", () => {
 
   it("should return ETH info for zero address", async () => {
     const result = await service.fetchTokenInfo(
+      "ethereum",
       "0x0000000000000000000000000000000000000000",
     );
     expect(result).toEqual({ symbol: "ETH", decimals: 18 });
@@ -47,14 +48,14 @@ describe("EthTokenInfoService", () => {
     mockSymbolCall.mockResolvedValue("DAI");
     mockDecimalsCall.mockResolvedValue("18");
 
-    const result = await service.fetchTokenInfo(testAddress);
+    const result = await service.fetchTokenInfo("ethereum", testAddress);
 
     expect(mockContract.methods.symbol).toHaveBeenCalled();
     expect(mockContract.methods.decimals).toHaveBeenCalled();
     expect(result).toEqual({ symbol: "DAI", decimals: 18 });
 
     // Second call should hit the cache, no new calls
-    const cachedResult = await service.fetchTokenInfo(testAddress);
+    const cachedResult = await service.fetchTokenInfo("ethereum", testAddress);
     expect(mockContract.methods.symbol).toHaveBeenCalledTimes(1);
     expect(mockContract.methods.decimals).toHaveBeenCalledTimes(1);
     expect(cachedResult).toEqual({ symbol: "DAI", decimals: 18 });

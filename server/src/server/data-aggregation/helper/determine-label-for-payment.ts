@@ -300,6 +300,29 @@ const callModuleClassifications: CallModuleClassification[] = [
         ],
         label: "XCM transfer" as const,
       },
+      {
+        module: "polkadotxcm",
+        functions: [
+          {
+            name: "limited_reserve_transfer_assets",
+            label: "XCM transfer" as const,
+          },
+          {
+            name: "reserve_transfer_assets",
+            label: "XCM transfer" as const,
+          },
+        ],
+        label: "XCM transfer" as const,
+      },
+      {
+        module: "evm",
+        functions: [
+          {
+            name: "call",
+            label: "EVM Transaction" as const,
+          },
+        ],
+      },
     ],
   },
   {

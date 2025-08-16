@@ -25,6 +25,7 @@ export interface EventDetails {
       type: string;
       type_name: string;
       value: any;
+      values?: any[];
       name: string;
     },
   ];

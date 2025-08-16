@@ -3,6 +3,7 @@ import { Transfer } from "../../blockchain/substrate/model/raw-transfer";
 import { logger } from "../../logger/logger";
 import { EventDerivedTransfer } from "../model/event-derived-transfer";
 import { PortfolioMovement } from "../model/portfolio-movement";
+import { isEvmAddress } from "./is-evm-address";
 
 export interface IndexedPortfolioMovements {
   [key: string]: PortfolioMovement;
@@ -18,8 +19,12 @@ export class TransferMerger {
     let key = undefined;
     transferList.forEach((entry) => {
       key ??= entry.extrinsic_index;
-      entry.from = convertToCanonicalAddress(entry.from);
-      entry.to = convertToCanonicalAddress(entry.to);
+      entry.from = isEvmAddress(entry.from)
+        ? entry.from
+        : convertToCanonicalAddress(entry.from);
+      entry.to = isEvmAddress(entry.to)
+        ? entry.to
+        : convertToCanonicalAddress(entry.to);
       const otherAddress = isMyAccount(entry.from) ? entry.to : entry.from;
       if (!target[key]) {
         target[key] = {

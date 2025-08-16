@@ -1,31 +1,26 @@
-import { Asset } from "../../../blockchain/substrate/model/asset";
 import { EventDetails } from "../../../blockchain/substrate/model/subscan-event";
-import { XcmTransfer } from "../../../blockchain/substrate/model/xcm-transfer";
-import { EventDerivedTransfer } from "../../model/event-derived-transfer";
+import { EventDerivedAssetMovement } from "./event-derived-asset-movement";
+import { EventHandlerContext } from "./event-handler-context";
 import {
   extractAddress,
   extractAsset,
   findMatchingXcm,
   getPropertyValue,
 } from "./helper";
-import { toTransfer } from "./to-transfer";
 
 export const onAssethubAssetsIssued = async (
   event: EventDetails,
-  { tokens, xcmList }: { tokens: Asset[]; xcmList: XcmTransfer[] },
-): Promise<EventDerivedTransfer> => {
-  const owner = extractAddress("owner", event);
-  const asset = extractAsset("asset_id", event, tokens);
-  const amount =
-    Number(getPropertyValue("amount", event)) / Math.pow(10, asset?.decimals);
+  { tokens, xcmList }: EventHandlerContext,
+): Promise<EventDerivedAssetMovement> => {
+  const to = extractAddress("owner", event);
+  const token = extractAsset("asset_id", event, tokens);
   const xcm = findMatchingXcm(event, xcmList);
-  return toTransfer(
+  return {
     event,
-    "",
-    owner,
-    amount,
-    asset,
+    to,
+    rawAmount: getPropertyValue("amount", event),
+    token,
     xcm,
-    xcm ? "XCM transfer" : undefined,
-  );
+    label: xcm ? "XCM transfer" : undefined,
+  };
 };

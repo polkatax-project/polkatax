@@ -1,7 +1,8 @@
 import { logger } from "../../../logger/logger";
 import Web3 from "web3";
 
-const web3 = new Web3("https://eth-mainnet.public.blastapi.io");
+const web3Eth = new Web3("https://eth-mainnet.public.blastapi.io");
+const web3Moonbeam = new Web3("https://rpc.api.moonbeam.network");
 
 const minABI = [
   {
@@ -24,6 +25,7 @@ export class EthTokenInfoService {
   private cache: Map<string, { symbol: string; decimals: number }> = new Map();
 
   async fetchTokenInfo(
+    chain: "moonbeam" | "ethereum",
     address: string,
   ): Promise<{ symbol: string; decimals: number }> {
     logger.info("Entry: Fetch Token Info");
@@ -43,6 +45,7 @@ export class EthTokenInfoService {
     }
 
     // Otherwise, fetch from blockchain
+    const web3 = chain === "ethereum" ? web3Eth : web3Moonbeam;
     const contract = new web3.eth.Contract(minABI, address);
     const [symbol, decimals] = await Promise.all([
       contract.methods.symbol().call(),

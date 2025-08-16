@@ -8,11 +8,11 @@ export const toTransfer = (
   from: string,
   to: string,
   amount: number,
-  token: { symbol: string; decimals: number; unique_id: string },
+  token: { symbol: string; decimals: number; unique_id?: string },
   xcm?: XcmTransfer,
   label?: Label,
 ): EventDerivedTransfer => {
-  if (to === undefined || from === undefined || !token || !amount) {
+  if ((to === undefined && from === undefined) || !token || !amount) {
     throw `Missing data: to: ${to}, from: ${from}, token: ${JSON.stringify(token)}, amount: ${amount}, event: ${event.original_event_index}, extrinsic: ${event.extrinsic_index}`;
   }
   return {

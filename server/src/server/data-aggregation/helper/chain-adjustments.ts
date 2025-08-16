@@ -22,7 +22,7 @@ export class ChainAdjustments {
         const bought = s.transfers
           .filter((transfer) => transfer.amount > 0)
           .map((t) => t.symbol);
-        for (const poolToken of ["2-pool", "4-pool"]) {
+        for (const poolToken of ["2-pool", "4-pool", "2-Pool", "4-Pool"]) {
           if (
             (sold.includes(poolToken) && sold.length > 1) ||
             (bought.includes(poolToken) && bought.length > 1)

@@ -1,34 +1,27 @@
-import { ForeignAsset } from "../../../blockchain/substrate/model/foreign-asset";
 import { EventDetails } from "../../../blockchain/substrate/model/subscan-event";
-import { XcmTransfer } from "../../../blockchain/substrate/model/xcm-transfer";
-import { EventDerivedTransfer } from "../../model/event-derived-transfer";
+import { EventDerivedAssetMovement } from "./event-derived-asset-movement";
+import { EventHandlerContext } from "./event-handler-context";
 import {
   extractAddress,
   extractForeignAsset,
   findMatchingXcm,
   getPropertyValue,
 } from "./helper";
-import { toTransfer } from "./to-transfer";
 
 export const onAssethubForeignAssetsIssued = async (
   event: EventDetails,
-  {
-    foreignAssets,
-    xcmList,
-  }: { foreignAssets: ForeignAsset[]; xcmList: XcmTransfer[] },
-): Promise<EventDerivedTransfer> => {
-  const owner = extractAddress("owner", event);
-  const asset = extractForeignAsset("asset_id", event, foreignAssets);
-  const amount =
-    Number(getPropertyValue("amount", event)) / Math.pow(10, asset?.decimals);
+  { foreignAssets, xcmList }: EventHandlerContext,
+): Promise<EventDerivedAssetMovement> => {
+  const to = extractAddress("owner", event);
+  const token = extractForeignAsset("asset_id", event, foreignAssets);
   const xcm = findMatchingXcm(event, xcmList);
-  return toTransfer(
+  return {
     event,
-    "",
-    owner,
-    amount,
-    asset,
+    to,
+    rawAmount: getPropertyValue("amount", event),
+    tokenMultiLocation: event.params.find((p) => p.name === "asset_id")?.value,
+    token,
     xcm,
-    xcm ? "XCM transfer" : undefined,
-  );
+    label: xcm ? "XCM transfer" : undefined,
+  };
 };

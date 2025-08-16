@@ -5,9 +5,16 @@ import { XcmTransfer } from "../../../blockchain/substrate/model/xcm-transfer";
 import { EventDerivedTransfer } from "../../model/event-derived-transfer";
 import { fetchTokens } from "./fetch-tokens";
 import { eventConfigs } from "./event-configs";
+import { toTransfer } from "./to-transfer";
+import { EventDerivedAssetMovement } from "./event-derived-asset-movement";
+import { TokenFromMultiLocationService } from "./token-from-multi-location.service";
+import { isMultiLocation } from "../../../blockchain/substrate/util/identify-token-from-multi-location";
 
 export class SpecialEventsToTransfersService {
-  constructor(private subscanService: SubscanService) {}
+  constructor(
+    private subscanService: SubscanService,
+    private tokenFromMultiLocationService: TokenFromMultiLocationService,
+  ) {}
 
   private findMatchingConfig(
     chain: string,
@@ -17,6 +24,46 @@ export class SpecialEventsToTransfersService {
       (h) =>
         (h.chains.includes("*") || h.chains.includes(chain)) &&
         ev.module_id + ev.event_id === h.event,
+    );
+  }
+
+  async convertToTransfer(
+    chainInfo: { token: string; domain: string },
+    assetMovments: EventDerivedAssetMovement | EventDerivedAssetMovement[],
+  ) {
+    if (!Array.isArray(assetMovments)) {
+      assetMovments = [assetMovments];
+    }
+    await Promise.all(
+      assetMovments.map(async (a) => {
+        if (
+          !a.token?.symbol &&
+          a.tokenMultiLocation &&
+          isMultiLocation(a.tokenMultiLocation)
+        ) {
+          const unique_id = a?.token?.unique_id;
+          a.token =
+            await this.tokenFromMultiLocationService.extractTokenInfoFromMultiLocation(
+              chainInfo,
+              a.tokenMultiLocation,
+            );
+          a.token.unique_id = a.token.unique_id ?? unique_id;
+          console.log(
+            `event: ${a.event.original_event_index}, token: ${JSON.stringify(a.token)}`,
+          );
+        }
+      }),
+    );
+    return assetMovments.map((a) =>
+      toTransfer(
+        a.event,
+        a.from,
+        a.to,
+        Number(a.rawAmount) / Math.pow(10, a?.token?.decimals),
+        a?.token,
+        a.xcm,
+        a.label,
+      ),
     );
   }
 
@@ -66,14 +113,19 @@ export class SpecialEventsToTransfersService {
               groupedEvents[
                 originalEvent.extrinsic_index ?? originalEvent.timestamp
               ];
-            return await this.findMatchingConfig(
+            const eventDerivedAssetMovements = await this.findMatchingConfig(
               chainInfo.domain,
               details,
-            ).handler(chainInfo, details, {
+            ).handler(details, {
               ...extras,
+              chainInfo,
               events: eventsInTx,
               xcmList,
             });
+            return this.convertToTransfer(
+              chainInfo,
+              eventDerivedAssetMovements,
+            );
           } catch (error) {
             logger.error(
               `Error mapping event to transfer: ${details.extrinsic_index}, ${details.original_event_index}, ${details.module_id} ${details.event_id}`,

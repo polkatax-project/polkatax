@@ -3,9 +3,8 @@ import {
   SubscanEvent,
 } from "../../../blockchain/substrate/model/subscan-event";
 import { XcmTransfer } from "../../../blockchain/substrate/model/xcm-transfer";
-import { EventDerivedTransfer } from "../../model/event-derived-transfer";
-import { Label } from "../../model/portfolio-movement";
-import { AssetInfos } from "./asset-infos";
+import { EventDerivedAssetMovement } from "./event-derived-asset-movement";
+import { EventHandlerContext } from "./event-handler-context";
 import { onAssethubAssetsIssued } from "./on-assethub-asset-issued";
 import { onAssethubForeignAssetsIssued } from "./on-assethub-foreign-asset-issued";
 import { onAssethubSwapExecuted } from "./on-assethub-swap-executed";
@@ -32,33 +31,29 @@ export const eventConfigs: {
     xcmList: XcmTransfer[],
   ) => boolean;
   handler: (
-    chain: { domain: string; token: string },
     e: EventDetails,
-    context: AssetInfos & { events: SubscanEvent[] } & {
-      xcmList: XcmTransfer[];
-      label?: Label;
-    },
-  ) => Promise<EventDerivedTransfer | EventDerivedTransfer[]>;
+    context: EventHandlerContext,
+  ) => Promise<EventDerivedAssetMovement | EventDerivedAssetMovement[]>;
 }[] = [
   {
     chains: ["coretime-polkadot", "coretime-kusama"],
     event: "brokerPurchased",
-    handler: (c, e, context) => onCoretimePurchased(e, context),
+    handler: (e, context) => onCoretimePurchased(e, context),
   },
   {
     chains: ["coretime-polkadot", "coretime-kusama"],
     event: "brokerRenewed",
-    handler: (c, e, context) => onCoretimePurchased(e, context),
+    handler: (e, context) => onCoretimePurchased(e, context),
   },
   {
     chains: ["*"],
     event: "balancesReserveRepatriated",
-    handler: (c, e, context) => onReserveRepatriated(e, context),
+    handler: (e, context) => onReserveRepatriated(e, context),
   },
   {
     chains: ["energywebx"],
     event: "balancesDeposit",
-    handler: (c, e, context) =>
+    handler: (e, context) =>
       onBalancesDeposit(e, { ...context, label: "XCM transfer" }),
     condition: (event, events) =>
       !!events.find(
@@ -68,7 +63,7 @@ export const eventConfigs: {
   {
     chains: ["energywebx"],
     event: "balancesWithdraw",
-    handler: (c, e, context) =>
+    handler: (e, context) =>
       onBalancesWithdraw(e, { ...context, label: "XCM transfer" }),
     condition: (event, events) =>
       !!events.find(
@@ -78,28 +73,28 @@ export const eventConfigs: {
   {
     chains: ["acala"],
     event: "earningBonded",
-    handler: (c, e, context) =>
+    handler: (e, context) =>
       onBalancesDeposit(e, { ...context, label: "Reward" }),
   },
   {
     chains: ["hydration", "basilisk"],
     event: "stableswapLiquidityRemoved",
-    handler: (c, e, context) => onHydrationLiquidityRemoved(e, context),
+    handler: (e, context) => onHydrationLiquidityRemoved(e, context),
   },
   {
     chains: ["hydration", "basilisk"],
     event: "balancesLocked",
-    handler: (c, e, context) => onBalancesDeposit(e, context),
+    handler: (e, context) => onBalancesDeposit(e, context),
   },
   {
     chains: ["hydration", "basilisk"],
     event: "balancesUnlocked",
-    handler: (c, e, context) => onBalancesWithdraw(e, context),
+    handler: (e, context) => onBalancesWithdraw(e, context),
   },
   {
     chains: ["polkadot", "kusama"],
     event: "balancesBurned",
-    handler: (c, e, context) => onBalancesWithdraw(e, context),
+    handler: (e, context) => onBalancesWithdraw(e, context),
     condition: (event, events) =>
       !!events.find(
         (e) => e.module_id + e.event_id === "identitymigratorIdentityReaped",
@@ -108,38 +103,33 @@ export const eventConfigs: {
   /*{
     chains: ["bifrost", "bifrost-kusama"],
     event: "balancesIssued",
-    handler: (c, e, context) => onBalancesDeposit(e, context),
+    handler: (e, context) => onBalancesDeposit(e, context),
   },*/
   {
     chains: ["bifrost", "bifrost-kusama"],
     event: "vtokenmintingRedeemed",
-    handler: (c, e, context) => onBifrostRedeemedVToken(e, context),
+    handler: (e, context) => onBifrostRedeemedVToken(e, context),
   },
   {
     chains: ["bifrost", "bifrost-kusama"],
     event: "vtokenmintingMinted",
-    handler: (c, e, context) => onBifrostMintedVToken(e, context),
+    handler: (e, context) => onBifrostMintedVToken(e, context),
   },
   {
     chains: ["bifrost", "bifrost-kusama"],
     event: "vtokenmintingRebondedByUnlockId",
-    handler: (c, e, context) => onBifrostMintedVToken(e, context),
+    handler: (e, context) => onBifrostMintedVToken(e, context),
   },
   {
     chains: ["assethub-polkadot", "assethub-kusama"],
     event: "assetconversionSwapExecuted",
-    handler: (c, e, context) => onAssethubSwapExecuted(e, context),
+    handler: (e, context) => onAssethubSwapExecuted(e, context),
   },
   {
     chains: ["assethub-polkadot", "assethub-kusama"],
     event: "foreignassetsIssued",
-    handler: (c, e, context) => onAssethubForeignAssetsIssued(e, context),
+    handler: (e, context) => onAssethubForeignAssetsIssued(e, context),
   },
-  /*{
-    chains: ["hydration", "basilisk"],
-    event: "tokensDeposited",
-    handler: (c, e, context) => onHydrationCurrenciesDeposited(e, context),
-  },*/
   {
     chains: [
       "assethub-polkadot",
@@ -148,12 +138,12 @@ export const eventConfigs: {
       "coretime-kusama",
     ],
     event: "assetsIssued",
-    handler: (c, e, context) => onAssethubAssetsIssued(e, context),
+    handler: (e, context) => onAssethubAssetsIssued(e, context),
   },
   {
     chains: ["*"],
     event: "balancesDeposit",
-    handler: (c, e, context) => onBalancesDeposit(e, context),
+    handler: (e, context) => onBalancesDeposit(e, context),
     condition: (event, events, xcmList) =>
       !!events.find((e) => e.module_id + e.event_id === "systemNewAccount") &&
       !xcmList.find((xcm) => xcm.extrinsic_index === event.extrinsic_index),
@@ -161,7 +151,7 @@ export const eventConfigs: {
   {
     chains: ["*"],
     event: "balancesWithdraw",
-    handler: (c, e, context) => onBalancesWithdraw(e, context),
+    handler: (e, context) => onBalancesWithdraw(e, context),
     condition: (event, events, xcmList) =>
       !!events.find(
         (e) =>
@@ -181,36 +171,36 @@ export const eventConfigs: {
       "collectives-kusama",
     ],
     event: "balancesMinted",
-    handler: (c, e, context) => onBalancesDeposit(e, context),
+    handler: (e, context) => onBalancesDeposit(e, context),
   },
   {
     chains: ["astar", "mythos", "spiritnet"],
     event: "balancesThawed",
-    handler: (c, e, context) => onBalancesWithdraw(e, context),
+    handler: (e, context) => onBalancesWithdraw(e, context),
   },
   {
     chains: ["astar", "mythos", "spiritnet"],
     event: "balancesFrozen",
-    handler: (c, e, context) => onBalancesDeposit(e, context),
+    handler: (e, context) => onBalancesDeposit(e, context),
   },
   {
     chains: ["polkadot", "kusama"],
     event: "delegatedstakingMigratedDelegation",
-    handler: (c, e, context) => onMigratedDelegation(c, e, context),
+    handler: (e, context) => onMigratedDelegation(e, context),
   },
   {
     chains: ["manta"],
     event: "zenlinkprotocolLiquidityRemoved",
-    handler: (c, e, context) => onZenlinkProtcolLiquidityRemoved(e, context),
+    handler: (e, context) => onZenlinkProtcolLiquidityRemoved(e, context),
   },
   {
     chains: ["manta"],
     event: "zenlinkprotocolAssetSwap",
-    handler: (c, e, context) => onZenlinkProtcolAssetSwap(e, context),
+    handler: (e, context) => onZenlinkProtcolAssetSwap(e, context),
   },
   {
     chains: ["manta"],
     event: "zenlinkprotocolLiquidityAdded",
-    handler: (c, e, context) => onZenlinkProtcolLiquidityAdded(e, context),
+    handler: (e, context) => onZenlinkProtcolLiquidityAdded(e, context),
   },
 ];
