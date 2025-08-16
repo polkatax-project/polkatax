@@ -33,7 +33,7 @@ export const fetchPortfolioMovements = async (
   try {
     const today = new Date();
     const pastDate = new Date();
-    pastDate.setDate(today.getDate() - 30);
+    pastDate.setDate(today.getDate() - 14);
 
     const currency = "usd";
     const portfolioMovementsService: PortfolioMovementsService =

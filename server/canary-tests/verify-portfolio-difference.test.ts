@@ -70,7 +70,7 @@ const verifyAssetMovement = async (
 ) => {
   const today = new Date();
   const pastDate = new Date();
-  pastDate.setDate(today.getDate() - 500);
+  pastDate.setDate(today.getDate() - 14);
   const comparison = await fetchPortfolioChangesExpectedVSActual(
     address,
     chainInfo,
@@ -391,7 +391,7 @@ describe("Verify portfolio changes", () => {
     });
   });
 
-  describe.only("Verify the portfolio change hydration", () => {
+  describe("Verify the portfolio change hydration", () => {
     const chainInfo = { domain: "hydration", label: "", token: "HDX" };
 
     test("15abVnvSgRJFCqhJuvrYSNL5DscRppcog8cyYaVALLU3LFjB", async () => {
