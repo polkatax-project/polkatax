@@ -1,15 +1,13 @@
-import { Asset } from "../../../blockchain/substrate/model/asset";
-import { ForeignAsset } from "../../../blockchain/substrate/model/foreign-asset";
 import { EventDetails } from "../../../blockchain/substrate/model/subscan-event";
-import { EventDerivedTransfer } from "../../model/event-derived-transfer";
 import { extractAddress, getPropertyValue } from "./helper";
 import isEqual from "lodash.isequal";
-import { toTransfer } from "./to-transfer";
+import { EventHandlerContext } from "./event-handler-context";
+import { EventDerivedAssetMovement } from "./event-derived-asset-movement";
 
 export const onAssethubSwapExecuted = async (
   event: EventDetails,
-  { foreignAssets, tokens }: { foreignAssets: ForeignAsset[]; tokens: Asset[] },
-): Promise<EventDerivedTransfer[]> => {
+  { foreignAssets, tokens }: EventHandlerContext,
+): Promise<EventDerivedAssetMovement[]> => {
   const from = extractAddress("who", event);
   const to = extractAddress("send_to", event);
   const route: { col1: any; col2: any }[] = getPropertyValue("path", event);
@@ -50,14 +48,18 @@ export const onAssethubSwapExecuted = async (
   const fromAsset = assets[0];
   const toAsset = assets[assets.length - 1];
 
-  const amount_in =
-    Number(getPropertyValue("amount_in", event)) /
-    Math.pow(10, fromAsset?.decimals);
-  const amount_out =
-    Number(getPropertyValue("amount_out", event)) /
-    Math.pow(10, toAsset?.decimals);
   return [
-    toTransfer(event, from, "", amount_in, fromAsset),
-    toTransfer(event, "", to, amount_out, toAsset),
+    {
+      event,
+      from,
+      rawAmount: getPropertyValue("amount_in", event),
+      token: fromAsset,
+    },
+    {
+      event,
+      to,
+      rawAmount: getPropertyValue("amount_out", event),
+      token: toAsset,
+    },
   ];
 };
