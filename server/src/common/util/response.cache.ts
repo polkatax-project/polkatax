@@ -10,21 +10,21 @@ export class ResponseCache {
     private requestHelper: RequestHelper,
   ) {}
 
-  async fetchData<T>(
-    url,
-    method,
-    body?,
-    cacheDurationInHours?: number,
-  ): Promise<T | null> {
+  async tryFetchDataFromStore<T>(url, method, body?): Promise<T | null> {
     const cachedData = await this.fetchedDataRepository.fetchStoredData<any>(
       url,
       method,
       body,
     );
-    if (cachedData !== undefined) {
-      return cachedData;
-    }
+    return cachedData;
+  }
 
+  async fetchAndStoreData<T>(
+    url,
+    method,
+    body?,
+    cacheDurationInHours?: number,
+  ): Promise<T | null> {
     const key = this.fetchedDataRepository.generateCacheKey(url, method, body);
     if (this.pendingRequests[key]) {
       return firstValueFrom(this.pendingRequests[key]);

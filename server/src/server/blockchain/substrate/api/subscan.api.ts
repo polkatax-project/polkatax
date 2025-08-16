@@ -11,7 +11,7 @@ import {
   RawSubstrateTransferDto,
 } from "../model/raw-transfer";
 import { logger } from "../../../logger/logger";
-import { apiThrottleQueue } from "./request-queue";
+import { throttledApiCall } from "./request-queue";
 import { HttpError } from "../../../../common/error/HttpError";
 import { RawXcmMessage } from "../model/xcm-transfer";
 import { ForeignAsset } from "../model/foreign-asset";
@@ -43,7 +43,7 @@ export class SubscanApi {
   private async retry<T>(
     query: () => Promise<T>,
     retries = 3,
-    backOff = [3000, 5000, 10000],
+    backOff = [2500, 4000, 8000],
   ): Promise<T> {
     for (let i = 0; i < retries; i++) {
       try {
@@ -56,21 +56,38 @@ export class SubscanApi {
             (e as HttpError).statusCode !== 500)
         )
           throw e;
-        await new Promise((res) => setTimeout(res, backOff[i]));
+        await new Promise((res) =>
+          setTimeout(res, backOff[i] + Math.floor(Math.random() + 2000)),
+        );
       }
     }
   }
 
-  private request(
+  private async request(
     url: string,
     method: string,
     body: any,
     cacheDurationInHours?: number,
   ) {
-    return apiThrottleQueue.add(() =>
-      this.retry(() =>
+    if (cacheDurationInHours) {
+      const fromStore = await this.responseCache.tryFetchDataFromStore(
+        url,
+        method,
+        body,
+      );
+      if (fromStore !== undefined) {
+        return fromStore;
+      }
+    }
+    return this.retry(() =>
+      throttledApiCall(() =>
         cacheDurationInHours
-          ? this.responseCache.fetchData(url, method, body)
+          ? this.responseCache.fetchAndStoreData(
+              url,
+              method,
+              body,
+              cacheDurationInHours,
+            )
           : this.requestHelper.req(url, method, body),
       ),
     );

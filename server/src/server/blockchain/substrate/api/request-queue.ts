@@ -1,7 +1,12 @@
-import PQueue from "p-queue";
+import Bottleneck from "bottleneck";
 
-export const apiThrottleQueue = new PQueue({
-  interval: 1000,
-  intervalCap: 4, // subscan supports 5 calls per minute. To prevent occasional 429 errors, intervalCap is reduced to 4.
-  carryoverConcurrencyCount: true,
+export function throttledApiCall<T>(task: () => Promise<T>) {
+  return limiter.schedule(task);
+}
+
+export const limiter = new Bottleneck({
+  minTime: 200, // at least 200ms between requests = 5/sec
+  reservoir: 5, // start with 5 tokens
+  reservoirRefreshAmount: 5,
+  reservoirRefreshInterval: 1000, // refill every second
 });

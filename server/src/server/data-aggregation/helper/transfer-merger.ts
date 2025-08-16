@@ -79,8 +79,9 @@ export class TransferMerger {
     aliases: string[],
   ): IndexedPortfolioMovements {
     const isMyAccount = (addressToTest: string) =>
-      address.toLowerCase() === addressToTest.toLowerCase() ||
-      aliases.indexOf(addressToTest) > -1;
+      addressToTest &&
+      (address.toLowerCase() === addressToTest.toLowerCase() ||
+        aliases.indexOf(addressToTest) > -1);
 
     transferList = transferList.filter((t) => {
       if (!t.extrinsic_index) {
