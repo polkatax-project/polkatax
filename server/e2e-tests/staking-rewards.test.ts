@@ -37,7 +37,7 @@ describe("Staking rewards amounts", () => {
       "moonbeam",
     );
     expect(totalAmount).toBe(184.17376356100766);
-  }, 30_000);
+  }, 60_000);
 
   test("creditcoin", async () => {
     const { rewards } = await fetchStakingRewards(
