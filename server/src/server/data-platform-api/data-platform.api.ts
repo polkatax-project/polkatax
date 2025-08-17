@@ -1,5 +1,6 @@
 import { RequestHelper } from "../../common/util/request.helper";
-import { StakingResultItem } from "./model/staking-result-item";
+import { ChainSlashes } from "./model/chain-slashes";
+import { StakingResults } from "./model/staking-results";
 
 export class DataPlatformApi {
   private requestHelper: RequestHelper;
@@ -11,13 +12,29 @@ export class DataPlatformApi {
     };
   }
 
-  fetch(
+  fetchStakingRewards(
     accountId: string,
     startDate: string,
     endDate: string,
-  ): Promise<{ items: StakingResultItem[] }> {
+  ): Promise<{ items: StakingResults[] }> {
     return this.requestHelper.req(
       `http://localhost:${process.env["DATA_PLATFORM_PORT"] || 9090}/api/rewards/list-account-rewards`,
+      "POST",
+      {
+        accountId,
+        startDate,
+        endDate,
+      },
+    );
+  }
+
+  fetchStakingSlashes(
+    accountId: string,
+    startDate: string,
+    endDate: string,
+  ): Promise<{ items: ChainSlashes[] }> {
+    return this.requestHelper.req(
+      `http://localhost:${process.env["DATA_PLATFORM_PORT"] || 9090}/api/rewards/list-account-slashes`,
       "POST",
       {
         accountId,

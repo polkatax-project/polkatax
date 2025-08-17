@@ -1,4 +1,4 @@
-export interface StakingResultItem {
+export interface StakingResults {
   chainType: string;
   stakingResults: [
     {

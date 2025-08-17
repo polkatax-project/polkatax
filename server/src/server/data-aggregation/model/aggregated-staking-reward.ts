@@ -2,6 +2,7 @@ import { Label, Provenance } from "./portfolio-movement";
 
 export interface AggregatedStakingReward {
   timestamp: number;
+  isoDate: string;
   label?: Label;
   provenance?: Provenance;
   transfers: {

@@ -8,7 +8,7 @@ import {
 } from "../helper/add-fiat-values-to-staking-rewards";
 import { findCoingeckoIdForNativeToken } from "../helper/find-coingecko-id-for-native-token";
 import { isEvmAddress } from "../helper/is-evm-address";
-import { DataPlatformService } from "../../data-platform-api/data-platform.service";
+import { DataPlatformStakingService } from "../../data-platform-api/data-platform-staking.service";
 import { AggregatedStakingReward } from "../model/aggregated-staking-reward";
 import { StakingReward } from "../../blockchain/substrate/model/staking-reward";
 
@@ -17,7 +17,7 @@ export class StakingRewardsWithFiatService {
     private stakingRewardsService: StakingRewardsService,
     private tokenPriceConversionService: TokenPriceConversionService,
     private subscanService: SubscanService,
-    private dataPlatformService: DataPlatformService,
+    private dataPlatformStakingService: DataPlatformStakingService,
   ) {}
 
   private async fetchFromSubscan(
@@ -42,7 +42,7 @@ export class StakingRewardsWithFiatService {
     stakingRewardsRequest: StakingRewardsRequest,
   ): Promise<AggregatedStakingReward[]> {
     const aggregatedRewards: AggregatedStakingReward[] =
-      await this.dataPlatformService.fetchAggregatedStakingRewardsForChain(
+      await this.dataPlatformStakingService.fetchAggregatedStakingRewardsForChain(
         stakingRewardsRequest.address,
         stakingRewardsRequest.chain.domain,
       );

@@ -2,7 +2,6 @@ import { StakingRewardsWithFiatService } from "./staking-rewards-with-fiat.servi
 import { StakingRewardsService } from "../../blockchain/substrate/services/staking-rewards.service";
 import { TokenPriceConversionService } from "./token-price-conversion.service";
 import { SubscanService } from "../../blockchain/substrate/api/subscan.service";
-import { DataPlatformService } from "../../data-platform-api/data-platform.service";
 import {
   expect,
   it,
@@ -14,6 +13,7 @@ import {
 import { StakingRewardsRequest } from "../model/staking-rewards.request";
 import { StakingReward } from "../../blockchain/substrate/model/staking-reward";
 import { AggregatedStakingReward } from "../model/aggregated-staking-reward";
+import { DataPlatformStakingService } from "../../data-platform-api/data-platform-staking.service";
 
 jest.mock("../helper/add-fiat-values-to-staking-rewards", () => ({
   addFiatValuesToAggregatedStakingRewards: jest.fn((rewards, quote) => rewards),
@@ -33,7 +33,7 @@ describe("StakingRewardsWithFiatService", () => {
   let stakingRewardsService: jest.Mocked<StakingRewardsService>;
   let tokenPriceConversionService: jest.Mocked<TokenPriceConversionService>;
   let subscanService: jest.Mocked<SubscanService>;
-  let dataPlatformService: jest.Mocked<DataPlatformService>;
+  let dataPlatformStakingService: jest.Mocked<DataPlatformStakingService>;
 
   const dummyRequest: StakingRewardsRequest = {
     address: "addr",
@@ -55,7 +55,7 @@ describe("StakingRewardsWithFiatService", () => {
       mapToSubstrateAccount: jest.fn(),
     } as any;
 
-    dataPlatformService = {
+    dataPlatformStakingService = {
       fetchAggregatedStakingRewardsForChain: jest.fn(),
     } as any;
 
@@ -63,7 +63,7 @@ describe("StakingRewardsWithFiatService", () => {
       stakingRewardsService,
       tokenPriceConversionService,
       subscanService,
-      dataPlatformService,
+      dataPlatformStakingService,
     );
   });
 
@@ -78,7 +78,7 @@ describe("StakingRewardsWithFiatService", () => {
     const rewards: AggregatedStakingReward[] = [
       { timestamp: 1, rewards: [] } as any,
     ];
-    dataPlatformService.fetchAggregatedStakingRewardsForChain.mockResolvedValue(
+    dataPlatformStakingService.fetchAggregatedStakingRewardsForChain.mockResolvedValue(
       rewards,
     );
     tokenPriceConversionService.fetchQuotesForTokens.mockResolvedValue({
@@ -88,7 +88,7 @@ describe("StakingRewardsWithFiatService", () => {
     const result = await service.fetchStakingRewards(dummyRequest);
 
     expect(
-      dataPlatformService.fetchAggregatedStakingRewardsForChain,
+      dataPlatformStakingService.fetchAggregatedStakingRewardsForChain,
     ).toHaveBeenCalledWith("addr", "polkadot");
     expect(result.rawStakingRewards).toEqual([]);
     expect(result.aggregatedRewards).toEqual(rewards);

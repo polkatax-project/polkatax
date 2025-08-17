@@ -48,9 +48,6 @@ export class SpecialEventsToTransfersService {
               a.tokenMultiLocation,
             );
           a.token.unique_id = a.token.unique_id ?? unique_id;
-          console.log(
-            `event: ${a.event.original_event_index}, token: ${JSON.stringify(a.token)}`,
-          );
         }
       }),
     );
