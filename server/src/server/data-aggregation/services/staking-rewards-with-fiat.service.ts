@@ -8,9 +8,10 @@ import {
 } from "../helper/add-fiat-values-to-staking-rewards";
 import { findCoingeckoIdForNativeToken } from "../helper/find-coingecko-id-for-native-token";
 import { isEvmAddress } from "../helper/is-evm-address";
-import { DataPlatformStakingService } from "../../data-platform-api/data-platform-staking.service";
 import { AggregatedStakingReward } from "../model/aggregated-staking-reward";
 import { StakingReward } from "../../blockchain/substrate/model/staking-reward";
+import { DataPlatformStakingService } from "../../data-platform-api/data-platform-staking.service";
+import * as subscanChains from "../../../../res/gen/subscan-chains.json";
 
 export class StakingRewardsWithFiatService {
   constructor(
@@ -93,6 +94,13 @@ export class StakingRewardsWithFiatService {
     rawStakingRewards: StakingReward[];
     aggregatedRewards: AggregatedStakingReward[];
   }> {
+    const chain = subscanChains.chains.find(
+      (c) => c.domain === stakingRewardsRequest.chain.domain,
+    );
+    if (!chain || (!chain.pseudoStaking && chain.stakingPallets.length === 0)) {
+      return { rawStakingRewards: [], aggregatedRewards: [] };
+    }
+
     switch (stakingRewardsRequest.chain.domain) {
       case "polkadot":
       case "kusama":

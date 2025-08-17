@@ -35,6 +35,31 @@ export class AddFiatValuesToPortfolioMovementsService {
     return portfolioMovements;
   }
 
+  addFiatValuesForStakingRewards(
+    portfolioMovements: PortfolioMovement[],
+    quotes: CurrencyQuotes,
+  ): PortfolioMovement[] {
+    const stakingRewards = portfolioMovements.filter(
+      (p) => p.label === "Staking reward" || p.label === "Staking slashed",
+    );
+    for (let portfolioMovement of stakingRewards) {
+      const isoDate = formatDate(new Date(portfolioMovement.timestamp));
+      if (quotes.quotes?.[isoDate]) {
+        portfolioMovement.transfers
+          .filter((t) => !t.fiatValue)
+          .forEach((t) => {
+            t.price = quotes.quotes[isoDate];
+            t.fiatValue = t.amount * quotes.quotes[isoDate];
+          });
+      } else {
+        logger.warn(
+          `No quote found for ${quotes.currency} for date ${isoDate}`,
+        );
+      }
+    }
+    return portfolioMovements;
+  }
+
   async addFiatValues(
     context: {
       address: string;
@@ -74,6 +99,10 @@ export class AddFiatValuesToPortfolioMovementsService {
       );
     } else {
       this.addFiatValuesForTxFees(portfolioMovements, quotes[coingeckoId]);
+      this.addFiatValuesForStakingRewards(
+        portfolioMovements,
+        quotes[coingeckoId],
+      );
     }
   }
 }

@@ -25,7 +25,7 @@ export type TokenInfo =
       chain: string | undefined;
     };
 
-// Try to resolve a chain info by paraId from your registries.
+// Try to resolve a chain info by paraId.
 // Returns {chain, symbol} or undefined if not found.
 function lookupParachainByParaId(
   paraId: number,
@@ -37,7 +37,7 @@ function lookupParachainByParaId(
   return undefined;
 }
 
-// Try to resolve a chain’s native symbol by *name* (domain) from your registries.
+// Try to resolve a chain’s native symbol by *name* (domain).
 function lookupNativeByChainName(
   name: string,
 ): { chain: string; symbol: string } | undefined {
@@ -125,7 +125,6 @@ function flattenJunctions(root?: any): J[] {
   return out;
 }
 
-// ---- Main function ----
 export function identifyTokenFromMultiLocation(
   referenceChain: string, // relay chain if UMP, origin parachain if HRMP/XCMP
   multiLocation: MultiLocation,

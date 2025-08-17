@@ -116,7 +116,7 @@ describe("StakingRewardsWithFiatService", () => {
     process.env.USE_DATA_PLATFORM_API = "1";
     const request: StakingRewardsRequest = {
       ...dummyRequest,
-      chain: { domain: "some-other-chain" } as any,
+      chain: { domain: "astar" } as any,
     };
 
     const rawRewards: StakingReward[] = [{ amount: 5 } as any];

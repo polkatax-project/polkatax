@@ -76,9 +76,9 @@ export class DataPlatformStakingService {
     });
 
     const aggregatedRewards: AggregatedStakingReward[] = (
-      stakingResults.stakingResults || []
+      stakingResults?.stakingResults || []
     ).map((reward) => rewardToTransfer(reward));
-    (stakingResults.nominationPoolResults || []).forEach((reward) =>
+    (stakingResults?.nominationPoolResults || []).forEach((reward) =>
       rewardToTransfer(reward),
     );
 
@@ -93,10 +93,10 @@ export class DataPlatformStakingService {
         })),
       };
     };
-    (chainSlashes.balanceSlashingResults || []).forEach((slash) => {
+    (chainSlashes?.balanceSlashingResults || []).forEach((slash) => {
       aggregatedRewards.push(slashToTransfer(slash));
     });
-    (chainSlashes.stakingSlashingResults || []).forEach((slash) => {
+    (chainSlashes?.stakingSlashingResults || []).forEach((slash) => {
       aggregatedRewards.push(slashToTransfer(slash));
     });
     aggregatedRewards.sort((a, b) => a.timestamp - b.timestamp);

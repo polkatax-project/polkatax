@@ -10,7 +10,6 @@ import {
 import { JobRepository } from "../job-management/job.repository";
 import { JobId } from "../../model/job";
 import { convertToCanonicalAddress } from "../../common/util/convert-to-generic-address";
-import { dataPlatformChains } from "../data-platform-api/model/data-platform-chains";
 import { isValidEvmAddress } from "../../common/util/is-valid-address";
 
 interface Subscription {
@@ -55,19 +54,11 @@ export class WebSocketManager {
 
     this.addSubscription(socket, subscription);
 
-    const relevantChains =
-      blockchains ?? this.jobManager.getStakingChains(wallet);
-    const forSubscanChains = process.env["USE_DATA_PLATFORM_API"]
-      ? relevantChains.filter(
-          (b) => !dataPlatformChains.some((c) => c.domain === b),
-        )
-      : blockchains;
-
     const jobs = await this.jobManager.enqueue(
       msg.reqId,
       wallet,
       currency,
-      forSubscanChains,
+      blockchains,
     );
 
     return {

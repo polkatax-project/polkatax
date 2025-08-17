@@ -1,0 +1,16 @@
+export type CurrencyType =
+  | "Native"
+  | "Stable"
+  | "Token"
+  | "VToken"
+  | "VSToken"
+  | "Token2"
+  | "VToken2"
+  | "VSToken2"
+  | "ForeignAsset"
+  | "BLP"
+  | "Lend"
+  | "StableLpToken"
+  | "LPToken"
+  | "VSBond"
+  | "VSBond2";

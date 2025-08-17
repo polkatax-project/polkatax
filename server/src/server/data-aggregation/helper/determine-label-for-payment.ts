@@ -323,6 +323,23 @@ const callModuleClassifications: CallModuleClassification[] = [
           },
         ],
       },
+      {
+        module: "nominationpools",
+        functions: [
+          {
+            name: "claim_payout",
+            label: "Staking reward" as const,
+          },
+          {
+            name: "bond_extra",
+            label: "Liquidity added" as const,
+          },
+          {
+            name: "withdraw_unbonded",
+            label: "Liquidity removed" as const,
+          },
+        ],
+      },
     ],
   },
   {
