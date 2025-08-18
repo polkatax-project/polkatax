@@ -1,27 +1,25 @@
 import { asClass, AwilixContainer } from "awilix";
-import { StakingRewardsWithFiatService } from "./services/staking-rewards-with-fiat.service";
 import { PortfolioMovementsService } from "./services/portfolio-movements.service";
-import { TokenPriceConversionService } from "./services/token-price-conversion.service";
 import { CryptoCurrencyPricesService } from "./services/crypto-currency-prices.service";
 import { FiatExchangeRateService } from "./services/fiat-exchange-rate.service";
 import { ChainAdjustments } from "./helper/chain-adjustments";
 import { TransferMerger } from "./helper/transfer-merger";
-import { AddFiatValuesToPortfolioMovementsService } from "./services/add-fiat-values-to-portfolio-movements.service";
+import { AddFiatValuesToTaxableEventsService } from "./services/add-fiat-values-to-taxable-events.service";
 import { ChainDataAccumulationService } from "./services/chain-data-accumulation.service";
 import { SpecialEventsToTransfersService } from "./services/special-event-processing/special-events-to-transfers.service";
 import { XcmTokenResolutionService } from "./services/xcm-token-resolution.service";
 import { TokenFromMultiLocationService } from "./services/special-event-processing/token-from-multi-location.service";
+import { StakingRewardsAggregatorService } from "./services/staking-rewards-aggregator.service";
 
 export const registerServices = (container: AwilixContainer) => {
   container.register({
-    addFiatValuesToPortfolioMovementsService: asClass(
-      AddFiatValuesToPortfolioMovementsService,
+    addFiatValuesToTaxableEventsService: asClass(
+      AddFiatValuesToTaxableEventsService,
     ),
     specialEventsToTransfersService: asClass(SpecialEventsToTransfersService),
-    stakingRewardsWithFiatService: asClass(StakingRewardsWithFiatService),
+    stakingRewardsAggregatorService: asClass(StakingRewardsAggregatorService),
     cryptoCurrencyPricesService: asClass(CryptoCurrencyPricesService),
     fiatExchangeRateService: asClass(FiatExchangeRateService),
-    tokenPriceConversionService: asClass(TokenPriceConversionService),
     portfolioMovementsService: asClass(PortfolioMovementsService),
     chainAdjustments: asClass(ChainAdjustments),
     chainDataAccumulationService: asClass(ChainDataAccumulationService),

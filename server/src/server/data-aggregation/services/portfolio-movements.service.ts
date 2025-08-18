@@ -7,7 +7,6 @@ import { XcmService } from "../../blockchain/substrate/services/xcm.service";
 import { SubscanService } from "../../blockchain/substrate/api/subscan.service";
 import { TransactionsService } from "../../blockchain/substrate/services/transactions.service";
 import { ChainAdjustments } from "../helper/chain-adjustments";
-import { AddFiatValuesToPortfolioMovementsService } from "./add-fiat-values-to-portfolio-movements.service";
 import { ChainDataAccumulationService } from "./chain-data-accumulation.service";
 import { determineLabelForPayment } from "../helper/determine-label-for-payment";
 import { PortfolioMovementsResponse } from "../model/portfolio-movements.response";
@@ -15,13 +14,14 @@ import { SpecialEventsToTransfersService } from "./special-event-processing/spec
 import { XcmTokenResolutionService } from "./xcm-token-resolution.service";
 import { EventEnrichedXcmTransfer } from "../model/event-enriched-xcm-transfer";
 import { XcmTransfer } from "../../blockchain/substrate/model/xcm-transfer";
-import { StakingRewardsWithFiatService } from "./staking-rewards-with-fiat.service";
 import { PortfolioMovement, TaxableEvent } from "../model/portfolio-movement";
 import { SubscanEvent } from "../../blockchain/substrate/model/subscan-event";
 import { Transfer } from "../../blockchain/substrate/model/raw-transfer";
 import { StakingReward } from "../../blockchain/substrate/model/staking-reward";
 import { AggregatedStakingReward } from "../model/aggregated-staking-reward";
 import { Transaction } from "../../blockchain/substrate/model/transaction";
+import { StakingRewardsAggregatorService } from "./staking-rewards-aggregator.service";
+import { AddFiatValuesToTaxableEventsService } from "./add-fiat-values-to-taxable-events.service";
 
 const ignoreIncomingXcm = [
   "assethub-polkadot",
@@ -39,10 +39,10 @@ export class PortfolioMovementsService {
     private transactionsService: TransactionsService,
     private subscanService: SubscanService,
     private xcmService: XcmService,
-    private stakingRewardsWithFiatService: StakingRewardsWithFiatService,
+    private stakingRewardsAggregatorService: StakingRewardsAggregatorService,
     private chainDataAccumulationService: ChainDataAccumulationService,
     private specialEventsToTransfersService: SpecialEventsToTransfersService,
-    private addFiatValuesToPortfolioMovementsService: AddFiatValuesToPortfolioMovementsService,
+    private addFiatValuesToTaxableEventsService: AddFiatValuesToTaxableEventsService,
     private xcmTokenResolutionService: XcmTokenResolutionService,
   ) {}
 
@@ -91,7 +91,7 @@ export class PortfolioMovementsService {
       this.transactionsService.fetchTx(chainExtendedRequest),
       this.subscanService.searchAllEvents(chainExtendedRequest),
       this.xcmService.fetchXcmTransfers(chainExtendedRequest),
-      this.stakingRewardsWithFiatService.fetchStakingRewards(
+      this.stakingRewardsAggregatorService.fetchStakingRewards(
         chainExtendedRequest,
       ),
     ]);
@@ -149,11 +149,6 @@ export class PortfolioMovementsService {
       portfolioMovements,
     );
 
-    await this.addFiatValuesToPortfolioMovementsService.addFiatValues(
-      request,
-      portfolioMovements,
-    );
-
     return { portfolioMovements, unmatchedEvents };
   }
 
@@ -189,6 +184,11 @@ export class PortfolioMovementsService {
 
     const taxableEvents = (portfolioMovements as TaxableEvent[]).concat(
       stakingRewards.aggregatedRewards,
+    );
+
+    await this.addFiatValuesToTaxableEventsService.addFiatValues(
+      request,
+      taxableEvents,
     );
 
     const sortedTaxableEvents = taxableEvents.sort(

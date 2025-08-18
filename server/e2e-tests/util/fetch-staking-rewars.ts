@@ -1,7 +1,7 @@
 import dotenv from "dotenv";
 import { envFile } from "../../src/server/env.config";
 dotenv.config({ path: envFile });
-import { StakingRewardsWithFiatService } from "../../src/server/data-aggregation/services/staking-rewards-with-fiat.service";
+import { StakingRewardsAggregatorService } from "../../src/server/data-aggregation/services/staking-rewards-aggregator.service";
 import { createDIContainer } from "../../src/server/di-container";
 import { StakingReward } from "../../src/server/blockchain/substrate/model/staking-reward";
 
@@ -17,10 +17,10 @@ export const fetchStakingRewards = async (
   rewards: { token: string; values: StakingReward[] };
 }> => {
   const container = createDIContainer();
-  const stakingRewardsWithFiatService: StakingRewardsWithFiatService =
-    container.resolve("stakingRewardsWithFiatService");
+  const stakingRewardsAggregatorService: StakingRewardsAggregatorService =
+    container.resolve("stakingRewardsAggregatorService");
   let rewards: StakingReward[] =
-    await stakingRewardsWithFiatService.fetchStakingRewardsViaSubscan({
+    await stakingRewardsAggregatorService.fetchStakingRewardsViaSubscan({
       chain: { domain: chain, label: "", token: "" },
       address,
       currency,
