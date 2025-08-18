@@ -10,10 +10,8 @@ export const onAssethubSwapExecuted = async (
   const amountIn = getPropertyValue("amount_in", event);
   const amountOut = getPropertyValue("amount_out", event);
   const route: { col1: any; col2: string }[] = getPropertyValue("path", event);
-  return route
-    .filter((r) => {
-      r.col2 === amountIn || r.col2 === amountOut;
-    })
+  const movements = route
+    .filter((r) => r.col2 === amountIn || r.col2 === amountOut)
     .map((entry) => ({
       event,
       from: entry.col2 === amountIn ? to : undefined,
@@ -21,4 +19,5 @@ export const onAssethubSwapExecuted = async (
       rawAmount: entry.col2,
       tokenMultiLocation: entry.col1,
     }));
+  return movements;
 };
