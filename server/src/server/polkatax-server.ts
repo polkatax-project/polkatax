@@ -70,7 +70,7 @@ export const polkataxServer = {
     fastify.get("/ws", { websocket: true }, webSocketManager.wsHandler);
     webSocketManager.startJobNotificationChannel();
 
-    if (!process.env["XCM_DISABLED"]) {
+    if (process.env["XCM_DISABLED"] !== "true") {
       registerXcmEndpoint(fastify, DIContainer);
     }
 

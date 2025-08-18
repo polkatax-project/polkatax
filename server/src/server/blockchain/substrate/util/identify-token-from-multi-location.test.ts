@@ -99,4 +99,21 @@ describe("identifyTokenFromMultiLocation", () => {
     const token = identifyTokenFromMultiLocation("polkadot", ml as any);
     expect(token.type).toBe("unknown");
   });
+
+  it("resolves polkadot via GlobalConsensus from assethub-kusama", () => {
+    const ml = {
+      interior: {
+        X1: [
+          {
+            GlobalConsensus: {
+              Polkadot: "NULL",
+            },
+          },
+        ],
+      },
+      parents: 2,
+    };
+    const token = identifyTokenFromMultiLocation("assethub-kusama", ml as any);
+    expect(token).toEqual({ type: "native", chain: "polkadot", symbol: "DOT" });
+  });
 });

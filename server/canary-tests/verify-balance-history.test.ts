@@ -21,6 +21,12 @@ async function verify(address, chain) {
     0,
   );
   expect(sumOfDifferences).toBeLessThan(1);
+
+  const maxDiffPerBlock = unexplainedChanges.reduce(
+    (curr, next) => (curr = Math.max(curr, next.deviationFromExpectation)),
+    0,
+  );
+  expect(maxDiffPerBlock).toBeLessThan(0.1);
 }
 
 beforeAll(async () => {

@@ -67,7 +67,7 @@ export class StakingRewardsAggregatorService {
       case "kusama":
       case "hydration":
       case "enjin":
-        if (process.env["USE_DATA_PLATFORM_API"]) {
+        if (process.env["USE_DATA_PLATFORM_API"] === "true") {
           return {
             rawStakingRewards: [],
             aggregatedRewards: await this.fetchStakingRewardsViaPlatformApi(

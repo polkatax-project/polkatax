@@ -1,5 +1,4 @@
 import * as subscanChains from "../../../../../res/gen/subscan-chains.json";
-import * as otherSubstrateChains from "../../../../../res/other-substrate-chains.json";
 import { EthTokenInfoService } from "../../../blockchain/evm/service/eth.token-info.service";
 import { SubscanService } from "../../../blockchain/substrate/api/subscan.service";
 import { Asset } from "../../../blockchain/substrate/model/asset";
@@ -49,36 +48,43 @@ export class TokenFromMultiLocationService {
     switch (multiLocationToken.type) {
       case "ethereum_asset":
         if (!multiLocationToken.address) {
-          return { symbol: "ETH", decimals: 18 };
+          return { symbol: "ETH", decimals: 18, unique_id: "ETH" };
         }
         const ethToken = await this.ethTokenInfoService.fetchTokenInfo(
           "ethereum",
           multiLocationToken.address,
         );
         if (ethToken) {
-          return { symbol: ethToken.symbol, decimals: ethToken.decimals };
+          return {
+            symbol: ethToken.symbol,
+            decimals: ethToken.decimals,
+            unique_id: multiLocationToken.address,
+          };
         }
         return { symbol: undefined, decimals: undefined };
       case "parachain_asset":
         const assets = await this.fetchAssets(chainInfo.domain);
         const parachainToken = assets.find(
           (a) =>
-            a.asset_id === multiLocationToken.generalIndex ||
-            a.currency_id === String(multiLocationToken.generalIndex),
+            String(a.asset_id) == String(multiLocationToken.generalIndex) ||
+            String(a.currency_id) === String(multiLocationToken.generalIndex),
         );
         if (parachainToken) {
           return {
             symbol: parachainToken.symbol,
             decimals: parachainToken.decimals,
+            unique_id: parachainToken.unique_id,
           };
         }
         return { symbol: undefined, decimals: undefined };
       case "native":
-        const decimals = await this.getDecimalsNativeToken(chainInfo.domain);
+        const decimals = await this.getDecimalsNativeToken(
+          multiLocationToken.chain,
+        );
         return {
-          symbol: chainInfo.token,
+          symbol: multiLocationToken.symbol,
           decimals: decimals,
-          unique_id: chainInfo.token,
+          unique_id: multiLocationToken.symbol,
         };
       default:
         return { symbol: undefined, decimals: undefined };

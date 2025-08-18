@@ -108,6 +108,13 @@ describe("Verify portfolio changes", () => {
   describe("Verify the portfolio change assethub polkadot", () => {
     const chainInfo = { domain: "assethub-polkadot", label: "", token: "DOT" };
 
+    test("12NM61UnRNNQ1thxEpmUEZpQLq9wCGEhYvAmJwWvyaARja2r", async () => {
+      await verifyAssetMovement(
+        "12NM61UnRNNQ1thxEpmUEZpQLq9wCGEhYvAmJwWvyaARja2r",
+        chainInfo,
+      );
+    });
+
     test("13qSxtKtr54qebSQzf1c7MC9CwkkZMMFaXyHKq8LzjSjiU3M", async () => {
       await verifyAssetMovement(
         "13qSxtKtr54qebSQzf1c7MC9CwkkZMMFaXyHKq8LzjSjiU3M",

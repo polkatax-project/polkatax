@@ -36,7 +36,26 @@ describe("Special event handling", () => {
       [],
       true,
     );
-    expect(transfers.length).toBe(200);
+    expect(transfers.length).toBeGreaterThanOrEqual(200);
+    verifyEventTransfersAreValid(transfers);
+  }, 120_000);
+
+  test("verify assetconversion SwapExecuted data extraction on Kusama", async () => {
+    const eventsOfInterest = await subscanApi.searchEvents(
+      "assethub-kusama",
+      undefined,
+      "assetconversion",
+      "SwapExecuted",
+      0,
+      0,
+    );
+    const transfers = await specialEventsToTransfersService.handleEvents(
+      { token: "DOT", domain: "assethub-kusama" },
+      eventsOfInterest.list,
+      [],
+      true,
+    );
+    expect(transfers.length).toBeGreaterThanOrEqual(200);
     verifyEventTransfersAreValid(transfers);
   }, 120_000);
 

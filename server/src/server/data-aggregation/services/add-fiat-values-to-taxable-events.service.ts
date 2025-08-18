@@ -35,12 +35,15 @@ export class AddFiatValuesToTaxableEventsService {
     return taxableEvents;
   }
 
-  addFiatValuesForNativeToken(
+  addFiatValuesForStakingRewards(
     nativeToken: string,
     taxableEvents: TaxableEvent[],
     quotes: CurrencyQuotes,
   ): TaxableEvent[] {
-    for (let taxable of taxableEvents) {
+    const taxableStakingRewards = taxableEvents.filter(
+      (t) => t.label === "Staking reward" || t.label === "Staking slashed",
+    );
+    for (let taxable of taxableStakingRewards) {
       const isoDate = formatDate(new Date(taxable.timestamp));
       if (quotes.quotes?.[isoDate]) {
         taxable.transfers
@@ -99,7 +102,7 @@ export class AddFiatValuesToTaxableEventsService {
       );
     }
 
-    // add quotes to fees and transfer of native token if not already present
+    // add quotes to fees and staking rewards
     if (!quotes?.quotes) {
       logger.error(
         "No quotes found for token " +
@@ -109,7 +112,7 @@ export class AddFiatValuesToTaxableEventsService {
       );
     } else {
       this.addFiatValuesForTxFees(taxableEvents, quotes);
-      this.addFiatValuesForNativeToken(
+      this.addFiatValuesForStakingRewards(
         context.chain.token,
         taxableEvents,
         quotes,

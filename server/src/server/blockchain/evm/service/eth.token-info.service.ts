@@ -1,3 +1,4 @@
+import { firstValueFrom, ReplaySubject, Subject } from "rxjs";
 import { logger } from "../../../logger/logger";
 import Web3 from "web3";
 
@@ -22,19 +23,21 @@ const minABI = [
 ];
 
 export class EthTokenInfoService {
+  private pendingRequests: Record<string, Subject<any>> = {};
+
   private cache: Map<string, { symbol: string; decimals: number }> = new Map();
 
   async fetchTokenInfo(
     chain: "moonbeam" | "ethereum",
     address: string,
   ): Promise<{ symbol: string; decimals: number }> {
-    logger.info("Entry: Fetch Token Info");
+    logger.info("Entry: Fetch Token Info for " + address);
 
     if (
       address.toLocaleLowerCase() ===
       "0x0000000000000000000000000000000000000000"
     ) {
-      return { symbol: "ETH", decimals: 18 };
+      return { symbol: chain === "ethereum" ? "ETH" : "GLMR", decimals: 18 };
     }
 
     // Return from cache if available
@@ -43,6 +46,11 @@ export class EthTokenInfoService {
       logger.info(`Cache hit for token: ${address}`);
       return cached;
     }
+
+    if (this.pendingRequests[chain + address]) {
+      return firstValueFrom(this.pendingRequests[chain + address]);
+    }
+    this.pendingRequests[chain + address] = new ReplaySubject<any>(1);
 
     // Otherwise, fetch from blockchain
     const web3 = chain === "ethereum" ? web3Eth : web3Moonbeam;
@@ -56,6 +64,12 @@ export class EthTokenInfoService {
 
     // Cache it
     this.cache.set(address.toLowerCase(), tokenInfo);
+
+    // notify observers and remove pending request
+    if (this.pendingRequests[chain + address]) {
+      this.pendingRequests[chain + address].next(tokenInfo);
+      delete this.pendingRequests[chain + address];
+    }
 
     logger.info(`Fetched and cached token: ${address}`, tokenInfo);
     return tokenInfo;

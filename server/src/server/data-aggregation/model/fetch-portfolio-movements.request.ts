@@ -7,5 +7,4 @@ export interface FetchPortfolioMovementsRequest {
   address: string;
   currency: string;
   minDate: number;
-  maxDate?: number;
 }

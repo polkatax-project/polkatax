@@ -2,17 +2,12 @@ import { AddFiatValuesToTaxableEventsService } from "./add-fiat-values-to-taxabl
 import { CryptoCurrencyPricesService } from "./crypto-currency-prices.service";
 import { FiatExchangeRateService } from "./fiat-exchange-rate.service";
 import { logger } from "../../logger/logger";
-import { convertFiatValues } from "../helper/convert-fiat-values";
 import { findCoingeckoIdForNativeToken } from "../helper/find-coingecko-id-for-native-token";
 import { beforeEach, describe, expect, it, jest } from "@jest/globals";
 import { PortfolioMovement } from "../model/portfolio-movement";
 
 jest.mock("../../logger/logger", () => ({
   logger: { warn: jest.fn(), error: jest.fn() },
-}));
-
-jest.mock("../helper/convert-fiat-values", () => ({
-  convertFiatValues: jest.fn(),
 }));
 
 jest.mock("../helper/find-coingecko-id-for-native-token", () => ({
@@ -69,45 +64,76 @@ describe("AddFiatValuesToTaxableEventsService", () => {
     });
   });
 
-  describe("addFiatValuesForNativeToken", () => {
-    it("adds fiat values for transfers with native token", () => {
+  describe("addFiatValuesForStakingRewards", () => {
+    it("adds fiat values for staking rewards", () => {
       const taxableEvents: any = [
         {
           timestamp: "2023-01-01T00:00:00Z",
+          label: "XCM",
           transfers: [
             { asset_unique_id: "DOT", amount: 5, fiatValue: undefined },
+          ],
+        },
+        {
+          timestamp: "2023-01-01T00:00:00Z",
+          label: "Staking reward",
+          transfers: [
+            { asset_unique_id: "DOT", amount: 10, fiatValue: undefined },
+          ],
+        },
+        {
+          timestamp: "2023-01-01T00:00:00Z",
+          label: "Staking slashed",
+          transfers: [
+            { asset_unique_id: "DOT", amount: 20, fiatValue: undefined },
           ],
         },
       ];
       const quotes = { currency: "USD", quotes: { "2023-01-01": 2 } };
 
-      service.addFiatValuesForNativeToken("DOT", taxableEvents, quotes as any);
+      service.addFiatValuesForStakingRewards(
+        "DOT",
+        taxableEvents,
+        quotes as any,
+      );
 
-      expect(taxableEvents[0].transfers[0].price).toBe(2);
-      expect(taxableEvents[0].transfers[0].fiatValue).toBe(10);
+      expect(taxableEvents[0].transfers[0].price).toBeUndefined();
+      expect(taxableEvents[0].transfers[0].fiatValue).toBeUndefined();
+      expect(taxableEvents[1].transfers[0].fiatValue).toBe(20);
+      expect(taxableEvents[1].transfers[0].fiatValue).not.toBeUndefined();
+      expect(taxableEvents[2].transfers[0].fiatValue).toBe(40);
+      expect(taxableEvents[2].transfers[0].fiatValue).not.toBeUndefined();
     });
 
     it("logs a warning if no quote exists", () => {
       const taxableEvents: any = [
-        { timestamp: "2023-01-01T00:00:00Z", transfers: [] },
+        {
+          timestamp: "2023-01-01T00:00:00Z",
+          transfers: [],
+          label: "Staking reward",
+        },
       ];
       const quotes = { currency: "USD", quotes: {} };
 
-      service.addFiatValuesForNativeToken("DOT", taxableEvents, quotes as any);
+      service.addFiatValuesForStakingRewards(
+        "DOT",
+        taxableEvents,
+        quotes as any,
+      );
 
       expect(logger.warn).toHaveBeenCalled();
     });
   });
 
   describe("addFiatValues", () => {
-    it("fetches quotes and applies conversions", async () => {
+    it("applies conversions from fiat to another fiat", async () => {
       (findCoingeckoIdForNativeToken as jest.Mock).mockReturnValue("dot");
       cryptoCurrencyPricesService.fetchHistoricalPrices.mockResolvedValue({
         currency: "EUR",
-        quotes: { "2023-01-01": 5 },
+        quotes: { "2023-01-01": 2 },
       } as any);
       fiatExchangeRateService.fetchExchangeRates.mockResolvedValue({
-        EUR: 1.2,
+        "2023-01-01": { EUR: 1.5 },
       } as any);
 
       const taxableEvents: any = [
@@ -115,13 +141,15 @@ describe("AddFiatValuesToTaxableEventsService", () => {
           timestamp: "2023-01-01T00:00:00Z",
           feeUsed: 1,
           tip: 1,
-          transfers: [{ asset_unique_id: "DOT", amount: 2 }],
+          transfers: [
+            { asset_unique_id: "DOT", amount: 2, price: 4, fiatValue: 8 },
+          ],
         },
       ];
 
       await service.addFiatValues(
         {
-          address: "addr",
+          address: "addrXYZ",
           chain: { domain: "polkadot", token: "DOT" },
           currency: "EUR",
         },
@@ -131,10 +159,9 @@ describe("AddFiatValuesToTaxableEventsService", () => {
       expect(
         cryptoCurrencyPricesService.fetchHistoricalPrices,
       ).toHaveBeenCalledWith("dot", "EUR");
-      expect(convertFiatValues).toHaveBeenCalled();
-      expect(taxableEvents[0].feeUsedFiat).toBe(5);
-      expect(taxableEvents[0].tipFiat).toBe(5);
-      expect(taxableEvents[0].transfers[0].fiatValue).toBe(10);
+      expect(taxableEvents[0].feeUsedFiat).toBe(2);
+      expect(taxableEvents[0].tipFiat).toBe(2);
+      expect(taxableEvents[0].transfers[0].fiatValue).toBe(12);
     });
 
     it("logs error when no quotes found", async () => {
