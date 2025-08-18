@@ -1,0 +1,28 @@
+name: Canary Tests
+
+on:
+  workflow_dispatch:
+
+jobs:
+  canary-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install Server Dependencies
+        working-directory: server
+        run: npm install
+
+      - name: Run Canary Tests
+        working-directory: server
+        run: npm run canary-tests
+        env:
+          SUBSCAN_API_KEY: ${{ secrets.SUBSCAN_API_KEY }}
+          ZYTE_USER: ${{ secrets.ZYTE_USER }}
