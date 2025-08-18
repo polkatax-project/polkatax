@@ -37,11 +37,12 @@ export class ChainAdjustments {
     });
 
     const movements = portfolioMovements.filter((s) => {
-      if ((s?.events ?? []).find(
+      if (
+        (s?.events ?? []).find(
           (e) =>
             e.moduleId === "staking" &&
             e.eventId === "RewardsClaimed" &&
-            process.env["USE_DATA_PLATFORM_API"] === 'true',
+            process.env["USE_DATA_PLATFORM_API"] === "true",
         )
       ) {
         return false;

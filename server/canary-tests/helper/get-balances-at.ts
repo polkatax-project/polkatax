@@ -5,7 +5,7 @@ const endpoints = {
   bifrost: "wss://bifrost.public.curie.radiumblock.co/ws",
   polkadot: "wss://polkadot.api.onfinality.io/public-ws",
   kusama: "wss://kusama.api.onfinality.io/public-ws",
-  hydration: "wss://hydradx.paras.ibp.network",
+  hydration: "wss://hydradx-rpc.dwellir.com",
   "coretime-polkadot": "wss://coretime-polkadot.dotters.network",
   acala: "wss://acala-rpc.dwellir.com",
   astar: "wss://rpc.astar.network",
@@ -26,7 +26,7 @@ const endpoints = {
 
 export let api: ApiPromise;
 export async function createApi(domain: string) {
-  if (api) {
+  if (api && !(await api.isConnected)) {
     await api.disconnect();
   }
   const provider = new WsProvider(endpoints[domain]);
