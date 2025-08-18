@@ -33,4 +33,5 @@ playwright/.cache/
 
 test-cache
 test-results/
-out-temp/
+server/canary-tests/out-temp/*
+!server/canary-tests/out-temp/.gitkeep
