@@ -38,7 +38,6 @@ describe.only("convertFiatValues", () => {
         EUR: 0.9,
       },
     };
-    console.log(fixedDate);
 
     const movements: PortfolioMovement[] = [
       {

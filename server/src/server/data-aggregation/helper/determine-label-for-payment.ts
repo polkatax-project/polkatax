@@ -147,11 +147,6 @@ const eventClassifications: EventClassification[] = [
   },
 ];
 
-/**
- * https://hydration.subscan.io/event?module=omnipoolliquiditymining&event_id=RewardClaimed
- * omnipoolliquiditymining (RewardClaimed)
- */
-
 type CallFunction = {
   name: string;
   label: Label;
@@ -332,6 +327,23 @@ const callModuleClassifications: CallModuleClassification[] = [
           },
           {
             name: "bond_extra",
+            label: "Liquidity added" as const,
+          },
+          {
+            name: "withdraw_unbonded",
+            label: "Liquidity removed" as const,
+          },
+        ],
+      },
+      {
+        module: "parachainstaking",
+        functions: [
+          {
+            name: "unlock_unstaked",
+            label: "Liquidity removed" as const,
+          },
+          {
+            name: "join_delegators",
             label: "Liquidity added" as const,
           },
           {

@@ -1,5 +1,5 @@
 import { formatDate } from "../../../common/util/date-utils";
-import { PortfolioMovement } from "../model/portfolio-movement";
+import { TaxableEvent } from "../model/portfolio-movement";
 import { logger } from "../../logger/logger";
 import { ExchangeRates } from "../../../model/fiat-exchange-rates/exchange-rates";
 
@@ -8,13 +8,13 @@ import { ExchangeRates } from "../../../model/fiat-exchange-rates/exchange-rates
  */
 export const convertFiatValues = (
   targetCurrency: string,
-  portfolioMovements: PortfolioMovement[],
+  taxableEvents: TaxableEvent[],
   exchangeRates: ExchangeRates,
-): PortfolioMovement[] => {
-  for (let portfolioMovement of portfolioMovements) {
-    const isoDate = formatDate(new Date(portfolioMovement.timestamp));
+): TaxableEvent[] => {
+  for (let taxable of taxableEvents) {
+    const isoDate = formatDate(new Date(taxable.timestamp));
     if (exchangeRates[isoDate]) {
-      portfolioMovement.transfers.forEach((t) => {
+      taxable.transfers.forEach((t) => {
         t.price = t.price * exchangeRates[isoDate][targetCurrency];
         t.fiatValue = t.fiatValue * exchangeRates[isoDate][targetCurrency];
       });
@@ -22,5 +22,5 @@ export const convertFiatValues = (
       logger.warn(`No fiat exchange rate found for date ${isoDate}`);
     }
   }
-  return portfolioMovements;
+  return taxableEvents;
 };

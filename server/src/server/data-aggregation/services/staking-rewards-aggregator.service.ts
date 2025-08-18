@@ -1,22 +1,15 @@
 import { SubscanService } from "../../blockchain/substrate/api/subscan.service";
 import { StakingRewardsService } from "../../blockchain/substrate/services/staking-rewards.service";
 import { StakingRewardsRequest } from "../model/staking-rewards.request";
-import { TokenPriceConversionService } from "./token-price-conversion.service";
-import {
-  addFiatValuesToAggregatedStakingRewards,
-  addFiatValuesToStakingRewards,
-} from "../helper/add-fiat-values-to-staking-rewards";
-import { findCoingeckoIdForNativeToken } from "../helper/find-coingecko-id-for-native-token";
 import { isEvmAddress } from "../helper/is-evm-address";
 import { AggregatedStakingReward } from "../model/aggregated-staking-reward";
 import { StakingReward } from "../../blockchain/substrate/model/staking-reward";
 import { DataPlatformStakingService } from "../../data-platform-api/data-platform-staking.service";
 import * as subscanChains from "../../../../res/gen/subscan-chains.json";
 
-export class StakingRewardsWithFiatService {
+export class StakingRewardsAggregatorService {
   constructor(
     private stakingRewardsService: StakingRewardsService,
-    private tokenPriceConversionService: TokenPriceConversionService,
     private subscanService: SubscanService,
     private dataPlatformStakingService: DataPlatformStakingService,
   ) {}
@@ -47,45 +40,13 @@ export class StakingRewardsWithFiatService {
         stakingRewardsRequest.address,
         stakingRewardsRequest.chain.domain,
       );
-    const coingeckoId = findCoingeckoIdForNativeToken(
-      stakingRewardsRequest.chain.domain,
-    );
-
-    const quotes = await (coingeckoId
-      ? this.tokenPriceConversionService.fetchQuotesForTokens(
-          [coingeckoId],
-          stakingRewardsRequest.currency,
-        )
-      : Promise.resolve({}));
-
-    addFiatValuesToAggregatedStakingRewards(
-      aggregatedRewards,
-      quotes[coingeckoId],
-    );
-
     return aggregatedRewards;
   }
 
   public async fetchStakingRewardsViaSubscan(
     stakingRewardsRequest: StakingRewardsRequest,
   ): Promise<StakingReward[]> {
-    let { chain, currency } = stakingRewardsRequest;
-
-    const coingeckoId = findCoingeckoIdForNativeToken(chain.domain);
-
-    const [quotes, rewards] = await Promise.all([
-      coingeckoId
-        ? this.tokenPriceConversionService.fetchQuotesForTokens(
-            [coingeckoId],
-            currency,
-          )
-        : Promise.resolve({}),
-      this.fetchFromSubscan(stakingRewardsRequest),
-    ]);
-
-    addFiatValuesToStakingRewards(rewards, quotes[coingeckoId]);
-
-    return rewards;
+    return this.fetchFromSubscan(stakingRewardsRequest);
   }
 
   async fetchStakingRewards(

@@ -3,28 +3,28 @@ import { CurrencyQuotes } from "../../../model/crypto-currency-prices/crypto-cur
 import { logger } from "../../logger/logger";
 import { convertFiatValues } from "../helper/convert-fiat-values";
 import { findCoingeckoIdForNativeToken } from "../helper/find-coingecko-id-for-native-token";
-import { PortfolioMovement } from "../model/portfolio-movement";
+import { PortfolioMovement, TaxableEvent } from "../model/portfolio-movement";
+import { CryptoCurrencyPricesService } from "./crypto-currency-prices.service";
 import { FiatExchangeRateService } from "./fiat-exchange-rate.service";
-import { TokenPriceConversionService } from "./token-price-conversion.service";
 
-export class AddFiatValuesToPortfolioMovementsService {
+export class AddFiatValuesToTaxableEventsService {
   constructor(
-    private tokenPriceConversionService: TokenPriceConversionService,
+    private cryptoCurrencyPricesService: CryptoCurrencyPricesService,
     private fiatExchangeRateService: FiatExchangeRateService,
   ) {}
 
   addFiatValuesForTxFees(
-    portfolioMovements: PortfolioMovement[],
+    taxableEvents: TaxableEvent[],
     quotes: CurrencyQuotes,
-  ): PortfolioMovement[] {
-    for (let portfolioMovement of portfolioMovements) {
-      const isoDate = formatDate(new Date(portfolioMovement.timestamp));
+  ): TaxableEvent[] {
+    for (let taxable of taxableEvents as PortfolioMovement[]) {
+      const isoDate = formatDate(new Date(taxable.timestamp));
       if (quotes.quotes?.[isoDate]) {
-        portfolioMovement.feeUsedFiat = portfolioMovement.feeUsed
-          ? portfolioMovement.feeUsed * quotes.quotes[isoDate]
+        taxable.feeUsedFiat = taxable.feeUsed
+          ? taxable.feeUsed * quotes.quotes[isoDate]
           : undefined;
-        portfolioMovement.tipFiat = portfolioMovement.tip
-          ? portfolioMovement.tip * quotes.quotes[isoDate]
+        taxable.tipFiat = taxable.tip
+          ? taxable.tip * quotes.quotes[isoDate]
           : undefined;
       } else {
         logger.warn(
@@ -32,21 +32,19 @@ export class AddFiatValuesToPortfolioMovementsService {
         );
       }
     }
-    return portfolioMovements;
+    return taxableEvents;
   }
 
-  addFiatValuesForStakingRewards(
-    portfolioMovements: PortfolioMovement[],
+  addFiatValuesForNativeToken(
+    nativeToken: string,
+    taxableEvents: TaxableEvent[],
     quotes: CurrencyQuotes,
-  ): PortfolioMovement[] {
-    const stakingRewards = portfolioMovements.filter(
-      (p) => p.label === "Staking reward" || p.label === "Staking slashed",
-    );
-    for (let portfolioMovement of stakingRewards) {
-      const isoDate = formatDate(new Date(portfolioMovement.timestamp));
+  ): TaxableEvent[] {
+    for (let taxable of taxableEvents) {
+      const isoDate = formatDate(new Date(taxable.timestamp));
       if (quotes.quotes?.[isoDate]) {
-        portfolioMovement.transfers
-          .filter((t) => !t.fiatValue)
+        taxable.transfers
+          .filter((t) => !t.fiatValue && t.asset_unique_id === nativeToken)
           .forEach((t) => {
             t.price = quotes.quotes[isoDate];
             t.fiatValue = t.amount * quotes.quotes[isoDate];
@@ -57,7 +55,22 @@ export class AddFiatValuesToPortfolioMovementsService {
         );
       }
     }
-    return portfolioMovements;
+    return taxableEvents;
+  }
+
+  private fetchQuotes(
+    coingeckoId: string,
+    currency: string,
+  ): Promise<CurrencyQuotes> {
+    try {
+      return this.cryptoCurrencyPricesService.fetchHistoricalPrices(
+        coingeckoId,
+        currency,
+      );
+    } catch (e) {
+      logger.error("Failed to fetch quotes for token " + coingeckoId);
+      logger.error(e);
+    }
   }
 
   async addFiatValues(
@@ -66,17 +79,14 @@ export class AddFiatValuesToPortfolioMovementsService {
       chain: { domain: string; token: string };
       currency: string;
     },
-    portfolioMovements: PortfolioMovement[],
+    taxableEvents: TaxableEvent[],
   ): Promise<void> {
     const coingeckoId = findCoingeckoIdForNativeToken(context.chain.domain);
 
     const [quotes, fiatExchangeRates] = await Promise.all([
       coingeckoId
-        ? this.tokenPriceConversionService.fetchQuotesForTokens(
-            [coingeckoId],
-            context.currency,
-          )
-        : Promise.resolve({}),
+        ? this.fetchQuotes(coingeckoId, context.currency)
+        : Promise.resolve({ currency: context.currency, quotes: undefined }),
       this.fiatExchangeRateService.fetchExchangeRates(),
     ]);
 
@@ -84,13 +94,13 @@ export class AddFiatValuesToPortfolioMovementsService {
     if (context.currency.toUpperCase() !== "USD") {
       convertFiatValues(
         context.currency.toUpperCase(),
-        portfolioMovements,
+        taxableEvents,
         fiatExchangeRates,
       );
     }
 
-    // add quotes to fees
-    if (!quotes[coingeckoId]) {
+    // add quotes to fees and transfer of native token if not already present
+    if (!quotes?.quotes) {
       logger.error(
         "No quotes found for token " +
           coingeckoId +
@@ -98,10 +108,11 @@ export class AddFiatValuesToPortfolioMovementsService {
           context.chain.domain,
       );
     } else {
-      this.addFiatValuesForTxFees(portfolioMovements, quotes[coingeckoId]);
-      this.addFiatValuesForStakingRewards(
-        portfolioMovements,
-        quotes[coingeckoId],
+      this.addFiatValuesForTxFees(taxableEvents, quotes);
+      this.addFiatValuesForNativeToken(
+        context.chain.token,
+        taxableEvents,
+        quotes,
       );
     }
   }
