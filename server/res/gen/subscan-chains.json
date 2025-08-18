@@ -30,20 +30,6 @@
       "delegatedStaking": false
     },
     {
-      "domain": "zeitgeist",
-      "label": "Zeitgeist",
-      "token": "ZTG",
-      "stakingPallets": ["ParachainStaking"],
-      "evmPallet": false,
-      "assetPallet": false,
-      "foreignAssetsPallet": false,
-      "standardStaking": false,
-      "parachainStaking": true,
-      "delegatedStaking": false,
-      "relay": "polkadot",
-      "paraId": 2092
-    },
-    {
       "domain": "vara",
       "label": "Vara",
       "token": "VARA",
