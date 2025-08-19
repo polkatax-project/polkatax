@@ -1,3 +1,5 @@
+import { Label } from "../../../../common/model/label";
+
 export interface RawSubstrateTransferDto {
   id: number;
   transfer_id: number;
@@ -62,4 +64,5 @@ export interface Transfer {
   asset_type?: string;
   asset_unique_id: string;
   coingeckoId?: string;
+  label?: Label;
 }

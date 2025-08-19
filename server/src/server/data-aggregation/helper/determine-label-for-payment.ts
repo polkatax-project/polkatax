@@ -1,4 +1,5 @@
-import { Label, PortfolioMovement } from "../model/portfolio-movement";
+import { Label } from "../../../common/model/label";
+import { PortfolioMovement } from "../model/portfolio-movement";
 
 type EventClassification = {
   chains: string[];

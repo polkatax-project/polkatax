@@ -36,8 +36,7 @@ export class TransferMerger {
           timestamp: entry.timestamp,
         };
       }
-      target[key].label =
-        target[key].label ?? (entry as EventDerivedTransfer)?.label;
+      target[key].label = target[key].label ?? entry?.label;
       let matchingTransfer = target[key].transfers.find(
         (t) => t.asset_unique_id === entry.asset_unique_id,
       );
