@@ -1,9 +1,7 @@
+import { Label } from "../../../../common/model/label";
+import { MultiLocation } from "../../../blockchain/substrate/model/multi-location";
 import { EventDetails } from "../../../blockchain/substrate/model/subscan-event";
-import {
-  MultiLocation,
-  XcmTransfer,
-} from "../../../blockchain/substrate/model/xcm-transfer";
-import { Label } from "../../model/portfolio-movement";
+import { XcmTransfer } from "../../../blockchain/substrate/model/xcm-transfer";
 
 export type EventDerivedAssetMovement = {
   event: EventDetails;

@@ -1,3 +1,5 @@
+import { MultiLocation } from "./multi-location";
+
 export interface Asset {
   id: string;
   asset_id: any;
@@ -9,4 +11,5 @@ export interface Asset {
   currency_id?: string; // often just the symbol
   token_id?: string;
   price?: string;
+  multi_location?: MultiLocation;
 }

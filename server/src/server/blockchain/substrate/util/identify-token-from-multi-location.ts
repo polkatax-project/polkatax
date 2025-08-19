@@ -1,6 +1,6 @@
-import { MultiLocation } from "../model/xcm-transfer";
 import * as subscanChains from "../../../../../res/gen/subscan-chains.json";
 import * as otherSubstrateChains from "../../../../../res/other-substrate-chains.json";
+import { MultiLocation } from "../model/multi-location";
 
 export type TokenInfo =
   | {

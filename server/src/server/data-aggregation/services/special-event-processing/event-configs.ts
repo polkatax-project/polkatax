@@ -101,7 +101,7 @@ export const eventConfigs: {
   {
     chains: ["assethub-polkadot", "assethub-kusama"],
     event: "assetconversionSwapExecuted",
-    handler: (e) => onAssethubSwapExecuted(e),
+    handler: (e, context) => onAssethubSwapExecuted(e, context),
   },
   {
     chains: ["assethub-polkadot", "assethub-kusama"],

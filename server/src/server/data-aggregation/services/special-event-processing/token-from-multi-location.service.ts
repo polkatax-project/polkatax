@@ -2,7 +2,7 @@ import * as subscanChains from "../../../../../res/gen/subscan-chains.json";
 import { EthTokenInfoService } from "../../../blockchain/evm/service/eth.token-info.service";
 import { SubscanService } from "../../../blockchain/substrate/api/subscan.service";
 import { Asset } from "../../../blockchain/substrate/model/asset";
-import { MultiLocation } from "../../../blockchain/substrate/model/xcm-transfer";
+import { MultiLocation } from "../../../blockchain/substrate/model/multi-location";
 import { identifyTokenFromMultiLocation } from "../../../blockchain/substrate/util/identify-token-from-multi-location";
 
 export class TokenFromMultiLocationService {

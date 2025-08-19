@@ -241,7 +241,7 @@ describe("DataPlatformLiquidStakingService", () => {
       expect(result).toEqual(mockTokens[0]);
     });
 
-     it("returns correct vtoken for DOT", () => {
+    it("returns correct vtoken for DOT", () => {
       const result = (service as any).determineVToken(
         "Token2",
         "0",

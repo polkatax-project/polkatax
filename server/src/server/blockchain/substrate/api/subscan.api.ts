@@ -262,7 +262,7 @@ export class SubscanApi {
       {},
       24,
     );
-    const data = response.data;
+    const data = response?.data;
     return Object.values(data?.detail ?? {}).find(
       (value: Token & { asset_type: string }) => value.asset_type === `native`,
     ) as Token;

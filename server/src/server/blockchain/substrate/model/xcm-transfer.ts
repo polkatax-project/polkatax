@@ -1,7 +1,4 @@
-export type MultiLocation = {
-  parents: number;
-  interior: Record<string, any>;
-};
+import { MultiLocation } from "./multi-location";
 
 export interface XcmAssetTransfer {
   enum_key: string;
@@ -15,7 +12,6 @@ export interface XcmAssetTransfer {
   network?: string;
   raw: MultiLocation;
 }
-
 export interface RawXcmMessage {
   message_hash: string;
   id: string;
