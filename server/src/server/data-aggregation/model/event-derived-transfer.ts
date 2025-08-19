@@ -1,5 +1,5 @@
+import { Label } from "../../../common/model/label";
 import { Transfer } from "../../blockchain/substrate/model/raw-transfer";
-import { Label } from "./portfolio-movement";
 
 export interface EventDerivedTransfer extends Transfer {
   event_id: string;

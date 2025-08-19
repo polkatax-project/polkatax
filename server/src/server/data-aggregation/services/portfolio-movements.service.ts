@@ -22,6 +22,7 @@ import { AggregatedStakingReward } from "../model/aggregated-staking-reward";
 import { Transaction } from "../../blockchain/substrate/model/transaction";
 import { StakingRewardsAggregatorService } from "./staking-rewards-aggregator.service";
 import { AddFiatValuesToTaxableEventsService } from "./add-fiat-values-to-taxable-events.service";
+import { DataPlatformLiquidStakingService } from "../../data-platform-api/data-platform-liquidstaking.service";
 
 const ignoreIncomingXcm = [
   "assethub-polkadot",
@@ -44,6 +45,7 @@ export class PortfolioMovementsService {
     private specialEventsToTransfersService: SpecialEventsToTransfersService,
     private addFiatValuesToTaxableEventsService: AddFiatValuesToTaxableEventsService,
     private xcmTokenResolutionService: XcmTokenResolutionService,
+    private dataPlatformLiquidStakingService: DataPlatformLiquidStakingService,
   ) {}
 
   private isForEventContextOnly(xcm: XcmTransfer, chain: string): boolean {
@@ -94,6 +96,13 @@ export class PortfolioMovementsService {
       this.stakingRewardsAggregatorService.fetchStakingRewards(
         chainExtendedRequest,
       ),
+      process.env["USE_DATA_PLATFORM_API"] === "true"
+        ? this.dataPlatformLiquidStakingService.fetchallVtokenEvents(
+            request.address,
+            request.chain.domain,
+            request.minDate,
+          )
+        : [],
     ]);
   }
 
@@ -107,6 +116,7 @@ export class PortfolioMovementsService {
       rawStakingRewards: StakingReward[];
       aggregatedRewards: AggregatedStakingReward[];
     },
+    dataPlatformTransfers: Transfer[],
   ) {
     xcmList = await this.xcmTokenResolutionService.resolveTokens(
       request.chain,
@@ -125,6 +135,7 @@ export class PortfolioMovementsService {
         events,
         xcmList,
       );
+    transfers.push(...dataPlatformTransfers);
     transfers.push(...specialEventTransfers);
 
     let { portfolioMovements, unmatchedEvents } =
@@ -168,8 +179,14 @@ export class PortfolioMovementsService {
       `PortfolioMovementsService: Enter fetchPortfolioMovements for ${request.chain.domain} and wallet ${request.address}`,
     );
     this.validate(request);
-    let [transfers, transactions, events, xcmList, stakingRewards] =
-      await this.fetchData(request);
+    let [
+      transfers,
+      transactions,
+      events,
+      xcmList,
+      stakingRewards,
+      dataPlatformTransfers,
+    ] = await this.fetchData(request);
 
     const { portfolioMovements, unmatchedEvents } = await this.transform(
       request,
@@ -178,6 +195,7 @@ export class PortfolioMovementsService {
       events,
       xcmList,
       stakingRewards,
+      dataPlatformTransfers,
     );
 
     this.addLabels(request, portfolioMovements);

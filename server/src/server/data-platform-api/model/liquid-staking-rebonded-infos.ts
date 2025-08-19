@@ -3,7 +3,8 @@ import { CurrencyType } from "./currency-type";
 export interface LiquidStakingRebondedInfos {
   chainType: string;
   liquidStakingResults: {
-    rebondDate: string;
+    eventId: string;
+    timestamp: string;
     currencyType: CurrencyType;
     currencyValue: string;
     currencyAmount: number;

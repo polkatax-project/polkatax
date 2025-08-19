@@ -10,8 +10,6 @@ import { onAssethubForeignAssetsIssued } from "./on-assethub-foreign-asset-issue
 import { onAssethubSwapExecuted } from "./on-assethub-swap-executed";
 import { onBalancesDeposit } from "./on-balances-deposit";
 import { onBalancesWithdraw } from "./on-balances-withdraw";
-import { onBifrostMintedVToken } from "./on-bifrost-minted-vtoken";
-import { onBifrostRedeemedVToken } from "./on-bifrost-redeemed-vtoken";
 import { onCoretimePurchased } from "./on-coretime-purchased";
 import { onHydrationLiquidityRemoved } from "./on-hydration-liquidity-removed";
 import { onMigratedDelegation } from "./on-migrated-delegation";
@@ -99,26 +97,6 @@ export const eventConfigs: {
       !!events.find(
         (e) => e.module_id + e.event_id === "identitymigratorIdentityReaped",
       ),
-  },
-  /*{
-    chains: ["bifrost", "bifrost-kusama"],
-    event: "balancesIssued",
-    handler: (e, context) => onBalancesDeposit(e, context),
-  },*/
-  {
-    chains: ["bifrost", "bifrost-kusama"],
-    event: "vtokenmintingRedeemed",
-    handler: (e, context) => onBifrostRedeemedVToken(e, context),
-  },
-  {
-    chains: ["bifrost", "bifrost-kusama"],
-    event: "vtokenmintingMinted",
-    handler: (e, context) => onBifrostMintedVToken(e, context),
-  },
-  {
-    chains: ["bifrost", "bifrost-kusama"],
-    event: "vtokenmintingRebondedByUnlockId",
-    handler: (e, context) => onBifrostMintedVToken(e, context),
   },
   {
     chains: ["assethub-polkadot", "assethub-kusama"],

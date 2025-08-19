@@ -1,3 +1,4 @@
+import { Label } from "../../../common/model/label";
 import { AggregatedStakingReward } from "./aggregated-staking-reward";
 
 export type Provenance =
@@ -7,26 +8,6 @@ export type Provenance =
   | "stakingRewards"
   | "tx"
   | "aggregatedData";
-
-export type Label =
-  | "EVM Transaction"
-  | "Farming deposit"
-  | "Farming withdraw"
-  | "Liquidity removed"
-  | "Liquidity added"
-  | "Swap"
-  | "Crowdloan contribution"
-  | "Liquid staking token minted"
-  | "Liquid staking token redeemed"
-  | "XCM transfer"
-  | "Treasury grant"
-  | "Reward"
-  | "Staking reward"
-  | "Staking slashed"
-  | "Coretime purchase"
-  | "Remove from Pool"
-  | "Migrated delegation"
-  | "Reserve repatriated";
 
 export interface PortfolioMovement {
   hash?: string;

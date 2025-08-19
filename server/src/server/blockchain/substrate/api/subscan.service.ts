@@ -229,19 +229,19 @@ export class SubscanService {
 
   async fetchEventDetails(
     chainName: string,
-    events: SubscanEvent[],
+    events?: SubscanEvent[],
+    eventIndices?: string[],
   ): Promise<EventDetails[]> {
+    const ids = eventIndices ?? events.map((e) => e.event_index);
     logger.info(
-      `Enter fetchEventDetails for ${chainName} and event_indices ${events.map((e) => e.event_index).join(", ")}`,
+      `Enter fetchEventDetails for ${chainName} and event_indices ${ids.join(", ")}`,
     );
     const results = await Promise.all(
-      events.map((e) =>
-        this.subscanApi.fetchEventDetails(chainName, e.event_index),
-      ),
+      ids.map((id) => this.subscanApi.fetchEventDetails(chainName, id)),
     );
     for (let idx = 0; idx < results.length; idx++) {
-      results[idx].timestamp = events[idx].timestamp;
-      results[idx].original_event_index = events[idx].event_index;
+      results[idx].timestamp = events?.[idx]?.timestamp;
+      results[idx].original_event_index = events?.[idx]?.event_index;
     }
     logger.info(`Exit fetchEventDetails`);
     return results;
