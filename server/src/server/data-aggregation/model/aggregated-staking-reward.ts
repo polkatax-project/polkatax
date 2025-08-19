@@ -1,4 +1,5 @@
-import { Label, Provenance } from "./portfolio-movement";
+import { Label } from "../../../common/model/label";
+import { Provenance } from "./portfolio-movement";
 
 export interface AggregatedStakingReward {
   timestamp: number;
