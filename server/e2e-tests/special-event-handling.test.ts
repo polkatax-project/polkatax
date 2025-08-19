@@ -9,7 +9,7 @@ import { verifyEventTransfersAreValid } from "./util/verify-transfer-valid";
 import { TokenFromMultiLocationService } from "../src/server/data-aggregation/services/special-event-processing/token-from-multi-location.service";
 import { EthTokenInfoService } from "../src/server/blockchain/evm/service/eth.token-info.service";
 
-describe.skip("Special event handling", () => {
+describe("Special event handling", () => {
   let subscanApi: SubscanApi = new SubscanApi();
   let subscanService: SubscanService = new SubscanService(subscanApi);
   let specialEventsToTransfersService: SpecialEventsToTransfersService =
