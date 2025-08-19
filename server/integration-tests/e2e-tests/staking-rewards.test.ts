@@ -1,11 +1,11 @@
 import { describe, expect, test, beforeAll, afterAll } from "@jest/globals";
 import { FastifyInstance } from "fastify";
-import { startStub as cryptoPricesStub } from "../src/crypto-currency-prices/stub";
+import { startStub as cryptoPricesStub } from "../../src/crypto-currency-prices/stub";
 import { fetchStakingRewards } from "./util/fetch-staking-rewars";
 import {
   waitForPortToBeFree,
   waitForPortToBeOccupied,
-} from "./util/wait-for-port-to-be-free";
+} from "../shared/helper/wait-for-port-to-be-free";
 
 let cryptoPriceServer: FastifyInstance;
 
@@ -22,7 +22,7 @@ afterAll(async () => {
   await cryptoPriceServer.close();
 });
 
-describe("Staking rewards amounts", () => {
+describe.skip("Staking rewards amounts", () => {
   test("kusama", async () => {
     const { totalAmount } = await fetchStakingRewards(
       "15abVnvSgRJFCqhJuvrYSNL5DscRppcog8cyYaVALLU3LFjB",

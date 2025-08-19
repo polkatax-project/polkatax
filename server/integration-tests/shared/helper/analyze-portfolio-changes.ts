@@ -1,4 +1,4 @@
-import { PortfolioMovement } from "../../src/server/data-aggregation/model/portfolio-movement";
+import { PortfolioMovement } from "../../../src/server/data-aggregation/model/portfolio-movement";
 
 export interface PortfolioVerificationResult {
   endBlock: number;

@@ -1,9 +1,9 @@
 import dotenv from "dotenv";
-import { envFile } from "../../src/server/env.config";
+import { envFile } from "../../../src/server/env.config";
 dotenv.config({ path: envFile });
-import { StakingRewardsAggregatorService } from "../../src/server/data-aggregation/services/staking-rewards-aggregator.service";
-import { createDIContainer } from "../../src/server/di-container";
-import { StakingReward } from "../../src/server/blockchain/substrate/model/staking-reward";
+import { StakingRewardsAggregatorService } from "../../../src/server/data-aggregation/services/staking-rewards-aggregator.service";
+import { createDIContainer } from "../../../src/server/di-container";
+import { StakingReward } from "../../../src/server/blockchain/substrate/model/staking-reward";
 
 export const fetchStakingRewards = async (
   address: string,

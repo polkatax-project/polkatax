@@ -1,5 +1,5 @@
 import { expect } from "@jest/globals";
-import { EventDerivedTransfer } from "../../src/server/data-aggregation/model/event-derived-transfer";
+import { EventDerivedTransfer } from "../../../src/server/data-aggregation/model/event-derived-transfer";
 
 export const verifyEventTransferIsValid = (t: EventDerivedTransfer) => {
   expect(t.asset_unique_id).not.toBeFalsy();

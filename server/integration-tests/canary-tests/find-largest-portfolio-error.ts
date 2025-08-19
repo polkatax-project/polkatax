@@ -1,12 +1,15 @@
-import { SubscanApi } from "../src/server/blockchain/substrate/api/subscan.api";
-import { createDIContainer } from "../src/server/di-container";
-import { fetchPortfolioMovements } from "./helper/fetch-portfolio-movements";
+import { SubscanApi } from "../../src/server/blockchain/substrate/api/subscan.api";
+import { createDIContainer } from "../../src/server/di-container";
+import { fetchPortfolioMovements } from "../shared/helper/fetch-portfolio-movements";
 import * as fs from "fs";
-import { Wallet } from "./helper/wallet";
-import { analysePortfolioChanges } from "./helper/analyze-portfolio-changes";
-import * as subscanChains from "../res/gen/subscan-chains.json";
-import { startStubs, stopStubs } from "./helper/fetch-portfolio-movements";
-import { createApi, getApiClient } from "./helper/get-balances-at";
+import { Wallet } from "../shared/helper/wallet";
+import { analysePortfolioChanges } from "../shared/helper/analyze-portfolio-changes";
+import * as subscanChains from "../../res/gen/subscan-chains.json";
+import {
+  startStubs,
+  stopStubs,
+} from "../shared/helper/fetch-portfolio-movements";
+import { createApi, getApiClient } from "../shared/helper/get-balances-at";
 
 const zoomIntoErrorAssetsChange = async (
   address: string,
@@ -239,17 +242,17 @@ const zoomIntoErrorTokens = async (
   tolerance = 0.5,
 ) => {
   const { portfolioMovements, unmatchedEvents, minBlock, maxBlock } =
-    fs.existsSync(`./canary-tests/out-temp/portfolio-movements.json`)
+    fs.existsSync(`./integration-tests/out-temp/portfolio-movements.json`)
       ? JSON.parse(
           fs.readFileSync(
-            `./canary-tests/out-temp/portfolio-movements.json`,
+            `./integration-tests/out-temp/portfolio-movements.json`,
             "utf-8",
           ),
         )
       : await fetchPortfolioMovements(address, chainInfo);
-  if (!fs.existsSync(`./canary-tests/out-temp/portfolio-movements.json`)) {
+  if (!fs.existsSync(`./integration-tests/out-temp/portfolio-movements.json`)) {
     fs.writeFileSync(
-      `./canary-tests/out-temp/portfolio-movements.json`,
+      `./integration-tests/out-temp/portfolio-movements.json`,
       JSON.stringify(
         { portfolioMovements, unmatchedEvents, minBlock, maxBlock },
         null,
@@ -284,17 +287,17 @@ const zoomIntoErrorAssets = async (
   tolerance = 0.1,
 ) => {
   const { portfolioMovements, unmatchedEvents, minBlock, maxBlock } =
-    fs.existsSync(`./canary-tests/out-temp/portfolio-movements.json`)
+    fs.existsSync(`./integration-tests/out-temp/portfolio-movements.json`)
       ? JSON.parse(
           fs.readFileSync(
-            `./canary-tests/out-temp/portfolio-movements.json`,
+            `./integration-tests/out-temp/portfolio-movements.json`,
             "utf-8",
           ),
         )
       : await fetchPortfolioMovements(address, chainInfo);
-  if (!fs.existsSync(`./canary-tests/out-temp/portfolio-movements.json`)) {
+  if (!fs.existsSync(`./integration-tests/out-temp/portfolio-movements.json`)) {
     fs.writeFileSync(
-      `./canary-tests/out-temp/portfolio-movements.json`,
+      `./integration-tests/out-temp/portfolio-movements.json`,
       JSON.stringify(
         { portfolioMovements, unmatchedEvents, minBlock, maxBlock },
         null,

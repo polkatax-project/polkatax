@@ -1,10 +1,10 @@
 import { FastifyInstance } from "fastify";
-import { startStub as cryptoPricesStub } from "../../src/crypto-currency-prices/stub";
-import { startStub as fiatPricesStub } from "../../src/fiat-exchange-rates/stub";
-import { SubscanEvent } from "../../src/server/blockchain/substrate/model/subscan-event";
-import { PortfolioMovement } from "../../src/server/data-aggregation/model/portfolio-movement";
-import { PortfolioMovementsService } from "../../src/server/data-aggregation/services/portfolio-movements.service";
-import { createDIContainer } from "../../src/server/di-container";
+import { startStub as cryptoPricesStub } from "../../../src/crypto-currency-prices/stub";
+import { startStub as fiatPricesStub } from "../../../src/fiat-exchange-rates/stub";
+import { SubscanEvent } from "../../../src/server/blockchain/substrate/model/subscan-event";
+import { PortfolioMovement } from "../../../src/server/data-aggregation/model/portfolio-movement";
+import { PortfolioMovementsService } from "../../../src/server/data-aggregation/services/portfolio-movements.service";
+import { createDIContainer } from "../../../src/server/di-container";
 
 let cryptoPriceServer: FastifyInstance;
 let fiatPriceServer: FastifyInstance;
@@ -23,6 +23,7 @@ export const fetchPortfolioMovements = async (
   address: string,
   chain: { domain: string; label: string; token: string },
   minDate?: number,
+  maxDate?: number,
 ): Promise<{
   portfolioMovements: PortfolioMovement[];
   unmatchedEvents?: SubscanEvent[];
@@ -38,7 +39,7 @@ export const fetchPortfolioMovements = async (
     const currency = "usd";
     const portfolioMovementsService: PortfolioMovementsService =
       container.resolve("portfolioMovementsService");
-    const { portfolioMovements, unmatchedEvents } =
+    let { portfolioMovements, unmatchedEvents } =
       (await portfolioMovementsService.fetchPortfolioMovements({
         chain,
         address,
@@ -50,6 +51,11 @@ export const fetchPortfolioMovements = async (
       };
     if (portfolioMovements.length === 0) {
       return { portfolioMovements: [] };
+    }
+    if (maxDate) {
+      portfolioMovements = portfolioMovements.filter(
+        (movement) => movement.timestamp <= maxDate,
+      );
     }
     const minBlock = portfolioMovements.reduce(
       (curr, next) => Math.min(curr, next.block ?? Number.MAX_SAFE_INTEGER),

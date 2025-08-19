@@ -1,8 +1,8 @@
-import { createDIContainer } from "../../src/server/di-container";
+import { createDIContainer } from "../../../src/server/di-container";
 import { getApiAt, getNativeTokenBalance } from "./get-balances-at";
 import dotenv from "dotenv";
 dotenv.config({ path: __dirname + "/../.env" });
-import { SubscanApi } from "../../src/server/blockchain/substrate/api/subscan.api";
+import { SubscanApi } from "../../../src/server/blockchain/substrate/api/subscan.api";
 
 export interface Portfolio {
   block: number;

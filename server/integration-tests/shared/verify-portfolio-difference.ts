@@ -1,5 +1,5 @@
-import { createDIContainer } from "../src/server/di-container";
-import { SubscanApi } from "../src/server/blockchain/substrate/api/subscan.api";
+import { createDIContainer } from "../../src/server/di-container";
+import { SubscanApi } from "../../src/server/blockchain/substrate/api/subscan.api";
 import { fetchPortfolioMovements } from "./helper/fetch-portfolio-movements";
 import { Wallet } from "./helper/wallet";
 import * as fs from "fs";
@@ -12,7 +12,7 @@ import { createApi, getApiClient } from "./helper/get-balances-at";
 const checkPoolTokens = () => {
   const { portfolioMovements } = JSON.parse(
     fs.readFileSync(
-      `./canary-tests/out-temp/portfolio-movements.json`,
+      `./integration-tests/out-temp/portfolio-movements.json`,
       "utf-8",
     ),
   );
@@ -40,6 +40,7 @@ export const fetchPortfolioChangesExpectedVSActual = async (
   address: string,
   chain: { domain: string; label: string; token: string },
   minDate?: number,
+  maxDate?: number,
   useFees = false,
 ) => {
   createApi(chain.domain);
@@ -52,12 +53,18 @@ export const fetchPortfolioChangesExpectedVSActual = async (
           chain,
           useFees,
           minDate,
+          maxDate,
         );
       default:
-        return await fetchAssetChangesExpectedVSActual(address, chain, minDate);
+        return await fetchAssetChangesExpectedVSActual(
+          address,
+          chain,
+          minDate,
+          maxDate,
+        );
     }
   } finally {
-    getApiClient().disconnect();
+    getApiClient()?.disconnect();
   }
 };
 
@@ -66,15 +73,16 @@ export const fetchTokenChangesExpectedVSActual = async (
   chain: { domain: string; label: string; token: string },
   useFees = true,
   minDate?: number,
+  maxDate?: number,
 ): Promise<{
   results: PortfolioVerificationResult[];
   pool2Change: number;
   pool4Change: number;
 }> => {
   const { portfolioMovements, minBlock, maxBlock, unmatchedEvents } =
-    await fetchPortfolioMovements(address, chain, minDate);
+    await fetchPortfolioMovements(address, chain, minDate, maxDate);
   fs.writeFileSync(
-    `./canary-tests/out-temp/portfolio-movements.json`,
+    `./integration-tests/out-temp/portfolio-movements.json`,
     JSON.stringify(
       { portfolioMovements, unmatchedEvents, minBlock, maxBlock },
       null,
@@ -124,11 +132,12 @@ export const fetchAssetChangesExpectedVSActual = async (
   address: string,
   chain: { domain: string; label: string; token: string },
   minDate?: number,
+  maxDate?: number,
 ): Promise<{ results: PortfolioVerificationResult[] }> => {
   const { portfolioMovements, minBlock, maxBlock, unmatchedEvents } =
-    await fetchPortfolioMovements(address, chain, minDate);
+    await fetchPortfolioMovements(address, chain, minDate, maxDate);
   fs.writeFileSync(
-    `./canary-tests/out-temp/portfolio-movements.json`,
+    `./integration-tests/out-temp/portfolio-movements.json`,
     JSON.stringify(
       { portfolioMovements, unmatchedEvents, minBlock, maxBlock },
       null,
@@ -190,29 +199,4 @@ export const fetchAssetChangesExpectedVSActual = async (
     portfolioMovements,
   );
   return { results: portfolioChanges };
-  /*const results = []
-  for (let token of relevantTokens) {
-    const portfolioList = [
-      ...portfolios.map((p) => ({
-        blockNumber: p.blockNumber,
-        timestamp: p.timestamp,
-        balances: p.balances.filter(
-          (v) => v.asset_unique_id === token.asset_unique_id,
-        ),
-      })),
-    ];
-    
-    portfolios.map((p) => ({
-      timestamp: timestamps[portfolios.indexOf(p)],
-      balances: p.values,
-      blockNumber: blocksToFetch[portfolios.indexOf(p)],
-    })),
-
-    results.push({ asset_unique_id: token.asset_unique_id, symbol: token.symbol, result: analysePortfolioChanges(
-      chain.token,
-      portfolioList,
-      portfolioMovements
-    )});
-  }
-  return results*/
 };

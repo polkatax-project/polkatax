@@ -1,13 +1,13 @@
 import { describe, test, expect } from "@jest/globals";
 import dotenv from "dotenv";
-import { envFile } from "../src/server/env.config";
+import { envFile } from "../../src/server/env.config";
 dotenv.config({ path: envFile });
-import { SpecialEventsToTransfersService } from "../src/server/data-aggregation/services/special-event-processing/special-events-to-transfers.service";
-import { SubscanService } from "../src/server/blockchain/substrate/api/subscan.service";
-import { SubscanApi } from "../src/server/blockchain/substrate/api/subscan.api";
+import { SpecialEventsToTransfersService } from "../../src/server/data-aggregation/services/special-event-processing/special-events-to-transfers.service";
+import { SubscanService } from "../../src/server/blockchain/substrate/api/subscan.service";
+import { SubscanApi } from "../../src/server/blockchain/substrate/api/subscan.api";
 import { verifyEventTransfersAreValid } from "./util/verify-transfer-valid";
-import { TokenFromMultiLocationService } from "../src/server/data-aggregation/services/special-event-processing/token-from-multi-location.service";
-import { EthTokenInfoService } from "../src/server/blockchain/evm/service/eth.token-info.service";
+import { TokenFromMultiLocationService } from "../../src/server/data-aggregation/services/special-event-processing/token-from-multi-location.service";
+import { EthTokenInfoService } from "../../src/server/blockchain/evm/service/eth.token-info.service";
 
 describe("Special event handling", () => {
   let subscanApi: SubscanApi = new SubscanApi();

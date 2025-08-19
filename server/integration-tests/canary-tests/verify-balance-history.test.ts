@@ -1,7 +1,10 @@
 import { afterAll, beforeAll, describe, expect, test } from "@jest/globals";
-import { verifyNativeBalanceHistory } from "./verify-balance-history";
-import { startStubs, stopStubs } from "./helper/fetch-portfolio-movements";
-import { waitForPortToBeFree } from "../e2e-tests/util/wait-for-port-to-be-free";
+import { verifyNativeBalanceHistory } from "../shared/verify-balance-history";
+import {
+  startStubs,
+  stopStubs,
+} from "../shared/helper/fetch-portfolio-movements";
+import { waitForPortToBeFree } from "../shared/helper//wait-for-port-to-be-free";
 
 async function verify(address, chain) {
   const today = new Date();
@@ -15,6 +18,7 @@ async function verify(address, chain) {
     address,
     chainInfo,
     pastDate.getTime(),
+    Date.now(),
   );
   const sumOfDifferences = unexplainedChanges.reduce(
     (curr, next) => (curr += next.deviationFromExpectation),

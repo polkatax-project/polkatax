@@ -1,8 +1,8 @@
-import { createDIContainer } from "../src/server/di-container";
+import { createDIContainer } from "../../src/server/di-container";
 import * as fs from "fs";
-import { SubscanApi } from "../src/server/blockchain/substrate/api/subscan.api";
-import { PortfolioMovement } from "../src/server/data-aggregation/model/portfolio-movement";
-import { Token } from "../src/server/blockchain/substrate/model/token";
+import { SubscanApi } from "../../src/server/blockchain/substrate/api/subscan.api";
+import { PortfolioMovement } from "../../src/server/data-aggregation/model/portfolio-movement";
+import { Token } from "../../src/server/blockchain/substrate/model/token";
 import { fetchPortfolioMovements } from "./helper/fetch-portfolio-movements";
 
 const createDiffSheet = (
@@ -69,14 +69,20 @@ export const verifyNativeBalanceHistory = async (
   address: string,
   chain: { domain: string; label: string; token: string },
   minDate?: number,
+  maxDate?: number,
 ) => {
   const token = await fetchToken(chain.domain);
   const balanceChanges = await getAllBalanceChanges(address, chain.domain);
-  const { portfolioMovements } = await fetchPortfolioMovements(
+  let { portfolioMovements } = await fetchPortfolioMovements(
     address,
     chain,
     minDate,
   );
+  if (maxDate) {
+    portfolioMovements = portfolioMovements.filter(
+      (m) => m.timestamp <= maxDate,
+    );
+  }
   const minBlock = portfolioMovements.reduce(
     (curr, next) => Math.min(curr, next.block ?? Number.MAX_SAFE_INTEGER),
     Number.MAX_SAFE_INTEGER,
@@ -98,18 +104,18 @@ export const verifyNativeBalanceHistory = async (
   if (unexplainedChanges.length > 0) {
     console.log("NOK!");
     fs.writeFileSync(
-      `./canary-tests/out-temp/${address}-unexplainedChanges.json`,
+      `./integration-tests/out-temp/${address}-unexplainedChanges.json`,
       JSON.stringify(unexplainedChanges, null, 2),
     );
     fs.writeFileSync(
-      `./canary-tests/out-temp/${address}-diffSheet.json`,
+      `./integration-tests/out-temp/${address}-diffSheet.json`,
       JSON.stringify(diffSheet, null, 2),
     );
     fs.writeFileSync(
-      `./canary-tests/out-temp/${address}-portfolioMovements.json`,
+      `./integration-tests/out-temp/${address}-portfolioMovements.json`,
       JSON.stringify(portfolioMovements, null, 2),
     );
-    console.log("Output fils were stored under /canary-tests/out-temp/");
+    console.log("Output fils were stored under /integration-tests/out-temp/");
   }
   return unexplainedChanges;
 };
