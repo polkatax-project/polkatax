@@ -31,14 +31,12 @@ describe("DataPlatformLiquidStakingService", () => {
       decimals: 12,
       symbol: "vBNC",
       unique_id: "vBNC-1",
-      price: "2",
     },
     {
       token_id: { VToken2: 0 },
       decimals: 10,
       symbol: "vDOT",
       unique_id: "vDOT-1",
-      price: "4",
     },
   ] as any;
 

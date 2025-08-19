@@ -279,8 +279,6 @@ export class DataPlatformLiquidStakingService {
       extrinsic_index: enrichmentData.extrinsic_index,
       hash: enrichmentData.hash,
       label: "Liquid staking token minted" as const,
-      price: vToken.price ? Number(vToken?.price) : undefined,
-      fiatValue: vToken.price ? amount * Number(vToken.price) : undefined,
     };
   }
 }

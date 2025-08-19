@@ -10,6 +10,5 @@ export interface Asset {
   native?: boolean;
   currency_id?: string; // often just the symbol
   token_id?: string;
-  price?: string;
   multi_location?: MultiLocation;
 }
