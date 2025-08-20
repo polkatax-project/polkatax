@@ -29,7 +29,20 @@ export class ResponseCache {
     if (this.pendingRequests[key]) {
       return firstValueFrom(this.pendingRequests[key]);
     }
+
     this.pendingRequests[key] = new ReplaySubject<any>(1);
+
+    const fromStore = await this.fetchedDataRepository.fetchStoredData<T>(
+      url,
+      method,
+      body,
+    );
+
+    if (fromStore) {
+      this.pendingRequests[key].next(fromStore);
+      delete this.pendingRequests[key];
+      return fromStore;
+    }
 
     try {
       const json = await this.requestHelper.req(url, method, body);
