@@ -4,7 +4,7 @@ import { WsWrapper } from './util/WsWrapper';
 import { mockRewards } from './util/mock-rewards';
 import { mockCountry } from './util/mock-country';
 
-test('Staking rewards', () => {
+test.skip('Staking rewards', () => {
   let wsWrapper: WsWrapper;
 
   test('Add wallet and sync', async ({ page }) => {

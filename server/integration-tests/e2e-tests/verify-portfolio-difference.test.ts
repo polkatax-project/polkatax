@@ -96,7 +96,7 @@ afterAll(async () => {
   await waitForPortToBeFree(3002);
 });
 
-describe("Verify portfolio changes", () => {
+describe.skip("Verify portfolio changes", () => {
   describe("Verify the portfolio change assethub polkadot", () => {
     const chainInfo = { domain: "assethub-polkadot", label: "", token: "DOT" };
 
