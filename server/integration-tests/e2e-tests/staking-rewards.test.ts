@@ -22,7 +22,7 @@ afterAll(async () => {
   await cryptoPriceServer.close();
 });
 
-describe.skip("Staking rewards amounts", () => {
+describe("Staking rewards amounts", () => {
   test("kusama", async () => {
     const { totalAmount } = await fetchStakingRewards(
       "15abVnvSgRJFCqhJuvrYSNL5DscRppcog8cyYaVALLU3LFjB",

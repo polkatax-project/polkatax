@@ -19,7 +19,7 @@ jest.mock("../../logger/logger", () => ({
   },
 }));
 
-describe.only("convertFiatValues", () => {
+describe("convertFiatValues", () => {
   const timestamp = Date.now();
   const fixedDate = formatDate(new Date(timestamp));
 

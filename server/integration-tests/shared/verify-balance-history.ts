@@ -4,6 +4,7 @@ import { SubscanApi } from "../../src/server/blockchain/substrate/api/subscan.ap
 import { PortfolioMovement } from "../../src/server/data-aggregation/model/portfolio-movement";
 import { Token } from "../../src/server/blockchain/substrate/model/token";
 import { fetchPortfolioMovements } from "./helper/fetch-portfolio-movements";
+import { expect } from "@jest/globals";
 
 const createDiffSheet = (
   balances: { block?: number; balance: number; diff?: number }[],
@@ -87,8 +88,13 @@ export const verifyNativeBalanceHistory = async (
     (curr, next) => Math.min(curr, next.block ?? Number.MAX_SAFE_INTEGER),
     Number.MAX_SAFE_INTEGER,
   );
+  const maxBlock = portfolioMovements.reduce(
+    (curr, next) => Math.max(curr, next.block ?? 0),
+    0,
+  );
   const balanceChangesFiltered = balanceChanges
     .filter((b) => b.block >= minBlock)
+    .filter((b) => !maxDate || b.block <= maxBlock)
     .map((b) => {
       return {
         ...b,
@@ -119,3 +125,34 @@ export const verifyNativeBalanceHistory = async (
   }
   return unexplainedChanges;
 };
+
+export async function verifyBalanceHistory(
+  address: string,
+  chain: string,
+  minDate: number,
+  maxDate?: number,
+  maxAllowedTotalDiff = 1,
+  maxAllowedDiffPerBlock = 0.1,
+) {
+  const chainInfo =
+    chain === "polkadot"
+      ? { domain: "polkadot", label: "", token: "DOT" }
+      : { domain: "kusama", label: "", token: "KSM" };
+  const unexplainedChanges = await verifyNativeBalanceHistory(
+    address,
+    chainInfo,
+    minDate,
+    maxDate,
+  );
+  const sumOfDifferences = unexplainedChanges.reduce(
+    (curr, next) => (curr += next.deviationFromExpectation),
+    0,
+  );
+  expect(sumOfDifferences).toBeLessThanOrEqual(maxAllowedTotalDiff);
+
+  const maxDiffPerBlock = unexplainedChanges.reduce(
+    (curr, next) => (curr = Math.max(curr, next.deviationFromExpectation)),
+    0,
+  );
+  expect(maxDiffPerBlock).toBeLessThanOrEqual(maxAllowedDiffPerBlock);
+}

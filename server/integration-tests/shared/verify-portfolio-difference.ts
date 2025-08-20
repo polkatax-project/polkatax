@@ -200,3 +200,36 @@ export const fetchAssetChangesExpectedVSActual = async (
   );
   return { results: portfolioChanges };
 };
+
+export const verifyPortfolioDifference = async (
+  address: string,
+  chainInfo: { domain: string; label: string; token: string },
+  minDate: number,
+  maxDate?: number,
+  options?: {
+    acceptedDeviations?: { symbol: string; perPayment: number; max: number }[];
+    useFees?: boolean;
+  },
+) => {
+  const comparison = await fetchPortfolioChangesExpectedVSActual(
+    address,
+    chainInfo,
+    minDate,
+    maxDate ?? Date.now(),
+    options?.useFees ?? false,
+  );
+  comparison.results.forEach((r) => {
+    const acceptedDeviationsForToken = (options?.acceptedDeviations ?? []).find(
+      (t) => r.symbol.toUpperCase() === t.symbol,
+    ) ?? {
+      perPayment: 0.01,
+      max: 0.5,
+    };
+    if (r.deviationPerPayment > acceptedDeviationsForToken.perPayment) {
+      throw new Error("Deviation too large: " + JSON.stringify(r));
+    }
+    if (r.deviationAbs > acceptedDeviationsForToken.max) {
+      throw new Error("Absolute Deviation too large: " + JSON.stringify(r));
+    }
+  });
+};
