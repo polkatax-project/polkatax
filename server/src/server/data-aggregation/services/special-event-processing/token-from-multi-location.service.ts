@@ -58,7 +58,7 @@ export class TokenFromMultiLocationService {
           return {
             symbol: ethToken.symbol,
             decimals: ethToken.decimals,
-            unique_id: multiLocationToken.address,
+            unique_id: "ethereum/" + multiLocationToken.address,
           };
         }
         return { symbol: undefined, decimals: undefined };

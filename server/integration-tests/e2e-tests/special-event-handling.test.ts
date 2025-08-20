@@ -116,44 +116,6 @@ describe("Special event handling", () => {
     verifyEventTransfersAreValid(transfers);
   }, 120_000);
 
-  test("verify hydration balances Locked data extraction", async () => {
-    const eventsOfInterest = await subscanApi.searchEvents(
-      "hydration",
-      undefined,
-      "balances",
-      "Locked",
-      0,
-      0,
-    );
-    const transfers = await specialEventsToTransfersService.handleEvents(
-      { token: "HDX", domain: "hydration" },
-      eventsOfInterest.list,
-      [],
-      true,
-    );
-    expect(transfers.length).toBe(100);
-    verifyEventTransfersAreValid(transfers);
-  }, 120_000);
-
-  test("verify hydration balances Unlocked data extraction", async () => {
-    const eventsOfInterest = await subscanApi.searchEvents(
-      "hydration",
-      undefined,
-      "balances",
-      "Unlocked",
-      0,
-      0,
-    );
-    const transfers = await specialEventsToTransfersService.handleEvents(
-      { token: "HDX", domain: "hydration" },
-      eventsOfInterest.list,
-      [],
-      true,
-    );
-    expect(transfers.length).toBe(100);
-    verifyEventTransfersAreValid(transfers);
-  }, 120_000);
-
   test("verify coretime broker Purchased data extraction", async () => {
     const eventsOfInterest = await subscanApi.searchEvents(
       "coretime-polkadot",

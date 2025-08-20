@@ -96,46 +96,33 @@ export class XcmTokenResolutionService {
       chain.domain,
     );
     messages.forEach((xcm) => {
+      if (
+        xcm.messageHash ===
+        "0xc4c975ee31ab5f76cdd23180056176c847afb82b6f7c1bfb2ac9d06f3ec806b7"
+      ) {
+        console.log(JSON.stringify(xcm));
+      }
       xcm.transfers
         .filter((t) => t.destChain === chain.domain)
         .forEach((transfer) => {
-          // Match by asset id of another chain
+          const symbol = transfer.symbol;
+
+          // there's a balances deposit and the symbol matches the chain native symbol
+          if (
+            balancesdepositEvents.filter((d) => d.timestamp).length > 0 &&
+            chain.token === symbol
+          ) {
+            transfer.asset_unique_id = symbol;
+            return;
+          }
+
+          // Match by asset unique id of another chain
           const byAssetId = assets.find(
             (t) => t.unique_id === transfer.asset_unique_id,
           );
           if (byAssetId) {
             transfer.symbol = byAssetId.symbol;
             transfer.asset_unique_id = byAssetId.unique_id;
-            return;
-          }
-
-          const symbol = transfer.symbol;
-
-          // Find exactly one matching deposit with same symbol
-          const matchingDeposits = deposits
-            .filter((d) => d.timestamp)
-            .filter((d) => d.symbol === symbol || d.symbol === "xc" + symbol);
-          if (
-            matchingDeposits.length === 1 ||
-            new Set(matchingDeposits.map((d) => d.asset_unique_id)).entries
-              .length === 1
-          ) {
-            transfer.symbol = matchingDeposits[0].symbol;
-            transfer.asset_unique_id = matchingDeposits[0].asset_unique_id;
-            transfer.amount = matchingDeposits[0].amount;
-            return;
-          }
-
-          // Find exactly one deposit with same timestamp
-          const anyDeposit = deposits.filter((d) => d.timestamp);
-          if (
-            anyDeposit.length === 1 ||
-            new Set(matchingDeposits.map((d) => d.asset_unique_id)).entries
-              .length === 1
-          ) {
-            transfer.symbol = anyDeposit[0].symbol;
-            transfer.asset_unique_id = anyDeposit[0].asset_unique_id;
-            transfer.amount = anyDeposit[0].amount;
             return;
           }
 
@@ -147,27 +134,17 @@ export class XcmTokenResolutionService {
             if (bySymbol.length === 1) {
               transfer.symbol = bySymbol[0].symbol;
               transfer.asset_unique_id = bySymbol[0].unique_id;
-              transfer.amount = new BigNumber(transfer.rawAmount)
-                .multipliedBy(
-                  new BigNumber(Math.pow(10, -bySymbol[0].decimals)),
-                )
-                .toNumber();
               return;
             }
           }
 
-          // there's a balances deposit and the symbol matches the chain native symbol
-          if (
-            balancesdepositEvents.filter((d) => d.timestamp).length > 0 &&
-            chain.token === symbol
-          ) {
-            transfer.symbol = symbol;
-            transfer.asset_unique_id = symbol;
-            transfer.amount = new BigNumber(transfer.rawAmount)
-              .multipliedBy(
-                new BigNumber(Math.pow(10, -nativeToken.token_decimals)),
-              )
-              .toNumber();
+          // Find exactly one matching deposit with same symbol
+          const matchingDeposits = deposits
+            .filter((d) => d.timestamp)
+            .filter((d) => d.symbol === symbol || d.symbol === "xc" + symbol);
+          if (matchingDeposits.length === 1) {
+            transfer.symbol = matchingDeposits[0].symbol;
+            transfer.asset_unique_id = matchingDeposits[0].asset_unique_id;
             return;
           }
 

@@ -128,7 +128,8 @@ export class XcmService {
         return {
           messageHash: xcm.message_hash,
           timestamp,
-          block: chain.isRelay ? xcm.block_num : undefined,
+          // xcm.block_num > 0 is indeed needed because occasionally the value is indeed zero.
+          block: chain.isRelay && xcm.block_num > 0 ? xcm.block_num : undefined,
           fee:
             xcm.used_fee && fromChain === data.chainName
               ? Number(xcm.used_fee) / Math.pow(10, token.token_decimals)

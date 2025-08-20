@@ -47,9 +47,7 @@ export async function getNativeTokenBalance(apiAt, address: string) {
   const accountInfo: any = await apiAt.query.system.account(address);
   const json = accountInfo.toJSON();
   const nativeBalance =
-    Number(BigInt(json.data.free)) +
-    Number(BigInt(json.data?.frozen || 0n)) +
-    Number(BigInt(json.data?.reserved ?? 0n));
+    Number(BigInt(json.data.free)) + Number(BigInt(json.data?.reserved ?? 0n));
   return {
     nativeBalance,
     free: Number(BigInt(json.data.free)),

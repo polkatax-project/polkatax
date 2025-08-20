@@ -80,16 +80,6 @@ export const eventConfigs: {
     handler: (e, context) => onHydrationLiquidityRemoved(e, context),
   },
   {
-    chains: ["hydration", "basilisk"],
-    event: "balancesLocked",
-    handler: (e, context) => onBalancesDeposit(e, context),
-  },
-  {
-    chains: ["hydration", "basilisk"],
-    event: "balancesUnlocked",
-    handler: (e, context) => onBalancesWithdraw(e, context),
-  },
-  {
     chains: ["polkadot", "kusama"],
     event: "balancesBurned",
     handler: (e, context) => onBalancesWithdraw(e, context),
@@ -149,16 +139,6 @@ export const eventConfigs: {
       "collectives-kusama",
     ],
     event: "balancesMinted",
-    handler: (e, context) => onBalancesDeposit(e, context),
-  },
-  {
-    chains: ["astar", "mythos", "spiritnet"],
-    event: "balancesThawed",
-    handler: (e, context) => onBalancesWithdraw(e, context),
-  },
-  {
-    chains: ["astar", "mythos", "spiritnet"],
-    event: "balancesFrozen",
     handler: (e, context) => onBalancesDeposit(e, context),
   },
   {

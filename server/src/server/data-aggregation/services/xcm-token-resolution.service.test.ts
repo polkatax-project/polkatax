@@ -34,74 +34,6 @@ describe("XcmTokenResolutionService", () => {
     service = new XcmTokenResolutionService(subscanService);
   });
 
-  it("resolves tokens correctly for matching deposits", async () => {
-    // Arrange
-    const mockAssets: Asset[] = [
-      {
-        asset_id: "100",
-        symbol: "DOT",
-        decimals: 10,
-        unique_id: "DOT-100",
-      } as Asset,
-    ];
-
-    const mockEvents: SubscanEvent[] = [
-      {
-        event_id: "Deposited",
-        module_id: "tokens",
-        timestamp: 12345,
-        event_index: "0x001",
-      },
-    ] as any;
-
-    const mockEventDetails: EventDetails[] = [
-      {
-        timestamp: 12345,
-        module_id: "tokens",
-        original_event_index: "0x001",
-        params: [
-          { name: "currency_id", value: "100" },
-          { name: "amount", value: "10000000000" }, // 1 DOT
-        ],
-      },
-    ] as any;
-
-    const messages: XcmTransfer[] = [
-      {
-        timestamp: 12345,
-        transfers: [
-          {
-            destChain: "moonbeam",
-            rawAmount: "10000000000",
-            symbol: "DOT",
-            asset_unique_id: "",
-          },
-        ],
-      } as any,
-    ];
-
-    subscanService.scanTokens.mockResolvedValue(mockAssets);
-    subscanService.scanAssets.mockResolvedValue([]);
-    subscanService.fetchForeignAssets.mockResolvedValue([]);
-    subscanService.fetchEventDetails.mockResolvedValue(mockEventDetails);
-    (subscanService.fetchNativeToken as jest.Mock<any>).mockResolvedValue({
-      token_decimals: 12,
-    });
-
-    // Act
-    const result = await service.resolveTokens(
-      { domain: "moonbeam", token: "DOT" },
-      messages,
-      mockEvents,
-    );
-
-    // Assert
-    const transfer = result[0].transfers[0];
-    expect(transfer.symbol).toBe("DOT");
-    expect(transfer.asset_unique_id).toBe("DOT-100");
-    expect(transfer.amount).toBe(1); // 10 decimals = 1.0
-  });
-
   it("falls back to native token resolution if no asset match and balance deposit event exists", async () => {
     const messages: XcmTransfer[] = [
       {
@@ -109,7 +41,7 @@ describe("XcmTokenResolutionService", () => {
         transfers: [
           {
             destChain: "moonbeam",
-            rawAmount: "1230000000000",
+            amount: 2,
             symbol: "DOT",
             asset_unique_id: "",
           },
@@ -145,7 +77,7 @@ describe("XcmTokenResolutionService", () => {
     const transfer = result[0].transfers[0];
     expect(transfer.symbol).toBe("DOT");
     expect(transfer.asset_unique_id).toBe("DOT");
-    expect(transfer.amount).toBeCloseTo(1.23);
+    expect(transfer.amount).toBeCloseTo(2);
   });
 
   it("leaves symbol/asset_id undefined if no match is found", async () => {

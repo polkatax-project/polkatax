@@ -61,7 +61,11 @@ describe("TokenFromMultiLocationService", () => {
       "ethereum",
       "0x123",
     );
-    expect(result).toEqual({ symbol: "DAI", decimals: 18, unique_id: "0x123" });
+    expect(result).toEqual({
+      symbol: "DAI",
+      decimals: 18,
+      unique_id: "ethereum/0x123",
+    });
   });
 
   it("should resolve parachain_asset from fetchAssets", async () => {

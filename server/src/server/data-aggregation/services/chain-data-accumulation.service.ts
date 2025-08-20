@@ -300,9 +300,14 @@ export class ChainDataAccumulationService {
       const tx = xcmTransfer.extrinsic_index
         ? indexedTx[xcmTransfer.extrinsic_index]
         : undefined;
+
+      /**
+       * If the xcm has no sender but there's a tx by the same user,
+       * the user's address is set as sender.
+       */
       xcmTransfer.transfers
         .filter((t) => !t.from && t.fromChain === chainName)
-        .filter((t) => !!tx)
+        .filter(() => !!tx)
         .forEach((t) => {
           t.from = convertToCanonicalAddress(tx.from);
           xcmTransfer.timestamp = tx.timestamp;
