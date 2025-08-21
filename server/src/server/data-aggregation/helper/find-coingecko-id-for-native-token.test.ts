@@ -1,18 +1,6 @@
 import { expect, it, jest, describe } from "@jest/globals";
 import { findCoingeckoIdForNativeToken } from "./find-coingecko-id-for-native-token";
 
-// Mocked data
-jest.mock("../../blockchain/evm/constants/evm-chains.config", () => ({
-  evmChainConfigs: {
-    ethereum: {
-      nativeTokenCoingeckoId: "ethereum",
-    },
-    polygon: {
-      nativeTokenCoingeckoId: "matic-network",
-    },
-  },
-}));
-
 jest.mock("../../../../res/substrate-token-to-coingecko-id.json", () => ({
   tokens: [
     { token: "DOT", coingeckoId: "polkadot" },
@@ -28,11 +16,6 @@ jest.mock("../../../../res/gen/subscan-chains.json", () => ({
 }));
 
 describe("findCoingeckoIdForNativeToken", () => {
-  it("should return the coingeckoId for EVM chain", () => {
-    expect(findCoingeckoIdForNativeToken("ethereum")).toBe("ethereum");
-    expect(findCoingeckoIdForNativeToken("polygon")).toBe("matic-network");
-  });
-
   it("should return the coingeckoId for Substrate chain", () => {
     expect(findCoingeckoIdForNativeToken("polkadot")).toBe("polkadot");
     expect(findCoingeckoIdForNativeToken("kusama")).toBe("kusama");

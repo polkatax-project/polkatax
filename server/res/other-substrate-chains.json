@@ -1,6 +1,14 @@
 {
   "chains": [
     {
+      "domain": "spiritnet",
+      "label": "KILT Spiritnet",
+      "token": "KILT",
+      "relay": "polkadot",
+      "paraId": 2086,
+      "tokenDecimals": 18
+    },
+    {
       "domain": "interlay",
       "label": "interlay",
       "token": "INTR",

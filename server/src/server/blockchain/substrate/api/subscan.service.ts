@@ -202,7 +202,7 @@ export class SubscanService {
     minDate: number,
   ): Promise<RawXcmMessage[]> {
     logger.info(
-      `fetchXcmList for ${relayChainName} and address ${address} from ${new Date(minDate).toUTCString()} filtering on para_id ${filter_para_id}.`,
+      `Entry fetchXcmList for ${relayChainName} and address ${address} from ${new Date(minDate).toUTCString()} filtering on para_id ${filter_para_id}.`,
     );
     const result = await this.iterateOverPagesParallel<RawXcmMessage>(
       "xcm",
@@ -275,7 +275,7 @@ export class SubscanService {
     evm?: boolean;
   }): Promise<Transaction[]> {
     logger.info(
-      `fetchAllExtrinsics for ${chainName} and address ${address} from ${new Date(minDate).toUTCString()}. Evm ${evm}`,
+      `Enter fetchAllExtrinsics for ${chainName} and address ${address} from ${new Date(minDate).toUTCString()}. Evm ${evm}`,
     );
     const result = this.filterOnDate(
       await this.iterateOverPagesParallel<Transaction>(
@@ -314,7 +314,7 @@ export class SubscanService {
     evm?: boolean;
   }): Promise<Transfer[]> {
     logger.info(
-      `fetchAllTransfers for ${chainName} and address ${address} starting from ${new Date(minDate).toISOString()}. Evm: ${evm}`,
+      `Enter fetchAllTransfers for ${chainName} and address ${address} starting from ${new Date(minDate).toISOString()}. Evm: ${evm}`,
     );
     const result = await this.iterateOverPagesParallel<
       RawSubstrateTransferDto & RawEvmTransferDto & { timestamp: number }

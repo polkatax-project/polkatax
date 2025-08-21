@@ -410,20 +410,6 @@
       "paraId": 2000
     },
     {
-      "domain": "spiritnet",
-      "label": "KILT Spiritnet",
-      "token": "KILT",
-      "stakingPallets": ["ParachainStaking"],
-      "evmPallet": false,
-      "assetPallet": false,
-      "foreignAssetsPallet": false,
-      "standardStaking": false,
-      "parachainStaking": true,
-      "delegatedStaking": false,
-      "relay": "polkadot",
-      "paraId": 2086
-    },
-    {
       "domain": "integritee",
       "label": "IntegriTEE",
       "token": "TEER",

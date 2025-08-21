@@ -45,18 +45,23 @@ export class SubscanApi {
     retries = 3,
     backOff = [3000, 5000, 8000],
   ): Promise<T> {
-    for (let i = 0; i < retries; i++) {
+    for (let i = 0; i <= retries; i++) {
       try {
         return await query();
       } catch (e) {
-        logger.warn(e);
+        logger.warn(e, "Request failed. Attempt number " + i);
         if (
-          i === retries - 1 ||
+          i >= retries ||
           ((e as HttpError).statusCode !== 429 &&
             (e as HttpError).statusCode !== 500)
         )
           throw e;
-        await new Promise((res) => setTimeout(res, backOff[i]));
+        await new Promise((res) =>
+          setTimeout(() => {
+            logger.info("Retry request");
+            res(true);
+          }, backOff[i]),
+        );
       }
     }
   }

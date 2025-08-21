@@ -11,15 +11,10 @@ export class JobConsumer {
   ) {}
 
   async process(job: Job): Promise<void> {
-    logger.info("JobConsumer: processing job", {
-      reqId: job.reqId,
-      status: job.status,
-      lastModified: job.lastModified,
-      deleted: job.deleted,
-      syncedUntil: job.syncedUntil,
-      syncFromDate: job.syncFromDate,
-      error: job.error,
-    });
+    logger.info(
+      { ...job, error: job.error ? job.error : undefined, data: undefined },
+      "JobConsumer: processing job",
+    );
 
     const chain = subscanChains.chains.find(
       (c) => c.domain.toLowerCase() === job.blockchain.toLowerCase(),
@@ -56,19 +51,24 @@ export class JobConsumer {
         portfolioMovements.push(...previous);
       }
 
-      await this.jobsService.setDone({ values: portfolioMovements }, job);
-      logger.info("JobConsumer: finished processing job", {
-        reqId: job.reqId,
-        status: job.status,
-        lastModified: job.lastModified,
-        deleted: job.deleted,
-        syncedUntil: job.syncedUntil,
-        syncFromDate: job.syncFromDate,
-        error: job.error,
-      });
+      const eightDaysMs = 6 * 24 * 60 * 60 * 1000;
+      job.syncedUntil = Date.now() - eightDaysMs; // "guaranteed" to be synced until 6 days ago, because backend data is not updated daily!
+      await this.jobsService.setDone(
+        { values: portfolioMovements },
+        job,
+        job.syncedUntil,
+      );
+      logger.info(
+        {
+          ...job,
+          error: job.error ? job.error : undefined,
+          data: undefined,
+          status: "done",
+        },
+        "JobConsumer: finished processing job",
+      );
     } catch (err) {
-      logger.error("JobConsumer: error during processing");
-      logger.error(err);
+      logger.error(err, "JobConsumer: error during processing");
       await this.handleError(err, job);
     }
   }
@@ -85,7 +85,7 @@ export class JobConsumer {
         job,
       );
     } catch (nestedError) {
-      logger.error("JobConsumer: failed to set error state", nestedError);
+      logger.error(nestedError, "JobConsumer: failed to set error state: ");
       logger.error("Job details: ", job);
     }
   }

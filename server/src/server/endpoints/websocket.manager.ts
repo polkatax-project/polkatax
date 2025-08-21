@@ -125,13 +125,12 @@ export class WebSocketManager {
 
   wsHandler = (socket: WebSocket): void => {
     socket.on("message", async (raw) => {
-      logger.info("WebSocketManager: received msg: " + raw);
-
       let msg: WebSocketIncomingMessage;
       try {
         msg = JSON.parse(raw.toString());
+        logger.info(msg, "WebSocketManager: received msg.");
       } catch (err) {
-        logger.info("Invalid JSON received", err);
+        logger.info(err, "Invalid JSON received");
         return this.sendError(socket, { code: 400, msg: "Invalid JSON" });
       }
 

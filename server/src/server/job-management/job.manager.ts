@@ -7,13 +7,15 @@ import { AwilixContainer } from "awilix";
 import { isEvmAddress } from "../data-aggregation/helper/is-evm-address";
 import { getBeginningLastYear } from "./get-beginning-last-year";
 import { logger } from "../logger/logger";
+import { JobConsumer } from "./job.consumer";
+import { JobRepository } from "./job.repository";
 
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 
 export class JobManager {
   constructor(
     private jobsService: JobsService,
-    private DIContainer: AwilixContainer,
+    private DIContainer: AwilixContainer
   ) {}
 
   getStakingChains(wallet: string): string[] {
@@ -110,7 +112,11 @@ export class JobManager {
         );
 
         previousWallet = job.wallet;
-        await this.DIContainer.resolve("jobConsumer").process(job);
+        const jobConsumer: JobConsumer =
+          this.DIContainer.resolve("jobConsumer");
+        await jobConsumer.process(job);
+        const allPendingJobs = await this.jobsService.fetchAllPendingJobs();
+        logger.info("Remaining pending jobs:" + allPendingJobs.length);
       } catch (error) {
         logger.error(error);
       }

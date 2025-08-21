@@ -1,5 +1,4 @@
 import { FetchPortfolioMovementsRequest } from "../model/fetch-portfolio-movements.request";
-import { evmChainConfigs } from "../../blockchain/evm/constants/evm-chains.config";
 import { HttpError } from "../../../common/error/HttpError";
 import * as subscanChains from "../../../../res/gen/subscan-chains.json";
 import { logger } from "../../logger/logger";
@@ -75,10 +74,7 @@ export class PortfolioMovementsService {
 
   private validate(request: FetchPortfolioMovementsRequest) {
     let { chain } = request;
-    if (
-      !evmChainConfigs[chain.domain] &&
-      !subscanChains.chains.find((p) => p.domain === chain.domain)
-    ) {
+    if (!subscanChains.chains.find((p) => p.domain === chain.domain)) {
       throw new HttpError(400, "Chain " + chain.domain + " not found");
     }
   }
@@ -179,6 +175,10 @@ export class PortfolioMovementsService {
       `PortfolioMovementsService: Enter fetchPortfolioMovements for ${request.chain.domain} and wallet ${request.address}`,
     );
     this.validate(request);
+
+    logger.info(
+      `PortfolioMovmentService: Fetch all data for ${request.chain.domain} and wallet ${request.address}`,
+    );
     let [
       transfers,
       transactions,
@@ -188,6 +188,9 @@ export class PortfolioMovementsService {
       dataPlatformTransfers,
     ] = await this.fetchData(request);
 
+    logger.info(
+      `PortfolioMovmentService: Transforming data for ${request.chain.domain} and wallet ${request.address}`,
+    );
     const { portfolioMovements, unmatchedEvents } = await this.transform(
       request,
       transfers,
@@ -198,17 +201,26 @@ export class PortfolioMovementsService {
       dataPlatformTransfers,
     );
 
+    logger.info(
+      `PortfolioMovmentService: Adding labels for ${request.chain.domain} and wallet ${request.address}`,
+    );
     this.addLabels(request, portfolioMovements);
 
     const taxableEvents = (portfolioMovements as TaxableEvent[]).concat(
       stakingRewards.aggregatedRewards,
     );
 
+    logger.info(
+      `PortfolioMovmentService: Adding/converting fiat values for ${request.chain.domain} and wallet ${request.address}`,
+    );
     await this.addFiatValuesToTaxableEventsService.addFiatValues(
       request,
       taxableEvents,
     );
 
+    logger.info(
+      `PortfolioMovmentService: Sorting taxable events ${request.chain.domain} and wallet ${request.address}`,
+    );
     const sortedTaxableEvents = taxableEvents.sort(
       (a, b) => -a.timestamp + b.timestamp,
     );

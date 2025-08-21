@@ -18,6 +18,7 @@ const mockJobsService = {
   pendingJobs$: {
     pipe: jest.fn<any>(),
   },
+  fetchAllPendingJobs: jest.fn<any>(),
 };
 
 const mockDIContainer = {
@@ -45,6 +46,7 @@ describe("JobManager.enqueue", () => {
       mockJobsService as unknown as JobsService,
       mockDIContainer as unknown as AwilixContainer,
     );
+    mockJobsService.fetchAllPendingJobs.mockRejectedValue([])
   });
 
   it("should add new jobs if no matching job exists", async () => {

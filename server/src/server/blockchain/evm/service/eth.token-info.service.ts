@@ -71,7 +71,9 @@ export class EthTokenInfoService {
       delete this.pendingRequests[chain + address];
     }
 
-    logger.info(`Fetched and cached token: ${address}`, tokenInfo);
+    logger.info(
+      `Fetched and cached token: ${address}. Symbol: ${tokenInfo.symbol}`,
+    );
     return tokenInfo;
   }
 }

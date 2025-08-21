@@ -131,13 +131,12 @@ describe("JobsService", () => {
       const now = Date.now();
       jest.spyOn(Date, "now").mockReturnValue(now);
 
-      await service.setDone({ result: "ok" }, "job-id" as any);
+      await service.setDone({ result: "ok" }, "job-id" as any, 123);
 
-      const expectedSyncedUntil = now - 6 * 24 * 60 * 60 * 1000;
       expect(jobRepository.setDone).toHaveBeenCalledWith(
         "job-id",
         { result: "ok" },
-        expectedSyncedUntil,
+        123,
       );
     });
   });

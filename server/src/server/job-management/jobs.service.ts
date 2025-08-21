@@ -58,10 +58,8 @@ export class JobsService {
     return jobs.length > 0;
   }
 
-  async setDone(data: any, jobId: JobId) {
-    const eightDaysMs = 6 * 24 * 60 * 60 * 1000;
-    const syncedUntil = Date.now() - eightDaysMs; // "guaranteed" to be synced until 6 days ago, because backend data is not updated daily!
-    this.jobRepository.setDone(jobId, data, syncedUntil);
+  setDone(data: any, jobId: JobId, syncedUntil: number) {
+    return this.jobRepository.setDone(jobId, data, syncedUntil);
   }
 
   setError(error: WsError, jobId: JobId) {
@@ -70,5 +68,9 @@ export class JobsService {
 
   fetchJobs(wallet: string): Promise<Job[]> {
     return this.jobRepository.findJobysByWallet(wallet);
+  }
+
+  fetchAllPendingJobs() {
+    return this.jobRepository.fetchAllPendingJobs()
   }
 }

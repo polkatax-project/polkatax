@@ -76,6 +76,7 @@ describe("JobConsumer", () => {
     expect(jobsService.setDone).toHaveBeenCalledWith(
       { values: [{ timestamp: 2000 }] },
       baseJob,
+      expect.any(Number)
     );
   });
 
@@ -107,6 +108,7 @@ describe("JobConsumer", () => {
         ],
       },
       jobWithPrevious,
+      expect.any(Number)
     );
   });
 
