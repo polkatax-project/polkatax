@@ -34,6 +34,29 @@ const ignoreIncomingXcm = [
   "collectives-kusama",
 ];
 
+export async function awaitAllAndLog<T>(
+  promises: Promise<any>[]
+): Promise<any[]> {
+  let settled = 0;
+  const wrapped = promises.map((p, i) =>
+    p
+      .then((v) => {
+        settled++;
+        logger.info(`[Promise-${i}] resolved (${settled}/${promises.length})`);
+        return v;
+      })
+      .catch((err) => {
+        settled++;
+        logger.error(
+          `[Promise-${i}] rejected (${settled}/${promises.length}):`,
+          err
+        );
+        throw err; 
+      })
+  );
+  return Promise.all(wrapped);
+}
+
 export class PortfolioMovementsService {
   constructor(
     private transactionsService: TransactionsService,
@@ -79,12 +102,12 @@ export class PortfolioMovementsService {
     }
   }
 
-  private fetchData(request: FetchPortfolioMovementsRequest) {
+  private async fetchData(request: FetchPortfolioMovementsRequest) {
     const chainExtendedRequest = {
       ...request,
       chainName: request.chain.domain,
     };
-    return Promise.all([
+    const results = await awaitAllAndLog([
       this.subscanService.fetchAllTransfers(chainExtendedRequest),
       this.transactionsService.fetchTx(chainExtendedRequest),
       this.subscanService.searchAllEvents(chainExtendedRequest),
@@ -98,8 +121,9 @@ export class PortfolioMovementsService {
             request.chain.domain,
             request.minDate,
           )
-        : [],
-    ]);
+        : Promise.resolve([]),
+    ])
+    return results
   }
 
   private async transform(

@@ -69,6 +69,8 @@ export class ResponseCache {
           cacheDurationInHours,
         );
         return null;
+      } else {
+        this.pendingRequests[key].error(error);
       }
       throw error;
     } finally {

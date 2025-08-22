@@ -67,14 +67,20 @@ export class XcmService {
     logger.info(
       `Enter fetchXcmTransfers from ${data.chainName} for address ${data.address}, from ${new Date(data.minDate).toUTCString()}`,
     );
-    const token = await this.subscanService.fetchNativeToken(data.chainName);
     const chain = subscanChains.chains.find((c) => c.domain === data.chainName);
     if ((!chain.relay || !chain.paraId) && !chain.isRelay) {
+      logger.info(
+        `Exit fetchXcmTransfers from ${data.chainName} for address ${data.address} with zero xcm`,
+      );
       return [];
     }
     const relayChain = chain.isRelay ? chain.domain : chain.relay;
     const paraId = chain.paraId;
 
+    const token = await this.subscanService.fetchNativeToken(data.chainName);
+    logger.info(
+      `XCM Service: Fetched native Token`,
+    );
     const rawXcmList = await this.subscanService.fetchXcmList(
       relayChain,
       data.address,
@@ -82,8 +88,7 @@ export class XcmService {
       data.minDate,
     );
 
-    const xcmList = await Promise.all([
-      ...rawXcmList.map(async (xcm) => {
+    const xcmList = await Promise.all(rawXcmList.map(async (xcm) => {
         const from = this.mapAccountIdToAddress(xcm.from_account_id);
         const to = this.mapAccountIdToAddress(xcm.to_account_id);
 
@@ -136,13 +141,12 @@ export class XcmService {
               : 0,
           extrinsic_index,
           transfers: (
-            await Promise.all([
-              ...xcm.assets.map(async (a) => {
+            await Promise.all(xcm.assets.map(async (a) => {
                 const symbol = a?.symbol?.replace(/^xc/, "");
 
                 if (!symbol) {
                   logger.warn(
-                    "Token symbol not found for transfer " +
+                    "Token symbol not found for xcm transfer " +
                       xcm.id +
                       "/" +
                       xcm.message_hash,
@@ -152,7 +156,7 @@ export class XcmService {
 
                 if (!a.decimals && data.chainName === fromChain) {
                   logger.warn(
-                    "Token decimals not found for transfer " +
+                    "Token decimals not found for xcm transfer " +
                       xcm.id +
                       "/" +
                       xcm.message_hash,
@@ -180,18 +184,18 @@ export class XcmService {
                   destChain,
                 };
               }),
-            ])
+            )
           ).filter((t) => !!t),
         };
       }),
-    ]);
+    );
     const filtered = this.filterOnDate(
       xcmList.filter((x) => !!x && x.transfers.length > 0),
       data.minDate,
       data.maxDate,
     );
     logger.info(
-      `Exit Fetching XcmTransfers. Found ${filtered.length} cross-chain messages.`,
+      `Exit fetchXcmTransfers with ${filtered.length} cross-chain messages.`,
     );
     return filtered;
   }

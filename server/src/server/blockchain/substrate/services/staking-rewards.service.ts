@@ -1,7 +1,6 @@
 import { BigNumber } from "bignumber.js";
 import { SubscanService } from "../api/subscan.service";
 import { StakingReward } from "../model/staking-reward";
-import { logger } from "../../../logger/logger";
 import { isEvmAddress } from "../../../data-aggregation/helper/is-evm-address";
 import { getNativeToken } from "../../../data-aggregation/helper/get-native-token";
 
@@ -34,9 +33,6 @@ export class StakingRewardsService {
     minDate: number;
     maxDate?: number;
   }): Promise<StakingReward[]> {
-    logger.info(
-      `Entry fetchStakingRewards for address ${address} and chain ${chainName}`,
-    );
     if (isEvmAddress(address)) {
       address =
         (await this.subscanService.mapToSubstrateAccount(chainName, address)) ||
@@ -73,7 +69,6 @@ export class StakingRewardsService {
       getNativeToken(chainName),
       rewardsSlashes as StakingReward[],
     );
-    logger.info(`Exit fetchStakingRewards with ${filtered.length} elements`);
     return filtered;
   }
 }

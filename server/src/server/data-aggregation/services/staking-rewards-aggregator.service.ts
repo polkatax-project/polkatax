@@ -6,6 +6,7 @@ import { AggregatedStakingReward } from "../model/aggregated-staking-reward";
 import { StakingReward } from "../../blockchain/substrate/model/staking-reward";
 import { DataPlatformStakingService } from "../../data-platform-api/data-platform-staking.service";
 import * as subscanChains from "../../../../res/gen/subscan-chains.json";
+import { logger } from "../../logger/logger";
 
 export class StakingRewardsAggregatorService {
   constructor(
@@ -55,10 +56,16 @@ export class StakingRewardsAggregatorService {
     rawStakingRewards: StakingReward[];
     aggregatedRewards: AggregatedStakingReward[];
   }> {
+    logger.info(
+      `Enter fetchStakingRewards for chain ${stakingRewardsRequest.chain.domain} and account ${stakingRewardsRequest.address}`,
+    );
     const chain = subscanChains.chains.find(
       (c) => c.domain === stakingRewardsRequest.chain.domain,
     );
     if (!chain || (!chain.pseudoStaking && chain.stakingPallets.length === 0)) {
+      logger.info(
+        `Exit fetchStakingRewards with zero rewards`,
+      );
       return { rawStakingRewards: [], aggregatedRewards: [] };
     }
 
@@ -68,27 +75,28 @@ export class StakingRewardsAggregatorService {
       case "hydration":
       case "enjin":
         if (process.env["USE_DATA_PLATFORM_API"] === "true") {
-          return {
+          const data = {
             rawStakingRewards: [],
             aggregatedRewards: await this.fetchStakingRewardsViaPlatformApi(
               stakingRewardsRequest,
             ),
           };
-        } else {
-          return {
-            rawStakingRewards: await this.fetchStakingRewardsViaSubscan(
-              stakingRewardsRequest,
-            ),
-            aggregatedRewards: [],
-          };
+          logger.info(
+            `Exit fetchStakingRewards with ${data.aggregatedRewards.length} aggregated rewards`,
+          );
+          return data
         }
       default:
-        return {
+        const results = {
           rawStakingRewards: await this.fetchStakingRewardsViaSubscan(
             stakingRewardsRequest,
           ),
           aggregatedRewards: [],
         };
+        logger.info(
+          `Exit fetchStakingRewards with ${results.rawStakingRewards.length} single rewards`,
+        );
+        return results
     }
   }
 }
