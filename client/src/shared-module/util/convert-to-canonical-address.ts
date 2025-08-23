@@ -1,5 +1,6 @@
 import { decodeAddress, encodeAddress } from '@polkadot/util-crypto';
 import { isValidSubstrateAddress } from './is-valid-address';
+import { getAddress } from "ethers";
 
 export const convertToCanonicalAddress = (address: string): string => {
   if (isValidSubstrateAddress(address)) {
@@ -12,6 +13,14 @@ export const convertToCanonicalAddress = (address: string): string => {
     return address;
   }
 };
+
+export function isValidEvmAddress(addr: string): boolean {
+  try {
+    return getAddress(addr) === addr;
+  } catch {
+    return false;
+  }
+}
 
 export const isCanonicalSubstrateAddress = (address: string): boolean => {
   if (!isValidSubstrateAddress(address)) {

@@ -1,12 +1,19 @@
 <template>
   <q-page class="q-px-sm q-mx-auto content margin-auto">
     <div class="q-my-md flex justify-center align-center items-center row">
+      <q-btn
+        color="primary"
+        label="Connect Wallet"
+        data-testid="submit"
+        @click="showWalletSelectionDialog = true"
+      />
+      <div class="q-mx-md">OR</div>
       <address-input v-model="store.address" @enter-pressed="startSyncing" />
       <q-btn
         color="primary"
         label="Add"
+        class="q-ml-xs"
         data-testid="submit"
-        class="q-mt-md q-mb-xl"
         @click="startSyncing"
         :disable="isDisabled"
       />
@@ -56,6 +63,11 @@
                 {{ props.row.walletsWithTxFound }}
               </q-badge>
             </q-td>
+            <q-td key="blockchainsEvaluated" :props="props">
+              <q-badge color="purple">
+                {{ props.row.blockchainsEvaluated }} / {{ props.row.chainsTotal }}
+              </q-badge>
+            </q-td>
             <q-td key="currency" :props="props">
               <q-badge color="green">
                 {{ props.row.currency }}
@@ -91,6 +103,7 @@
         <img :src="meme" style="max-width: 40%" />
       </div>
     </div>
+    <wallet-selection v-model:show-dialog="showWalletSelectionDialog"/>
   </q-page>
 </template>
 
@@ -101,8 +114,10 @@ import { computed, onUnmounted, Ref, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useSharedStore } from '../../shared-module/store/shared.store';
 import { isValidAddress } from '../../shared-module/util/is-valid-address';
+import WalletSelection from './wallet-selection/WalletSelection.vue';
 import { useQuasar } from 'quasar';
 import { JobResult } from '../../shared-module/model/job-result';
+
 const $q = useQuasar();
 const store = useSharedStore();
 const router = useRouter();
@@ -113,12 +128,13 @@ const wallets: Ref<
 > = ref(undefined);
 
 const walletAddresses: Ref<string[]> = ref([]);
+const showWalletSelectionDialog = ref(false);
 
-const walletAddressesSub = store.walletsAddresses$.subscribe((addresses) => {
+const walletAddressesSub = store.walletsAddresses$.subscribe((addresses: string[]) => {
   walletAddresses.value = addresses;
 });
 
-const jobsSubscription = store.jobs$.subscribe((jobs) => {
+const jobsSubscription = store.jobs$.subscribe((jobs: JobResult[]) => {
   const r: any[] = [];
   jobs.forEach((j) => {
     const existing = r.find(
@@ -129,13 +145,18 @@ const jobsSubscription = store.jobs$.subscribe((jobs) => {
         wallet: j.wallet,
         currency: j.currency,
         done: j.status === 'done' || j.status === 'error',
-        walletsWithTxFound: j.data?.values?.length > 0 ? 1 : 0,
+        walletsWithTxFound: j.data?.values?.length ?? 0 > 0 ? 1 : 0,
+        blockchainsEvaluated: j.status === 'done' || j.status === 'error' ? 1 : 0,
+        chainsTotal: jobs.filter(j => j.wallet).length
       });
     } else {
       existing.done =
         existing.done && (j.status === 'done' || j.status === 'error');
+      if (j.status === 'done' || j.status === 'error') {
+        existing.blockchainsEvaluated += 1
+      }
       existing.walletsWithTxFound =
-        existing.walletsWithTxFound + (j.data?.values?.length > 0 ? 1 : 0);
+      existing.walletsWithTxFound + (j.data?.values?.length ?? 0  > 0 ? 1 : 0);
     }
   });
   wallets.value = r;
@@ -162,6 +183,7 @@ const columns = ref([
   { name: 'done', label: 'Status', field: 'done', align: 'left' },
   { name: 'wallet', label: 'Wallet', field: 'wallet' },
   { name: 'walletWithTxFound', label: 'Blockchains with transactions found' },
+  { name: 'blockchainsEvaluated', label: 'Blockchains evaluated' },
   { name: 'currency', label: 'Currency' },
   { name: 'delete', label: 'Delete' },
 ]);

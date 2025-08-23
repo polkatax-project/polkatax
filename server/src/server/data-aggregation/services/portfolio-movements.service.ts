@@ -34,7 +34,7 @@ const ignoreIncomingXcm = [
   "collectives-kusama",
 ];
 
-export async function awaitAllAndLog<T>(
+export async function awaitPromisesAndLog<T>(
   promises: Promise<any>[]
 ): Promise<any[]> {
   let settled = 0;
@@ -107,7 +107,7 @@ export class PortfolioMovementsService {
       ...request,
       chainName: request.chain.domain,
     };
-    const results = await awaitAllAndLog([
+    const results = await awaitPromisesAndLog([
       this.subscanService.fetchAllTransfers(chainExtendedRequest),
       this.transactionsService.fetchTx(chainExtendedRequest),
       this.subscanService.searchAllEvents(chainExtendedRequest),

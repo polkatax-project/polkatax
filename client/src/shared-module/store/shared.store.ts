@@ -21,8 +21,15 @@ import { filterOnLastYear } from './helper/filter-on-last-year';
 import { addIsoDate } from './helper/add-iso-date';
 import { convertToCanonicalAddress } from '../util/convert-to-canonical-address';
 import { isValidEvmAddress } from '../util/is-valid-address';
+import { getAddress } from 'ethers';
 
-const jobs$ = new BehaviorSubject<JobResult[]>([]);
+const jobs$: BehaviorSubject<JobResult[]> = new BehaviorSubject<JobResult[]>((JSON.parse(localStorage.getItem('wallets') || '[]') as string[]).map((wallet: string) => ({
+  wallet,
+  blockchain: 'dummy',
+  currency: '',
+  status: 'pending',
+  lastModified: new Date().getTime()
+})));
 const subscanChains$ = from(fetchSubscanChains()).pipe(shareReplay(1));
 const walletsAddresses$ = new BehaviorSubject(
   JSON.parse(localStorage.getItem('wallets') || '[]')
@@ -44,7 +51,7 @@ wsMsgReceived$
       }
       jobs = jobs.filter(
         (j) =>
-          j.blockchain !== newJobResult.blockchain ||
+          (j.blockchain !== newJobResult.blockchain || j.blockchain !== 'dummy') ||
           j.wallet !== newJobResult.wallet
       );
       jobs.push(newJobResult);
@@ -103,28 +110,51 @@ export const useSharedStore = defineStore('shared', {
       localStorage.setItem('currency', newCurrency);
       currency$.next(newCurrency);
     },
-    addWallet(wallet: string) {
-      const wallets = JSON.parse(localStorage.getItem('wallets') || '[]');
-      if (wallets.indexOf(wallet) === -1) {
-        wallets.push(wallet);
-        localStorage.setItem('wallets', JSON.stringify(wallets));
-        walletsAddresses$.next(wallets);
+    addWallets(wallets: string[]) {
+      for (const wallet of wallets) {
+        const wallets = JSON.parse(localStorage.getItem('wallets') || '[]');
+        if (wallets.indexOf(wallet) === -1) {
+          wallets.push(wallet);
+          localStorage.setItem('wallets', JSON.stringify(wallets));
+        }
       }
+      walletsAddresses$.next(wallets);
+    },
+    async syncWallets(addresses: string[]) {
+      const genericAddresses = []
+      const currency = await firstValueFrom(
+        useSharedStore().currency$.pipe(filter((c) => c !== undefined))
+      ) as string
+      for (const address of addresses) {
+        const genericAddress = isValidEvmAddress(address)
+        ? getAddress(address)
+        : convertToCanonicalAddress(address);
+        genericAddresses.push(genericAddress)
+        wsSendMsg({
+          type: 'fetchDataRequest',
+          payload: {
+            wallet: genericAddress,
+            currency: currency
+          },
+        });
+      }
+      this.addWallets(genericAddresses);
+      const jobs = await firstValueFrom(jobs$)
+      const walletsWithoutJobs = addresses.filter(a => !jobs.find(j => j.wallet === a))
+      const dummyJobs = walletsWithoutJobs.map(wallet => {
+        return {
+          wallet,
+          blockchain: 'dummy',
+          currency,
+          status: 'pending',
+          lastModified: new Date().getTime()
+        }
+      })
+      jobs.push(...dummyJobs)
+      jobs$.next(jobs)
     },
     async sync() {
-      const genericAddress = isValidEvmAddress(this.address.trim())
-        ? this.address.trim()
-        : convertToCanonicalAddress(this.address.trim());
-      wsSendMsg({
-        type: 'fetchDataRequest',
-        payload: {
-          wallet: genericAddress,
-          currency: await firstValueFrom(
-            useSharedStore().currency$.pipe(filter((c) => c !== undefined))
-          ),
-        },
-      });
-      this.addWallet(genericAddress);
+      this.syncWallets([this.address.trim()])
     },
     async removeWallet(job: JobResult) {
       const wallets: string[] = JSON.parse(
@@ -147,7 +177,7 @@ export const useSharedStore = defineStore('shared', {
           )
         )
       );
-      const jobs = (await firstValueFrom(this.jobs$)).filter(
+      const jobs = (await firstValueFrom<JobResult[]>(this.jobs$)).filter(
         (j) => j.wallet !== job.wallet || job.currency !== j.currency
       );
       jobs$.next([...jobs]);

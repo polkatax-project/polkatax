@@ -1,12 +1,12 @@
 <template>
-  <div class="q-pt-md q-pb-xl q-px-md row items-center">
+  <div class="row items-center">
     <q-input
       class="address-input"
       filled
       no-error-icon
       :model-value="props.modelValue"
       @update:model-value="onAddressChanged"
-      label="Wallet address"
+      label="Enter Wallet address"
       data-testid="wallet-input"
       @keyup.enter="onEnterPressed"
       aria-describedby="wallet-info-tooltip"

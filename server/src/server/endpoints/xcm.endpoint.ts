@@ -2,6 +2,10 @@ import { FastifyInstance } from "fastify";
 import { AwilixContainer } from "awilix";
 import { SubscanApi } from "../blockchain/substrate/api/subscan.api";
 
+/**
+ * Facade to call subscans xcm endpoint. This is useful node processes that don't have paid key and
+ * activated by the DELEGATE_XCM_REQUESTS_TO env var on the calling node.
+ */
 export const registerXcmEndpoint = (
   fastify: FastifyInstance,
   container: AwilixContainer,

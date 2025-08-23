@@ -28,9 +28,9 @@
 </template>
 <script setup lang="ts">
 import { onBeforeUnmount, Ref, ref } from 'vue';
-import { Currency } from '../../../shared-module/model/currency';
-import { currencyList } from '../../../shared-module/const/currencyList';
-import { useSharedStore } from '../../store/shared.store';
+import { Currency } from '../../../../shared-module/model/currency';
+import { currencyList } from '../../../../shared-module/const/currencyList';
+import { useSharedStore } from '../../../store/shared.store';
 
 const currencies = ref(currencyList);
 

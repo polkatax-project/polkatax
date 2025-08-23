@@ -156,8 +156,8 @@
       <div class="text-h6 text-center" role="alert" aria-live="polite">
         {{
           isSynchronizing
-            ? 'No staking rewards found yet. Synchronization is ongoing.'
-            : 'No staking rewards found.'
+            ? 'No taxable events found yet. Synchronization is ongoing.'
+            : 'No taxable events found.'
         }}
       </div>
     </div>
