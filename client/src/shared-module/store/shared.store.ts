@@ -17,12 +17,24 @@ import { wsMsgReceived$, wsSendMsg } from '../service/ws-connection';
 import { JobResult } from '../model/job-result';
 import { fetchSubscanChains } from '../service/fetch-subscan-chains';
 import { addMetaData, sortJobs } from './helper/job.service';
-import { filterOnLastYear } from './helper/filter-on-last-year';
 import { addIsoDate } from './helper/add-iso-date';
 import { convertToCanonicalAddress } from '../util/convert-to-canonical-address';
 import { isValidEvmAddress } from '../util/is-valid-address';
+import { getAddress } from 'ethers';
+import { FiscalYear } from '../model/fiscal-year';
+import { filterOnFiscalYear } from './helper/filter-on-fiscal-year';
 
-const jobs$ = new BehaviorSubject<JobResult[]>([]);
+const jobs$: BehaviorSubject<JobResult[]> = new BehaviorSubject<JobResult[]>(
+  (JSON.parse(localStorage.getItem('wallets') || '[]') as string[]).map(
+    (wallet: string) => ({
+      wallet,
+      blockchain: 'dummy',
+      currency: '',
+      status: 'pending',
+      lastModified: new Date().getTime(),
+    })
+  )
+);
 const subscanChains$ = from(fetchSubscanChains()).pipe(shareReplay(1));
 const walletsAddresses$ = new BehaviorSubject(
   JSON.parse(localStorage.getItem('wallets') || '[]')
@@ -35,16 +47,22 @@ wsMsgReceived$
   )
   .subscribe(async (payload: JobResult | JobResult[]) => {
     let jobs = await firstValueFrom(jobs$);
+    const fiscalYear = await firstValueFrom(fiscalYear$);
     const list: JobResult[] = Array.isArray(payload) ? payload : [payload];
     for (const newJobResult of list) {
       if (newJobResult.data) {
         newJobResult.data.values = addIsoDate(newJobResult.data.values);
-        filterOnLastYear(newJobResult.data);
-        newJobResult.data = addMetaData(newJobResult, newJobResult.data.values);
+        filterOnFiscalYear(newJobResult.data, fiscalYear);
+        newJobResult.data = addMetaData(
+          newJobResult,
+          newJobResult.data.values,
+          fiscalYear
+        );
       }
       jobs = jobs.filter(
         (j) =>
-          j.blockchain !== newJobResult.blockchain ||
+          (j.blockchain !== newJobResult.blockchain &&
+            j.blockchain !== 'dummy') ||
           j.wallet !== newJobResult.wallet
       );
       jobs.push(newJobResult);
@@ -64,6 +82,38 @@ defer(() => {
 })
   .pipe(take(1))
   .subscribe((currency) => currency$.next(currency));
+
+const fiscalYear$ = new ReplaySubject<FiscalYear>(1);
+currency$
+  .pipe(
+    take(1),
+    map((currency) => {
+      const fiscalYear = localStorage.getItem('fiscalYear');
+      if (fiscalYear) {
+        return fiscalYear as FiscalYear;
+      } else {
+        switch (currency) {
+          case 'USD':
+            return 'Oct 1 - Sep 30' as const;
+          case 'CAD':
+          case 'GBP':
+          case 'INR':
+          case 'JPY':
+          case 'SGD':
+          case 'CNY':
+            return 'Apr 1 - Mar 31' as const;
+          case 'AUD':
+          case 'NZD':
+            return 'Jul 1 - Jun 30' as const;
+          case 'ZAR':
+            return 'Mar 1 - Feb 28/29' as const;
+          default:
+            return 'Jan 1 - Dec 31' as const;
+        }
+      }
+    })
+  )
+  .subscribe((fiscalYear) => fiscalYear$.next(fiscalYear));
 
 combineLatest([
   firstValueFrom(currency$),
@@ -91,6 +141,7 @@ export const useSharedStore = defineStore('shared', {
   state: () => {
     return {
       currency$: currency$.asObservable(),
+      fiscalYear$: fiscalYear$.asObservable(),
       webSocketResponseError$,
       subscanChains$,
       jobs$: jobs$.asObservable(),
@@ -103,28 +154,59 @@ export const useSharedStore = defineStore('shared', {
       localStorage.setItem('currency', newCurrency);
       currency$.next(newCurrency);
     },
-    addWallet(wallet: string) {
-      const wallets = JSON.parse(localStorage.getItem('wallets') || '[]');
-      if (wallets.indexOf(wallet) === -1) {
-        wallets.push(wallet);
-        localStorage.setItem('wallets', JSON.stringify(wallets));
-        walletsAddresses$.next(wallets);
+    selectFiscalYear(fiscalYear: FiscalYear) {
+      localStorage.setItem('fiscalYear', fiscalYear);
+      fiscalYear$.next(fiscalYear);
+    },
+    addWallets(wallets: string[]) {
+      const existingWallets = JSON.parse(
+        localStorage.getItem('wallets') || '[]'
+      );
+      for (const wallet of wallets) {
+        if (existingWallets.indexOf(wallet) === -1) {
+          existingWallets.push(wallet);
+          localStorage.setItem('wallets', JSON.stringify(existingWallets));
+        }
       }
+      walletsAddresses$.next(existingWallets);
+    },
+    async syncWallets(addresses: string[]) {
+      const genericAddresses = [];
+      const currency = (await firstValueFrom(
+        useSharedStore().currency$.pipe(filter((c) => c !== undefined))
+      )) as string;
+      for (const address of addresses) {
+        const genericAddress = isValidEvmAddress(address)
+          ? getAddress(address)
+          : convertToCanonicalAddress(address);
+        genericAddresses.push(genericAddress);
+        wsSendMsg({
+          type: 'fetchDataRequest',
+          payload: {
+            wallet: genericAddress,
+            currency: currency,
+          },
+        });
+      }
+      this.addWallets(genericAddresses);
+      const jobs = await firstValueFrom(jobs$);
+      const walletsWithoutJobs = genericAddresses.filter(
+        (a) => !jobs.find((j) => j.wallet === a)
+      );
+      const dummyJobs = walletsWithoutJobs.map((wallet) => {
+        return {
+          wallet,
+          blockchain: 'dummy',
+          currency,
+          status: 'pending',
+          lastModified: new Date().getTime(),
+        };
+      });
+      jobs.push(...dummyJobs);
+      jobs$.next(jobs);
     },
     async sync() {
-      const genericAddress = isValidEvmAddress(this.address.trim())
-        ? this.address.trim()
-        : convertToCanonicalAddress(this.address.trim());
-      wsSendMsg({
-        type: 'fetchDataRequest',
-        payload: {
-          wallet: genericAddress,
-          currency: await firstValueFrom(
-            useSharedStore().currency$.pipe(filter((c) => c !== undefined))
-          ),
-        },
-      });
-      this.addWallet(genericAddress);
+      this.syncWallets([this.address.trim()]);
     },
     async removeWallet(job: JobResult) {
       const wallets: string[] = JSON.parse(
@@ -147,7 +229,7 @@ export const useSharedStore = defineStore('shared', {
           )
         )
       );
-      const jobs = (await firstValueFrom(this.jobs$)).filter(
+      const jobs = (await firstValueFrom<JobResult[]>(this.jobs$)).filter(
         (j) => j.wallet !== job.wallet || job.currency !== j.currency
       );
       jobs$.next([...jobs]);

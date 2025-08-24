@@ -18,14 +18,6 @@ export class JobManager {
     private DIContainer: AwilixContainer
   ) {}
 
-  getStakingChains(wallet: string): string[] {
-    const isEvm = isEvmAddress(wallet);
-    return subscanChains.chains
-      .filter((c) => c.stakingPallets.length > 0 && !c.pseudoStaking)
-      .filter((c) => !isEvm || c.evmPallet || c.evmAddressSupport)
-      .map((c) => c.domain);
-  }
-
   getChains(wallet: string): string[] {
     const isEvm = isEvmAddress(wallet);
     return subscanChains.chains

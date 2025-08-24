@@ -31,8 +31,17 @@
       </div>
 
       <!-- Right section: Currency dropdown -->
-      <div class="row items-center" style="min-width: 150px">
-        <CurrencyDropdown />
+      <div class="row items-center">
+        <q-btn
+          flat
+          dense
+          round
+          icon="settings"
+          aria-label="Settings"
+          @click="showSettingsModal = !showSettingsModal"
+        ></q-btn>
+
+        <SettingsModal v-model:show-dialog="showSettingsModal" />
       </div>
     </q-toolbar>
     <div class="q-py-sm q-px-md" v-if="showBreadCrumbs">
@@ -42,16 +51,18 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
-import CurrencyDropdown from '../currency-dropdown/CurrencyDropdown.vue';
+import { computed, ref, Ref } from 'vue';
 import BreadCrumbs from '../bread-crumbs/BreadCrumbs.vue';
 import { useRoute } from 'vue-router';
+import SettingsModal from '../settings-modal/SettingsModal.vue';
 
 const route = useRoute();
 
 defineProps({
   showBreadCrumbs: Boolean,
 });
+
+const showSettingsModal: Ref<boolean> = ref(false);
 
 const parentRoute = computed(() => {
   const parent = route.meta.parent;

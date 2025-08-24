@@ -5,4 +5,7 @@ export interface TaxData {
   address: string;
   currency: string;
   values: TaxableEvent[];
+  fromDate: string;
+  toDate: string;
+  fiscalYearIncomplete: boolean;
 }

@@ -3,7 +3,8 @@ import { getAddress } from 'ethers';
 
 export function isValidEvmAddress(addr: string): boolean {
   try {
-    return getAddress(addr) === addr;
+    getAddress(addr);
+    return true;
   } catch {
     return false;
   }

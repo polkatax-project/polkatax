@@ -1,6 +1,8 @@
+import { FiscalYear, fiscalYearToBorders } from '../../model/fiscal-year';
 import { JobResult } from '../../model/job-result';
 import { TaxData } from '../../model/tax-data';
 import { TaxableEvent } from '../../model/taxable-event';
+import { formatDate } from '../../util/date-utils';
 
 export function sortJobs(jobs: JobResult[]) {
   return jobs.sort((a, b) => a.wallet.localeCompare(b.wallet));
@@ -21,13 +23,22 @@ export function addId(events: TaxableEvent[]) {
 
 export function addMetaData(
   job: JobResult,
-  taxableEvents: TaxableEvent[]
+  taxableEvents: TaxableEvent[],
+  fiscalYear: FiscalYear
 ): TaxData {
+  const syncedUntilAsDate = formatDate(new Date(job.syncedUntil!).getTime());
+  const fiscalYearBorders = fiscalYearToBorders(fiscalYear);
   const enriched = {
     values: addId(taxableEvents),
     chain: job.blockchain,
     currency: job.currency,
     address: job.wallet,
+    fromDate: fiscalYearToBorders(fiscalYear).start,
+    toDate:
+      syncedUntilAsDate > fiscalYearBorders.end
+        ? fiscalYearBorders.end
+        : syncedUntilAsDate,
+    fiscalYearIncomplete: syncedUntilAsDate <= fiscalYearBorders.end,
   };
   sortRewards(enriched);
   return enriched;
