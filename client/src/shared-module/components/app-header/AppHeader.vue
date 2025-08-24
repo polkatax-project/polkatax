@@ -33,15 +33,15 @@
       <!-- Right section: Currency dropdown -->
       <div class="row items-center">
         <q-btn
-                  flat
-                  dense
-                  round
-                  icon="settings"
-                  aria-label="Settings"
-                  @click="showSettingsModal = !showSettingsModal"
-                ></q-btn>
-        
-        <SettingsModal v-model:show-dialog="showSettingsModal"/>
+          flat
+          dense
+          round
+          icon="settings"
+          aria-label="Settings"
+          @click="showSettingsModal = !showSettingsModal"
+        ></q-btn>
+
+        <SettingsModal v-model:show-dialog="showSettingsModal" />
       </div>
     </q-toolbar>
     <div class="q-py-sm q-px-md" v-if="showBreadCrumbs">
@@ -62,7 +62,7 @@ defineProps({
   showBreadCrumbs: Boolean,
 });
 
-const showSettingsModal: Ref<boolean> = ref(false)
+const showSettingsModal: Ref<boolean> = ref(false);
 
 const parentRoute = computed(() => {
   const parent = route.meta.parent;

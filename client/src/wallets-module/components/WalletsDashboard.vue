@@ -65,7 +65,10 @@
             </q-td>
             <q-td key="blockchainsEvaluated" :props="props">
               <q-badge color="purple">
-                {{ props.row.blockchainsEvaluated }} / {{ props.row.chainsTotal }}
+                {{ props.row.blockchainsEvaluated }}
+                {{
+                  props.row.chainsTotal > 1 ? '/' + props.row.chainsTotal : ''
+                }}
               </q-badge>
             </q-td>
             <q-td key="currency" :props="props">
@@ -103,7 +106,7 @@
         <img :src="meme" style="max-width: 40%" />
       </div>
     </div>
-    <wallet-selection v-model:show-dialog="showWalletSelectionDialog"/>
+    <wallet-selection v-model:show-dialog="showWalletSelectionDialog" />
   </q-page>
 </template>
 
@@ -130,9 +133,11 @@ const wallets: Ref<
 const walletAddresses: Ref<string[]> = ref([]);
 const showWalletSelectionDialog = ref(false);
 
-const walletAddressesSub = store.walletsAddresses$.subscribe((addresses: string[]) => {
-  walletAddresses.value = addresses;
-});
+const walletAddressesSub = store.walletsAddresses$.subscribe(
+  (addresses: string[]) => {
+    walletAddresses.value = addresses;
+  }
+);
 
 const jobsSubscription = store.jobs$.subscribe((jobs: JobResult[]) => {
   const r: any[] = [];
@@ -146,17 +151,18 @@ const jobsSubscription = store.jobs$.subscribe((jobs: JobResult[]) => {
         currency: j.currency,
         done: j.status === 'done' || j.status === 'error',
         walletsWithTxFound: j.data?.values?.length ?? 0 > 0 ? 1 : 0,
-        blockchainsEvaluated: j.status === 'done' || j.status === 'error' ? 1 : 0,
-        chainsTotal: jobs.filter(j => j.wallet).length
+        blockchainsEvaluated:
+          j.status === 'done' || j.status === 'error' ? 1 : 0,
+        chainsTotal: jobs.filter((job) => job.wallet === j.wallet).length,
       });
     } else {
       existing.done =
         existing.done && (j.status === 'done' || j.status === 'error');
       if (j.status === 'done' || j.status === 'error') {
-        existing.blockchainsEvaluated += 1
+        existing.blockchainsEvaluated += 1;
       }
       existing.walletsWithTxFound =
-      existing.walletsWithTxFound + (j.data?.values?.length ?? 0  > 0 ? 1 : 0);
+        existing.walletsWithTxFound + (j.data?.values?.length ?? 0 > 0 ? 1 : 0);
     }
   });
   wallets.value = r;

@@ -44,7 +44,7 @@
                 <q-tooltip
                   anchor="top middle"
                   self="bottom middle"
-                  aria-label="Error infor tooltip"
+                  aria-label="Error info tooltip"
                   >{{
                     props.row.error?.msg ??
                     'An error occured when fetching data.'
@@ -70,7 +70,20 @@
               {{ getEventCount(props.row) }}
             </q-td>
             <q-td key="timeFrame" :props="props">
-              {{ timeFrame }}
+              {{ getTimeFrame(props.row) }}
+              <q-icon
+                name="info"
+                aria-describedby="fiscal-year-incomplete-warning"
+                v-if="props.row?.data?.fiscalYearIncomplete"
+              >
+                <q-tooltip
+                  anchor="top middle"
+                  self="bottom middle"
+                  aria-label="Error info tooltip"
+                  >The synchronized data does not yet include the entire fiscal
+                  year. Try synchronizing at a later time point.</q-tooltip
+                ></q-icon
+              >
             </q-td>
             <q-td key="lastSynchronized" :props="props">
               {{
@@ -177,7 +190,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import { computed, onUnmounted, Ref, ref } from 'vue';
+import { onUnmounted, Ref, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { JobResult } from '../../shared-module/model/job-result';
 import { useSharedStore } from '../../shared-module/store/shared.store';
@@ -263,14 +276,18 @@ const columns = ref([
   { name: 'currency', label: 'Currency' },
   {
     name: 'taxableEventsCount',
-    label: 'Total taxable events',
+    label: 'Total Taxable Events',
     sortable: true,
     field: (row: JobResult) => getEventCount(row),
   },
-  { name: 'timeFrame', label: 'Time frame' },
-  { name: 'lastSynchronized', label: 'Synchronized on' },
+  { name: 'timeFrame', label: 'Time Frame' },
+  { name: 'lastSynchronized', label: 'Last Synchronized On' },
   { name: 'actions', label: 'Actions' },
 ]);
+
+function getTimeFrame(row: JobResult) {
+  return `${row?.data?.fromDate} - ${row?.data?.toDate}`;
+}
 
 function getLabelForBlockchain(domain: string) {
   return !chains.value
@@ -285,12 +302,6 @@ function showTaxableEvents(row: JobResult) {
 function getEventCount(jobResult: JobResult) {
   return jobResult.data?.values.length;
 }
-
-const timeFrame = computed(() => {
-  return `${new Date().getFullYear() - 1}-01-01 until ${
-    new Date().getFullYear() - 1
-  }-12-31`;
-});
 
 function retry(job: JobResult) {
   store.retry(job);
