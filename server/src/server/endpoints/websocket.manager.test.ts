@@ -19,7 +19,7 @@ jest.mock("../../common/util/is-valid-address", () => ({
   isValidEvmAddress: jest.fn(() => true),
 }));
 
-jest.mock("../../common/util/convert-to-generic-address", () => ({
+jest.mock("../../common/util/convert-to-canonical-address", () => ({
   convertToCanonicalAddress: jest.fn((addr) => addr),
 }));
 

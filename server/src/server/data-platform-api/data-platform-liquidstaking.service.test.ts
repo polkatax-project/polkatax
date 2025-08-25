@@ -8,8 +8,8 @@ jest.mock("../logger/logger", () => ({
   logger: { info: jest.fn(), error: jest.fn() },
 }));
 
-jest.mock("../../common/util/convert-to-generic-address", () => ({
-  convertToGenericAddress: jest.fn().mockReturnValue("genericAddress"),
+jest.mock("../../common/util/convert-to-canonical-address", () => ({
+  convertToCanonicalAddress: jest.fn().mockReturnValue("canonicalAddress"),
 }));
 
 jest.mock("../../common/util/is-valid-address", () => ({

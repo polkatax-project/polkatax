@@ -63,9 +63,7 @@ export class StakingRewardsAggregatorService {
       (c) => c.domain === stakingRewardsRequest.chain.domain,
     );
     if (!chain || (!chain.pseudoStaking && chain.stakingPallets.length === 0)) {
-      logger.info(
-        `Exit fetchStakingRewards with zero rewards`,
-      );
+      logger.info(`Exit fetchStakingRewards with zero rewards`);
       return { rawStakingRewards: [], aggregatedRewards: [] };
     }
 
@@ -84,7 +82,7 @@ export class StakingRewardsAggregatorService {
           logger.info(
             `Exit fetchStakingRewards with ${data.aggregatedRewards.length} aggregated rewards`,
           );
-          return data
+          return data;
         }
       default:
         const results = {
@@ -96,7 +94,7 @@ export class StakingRewardsAggregatorService {
         logger.info(
           `Exit fetchStakingRewards with ${results.rawStakingRewards.length} single rewards`,
         );
-        return results
+        return results;
     }
   }
 }

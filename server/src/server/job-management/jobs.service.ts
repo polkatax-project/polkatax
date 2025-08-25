@@ -71,6 +71,6 @@ export class JobsService {
   }
 
   fetchAllPendingJobs() {
-    return this.jobRepository.fetchAllPendingJobs()
+    return this.jobRepository.fetchAllPendingJobs();
   }
 }

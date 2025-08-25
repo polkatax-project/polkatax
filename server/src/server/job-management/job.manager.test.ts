@@ -46,7 +46,7 @@ describe("JobManager.enqueue", () => {
       mockJobsService as unknown as JobsService,
       mockDIContainer as unknown as AwilixContainer,
     );
-    mockJobsService.fetchAllPendingJobs.mockRejectedValue([])
+    mockJobsService.fetchAllPendingJobs.mockRejectedValue([]);
   });
 
   it("should add new jobs if no matching job exists", async () => {

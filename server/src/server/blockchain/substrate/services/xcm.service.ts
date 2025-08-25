@@ -78,9 +78,7 @@ export class XcmService {
     const paraId = chain.paraId;
 
     const token = await this.subscanService.fetchNativeToken(data.chainName);
-    logger.info(
-      `XCM Service: Fetched native Token`,
-    );
+    logger.info(`XCM Service: Fetched native Token`);
     const rawXcmList = await this.subscanService.fetchXcmList(
       relayChain,
       data.address,
@@ -88,7 +86,8 @@ export class XcmService {
       data.minDate,
     );
 
-    const xcmList = await Promise.all(rawXcmList.map(async (xcm) => {
+    const xcmList = await Promise.all(
+      rawXcmList.map(async (xcm) => {
         const from = this.mapAccountIdToAddress(xcm.from_account_id);
         const to = this.mapAccountIdToAddress(xcm.to_account_id);
 
@@ -141,7 +140,8 @@ export class XcmService {
               : 0,
           extrinsic_index,
           transfers: (
-            await Promise.all(xcm.assets.map(async (a) => {
+            await Promise.all(
+              xcm.assets.map(async (a) => {
                 const symbol = a?.symbol?.replace(/^xc/, "");
 
                 if (!symbol) {

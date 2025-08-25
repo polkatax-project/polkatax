@@ -35,7 +35,7 @@ const ignoreIncomingXcm = [
 ];
 
 export async function awaitPromisesAndLog<T>(
-  promises: Promise<any>[]
+  promises: Promise<any>[],
 ): Promise<any[]> {
   let settled = 0;
   const wrapped = promises.map((p, i) =>
@@ -49,10 +49,10 @@ export async function awaitPromisesAndLog<T>(
         settled++;
         logger.error(
           `[Promise-${i}] rejected (${settled}/${promises.length}):`,
-          err
+          err,
         );
-        throw err; 
-      })
+        throw err;
+      }),
   );
   return Promise.all(wrapped);
 }
@@ -122,8 +122,8 @@ export class PortfolioMovementsService {
             request.minDate,
           )
         : Promise.resolve([]),
-    ])
-    return results
+    ]);
+    return results;
   }
 
   private async transform(

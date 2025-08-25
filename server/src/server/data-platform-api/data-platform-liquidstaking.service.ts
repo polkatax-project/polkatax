@@ -1,7 +1,5 @@
-import { convertToGenericAddress } from "../../common/util/convert-to-generic-address";
 import { logger } from "../logger/logger";
 import { DataPlatformApi } from "./data-platform.api";
-import { isValidEvmAddress } from "../../common/util/is-valid-address";
 import { SubscanService } from "../blockchain/substrate/api/subscan.service";
 import { CurrencyType } from "./model/currency-type";
 import isEqual from "lodash.isequal";
@@ -71,12 +69,9 @@ export class DataPlatformLiquidStakingService {
       `Entry fetchVtokenMintedEvents for ${address} and chain ${chain}`,
     );
     const chainType = chain === "bifrost" ? "POLKADOT" : "KUSAMA";
-    const genericAddress = isValidEvmAddress(address)
-      ? address
-      : convertToGenericAddress(address);
     const mintingEvents =
       await this.dataPlatformApi.fetchLiquidStakingMintedEvents(
-        genericAddress,
+        address,
         minDate,
         maxDate,
       );
@@ -123,12 +118,9 @@ export class DataPlatformLiquidStakingService {
       `Entry fetchVtokenRedeemedEvents for ${address} and chain ${chain}`,
     );
     const chainType = chain === "bifrost" ? "POLKADOT" : "KUSAMA";
-    const genericAddress = isValidEvmAddress(address)
-      ? address
-      : convertToGenericAddress(address);
     const mintingEvents =
       await this.dataPlatformApi.fetchLiquidStakingRedeemedEvents(
-        genericAddress,
+        address,
         minDate,
         maxDate,
       );
@@ -176,12 +168,9 @@ export class DataPlatformLiquidStakingService {
       `Entry fetchLiquidStakingRebondedEvents for ${address} and chain ${chain}`,
     );
     const chainType = chain === "bifrost" ? "POLKADOT" : "KUSAMA";
-    const genericAddress = isValidEvmAddress(address)
-      ? address
-      : convertToGenericAddress(address);
     const mintingEvents =
       await this.dataPlatformApi.fetchLiquidStakingRebondedEvents(
-        genericAddress,
+        address,
         minDate,
         maxDate,
       );

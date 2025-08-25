@@ -26,7 +26,7 @@ export const isCanonicalSubstrateAddress = (address: string): boolean => {
   if (!isValidSubstrateAddress(address)) {
     return false;
   } else {
-    const genericAddress = convertToCanonicalAddress(address);
-    return address === genericAddress;
+    const canonicalAddress = convertToCanonicalAddress(address);
+    return address === canonicalAddress;
   }
 };
