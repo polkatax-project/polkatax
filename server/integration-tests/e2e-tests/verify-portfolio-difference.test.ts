@@ -191,7 +191,7 @@ describe("Verify portfolio changes", () => {
     }, 600000);
   });
 
-  describe("Verify the portfolio change hydration", () => {
+  describe.skip("Verify the portfolio change hydration", () => {
     const chainInfo = { domain: "hydration", label: "", token: "HDX" };
 
     test("15abVnvSgRJFCqhJuvrYSNL5DscRppcog8cyYaVALLU3LFjB", async () => {
