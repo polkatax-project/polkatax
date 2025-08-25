@@ -1,148 +1,27 @@
 import { SubscanApi } from "../../src/server/blockchain/substrate/api/subscan.api";
 import { createDIContainer } from "../../src/server/di-container";
 import { fetchPortfolioMovements } from "../shared/helper/fetch-portfolio-movements";
-import * as fs from "fs";
-import { Wallet } from "../shared/helper/wallet";
-import { analysePortfolioChanges } from "../shared/helper/analyze-portfolio-changes";
 import * as subscanChains from "../../res/gen/subscan-chains.json";
 import {
   startStubs,
   stopStubs,
 } from "../shared/helper/fetch-portfolio-movements";
-import { createApi, getApiClient } from "../shared/helper/get-balances-at";
-
-const zoomIntoErrorAssetsChange = async (
-  address: string,
-  chain: { domain: string; label: string; token: string },
-  tokenOfInterest: string,
-  interval?: { startBlock: number; endBlock: number },
-  cachedData?: any,
-  tolerance?: number,
-) => {
-  const { portfolioMovements, minBlock, maxBlock, unmatchedEvents } =
-    cachedData?.portfolioMovements ??
-    (await fetchPortfolioMovements(address, chain));
-  const subscanApi: SubscanApi = createDIContainer().resolve("subscanApi");
-  const accountTokens =
-    cachedData?.accountTokens ??
-    (await subscanApi.fetchAccountTokens(chain.domain, address));
-  const mergedPortfolio = [
-    ...(accountTokens.builtin ?? []),
-    ...(accountTokens.native ?? []),
-    ...(accountTokens.assets ?? []),
-  ];
-  const relevantToken = mergedPortfolio
-    .filter((b) => b.symbol === tokenOfInterest)
-    .map((b) => ({
-      asset_unique_id: b.unique_id,
-      symbol: b.symbol,
-      decimals: b.decimals,
-      asset_id: Number(b.asset_id),
-    }))[0];
-
-  const blocks = interval
-    ? [interval.startBlock, interval.endBlock]
-    : [minBlock, maxBlock];
-  const portfolios: {
-    timestamp: number;
-    blockNumber?: number;
-    balances: { asset_unique_id: string; symbol: string; balance: number }[];
-  }[] = [];
-
-  const timestamps = [];
-  const blocksToFetch = [
-    blocks[0],
-    Math.floor((blocks[1] - blocks[0]) / 2) + blocks[0],
-    blocks[1],
-  ];
-
-  await createApi(chain.domain);
-  for (let blockNumber of blocksToFetch) {
-    const block = await subscanApi.fetchBlock(chain.domain, blockNumber);
-    timestamps.push(block.timestamp);
-    const cachedPortfolio = cachedData?.portfolios?.find(
-      (p) => p.blockNumber === blockNumber,
-    );
-    const balances =
-      cachedPortfolio?.balances ??
-      (
-        await new Wallet().getAssetBalances(
-          chain.domain,
-          chain.token,
-          address,
-          blockNumber,
-          [relevantToken],
-        )
-      ).values;
-    portfolios.push({
-      timestamp: block.timestamp,
-      balances,
-      blockNumber,
-    });
-  }
-  const portfolioList = [
-    ...portfolios.map((p) => ({
-      blockNumber: p.blockNumber,
-      timestamp: p.timestamp,
-      balances: p.balances.filter(
-        (v) => v.asset_unique_id === relevantToken.asset_unique_id,
-      ),
-    })),
-  ];
-  const badIntervals = analysePortfolioChanges(
-    chain.token,
-    portfolioList,
-    portfolioMovements,
-  ).filter((r) => r.deviationAbs > tolerance);
-  if (badIntervals.length === 0) {
-    console.log("No issues found.");
-    return;
-  }
-  const max = Math.max(...badIntervals.map((i) => i.deviationAbs));
-  const intervalOfChoice = badIntervals.find((i) => i.deviationAbs === max);
-  if (intervalOfChoice.endBlock - intervalOfChoice.startBlock > 1) {
-    await zoomIntoErrorAssetsChange(
-      address,
-      chain,
-      tokenOfInterest,
-      intervalOfChoice,
-      {
-        portfolios,
-        portfolioMovements: {
-          portfolioMovements,
-          minBlock,
-          maxBlock,
-          unmatchedEvents,
-        },
-        accountTokens,
-      },
-      tolerance,
-    );
-  } else {
-    const block1 = await subscanApi.fetchBlock(
-      chain.domain,
-      interval.startBlock,
-    );
-    const block2 = await subscanApi.fetchBlock(chain.domain, interval.endBlock);
-    console.log("from " + block1.timestamp + " to " + block2.timestamp);
-    console.log("Finished : " + JSON.stringify(intervalOfChoice));
-  }
-};
+import { getApiClient } from "../shared/helper/get-balances-at";
+import { PortfolioChangeValidationService } from "../../src/server/data-aggregation/services/portfolio-change-validation.service";
 
 const zoomIntoErrorTokensChange = async (
   address: string,
   chain: { domain: string; label: string; token: string },
-  tokenUniqueId: string,
   tokenSymbol: string,
-  tolerance = 0.01,
-  withFees = true,
+  tokenUniqueId?: string,
   interval?: { startBlock: number; endBlock: number },
   cachedData?: any,
 ) => {
   const { portfolioMovements, minBlock, maxBlock, unmatchedEvents } =
     cachedData?.portfolioMovements ??
     (await fetchPortfolioMovements(address, chain));
-  const subscanApi: SubscanApi = createDIContainer().resolve("subscanApi");
+  const container = createDIContainer();
+  const subscanApi: SubscanApi = container.resolve("subscanApi");
 
   const blocks = interval
     ? [interval.startBlock, interval.endBlock]
@@ -157,43 +36,55 @@ const zoomIntoErrorTokensChange = async (
     const block = await subscanApi.fetchBlock(chain.domain, blockNum);
     timestamps.push(block.timestamp);
   }
-  await createApi(chain.domain);
-  const portfolios = await new Wallet().fetchTokenBalances(
-    chain.domain,
-    chain.token,
-    address,
-    blocksToFetch,
+
+  const portfolioChangeValidationService: PortfolioChangeValidationService =
+    container.resolve("portfolioChangeValidationService");
+
+  const portfolioMovementsFirstHalf = portfolioMovements.filter(
+    (p) => p.timestamp >= timestamps[0] && p.timestamp <= timestamps[1],
   );
-  const badIntervals = analysePortfolioChanges(
-    withFees ? chain.token : "",
-    portfolios.map((p) => ({
-      timestamp: timestamps[portfolios.indexOf(p)],
-      balances: [
-        p.values.find((b) => b.asset_unique_id === tokenUniqueId) ?? {
-          asset_unique_id: tokenUniqueId,
-          symbol: tokenSymbol,
-          balance: 0,
-        },
-      ],
-      blockNumber: blocksToFetch[portfolios.indexOf(p)],
-    })),
-    portfolioMovements,
-  ).filter((r) => r.deviationPerPayment > tolerance);
-  if (badIntervals.length === 0) {
-    console.log("No issues found.");
-    return;
-  }
-  const max = Math.max(...badIntervals.map((i) => i.deviationAbs));
-  const intervalOfChoice = badIntervals.find((i) => i.deviationAbs === max);
-  if (intervalOfChoice.endBlock - intervalOfChoice.startBlock > 1) {
-    zoomIntoErrorTokensChange(
+  const portfolioMovementsSecondHalf = portfolioMovements.filter(
+    (p) => p.timestamp >= timestamps[1] && p.timestamp <= timestamps[2],
+  );
+  const deviationsFirstHalf = (
+    await portfolioChangeValidationService.validate(
+      chain,
+      address,
+      portfolioMovementsFirstHalf,
+    )
+  ).find(
+    (d) =>
+      d.unique_id === tokenUniqueId ||
+      (!tokenUniqueId && d.symbol === tokenSymbol),
+  ) ?? { deviationPerPayment: 0 };
+  const deviationsSecondHalf = (
+    await portfolioChangeValidationService.validate(
+      chain,
+      address,
+      portfolioMovementsSecondHalf,
+    )
+  ).find(
+    (d) =>
+      d.unique_id === tokenUniqueId ||
+      (!tokenUniqueId && d.symbol === tokenSymbol),
+  ) ?? { deviationPerPayment: 0 };
+
+  const intervalNo =
+    deviationsFirstHalf.deviationPerPayment >
+    deviationsSecondHalf.deviationPerPayment
+      ? 0
+      : 1;
+  const nextInterval = {
+    startBlock: blocksToFetch[intervalNo],
+    endBlock: blocksToFetch[intervalNo + 1],
+  };
+  if (nextInterval.endBlock - nextInterval.startBlock > 1) {
+    await zoomIntoErrorTokensChange(
       address,
       chain,
-      tokenUniqueId,
       tokenSymbol,
-      tolerance,
-      withFees,
-      intervalOfChoice,
+      tokenUniqueId,
+      nextInterval,
       {
         portfolioMovements: {
           portfolioMovements,
@@ -209,117 +100,25 @@ const zoomIntoErrorTokensChange = async (
       interval.startBlock,
     );
     const block2 = await subscanApi.fetchBlock(chain.domain, interval.endBlock);
-    const startPortfolio = portfolios.find((p) => p.block === block1.block_num);
-    const endPortfolio = portfolios.find((p) => p.block === block2.block_num);
     console.log("=======");
     console.log(
       "Block " +
         block1.block_num +
         "/" +
         block1.timestamp +
-        " : " +
-        JSON.stringify(startPortfolio),
-    );
-    console.log("=======");
-    console.log(
-      "Block " +
+        " -> " +
         block2.block_num +
         "/" +
         block2.timestamp +
         " : " +
-        JSON.stringify(endPortfolio),
+        JSON.stringify(
+          intervalNo === 0 ? deviationsFirstHalf : deviationsSecondHalf,
+          null,
+          2,
+        ),
     );
-    console.log("=======");
-    console.log("finished : " + JSON.stringify(intervalOfChoice));
+    console.log("finished");
   }
-};
-
-const zoomIntoErrorTokens = async (
-  address: string,
-  chainInfo: { domain: string; label: string; token: string },
-  tokenUniqueId: string,
-  tokenSymbol: string,
-  tolerance = 0.5,
-) => {
-  const { portfolioMovements, unmatchedEvents, minBlock, maxBlock } =
-    fs.existsSync(`./integration-tests/out-temp/portfolio-movements.json`)
-      ? JSON.parse(
-          fs.readFileSync(
-            `./integration-tests/out-temp/portfolio-movements.json`,
-            "utf-8",
-          ),
-        )
-      : await fetchPortfolioMovements(address, chainInfo);
-  if (!fs.existsSync(`./integration-tests/out-temp/portfolio-movements.json`)) {
-    fs.writeFileSync(
-      `./integration-tests/out-temp/portfolio-movements.json`,
-      JSON.stringify(
-        { portfolioMovements, unmatchedEvents, minBlock, maxBlock },
-        null,
-        2,
-      ),
-    );
-  }
-  await zoomIntoErrorTokensChange(
-    address,
-    chainInfo,
-    tokenUniqueId,
-    tokenSymbol,
-    tolerance,
-    true,
-    undefined,
-    {
-      portfolioMovements: {
-        portfolioMovements,
-        unmatchedEvents,
-        minBlock,
-        maxBlock,
-      },
-    },
-  );
-};
-// zoomIntoErrorTokens("15GMzoTZjgj1957aE7NPVUdZpdYfgntM5ryFobHLJWVwp4VP", { domain: 'hydration', label: '', token: 'HDX' }, 'asset_registry/e4f2064efd114c35ce6939ef98789d88256e4ccf', 'MYTH', 0)
-
-const zoomIntoErrorAssets = async (
-  address: string,
-  chainInfo: any,
-  token: string,
-  tolerance = 0.1,
-) => {
-  const { portfolioMovements, unmatchedEvents, minBlock, maxBlock } =
-    fs.existsSync(`./integration-tests/out-temp/portfolio-movements.json`)
-      ? JSON.parse(
-          fs.readFileSync(
-            `./integration-tests/out-temp/portfolio-movements.json`,
-            "utf-8",
-          ),
-        )
-      : await fetchPortfolioMovements(address, chainInfo);
-  if (!fs.existsSync(`./integration-tests/out-temp/portfolio-movements.json`)) {
-    fs.writeFileSync(
-      `./integration-tests/out-temp/portfolio-movements.json`,
-      JSON.stringify(
-        { portfolioMovements, unmatchedEvents, minBlock, maxBlock },
-        null,
-        2,
-      ),
-    );
-  }
-  await zoomIntoErrorAssetsChange(
-    address,
-    chainInfo,
-    token,
-    undefined,
-    {
-      portfolioMovements: {
-        portfolioMovements,
-        unmatchedEvents,
-        minBlock,
-        maxBlock,
-      },
-    },
-    tolerance,
-  );
 };
 
 const findLargestPortfolioError = async () => {
@@ -338,25 +137,12 @@ const findLargestPortfolioError = async () => {
       (t) => t.domain === chain,
     ).token;
 
-    switch (chain) {
-      case "hydration":
-      case "bifrost":
-        await zoomIntoErrorTokens(
-          wallet,
-          { domain: chain, label: "", token: nativeToken },
-          tokenId,
-          tokenSymbol,
-          0,
-        );
-        break;
-      default:
-        await zoomIntoErrorAssets(
-          wallet,
-          { domain: chain, label: "", token: nativeToken },
-          tokenSymbol,
-          0,
-        );
-    }
+    await zoomIntoErrorTokensChange(
+      wallet,
+      { domain: chain, label: "", token: nativeToken },
+      tokenSymbol,
+      tokenId,
+    );
   } finally {
     await stopStubs();
     getApiClient()?.disconnect();

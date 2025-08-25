@@ -146,12 +146,18 @@ export class PortfolioDifferenceService {
     await polkadotApi.disconnect();
 
     return tokens.map((t) => {
-      const valueAtMinBlock = portfolioAtMinBlock.find(
-        (p) => p.asset_unique_id === t.unique_id,
-      )?.balance;
-      const vlaueAtMaxBlock = portfolioAtMaxBlock.find(
-        (p) => p.asset_unique_id === t.unique_id,
-      )?.balance;
+      const valueAtMinBlock =
+        portfolioAtMinBlock.find(
+          (p) =>
+            p.asset_unique_id === t.unique_id ||
+            p.asset_unique_id === t.asset_id,
+        )?.balance ?? 0;
+      const vlaueAtMaxBlock =
+        portfolioAtMaxBlock.find(
+          (p) =>
+            p.asset_unique_id === t.unique_id ||
+            p.asset_unique_id === t.asset_id,
+        )?.balance ?? 0;
       return {
         ...t,
         diff: vlaueAtMaxBlock - valueAtMinBlock,

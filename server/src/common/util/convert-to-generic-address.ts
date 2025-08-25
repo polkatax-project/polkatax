@@ -21,4 +21,3 @@ export const convertToGenericAddress = (address: string): string => {
     return address;
   }
 };
-
