@@ -16,7 +16,7 @@
     >
       <template
         v-if="
-          isValidAddress(props.modelValue) && !isEvmAddress && !isGenericAddress
+          isValidAddress(props.modelValue) && !isEvmAddress && !isCanonicalAddress
         "
         v-slot:hint
       >
@@ -69,7 +69,7 @@ function validateAddress(adr: string) {
   return isValidAddress(adr.trim());
 }
 
-const isGenericAddress = computed(() => {
+const isCanonicalAddress = computed(() => {
   return isCanonicalSubstrateAddress(props.modelValue.trim());
 });
 

@@ -171,26 +171,26 @@ export const useSharedStore = defineStore('shared', {
       walletsAddresses$.next(existingWallets);
     },
     async syncWallets(addresses: string[]) {
-      const genericAddresses = [];
+      const canonicaAddresses = [];
       const currency = (await firstValueFrom(
         useSharedStore().currency$.pipe(filter((c) => c !== undefined))
       )) as string;
       for (const address of addresses) {
-        const genericAddress = isValidEvmAddress(address)
+        const canonicaAddress = isValidEvmAddress(address)
           ? getAddress(address)
           : convertToCanonicalAddress(address);
-        genericAddresses.push(genericAddress);
+        canonicaAddresses.push(canonicaAddress);
         wsSendMsg({
           type: 'fetchDataRequest',
           payload: {
-            wallet: genericAddress,
+            wallet: canonicaAddress,
             currency: currency,
           },
         });
       }
-      this.addWallets(genericAddresses);
+      this.addWallets(canonicaAddresses);
       const jobs = await firstValueFrom(jobs$);
-      const walletsWithoutJobs = genericAddresses.filter(
+      const walletsWithoutJobs = canonicaAddresses.filter(
         (a) => !jobs.find((j) => j.wallet === a)
       );
       const dummyJobs = walletsWithoutJobs.map((wallet) => {

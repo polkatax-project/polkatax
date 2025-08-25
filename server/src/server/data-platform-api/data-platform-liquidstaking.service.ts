@@ -1,7 +1,5 @@
-import { convertToGenericAddress } from "../../common/util/convert-to-generic-address";
 import { logger } from "../logger/logger";
 import { DataPlatformApi } from "./data-platform.api";
-import { isValidEvmAddress } from "../../common/util/is-valid-address";
 import { SubscanService } from "../blockchain/substrate/api/subscan.service";
 import { CurrencyType } from "./model/currency-type";
 import isEqual from "lodash.isequal";
@@ -71,12 +69,9 @@ export class DataPlatformLiquidStakingService {
       `Entry fetchVtokenMintedEvents for ${address} and chain ${chain}`,
     );
     const chainType = chain === "bifrost" ? "POLKADOT" : "KUSAMA";
-    const genericAddress = isValidEvmAddress(address)
-      ? address
-      : convertToGenericAddress(address);
     const mintingEvents =
       await this.dataPlatformApi.fetchLiquidStakingMintedEvents(
-        genericAddress,
+        address,
         minDate,
         maxDate,
       );
@@ -85,10 +80,6 @@ export class DataPlatformLiquidStakingService {
         ?.liquidStakingResults ?? [];
 
     const tokens = await this.subscanService.scanTokens(chain);
-    const forEnrichment = await this.fetchDataToEnrich(
-      chain,
-      eventsForChain.map((e) => e.eventId),
-    );
     const transfers = eventsForChain.map((e, idx) => {
       const vToken = this.determineVToken(
         e.currencyType,
@@ -101,7 +92,7 @@ export class DataPlatformLiquidStakingService {
         );
       }
       return {
-        ...this.constructGenericTransferInfo(e, vToken, forEnrichment[idx]),
+        ...this.constructGenericTransferInfo(e, vToken),
         from: "",
         to: address,
         label: "Liquid staking token minted" as const,
@@ -123,12 +114,9 @@ export class DataPlatformLiquidStakingService {
       `Entry fetchVtokenRedeemedEvents for ${address} and chain ${chain}`,
     );
     const chainType = chain === "bifrost" ? "POLKADOT" : "KUSAMA";
-    const genericAddress = isValidEvmAddress(address)
-      ? address
-      : convertToGenericAddress(address);
     const mintingEvents =
       await this.dataPlatformApi.fetchLiquidStakingRedeemedEvents(
-        genericAddress,
+        address,
         minDate,
         maxDate,
       );
@@ -137,10 +125,6 @@ export class DataPlatformLiquidStakingService {
         ?.liquidStakingResults ?? [];
 
     const tokens = await this.subscanService.scanTokens(chain);
-    const forEnrichment = await this.fetchDataToEnrich(
-      chain,
-      eventsForChain.map((e) => e.eventId),
-    );
     const transfers = eventsForChain.map((e, idx) => {
       const vToken = this.determineVToken(
         e.currencyType,
@@ -153,7 +137,7 @@ export class DataPlatformLiquidStakingService {
         );
       }
       return {
-        ...this.constructGenericTransferInfo(e, vToken, forEnrichment[idx]),
+        ...this.constructGenericTransferInfo(e, vToken),
         from: address,
         to: "",
         label: "Liquid staking token redeemed" as const,
@@ -176,12 +160,9 @@ export class DataPlatformLiquidStakingService {
       `Entry fetchLiquidStakingRebondedEvents for ${address} and chain ${chain}`,
     );
     const chainType = chain === "bifrost" ? "POLKADOT" : "KUSAMA";
-    const genericAddress = isValidEvmAddress(address)
-      ? address
-      : convertToGenericAddress(address);
     const mintingEvents =
       await this.dataPlatformApi.fetchLiquidStakingRebondedEvents(
-        genericAddress,
+        address,
         minDate,
         maxDate,
       );
@@ -190,10 +171,6 @@ export class DataPlatformLiquidStakingService {
         ?.liquidStakingResults ?? [];
 
     const tokens = await this.subscanService.scanTokens(chain);
-    const forEnrichment = await this.fetchDataToEnrich(
-      chain,
-      eventsForChain.map((e) => e.eventId),
-    );
     const transfers = eventsForChain.map((e, idx) => {
       const vToken = this.determineVToken(
         e.currencyType,
@@ -206,7 +183,7 @@ export class DataPlatformLiquidStakingService {
         );
       }
       return {
-        ...this.constructGenericTransferInfo(e, vToken, forEnrichment[idx]),
+        ...this.constructGenericTransferInfo(e, vToken),
         from: "",
         to: address,
         label: "Liquid staking token minted" as const,
@@ -224,7 +201,16 @@ export class DataPlatformLiquidStakingService {
     tokens: Asset[],
   ): Asset {
     let token: Asset;
-    const combinedTokenId = { [currencyType]: currencyValue };
+    function parseKind(jsonString) {
+      if (typeof jsonString === "string") {
+        const match = jsonString.match(/"__kind"\s*:\s*"([^"]+)"/);
+        if (match) {
+          return match[1]; // The captured value (e.g. "BNC")
+        }
+      }
+      return jsonString; // No match → return original string
+    }
+    const combinedTokenId = { [currencyType]: parseKind(currencyValue) };
     if (isEqual(combinedTokenId, { Native: "BNC" })) {
       token = tokens.find((t) => isEqual(t.token_id, { VToken: "BNC" }));
     } else {
@@ -237,24 +223,9 @@ export class DataPlatformLiquidStakingService {
     return token;
   }
 
-  private toSubscanEventIndex(eventId: string) {
-    const parts = eventId.split("-");
+  private toSubscanExtrinsixIndex(extrinsicIndex: string) {
+    const parts = extrinsicIndex.split("-");
     return String(Number(parts[0])) + "-" + String(Number(parts[2]));
-  }
-
-  private async fetchDataToEnrich(
-    chain: string,
-    event_ids: string[],
-  ): Promise<{ extrinsic_index: string; hash: string }[]> {
-    const events = await this.subscanService.fetchEventDetails(
-      chain,
-      undefined,
-      event_ids.map((id) => this.toSubscanEventIndex(id)),
-    );
-    return events.map((e) => ({
-      extrinsic_index: e.extrinsic_index,
-      hash: e.extrinsic_hash,
-    }));
   }
 
   private constructGenericTransferInfo(
@@ -263,9 +234,9 @@ export class DataPlatformLiquidStakingService {
       timestamp: string;
       vestedAmount?: number;
       vestedCurrencyAmount?: number;
+      extrinsicId: string;
     },
     vToken: Asset,
-    enrichmentData: { extrinsic_index: string; hash: string },
   ) {
     const amount =
       Number(e.vestedAmount ?? e.vestedCurrencyAmount) *
@@ -276,8 +247,7 @@ export class DataPlatformLiquidStakingService {
       amount,
       block: Number(e.eventId.split("-")[0]),
       timestamp: new Date(e.timestamp).getTime(),
-      extrinsic_index: enrichmentData.extrinsic_index,
-      hash: enrichmentData.hash,
+      extrinsic_index: this.toSubscanExtrinsixIndex(e.extrinsicId),
       label: "Liquid staking token minted" as const,
     };
   }

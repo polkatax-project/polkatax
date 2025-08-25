@@ -9,7 +9,7 @@ import {
 } from "./incoming-message-schema";
 import { JobRepository } from "../job-management/job.repository";
 import { JobId } from "../../model/job";
-import { convertToCanonicalAddress } from "../../common/util/convert-to-generic-address";
+import { convertToCanonicalAddress } from "../../common/util/convert-to-canonical-address";
 import { isValidEvmAddress } from "../../common/util/is-valid-address";
 
 interface Subscription {

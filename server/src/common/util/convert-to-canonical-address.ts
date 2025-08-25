@@ -12,12 +12,3 @@ export const convertToCanonicalAddress = (address: string): string => {
     return address;
   }
 };
-
-export const convertToGenericAddress = (address: string): string => {
-  if (isValidSubstrateAddress(address)) {
-    const publicKey = decodeAddress(address);
-    return encodeAddress(publicKey, 42);
-  } else {
-    return address;
-  }
-};

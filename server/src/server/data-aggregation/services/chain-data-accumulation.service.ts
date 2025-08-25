@@ -12,7 +12,7 @@ import { Transfer } from "../../blockchain/substrate/model/raw-transfer";
 import { EventEnrichedXcmTransfer } from "../model/event-enriched-xcm-transfer";
 import { logger } from "../../logger/logger";
 import { XcmTransfer } from "../../blockchain/substrate/model/xcm-transfer";
-import { convertToCanonicalAddress } from "../../../common/util/convert-to-generic-address";
+import { convertToCanonicalAddress } from "../../../common/util/convert-to-canonical-address";
 
 export class ChainDataAccumulationService {
   constructor(

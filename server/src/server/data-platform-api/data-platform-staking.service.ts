@@ -1,9 +1,7 @@
 import BigNumber from "bignumber.js";
-import { convertToGenericAddress } from "../../common/util/convert-to-generic-address";
 import { logger } from "../logger/logger";
 import { DataPlatformApi } from "./data-platform.api";
 import { dataPlatformChains } from "./model/data-platform-chains";
-import { isValidEvmAddress } from "../../common/util/is-valid-address";
 import { SubscanService } from "../blockchain/substrate/api/subscan.service";
 import { AggregatedStakingReward } from "../data-aggregation/model/aggregated-staking-reward";
 import * as subscanChains from "../../../res/gen/subscan-chains.json";
@@ -110,16 +108,13 @@ export class DataPlatformStakingService {
     maxDate: string = `${new Date().getUTCFullYear() - 1}-12-31`,
   ): Promise<{ stakingResults: StakingResults; chainSlashes: ChainSlashes }> {
     logger.info(`Entry fetchAggregatedStakingRewards for ${address}`);
-    const genericAddress = isValidEvmAddress(address)
-      ? address
-      : convertToGenericAddress(address);
     const rewards = await this.dataPlatformApi.fetchStakingRewards(
-      genericAddress,
+      address,
       minDate,
       maxDate,
     );
     const slashes = await this.dataPlatformApi.fetchStakingSlashes(
-      genericAddress,
+      address,
       minDate,
       maxDate,
     );

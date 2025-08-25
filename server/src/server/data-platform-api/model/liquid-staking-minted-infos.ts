@@ -10,5 +10,6 @@ export interface LiquidStakingMintedInfos {
     currencyType: CurrencyType;
     currencyValue?: string;
     mintFee?: number;
+    extrinsicId: string;
   }[];
 }

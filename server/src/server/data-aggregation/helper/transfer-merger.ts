@@ -1,7 +1,6 @@
-import { convertToCanonicalAddress } from "../../../common/util/convert-to-generic-address";
+import { convertToCanonicalAddress } from "../../../common/util/convert-to-canonical-address";
 import { Transfer } from "../../blockchain/substrate/model/raw-transfer";
 import { logger } from "../../logger/logger";
-import { EventDerivedTransfer } from "../model/event-derived-transfer";
 import { PortfolioMovement } from "../model/portfolio-movement";
 import { isEvmAddress } from "./is-evm-address";
 
