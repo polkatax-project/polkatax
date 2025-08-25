@@ -80,9 +80,9 @@ export class DataPlatformLiquidStakingService {
         minDate,
         maxDate,
       );
-    const eventsForChain = mintingEvents.items.find(
-      (m) => m.chainType === chainType,
-    ).liquidStakingResults;
+    const eventsForChain =
+      (mintingEvents?.items ?? []).find((m) => m.chainType === chainType)
+        ?.liquidStakingResults ?? [];
 
     const tokens = await this.subscanService.scanTokens(chain);
     const forEnrichment = await this.fetchDataToEnrich(
@@ -132,9 +132,9 @@ export class DataPlatformLiquidStakingService {
         minDate,
         maxDate,
       );
-    const eventsForChain = mintingEvents.items.find(
-      (m) => m.chainType === chainType,
-    ).liquidStakingResults;
+    const eventsForChain =
+      (mintingEvents?.items ?? []).find((m) => m.chainType === chainType)
+        ?.liquidStakingResults ?? [];
 
     const tokens = await this.subscanService.scanTokens(chain);
     const forEnrichment = await this.fetchDataToEnrich(
@@ -185,9 +185,9 @@ export class DataPlatformLiquidStakingService {
         minDate,
         maxDate,
       );
-    const eventsForChain = mintingEvents.items.find(
-      (m) => m.chainType === chainType,
-    ).liquidStakingResults;
+    const eventsForChain =
+      (mintingEvents?.items ?? []).find((m) => m.chainType === chainType)
+        ?.liquidStakingResults ?? [];
 
     const tokens = await this.subscanService.scanTokens(chain);
     const forEnrichment = await this.fetchDataToEnrich(

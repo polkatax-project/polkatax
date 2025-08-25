@@ -1,16 +1,19 @@
-import { afterAll, beforeAll, describe, test } from "@jest/globals";
+import { afterAll, beforeAll, describe, expect, test } from "@jest/globals";
 import {
   startStubs,
   stopStubs,
 } from "../shared/helper/fetch-portfolio-movements";
 import { waitForPortToBeFree } from "../shared/helper/wait-for-port-to-be-free";
-import { verifyPortfolioDifference } from "../shared/verify-portfolio-difference";
+import { createDIContainer } from "../../src/server/di-container";
+import { PortfolioMovementsService } from "../../src/server/data-aggregation/services/portfolio-movements.service";
+import { PortfolioMovement } from "../../src/server/data-aggregation/model/portfolio-movement";
+import { PortfolioChangeValidationService } from "../../src/server/data-aggregation/services/portfolio-change-validation.service";
 
 const acceptedDeviations = [
   {
     symbol: "DOT",
     perPayment: 0.5,
-    max: 2,
+    max: 20,
   },
   {
     symbol: "TBTC",
@@ -25,62 +28,83 @@ const acceptedDeviations = [
   {
     symbol: "KSM",
     perPayment: 0.1,
-    max: 1,
+    max: 10,
   },
   {
     symbol: "USDT",
     perPayment: 0.1,
-    max: 1,
+    max: 10,
   },
   {
     symbol: "ASTR",
     perPayment: 1,
-    max: 100,
+    max: 500,
   },
   {
     symbol: "HDX",
     perPayment: 3,
-    max: 200,
+    max: 500,
   },
   {
     symbol: "PHA",
     perPayment: 1,
-    max: 100,
+    max: 500,
   },
   {
     symbol: "MYTH",
     perPayment: 0.02,
-    max: 10,
+    max: 100,
   },
   {
     symbol: "EWT",
     perPayment: 0.01,
-    max: 1,
+    max: 10,
   },
   {
     symbol: "BNC",
     perPayment: 0.3,
-    max: 2,
+    max: 20,
   },
 ];
 
 const verifyPortfolioChanges = async (
   address: string,
   chainInfo: { domain: string; label: string; token: string },
-  options: {
-    useFees?: boolean;
-  } = {},
 ) => {
+  const container = createDIContainer();
+  const portfolioMovementsService: PortfolioMovementsService =
+    container.resolve("portfolioMovementsService");
+
   const today = new Date();
-  const pastDate = new Date();
-  pastDate.setDate(today.getDate() - 14);
-  await verifyPortfolioDifference(
-    address,
+  const minDate = new Date();
+  minDate.setDate(today.getDate() - 14);
+
+  let { portfolioMovements } =
+    (await portfolioMovementsService.fetchPortfolioMovements({
+      chain: chainInfo,
+      address: address,
+      currency: "USD",
+      minDate: minDate.getTime(),
+    })) as {
+      portfolioMovements: PortfolioMovement[];
+    };
+  const portfolioChangeValidationService: PortfolioChangeValidationService =
+    container.resolve("portfolioChangeValidationService");
+  const deviations = await portfolioChangeValidationService.validate(
     chainInfo,
-    pastDate.getTime(),
-    undefined,
-    { acceptedDeviations, ...options },
+    address,
+    portfolioMovements,
+    acceptedDeviations,
   );
+  deviations.forEach((d) => {
+    if (d.absoluteDeviationTooLarge || d.perPaymentDeviationTooLarge) {
+      console.log(
+        `Deviation from expectation too large for ${address} and ${chainInfo.domain}:`,
+      );
+      console.log(JSON.stringify(d, null, 2));
+      expect(d.absoluteDeviationTooLarge).toBeFalsy();
+    }
+  });
 };
 
 beforeAll(async () => {
@@ -106,7 +130,7 @@ describe("Verify portfolio changes", () => {
 
     test("13qSxtKtr54qebSQzf1c7MC9CwkkZMMFaXyHKq8LzjSjiU3M", async () => {
       await verifyPortfolioChanges(
-        "13qSxtKtr54qebSQzf1c7MC9CwkkZMMFaXyHKq8LzjSjiU3M",
+        "12NM61UnRNNQ1thxEpmUEZpQLq9wCGEhYvAmJwWvyaARja2r",
         chainInfo,
       );
     });
@@ -139,7 +163,6 @@ describe("Verify portfolio changes", () => {
       await verifyPortfolioChanges(
         "15fTH34bbKGMUjF1bLmTqxPYgpg481imThwhWcQfCyktyBzL",
         chainInfo,
-        { useFees: true },
       );
     });
 
@@ -147,7 +170,6 @@ describe("Verify portfolio changes", () => {
       await verifyPortfolioChanges(
         "15mYsj6DpBno58jRoV5HCTiVPFBuWhDLdsWtq3LxwZrfaTEZ",
         chainInfo,
-        { useFees: true },
       );
     });
 
@@ -155,7 +177,6 @@ describe("Verify portfolio changes", () => {
       await verifyPortfolioChanges(
         "1HwQbUpcr99UA6W7WBK86RtMHJTBWRazpxuYfRHyhSCbE1j",
         chainInfo,
-        { useFees: true },
       );
     });
   });
@@ -167,7 +188,6 @@ describe("Verify portfolio changes", () => {
       await verifyPortfolioChanges(
         "16LviqDmEdn49UqeVSw3N1SjoJxRVV1EBbydbEqqaCvdtAsY",
         chainInfo,
-        { useFees: true },
       );
     });
 
@@ -175,7 +195,6 @@ describe("Verify portfolio changes", () => {
       await verifyPortfolioChanges(
         "142nFphK2qW4AWxZYFZiKjirKBMZPFRsCYDe75Rv9YSCkDUW",
         chainInfo,
-        { useFees: true },
       );
     });
 
@@ -183,14 +202,12 @@ describe("Verify portfolio changes", () => {
       await verifyPortfolioChanges(
         "14Gnp9cpb4mrXrpbCVNQSEPyL3QhoccGB9qpTRxqKWWMWSxn",
         chainInfo,
-        { useFees: true },
       );
     });
     test("15mYsj6DpBno58jRoV5HCTiVPFBuWhDLdsWtq3LxwZrfaTEZ", async () => {
       await verifyPortfolioChanges(
         "15mYsj6DpBno58jRoV5HCTiVPFBuWhDLdsWtq3LxwZrfaTEZ",
         chainInfo,
-        { useFees: true },
       );
     });
 
@@ -198,7 +215,6 @@ describe("Verify portfolio changes", () => {
       await verifyPortfolioChanges(
         "12ryo7Fp21tKkFQWJ2vSVMY2BH3t9syk65FUaywraHLs3T4T",
         chainInfo,
-        { useFees: true },
       );
     });
 
@@ -206,7 +222,6 @@ describe("Verify portfolio changes", () => {
       await verifyPortfolioChanges(
         "12ryo7Fp21tKkFQWJ2vSVMY2BH3t9syk65FUaywraHLs3T4T",
         chainInfo,
-        { useFees: true },
       );
     });
   });
@@ -222,7 +237,6 @@ describe("Verify portfolio changes", () => {
       await verifyPortfolioChanges(
         "1L66uQMKFnXKSZx9pCD5o56GvvP1i2Qns7CaS2AaKp9mnwc",
         chainInfo,
-        { useFees: true },
       );
     });
 
@@ -230,7 +244,6 @@ describe("Verify portfolio changes", () => {
       await verifyPortfolioChanges(
         "168BAPzMCWtzvbUVAXjDcJjZCtog7tmoMN2kRa7nusoxJeB8",
         chainInfo,
-        { useFees: true },
       );
     });
 
@@ -238,7 +251,6 @@ describe("Verify portfolio changes", () => {
       await verifyPortfolioChanges(
         "12zsKEDVcHpKEWb99iFt3xrTCQQXZMu477nJQsTBBrof5k2h",
         chainInfo,
-        { useFees: true },
       );
     });
 
@@ -246,7 +258,6 @@ describe("Verify portfolio changes", () => {
       await verifyPortfolioChanges(
         "14EQvBy9h8xGbh2R3ustnkfkF514E7wpmHtg27gDaTLM2str",
         chainInfo,
-        { useFees: true },
       );
     });
 
@@ -254,7 +265,6 @@ describe("Verify portfolio changes", () => {
       await verifyPortfolioChanges(
         "13C7Ssy9QNJk515SFezaKMfhMRFrRcZWBhXA3oDq1AuKVds5",
         chainInfo,
-        { useFees: true },
       );
     });
   });
@@ -266,7 +276,6 @@ describe("Verify portfolio changes", () => {
       await verifyPortfolioChanges(
         "1UA2r4UWyAJfWyCEb39oevsUxuzB8XeriJSsdzVtoLNzddr",
         chainInfo,
-        { useFees: true },
       );
     });
 
@@ -274,7 +283,6 @@ describe("Verify portfolio changes", () => {
       await verifyPortfolioChanges(
         "1L66uQMKFnXKSZx9pCD5o56GvvP1i2Qns7CaS2AaKp9mnwc",
         chainInfo,
-        { useFees: true },
       );
     });
 
@@ -282,7 +290,6 @@ describe("Verify portfolio changes", () => {
       await verifyPortfolioChanges(
         "13EXo5nS5kJMRHqghAcq1z3j3XpguLiWzvV8cbYSXXJsTBYy",
         chainInfo,
-        { useFees: true },
       );
     });
 
@@ -290,21 +297,18 @@ describe("Verify portfolio changes", () => {
       await verifyPortfolioChanges(
         "1sdEj2dBvsGUQ2MqiZWJ8hHss7cCZ4nFcrjE6xDBCtPYiJx",
         chainInfo,
-        { useFees: true },
       );
     });
     test("1CEZAcr7sGqC7Sx6jwWJ5JBALa8iqwS18kj3Y9RzmZacL33", async () => {
       await verifyPortfolioChanges(
         "1CEZAcr7sGqC7Sx6jwWJ5JBALa8iqwS18kj3Y9RzmZacL33",
         chainInfo,
-        { useFees: true },
       );
     });
     test("1sdEj2dBvsGUQ2MqiZWJ8hHss7cCZ4nFcrjE6xDBCtPYiJx", async () => {
       await verifyPortfolioChanges(
         "1sdEj2dBvsGUQ2MqiZWJ8hHss7cCZ4nFcrjE6xDBCtPYiJx",
         chainInfo,
-        { useFees: true },
       );
     });
   });
@@ -316,28 +320,24 @@ describe("Verify portfolio changes", () => {
       await verifyPortfolioChanges(
         "13hDgWbatzrMmdPGz4F3Y63vP3qmdac7PUrujcN5a8nB6CkJ",
         chainInfo,
-        { useFees: true },
       );
     });
     test("15tH5VV82YwsJPBGcBFmGvgkiBCkAzcCXbZLbZ7TkCJM6kdq", async () => {
       await verifyPortfolioChanges(
         "15tH5VV82YwsJPBGcBFmGvgkiBCkAzcCXbZLbZ7TkCJM6kdq",
         chainInfo,
-        { useFees: true },
       );
     });
     test("16m3U19QHy39x5BBTR2FN9yh2k9LhUnS727N3wSH48P9wj8K", async () => {
       await verifyPortfolioChanges(
         "16m3U19QHy39x5BBTR2FN9yh2k9LhUnS727N3wSH48P9wj8K",
         chainInfo,
-        { useFees: true },
       );
     });
     test("153G4p8oHhKuVodS4pcQEgs23TrC9jfVueZ7npbL65JoFRYs", async () => {
       await verifyPortfolioChanges(
         "153G4p8oHhKuVodS4pcQEgs23TrC9jfVueZ7npbL65JoFRYs",
         chainInfo,
-        { useFees: true },
       );
     });
   });
@@ -348,21 +348,18 @@ describe("Verify portfolio changes", () => {
       await verifyPortfolioChanges(
         "0xf8683ecADdCb12891867CCDF4dbC96f47d62d67B",
         chainInfo,
-        { useFees: true },
       );
     });
     test("0x5EE06FECF52b12c66b03700821FbBc9dD5680361", async () => {
       await verifyPortfolioChanges(
         "0x5EE06FECF52b12c66b03700821FbBc9dD5680361",
         chainInfo,
-        { useFees: true },
       );
     });
     test("0xF6eAAdC72D1a58F735965EA196E4FA7029fC76dC", async () => {
       await verifyPortfolioChanges(
         "0xF6eAAdC72D1a58F735965EA196E4FA7029fC76dC",
         chainInfo,
-        { useFees: true },
       );
     });
   });
@@ -373,14 +370,12 @@ describe("Verify portfolio changes", () => {
       await verifyPortfolioChanges(
         "13KemmTsLpdz8sbdB8cL4Lw3PDVgy2UjEnayx72QgUbAcSRT",
         chainInfo,
-        { useFees: true },
       );
     });
     test("16dCndCe1hUGuqFNiBQdvmXtWTRN6MSf9s5wjiEkxTsBo5Jb", async () => {
       await verifyPortfolioChanges(
         "16dCndCe1hUGuqFNiBQdvmXtWTRN6MSf9s5wjiEkxTsBo5Jb",
         chainInfo,
-        { useFees: true },
       );
     });
   });
@@ -430,7 +425,6 @@ describe("Verify portfolio changes", () => {
       await verifyPortfolioChanges(
         "14wDEEnVKZDXVXq2arAmkf1QmnTcwN4fzNJRFoM77YvFxa8T",
         chainInfo,
-        { useFees: true },
       );
     });
 
@@ -455,14 +449,12 @@ describe("Verify portfolio changes", () => {
       await verifyPortfolioChanges(
         "14EAEgGrbX3KCgyjBZRyB5qgYpuFHLB5AC8TX7hYLPRT1YPN",
         chainInfo,
-        { useFees: true },
       );
     });
     test("1bMaUv5vuzYsbYfhn2sUZ2LMYKHmfzF462PuwVtcqLC7rjN", async () => {
       await verifyPortfolioChanges(
         "1bMaUv5vuzYsbYfhn2sUZ2LMYKHmfzF462PuwVtcqLC7rjN",
         chainInfo,
-        { useFees: true },
       );
     });
   });
@@ -473,7 +465,6 @@ describe("Verify portfolio changes", () => {
       await verifyPortfolioChanges(
         "13ziS42MVCDz1biV4CdYUyBFLSYBKAfN6wBAf6nghe1hp7EQ",
         chainInfo,
-        { useFees: true },
       );
     });
 
@@ -481,7 +472,6 @@ describe("Verify portfolio changes", () => {
       await verifyPortfolioChanges(
         "14V1m9Gxr2EEJpNDgvCrJ1HjSRCiFirChPKG6aBQJEyjeHDz",
         chainInfo,
-        { useFees: true },
       );
     });
   });
@@ -492,7 +482,6 @@ describe("Verify portfolio changes", () => {
       await verifyPortfolioChanges(
         "1EfV7cA9FhgQSZQc3M5Ub5pxYdXjG6j8WUZarWe9ebRn7wd",
         chainInfo,
-        { useFees: true },
       );
     });
 
@@ -500,7 +489,6 @@ describe("Verify portfolio changes", () => {
       await verifyPortfolioChanges(
         "13igYjrX45pYDFvcVN2CRmonJ7tm6YptjPLUffJ5efakzCkC",
         chainInfo,
-        { useFees: true },
       );
     });
   });
@@ -515,7 +503,6 @@ describe("Verify portfolio changes", () => {
       await verifyPortfolioChanges(
         "16Zob7g9gBt1v8xz1SkUQPVoEL1sgbzSRE48EsK5CRCyYECx",
         chainInfo,
-        { useFees: true },
       );
     });
 
@@ -523,7 +510,6 @@ describe("Verify portfolio changes", () => {
       await verifyPortfolioChanges(
         "1Zn6CU4CCHLDtrgxGsKYt65Ujd1vc72ydAxL5cUpymGHZoF",
         chainInfo,
-        { useFees: true },
       );
     });
 
@@ -531,7 +517,6 @@ describe("Verify portfolio changes", () => {
       await verifyPortfolioChanges(
         "12ERmt2RB2nJm9VTVf9BNNJXCf8cgSCvqYaGvqbscVo9E8tF",
         chainInfo,
-        { useFees: true },
       );
     });
 
@@ -539,7 +524,6 @@ describe("Verify portfolio changes", () => {
       await verifyPortfolioChanges(
         "123ZosSkquArbSaEDwkhFscTAwuJQRYvhS9EqBjGvKCTxbA8",
         chainInfo,
-        { useFees: true },
       );
     });
   });

@@ -35,7 +35,7 @@ const ignoreIncomingXcm = [
 ];
 
 export async function awaitPromisesAndLog<T>(
-  promises: Promise<any>[]
+  promises: Promise<any>[],
 ): Promise<any[]> {
   let settled = 0;
   const wrapped = promises.map((p, i) =>
@@ -49,10 +49,10 @@ export async function awaitPromisesAndLog<T>(
         settled++;
         logger.error(
           `[Promise-${i}] rejected (${settled}/${promises.length}):`,
-          err
+          err,
         );
-        throw err; 
-      })
+        throw err;
+      }),
   );
   return Promise.all(wrapped);
 }
@@ -122,8 +122,8 @@ export class PortfolioMovementsService {
             request.minDate,
           )
         : Promise.resolve([]),
-    ])
-    return results
+    ]);
+    return results;
   }
 
   private async transform(
@@ -167,13 +167,6 @@ export class PortfolioMovementsService {
         events,
         stakingRewards.rawStakingRewards,
       );
-
-    /**
-     * Transactions without asset movements are ignored for now.
-     */
-    portfolioMovements = portfolioMovements.filter(
-      (p) => p.transfers.length > 0,
-    );
 
     portfolioMovements = new ChainAdjustments().handleAdjustments(
       request.chain.domain,
@@ -230,7 +223,7 @@ export class PortfolioMovementsService {
     );
     this.addLabels(request, portfolioMovements);
 
-    const taxableEvents = (portfolioMovements as TaxableEvent[]).concat(
+    let taxableEvents = (portfolioMovements as TaxableEvent[]).concat(
       stakingRewards.aggregatedRewards,
     );
 
@@ -241,6 +234,12 @@ export class PortfolioMovementsService {
       request,
       taxableEvents,
     );
+
+    if (request.maxDate) {
+      taxableEvents = taxableEvents.filter(
+        (t) => t.timestamp <= request.maxDate,
+      );
+    }
 
     logger.info(
       `PortfolioMovmentService: Sorting taxable events ${request.chain.domain} and wallet ${request.address}`,
