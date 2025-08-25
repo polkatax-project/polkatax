@@ -45,17 +45,13 @@ export const fetchPortfolioMovements = async (
         address,
         currency,
         minDate: minDate ?? pastDate.getTime(),
+        maxDate,
       })) as {
         portfolioMovements: PortfolioMovement[];
         unmatchedEvents: SubscanEvent[];
       };
     if (portfolioMovements.length === 0) {
       return { portfolioMovements: [] };
-    }
-    if (maxDate) {
-      portfolioMovements = portfolioMovements.filter(
-        (movement) => movement.timestamp <= maxDate,
-      );
     }
     const minBlock = portfolioMovements.reduce(
       (curr, next) => Math.min(curr, next.block ?? Number.MAX_SAFE_INTEGER),

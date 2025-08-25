@@ -168,13 +168,6 @@ export class PortfolioMovementsService {
         stakingRewards.rawStakingRewards,
       );
 
-    /**
-     * Transactions without asset movements are ignored for now.
-     */
-    portfolioMovements = portfolioMovements.filter(
-      (p) => p.transfers.length > 0,
-    );
-
     portfolioMovements = new ChainAdjustments().handleAdjustments(
       request.chain.domain,
       portfolioMovements,
@@ -230,7 +223,7 @@ export class PortfolioMovementsService {
     );
     this.addLabels(request, portfolioMovements);
 
-    const taxableEvents = (portfolioMovements as TaxableEvent[]).concat(
+    let taxableEvents = (portfolioMovements as TaxableEvent[]).concat(
       stakingRewards.aggregatedRewards,
     );
 
@@ -241,6 +234,12 @@ export class PortfolioMovementsService {
       request,
       taxableEvents,
     );
+
+    if (request.maxDate) {
+      taxableEvents = taxableEvents.filter(
+        (t) => t.timestamp <= request.maxDate,
+      );
+    }
 
     logger.info(
       `PortfolioMovmentService: Sorting taxable events ${request.chain.domain} and wallet ${request.address}`,

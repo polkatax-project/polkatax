@@ -146,9 +146,7 @@ export class Wallet {
           const token = tokens.find((t) => isSameToken(t.token_id, tokenDescr));
           const values = val.toJSON();
           const balance =
-            (Number(values.free) +
-              Number(values.frozen) +
-              Number(values.reserved)) /
+            (Number(values.free) + Number(values.reserved)) /
             Math.pow(10, token?.decimals || 1);
           tokenBalances.push({
             symbol: token?.symbol ?? JSON.stringify(tokenDescr),

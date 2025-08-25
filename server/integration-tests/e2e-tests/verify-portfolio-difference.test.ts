@@ -1,10 +1,13 @@
-import { afterAll, beforeAll, describe, test } from "@jest/globals";
+import { afterAll, beforeAll, describe, expect, test } from "@jest/globals";
 import {
   startStubs,
   stopStubs,
 } from "../shared/helper/fetch-portfolio-movements";
 import { waitForPortToBeFree } from "../shared/helper/wait-for-port-to-be-free";
-import { verifyPortfolioDifference } from "../shared/verify-portfolio-difference";
+import { PortfolioMovement } from "../../src/server/data-aggregation/model/portfolio-movement";
+import { PortfolioChangeValidationService } from "../../src/server/data-aggregation/services/portfolio-change-validation.service";
+import { createDIContainer } from "../../src/server/di-container";
+import { PortfolioMovementsService } from "../../src/server/data-aggregation/services/portfolio-movements.service";
 
 const acceptedDeviations = [
   {
@@ -67,23 +70,45 @@ const acceptedDeviations = [
 const verifyPortfolioChanges = async (
   address: string,
   chainInfo: { domain: string; label: string; token: string },
-  options: {
-    useFees?: boolean;
-  } = {},
 ) => {
-  const minDate = new Date(
-    `${new Date().getFullYear() - 1}-10-01T00:00:00.000Z`,
-  );
-  const maxDate = new Date(
-    `${new Date().getFullYear() - 1}-12-31T00:00:00.000Z`,
-  );
-  await verifyPortfolioDifference(
-    address,
+  const container = createDIContainer();
+  const portfolioMovementsService: PortfolioMovementsService =
+    container.resolve("portfolioMovementsService");
+
+  const today = new Date();
+  const minDate = new Date();
+  minDate.setDate(today.getDate() - 360);
+
+  const maxDate = new Date();
+  maxDate.setDate(today.getDate() - 180);
+
+  let { portfolioMovements } =
+    (await portfolioMovementsService.fetchPortfolioMovements({
+      chain: chainInfo,
+      address: address,
+      currency: "USD",
+      minDate: minDate.getTime(),
+      maxDate: maxDate.getTime(),
+    })) as {
+      portfolioMovements: PortfolioMovement[];
+    };
+  const portfolioChangeValidationService: PortfolioChangeValidationService =
+    container.resolve("portfolioChangeValidationService");
+  const deviations = await portfolioChangeValidationService.validate(
     chainInfo,
-    minDate.getTime(),
-    maxDate.getTime(),
-    { acceptedDeviations, ...options },
+    address,
+    portfolioMovements,
+    acceptedDeviations,
   );
+  deviations.forEach((d) => {
+    if (d.absoluteDeviationTooLarge || d.perPaymentDeviationTooLarge) {
+      console.log(
+        `Deviation from expectation too large for ${address} and ${chainInfo.domain}:`,
+      );
+      console.log(JSON.stringify(d, null, 2));
+      expect(d.absoluteDeviationTooLarge).toBeFalsy();
+    }
+  });
 };
 
 beforeAll(async () => {
@@ -96,7 +121,7 @@ afterAll(async () => {
   await waitForPortToBeFree(3002);
 });
 
-describe.skip("Verify portfolio changes", () => {
+describe("Verify portfolio changes", () => {
   describe("Verify the portfolio change assethub polkadot", () => {
     const chainInfo = { domain: "assethub-polkadot", label: "", token: "DOT" };
 
@@ -114,7 +139,6 @@ describe.skip("Verify portfolio changes", () => {
       await verifyPortfolioChanges(
         "15fTH34bbKGMUjF1bLmTqxPYgpg481imThwhWcQfCyktyBzL",
         chainInfo,
-        { useFees: true },
       );
     }, 600000);
   });
@@ -126,7 +150,6 @@ describe.skip("Verify portfolio changes", () => {
       await verifyPortfolioChanges(
         "16LviqDmEdn49UqeVSw3N1SjoJxRVV1EBbydbEqqaCvdtAsY",
         chainInfo,
-        { useFees: true },
       );
     }, 600000);
   });
@@ -142,7 +165,6 @@ describe.skip("Verify portfolio changes", () => {
       await verifyPortfolioChanges(
         "1L66uQMKFnXKSZx9pCD5o56GvvP1i2Qns7CaS2AaKp9mnwc",
         chainInfo,
-        { useFees: true },
       );
     }, 600000);
   });
@@ -154,7 +176,6 @@ describe.skip("Verify portfolio changes", () => {
       await verifyPortfolioChanges(
         "1UA2r4UWyAJfWyCEb39oevsUxuzB8XeriJSsdzVtoLNzddr",
         chainInfo,
-        { useFees: true },
       );
     }, 600000);
   });
@@ -166,12 +187,11 @@ describe.skip("Verify portfolio changes", () => {
       await verifyPortfolioChanges(
         "13hDgWbatzrMmdPGz4F3Y63vP3qmdac7PUrujcN5a8nB6CkJ",
         chainInfo,
-        { useFees: true },
       );
     }, 600000);
   });
 
-  describe("Verify the portfolio change hydration", () => {
+  describe.skip("Verify the portfolio change hydration", () => {
     const chainInfo = { domain: "hydration", label: "", token: "HDX" };
 
     test("15abVnvSgRJFCqhJuvrYSNL5DscRppcog8cyYaVALLU3LFjB", async () => {
@@ -188,7 +208,6 @@ describe.skip("Verify portfolio changes", () => {
       await verifyPortfolioChanges(
         "13ziS42MVCDz1biV4CdYUyBFLSYBKAfN6wBAf6nghe1hp7EQ",
         chainInfo,
-        { useFees: true },
       );
     }, 600000);
   });
