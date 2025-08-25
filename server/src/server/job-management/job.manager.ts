@@ -8,7 +8,6 @@ import { isEvmAddress } from "../data-aggregation/helper/is-evm-address";
 import { getBeginningLastYear } from "./get-beginning-last-year";
 import { logger } from "../logger/logger";
 import { JobConsumer } from "./job.consumer";
-import { JobRepository } from "./job.repository";
 
 const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 

@@ -10,5 +10,6 @@ export interface LiquidStakingRebondedInfos {
     currencyAmount: number;
     vestedCurrencyAmount: number;
     rebondFee: number;
+    extrinsicId: string;
   }[];
 }

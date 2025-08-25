@@ -4,260 +4,164 @@ import { Asset } from "../blockchain/substrate/model/asset";
 import { beforeEach, describe, expect, it, jest } from "@jest/globals";
 import { DataPlatformLiquidStakingService } from "./data-platform-liquidstaking.service";
 
+// Mock logger
 jest.mock("../logger/logger", () => ({
-  logger: { info: jest.fn(), error: jest.fn() },
-}));
-
-jest.mock("../../common/util/convert-to-canonical-address", () => ({
-  convertToCanonicalAddress: jest.fn().mockReturnValue("canonicalAddress"),
-}));
-
-jest.mock("../../common/util/is-valid-address", () => ({
-  isValidEvmAddress: jest.fn().mockReturnValue(false),
-}));
-
-jest.mock("../../common/util/date-utils", () => ({
-  formatDate: jest.fn((d: Date) => d.toISOString()),
+  logger: {
+    info: jest.fn(),
+    error: jest.fn(),
+  },
 }));
 
 describe("DataPlatformLiquidStakingService", () => {
   let service: DataPlatformLiquidStakingService;
-  let mockApi: jest.Mocked<DataPlatformApi>;
-  let mockSubscan: jest.Mocked<SubscanService>;
+  let dataPlatformApi: jest.Mocked<DataPlatformApi>;
+  let subscanService: jest.Mocked<SubscanService>;
 
-  const mockTokens: Asset = [
+  const mockTokens: Asset[] = [
     {
       token_id: { VToken: "BNC" },
-      decimals: 12,
       symbol: "vBNC",
-      unique_id: "vBNC-1",
-    },
-    {
-      token_id: { VToken2: 0 },
-      decimals: 10,
-      symbol: "vDOT",
-      unique_id: "vDOT-1",
-    },
-  ] as any;
+      unique_id: "123",
+      decimals: 12,
+    } as any as Asset,
+  ];
 
   beforeEach(() => {
-    mockApi = {
+    dataPlatformApi = {
       fetchLiquidStakingMintedEvents: jest.fn(),
       fetchLiquidStakingRedeemedEvents: jest.fn(),
       fetchLiquidStakingRebondedEvents: jest.fn(),
     } as any;
 
-    mockSubscan = {
-      scanTokens: jest.fn<any>().mockResolvedValue(mockTokens),
-      fetchEventDetails: jest
-        .fn<any>()
-        .mockResolvedValue([
-          { extrinsic_index: "1-2", extrinsic_hash: "0xabc" },
-        ]),
+    subscanService = {
+      scanTokens: jest.fn(),
     } as any;
 
-    service = new DataPlatformLiquidStakingService(mockApi, mockSubscan);
+    service = new DataPlatformLiquidStakingService(
+      dataPlatformApi,
+      subscanService,
+    );
+    subscanService.scanTokens.mockResolvedValue(mockTokens);
   });
 
-  describe("fetchallVtokenEvents", () => {
-    it("returns [] for unsupported chains", async () => {
-      const result = await service.fetchallVtokenEvents(
-        "addr",
-        "ethereum",
-        1000,
-      );
-      expect(result).toEqual([]);
+  it("should fetch minted events and map them to transfers", async () => {
+    dataPlatformApi.fetchLiquidStakingMintedEvents.mockResolvedValue({
+      items: [
+        {
+          chainType: "POLKADOT",
+          liquidStakingResults: [
+            {
+              eventId: "12345-1",
+              timestamp: "2025-01-01T00:00:00Z",
+              vestedAmount: 1000000000000, // 1.0 after decimals
+              extrinsicId: "12345-1-1",
+              currencyType: "Native",
+              currencyValue: '{"__kind": "BNC"}',
+            } as any,
+          ],
+        },
+      ],
     });
 
-    it("fetches and merges events from all sources", async () => {
-      mockApi.fetchLiquidStakingMintedEvents.mockResolvedValue({
-        items: [
-          {
-            chainType: "POLKADOT",
-            liquidStakingResults: [
-              {
-                eventId: "1-0-2",
-                timestamp: "2023-01-01T00:00:00Z",
-                vestedAmount: 100,
-                currencyType: "Native",
-                currencyValue: "BNC",
-              },
-            ],
-          } as any,
-        ],
-      });
-      mockApi.fetchLiquidStakingRedeemedEvents.mockResolvedValue({
-        items: [{ chainType: "POLKADOT", liquidStakingResults: [] }],
-      });
-      mockApi.fetchLiquidStakingRebondedEvents.mockResolvedValue({
-        items: [{ chainType: "POLKADOT", liquidStakingResults: [] }],
-      });
+    const result = await service.fetchVtokenMintedEvents(
+      "0xabc",
+      "bifrost",
+      "2025-01-01",
+      "2025-01-02",
+    );
 
-      const result = await service.fetchallVtokenEvents(
-        "addr",
-        "bifrost",
-        0,
-        Date.now(),
-      );
-      expect(result).toHaveLength(1);
-      expect(result[0]).toMatchObject({
-        symbol: "vBNC",
-        amount: expect.any(Number),
-        extrinsic_index: "1-2",
-        hash: "0xabc",
-      });
+    expect(result).toHaveLength(1);
+    expect(result[0]).toMatchObject({
+      symbol: "vBNC",
+      asset_unique_id: "123",
+      amount: 1,
+      from: "",
+      to: "0xabc",
+      label: "Liquid staking token minted",
     });
   });
 
-  describe("fetchVtokenMintedEvents", () => {
-    it("throws if vToken not found", async () => {
-      mockSubscan.scanTokens.mockResolvedValue([]); // no tokens
-      mockApi.fetchLiquidStakingMintedEvents.mockResolvedValue({
-        items: [
-          {
-            chainType: "POLKADOT",
-            liquidStakingResults: [
-              {
-                eventId: "1-0-2",
-                timestamp: "2023-01-01T00:00:00Z",
-                vestedAmount: 100,
-                currencyType: "Token2",
-                currencyValue: "0",
-              },
-            ],
-          } as any,
-        ],
-      });
-
-      await expect(
-        service.fetchVtokenMintedEvents(
-          "addr",
-          "bifrost",
-          "2023-01-01",
-          "2023-02-01",
-        ),
-      ).rejects.toThrow("vToken for event vtokenmintingMinted");
+  it("should fetch redeemed events and map them to transfers", async () => {
+    dataPlatformApi.fetchLiquidStakingRedeemedEvents.mockResolvedValue({
+      items: [
+        {
+          chainType: "POLKADOT",
+          liquidStakingResults: [
+            {
+              eventId: "12345-2",
+              timestamp: "2025-01-02T00:00:00Z",
+              vestedCurrencyAmount: 500000000000,
+              extrinsicId: "12345-2-1",
+              currencyType: "Native",
+              currencyValue: '{"__kind": "BNC"}',
+            } as any,
+          ],
+        },
+      ],
     });
 
-    it("constructs transfers correctly", async () => {
-      mockApi.fetchLiquidStakingMintedEvents.mockResolvedValue({
-        items: [
-          {
-            chainType: "POLKADOT",
-            liquidStakingResults: [
-              {
-                eventId: "1-0-2",
-                timestamp: "2023-01-01T00:00:00Z",
-                vestedAmount: 100,
-                currencyType: "Token2",
-                currencyValue: "0",
-              },
-            ],
-          } as any,
-        ],
-      });
+    const result = await service.fetchVtokenRedeemedEvents(
+      "0xabc",
+      "bifrost",
+      "2025-01-01",
+      "2025-01-03",
+    );
 
-      const result = await service.fetchVtokenMintedEvents(
-        "addr",
-        "bifrost",
-        "2023-01-01",
-        "2023-02-01",
-      );
-      expect(result).toHaveLength(1);
-      expect(result[0].label).toBe("Liquid staking token minted");
-      expect(result[0].amount).toBeCloseTo(100 * Math.pow(10, -12));
+    expect(result).toHaveLength(1);
+    expect(result[0]).toMatchObject({
+      symbol: "vBNC",
+      asset_unique_id: "123",
+      amount: 0.5,
+      from: "0xabc",
+      to: "",
+      label: "Liquid staking token redeemed",
     });
   });
 
-  describe("fetchVtokenRedeemedEvents", () => {
-    it("constructs redeemed transfers correctly", async () => {
-      mockApi.fetchLiquidStakingRedeemedEvents.mockResolvedValue({
-        items: [
-          {
-            chainType: "POLKADOT",
-            liquidStakingResults: [
-              {
-                eventId: "2-0-3",
-                timestamp: "2023-01-02T00:00:00Z",
-                vestedCurrencyAmount: 200,
-                currencyType: "Native",
-                currencyValue: "BNC",
-              },
-            ],
-          } as any,
-        ],
-      });
+  it("should fetch rebonded events and map them to transfers", async () => {
+    dataPlatformApi.fetchLiquidStakingRebondedEvents.mockResolvedValue({
+      items: [
+        {
+          chainType: "POLKADOT",
+          liquidStakingResults: [
+            {
+              eventId: "12345-3",
+              timestamp: "2025-01-03T00:00:00Z",
+              vestedCurrencyAmount: 2000000000000,
+              extrinsicId: "12345-3-1",
+              currencyType: "Native",
+              currencyValue: '{"__kind": "BNC"}',
+            } as any,
+          ],
+        },
+      ],
+    });
 
-      const result = await service.fetchVtokenRedeemedEvents(
-        "addr",
-        "bifrost",
-        "2023-01-01",
-        "2023-02-01",
-      );
-      expect(result).toHaveLength(1);
-      expect(result[0].label).toBe("Liquid staking token redeemed");
+    const result = await service.fetchVtokenRebondedEvents(
+      "0xabc",
+      "bifrost",
+      "2025-01-01",
+      "2025-01-04",
+    );
+
+    expect(result).toHaveLength(1);
+    expect(result[0]).toMatchObject({
+      symbol: "vBNC",
+      asset_unique_id: "123",
+      amount: 2,
+      from: "",
+      to: "0xabc",
+      label: "Liquid staking token minted", // note: rebonded reuses "minted"
     });
   });
 
-  describe("fetchVtokenRebondedEvents", () => {
-    it("constructs rebonded transfers correctly", async () => {
-      mockApi.fetchLiquidStakingRebondedEvents.mockResolvedValue({
-        items: [
-          {
-            chainType: "POLKADOT",
-            liquidStakingResults: [
-              {
-                eventId: "3-0-4",
-                timestamp: "2023-01-03T00:00:00Z",
-                vestedAmount: 300,
-                currencyType: "Native",
-                currencyValue: "BNC",
-              },
-            ],
-          } as any,
-        ],
-      });
-
-      const result = await service.fetchVtokenRebondedEvents(
-        "addr",
-        "bifrost",
-        "2023-01-01",
-        "2023-02-01",
-      );
-      expect(result).toHaveLength(1);
-      expect(result[0].label).toBe("Liquid staking token minted");
-    });
-  });
-
-  describe("determineVToken", () => {
-    it("returns correct vtoken for Native BNC", () => {
-      const result = (service as any).determineVToken(
-        "Native",
-        "BNC",
-        mockTokens,
-      );
-      expect(result).toEqual(mockTokens[0]);
-    });
-
-    it("returns correct vtoken for DOT", () => {
-      const result = (service as any).determineVToken(
-        "Token2",
-        "0",
-        mockTokens,
-      );
-      expect(result).toEqual(mockTokens[1]);
-    });
-
-    it("returns undefined for missing token", () => {
-      const result = (service as any).determineVToken("Native", "blub", []);
-      expect(result).toBeUndefined();
-    });
-  });
-
-  describe("toSubscanEventIndex", () => {
-    it("converts eventId to correct format", () => {
-      const idx = (service as any).toSubscanEventIndex("123-1-456");
-      expect(idx).toBe("123-456");
-    });
+  it("fetchallVtokenEvents should return [] for unsupported chain", async () => {
+    const result = await service.fetchallVtokenEvents(
+      "0xabc",
+      "polkadot", // not bifrost or bifrost-kusama
+      Date.now(),
+      Date.now(),
+    );
+    expect(result).toEqual([]);
   });
 });

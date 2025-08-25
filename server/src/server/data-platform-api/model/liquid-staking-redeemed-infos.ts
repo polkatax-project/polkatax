@@ -10,5 +10,6 @@ export interface LiquidStakingRedeemedInfos {
     currencyAmount: number;
     vestedCurrencyAmount: number;
     redeemFee: number;
+    extrinsicId: string;
   }[];
 }
