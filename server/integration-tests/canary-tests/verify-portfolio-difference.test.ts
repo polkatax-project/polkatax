@@ -90,12 +90,13 @@ const verifyPortfolioChanges = async (
     };
   const portfolioChangeValidationService: PortfolioChangeValidationService =
     container.resolve("portfolioChangeValidationService");
-  const deviations = await portfolioChangeValidationService.validate(
-    chainInfo,
-    address,
-    portfolioMovements,
-    acceptedDeviations,
-  );
+  const deviations =
+    await portfolioChangeValidationService.calculateDeviationFromExpectation(
+      chainInfo,
+      address,
+      portfolioMovements,
+      acceptedDeviations,
+    );
   deviations.forEach((d) => {
     if (d.absoluteDeviationTooLarge || d.perPaymentDeviationTooLarge) {
       console.log(

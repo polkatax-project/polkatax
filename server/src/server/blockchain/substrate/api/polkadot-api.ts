@@ -2,7 +2,7 @@ import { ApiPromise, WsProvider } from "@polkadot/api";
 import { Asset } from "../model/asset";
 import { logger } from "../../../logger/logger";
 
-const endpoints = {
+export const WS_CHAIN_ENDPOINTS = {
   "assethub-polkadot": "wss://sys.ibp.network/asset-hub-polkadot",
   bifrost: "wss://bifrost.public.curie.radiumblock.co/ws",
   polkadot: "wss://polkadot.api.onfinality.io/public-ws",
@@ -36,7 +36,7 @@ export class PolkadotApi {
     if (this.api) {
       await this.api.disconnect();
     }
-    const provider = new WsProvider(endpoints[this.domain]);
+    const provider = new WsProvider(WS_CHAIN_ENDPOINTS[this.domain]);
     this.api = await ApiPromise.create({ provider, noInitWarn: true });
   }
 

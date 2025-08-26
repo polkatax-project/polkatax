@@ -47,7 +47,7 @@ const zoomIntoErrorTokensChange = async (
     (p) => p.timestamp >= timestamps[1] && p.timestamp <= timestamps[2],
   );
   const deviationsFirstHalf = (
-    await portfolioChangeValidationService.validate(
+    await portfolioChangeValidationService.calculateDeviationFromExpectation(
       chain,
       address,
       portfolioMovementsFirstHalf,
@@ -61,7 +61,7 @@ const zoomIntoErrorTokensChange = async (
       (!tokenUniqueId && d.symbol === tokenSymbol),
   ) ?? { deviationPerPayment: 0, deviation: 0 };
   const deviationsSecondHalf = (
-    await portfolioChangeValidationService.validate(
+    await portfolioChangeValidationService.calculateDeviationFromExpectation(
       chain,
       address,
       portfolioMovementsSecondHalf,

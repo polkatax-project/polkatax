@@ -1,6 +1,7 @@
+import { WS_CHAIN_ENDPOINTS } from "../../blockchain/substrate/api/polkadot-api";
 import { SubscanApi } from "../../blockchain/substrate/api/subscan.api";
 import { logger } from "../../logger/logger";
-import { PortfolioMovement } from "../model/portfolio-movement";
+import { PortfolioMovement, TaxableEvent } from "../model/portfolio-movement";
 import { PortfolioDifferenceService } from "./portfolio-difference.service";
 
 const DEFAULT_MAX_DEVIATION = {
@@ -86,10 +87,10 @@ export class PortfolioChangeValidationService {
     private subscanApi: SubscanApi,
   ) {}
 
-  async validate(
+  async calculateDeviationFromExpectation(
     chainInfo: { domain: string; token: string },
     address: string,
-    portfolioMovements: PortfolioMovement[],
+    portfolioMovements: TaxableEvent[],
     acceptedDeviations = ACCEPTED_DEVIATIONS,
     minBlockNum?: number,
     maxBlockNum?: number,
@@ -98,6 +99,13 @@ export class PortfolioChangeValidationService {
       `Enter PortfolioChangeValidationService.validate for ${chainInfo.domain} and wallet ${address}`,
     );
 
+    if (!Object.keys(WS_CHAIN_ENDPOINTS).includes(chainInfo.domain)) {
+      logger.info(
+        `Exit PortfolioChangeValidationService.validate: chain ${chainInfo.domain} not supported.`,
+      );
+      return [];
+    }
+
     if (portfolioMovements.length === 0) {
       logger.info("No portfolio movements found to validate");
       return [];
@@ -105,13 +113,17 @@ export class PortfolioChangeValidationService {
     minBlockNum =
       minBlockNum ??
       portfolioMovements.reduce(
-        (curr, next) => Math.min(curr, next.block ?? Number.MAX_SAFE_INTEGER),
+        (curr, next) =>
+          Math.min(
+            curr,
+            (next as PortfolioMovement)?.block ?? Number.MAX_SAFE_INTEGER,
+          ),
         Number.MAX_SAFE_INTEGER,
       );
     maxBlockNum =
       maxBlockNum ??
       portfolioMovements.reduce(
-        (curr, next) => Math.max(curr, next.block ?? 0),
+        (curr, next) => Math.max(curr, (next as PortfolioMovement)?.block ?? 0),
         0,
       );
     const [minBlock, maxBlock] = await Promise.all([
@@ -141,7 +153,9 @@ export class PortfolioChangeValidationService {
       );
       if (!ignoreFees && tokenInPortfolio.native) {
         portfolioMovements.forEach((p) => {
-          expectedDiff += -(p?.feeUsed ?? 0) - (p?.tip ?? 0); // - (p?.xcmFee ?? 0);
+          expectedDiff +=
+            -((p as PortfolioMovement)?.feeUsed ?? 0) -
+            ((p as PortfolioMovement)?.tip ?? 0); // - (p?.xcmFee ?? 0);
         });
       }
       matchingPortfolioMovements.forEach((p) => {

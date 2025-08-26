@@ -3,11 +3,16 @@ import { logger } from "../logger/logger";
 import { JobsService } from "./jobs.service";
 import * as subscanChains from "../../../res/gen/subscan-chains.json";
 import { PortfolioMovementsService } from "../data-aggregation/services/portfolio-movements.service";
+import {
+  Deviation,
+  PortfolioChangeValidationService,
+} from "../data-aggregation/services/portfolio-change-validation.service";
 
 export class JobConsumer {
   constructor(
     private jobsService: JobsService,
     private portfolioMovementsService: PortfolioMovementsService,
+    private portfolioChangeValidationService: PortfolioChangeValidationService,
   ) {}
 
   async process(job: Job): Promise<void> {
@@ -51,10 +56,31 @@ export class JobConsumer {
         portfolioMovements.push(...previous);
       }
 
+      let deviations: Deviation[] = [];
+      try {
+        deviations = (
+          await this.portfolioChangeValidationService.calculateDeviationFromExpectation(
+            chain,
+            job.wallet,
+            portfolioMovements,
+          )
+        ).filter(
+          (v) => v.absoluteDeviationTooLarge || v.perPaymentDeviationTooLarge,
+        );
+        if (deviations.length > 0) {
+          logger.warn(
+            deviations,
+            `Possibly incorrect results for ${chain.domain}, ${job.wallet}`,
+          );
+        }
+      } catch (error) {
+        logger.warn(error, "Error when trying to objectin validation Results");
+      }
+
       const eightDaysMs = 6 * 24 * 60 * 60 * 1000;
       job.syncedUntil = Date.now() - eightDaysMs; // "guaranteed" to be synced until 6 days ago, because backend data is not updated daily!
       await this.jobsService.setDone(
-        { values: portfolioMovements },
+        { values: portfolioMovements, deviations },
         job,
         job.syncedUntil,
       );
