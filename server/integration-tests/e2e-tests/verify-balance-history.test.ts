@@ -8,7 +8,7 @@ import { waitForPortToBeFree } from "../shared/helper//wait-for-port-to-be-free"
 
 async function verify(address, chain) {
   const minDate = new Date(
-    `${new Date().getFullYear() - 1}-10-01T00:00:00.000Z`,
+    `${new Date().getFullYear() - 1}-11-01T00:00:00.000Z`,
   );
   const maxDate = new Date(
     `${new Date().getFullYear() - 1}-12-31T00:00:00.000Z`,

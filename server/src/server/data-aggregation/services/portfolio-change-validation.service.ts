@@ -91,19 +91,29 @@ export class PortfolioChangeValidationService {
     address: string,
     portfolioMovements: PortfolioMovement[],
     acceptedDeviations = ACCEPTED_DEVIATIONS,
+    minBlockNum?: number,
+    maxBlockNum?: number,
   ): Promise<Deviation[]> {
+    logger.info(
+      `Enter PortfolioChangeValidationService.validate for ${chainInfo.domain} and wallet ${address}`,
+    );
+
     if (portfolioMovements.length === 0) {
       logger.info("No portfolio movements found to validate");
       return [];
     }
-    const minBlockNum = portfolioMovements.reduce(
-      (curr, next) => Math.min(curr, next.block ?? Number.MAX_SAFE_INTEGER),
-      Number.MAX_SAFE_INTEGER,
-    );
-    const maxBlockNum = portfolioMovements.reduce(
-      (curr, next) => Math.max(curr, next.block ?? 0),
-      0,
-    );
+    minBlockNum =
+      minBlockNum ??
+      portfolioMovements.reduce(
+        (curr, next) => Math.min(curr, next.block ?? Number.MAX_SAFE_INTEGER),
+        Number.MAX_SAFE_INTEGER,
+      );
+    maxBlockNum =
+      maxBlockNum ??
+      portfolioMovements.reduce(
+        (curr, next) => Math.max(curr, next.block ?? 0),
+        0,
+      );
     const [minBlock, maxBlock] = await Promise.all([
       this.subscanApi.fetchBlock(chainInfo.domain, minBlockNum),
       this.subscanApi.fetchBlock(chainInfo.domain, maxBlockNum),
@@ -116,7 +126,13 @@ export class PortfolioChangeValidationService {
         maxBlockNum,
       );
     const deviations = [];
-    const ignoreFees = false;
+    const ignoreFees = [
+      "hydration",
+      "basilisk",
+      "bifrost",
+      "assethub-polkadot",
+      "assethub-kusama",
+    ].includes(chainInfo.domain);
     for (let tokenInPortfolio of portfolioDifference) {
       let expectedDiff = 0;
       const matchingPortfolioMovements = portfolioMovements.filter(
@@ -157,6 +173,10 @@ export class PortfolioChangeValidationService {
         numberTx: matchingPortfolioMovements.length,
       });
     }
+
+    logger.info(
+      `Exit PortfolioChangeValidationService.validate for ${chainInfo.domain} and wallet ${address}`,
+    );
     return deviations;
   }
 }

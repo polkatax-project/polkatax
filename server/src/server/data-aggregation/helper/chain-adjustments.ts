@@ -36,6 +36,19 @@ export class ChainAdjustments {
       }
     });
 
+    portfolioMovements.forEach((s) => {
+      const isLiquidityAdded = (s.events ?? []).find(
+        (e) => e.moduleId === "stableswap" && e.eventId === "LiquidityAdded",
+      );
+      if (isLiquidityAdded) {
+        s.transfers = s.transfers.filter(
+          (t) =>
+            !["2-pool", "4-pool", "2-Pool", "4-Pool"].includes(t.symbol) ||
+            t.amount > 0,
+        );
+      }
+    });
+
     const movements = portfolioMovements.filter((s) => {
       if (
         (s?.events ?? []).find(

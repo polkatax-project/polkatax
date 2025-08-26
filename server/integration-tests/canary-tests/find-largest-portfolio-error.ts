@@ -51,23 +51,29 @@ const zoomIntoErrorTokensChange = async (
       chain,
       address,
       portfolioMovementsFirstHalf,
+      undefined,
+      blocksToFetch[0],
+      blocksToFetch[1],
     )
   ).find(
     (d) =>
       d.unique_id === tokenUniqueId ||
       (!tokenUniqueId && d.symbol === tokenSymbol),
-  ) ?? { deviationPerPayment: 0 };
+  ) ?? { deviationPerPayment: 0, deviation: 0 };
   const deviationsSecondHalf = (
     await portfolioChangeValidationService.validate(
       chain,
       address,
       portfolioMovementsSecondHalf,
+      undefined,
+      blocksToFetch[1],
+      blocksToFetch[2],
     )
   ).find(
     (d) =>
       d.unique_id === tokenUniqueId ||
       (!tokenUniqueId && d.symbol === tokenSymbol),
-  ) ?? { deviationPerPayment: 0 };
+  ) ?? { deviationPerPayment: 0, deviation: 0 };
 
   const intervalNo =
     deviationsFirstHalf.deviationPerPayment >
@@ -78,6 +84,9 @@ const zoomIntoErrorTokensChange = async (
     startBlock: blocksToFetch[intervalNo],
     endBlock: blocksToFetch[intervalNo + 1],
   };
+  console.log(
+    `Next interval ${nextInterval.startBlock} - ${nextInterval.endBlock}`,
+  );
   if (nextInterval.endBlock - nextInterval.startBlock > 1) {
     await zoomIntoErrorTokensChange(
       address,
@@ -97,9 +106,12 @@ const zoomIntoErrorTokensChange = async (
   } else {
     const block1 = await subscanApi.fetchBlock(
       chain.domain,
-      interval.startBlock,
+      nextInterval.startBlock,
     );
-    const block2 = await subscanApi.fetchBlock(chain.domain, interval.endBlock);
+    const block2 = await subscanApi.fetchBlock(
+      chain.domain,
+      nextInterval.endBlock,
+    );
     console.log("=======");
     console.log(
       "Block " +

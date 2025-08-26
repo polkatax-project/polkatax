@@ -1,5 +1,6 @@
 import { SubscanApi } from "../../blockchain/substrate/api/subscan.api";
 import { PolkadotApi } from "../../blockchain/substrate/api/polkadot-api";
+import { logger } from "../../logger/logger";
 
 export class PortfolioDifferenceService {
   constructor(private subscanApi: SubscanApi) {}
@@ -19,24 +20,35 @@ export class PortfolioDifferenceService {
       native?: boolean;
     }[]
   > {
+    logger.info(
+      `Enter fetchPortfolioDifference for ${chainInfo.domain} and wallet ${address}`,
+    );
     switch (chainInfo.domain) {
       case "hydration":
       case "basilisk":
       case "bifrost":
       case "bofrost-kusama":
-        return this.fetchPortfolioTokenDifference(
+        const tokenDiff = await this.fetchPortfolioTokenDifference(
           chainInfo,
           address,
           minBlock,
           maxBlock,
         );
+        logger.info(
+          `Exit fetchPortfolioDifference for ${chainInfo.domain} and wallet ${address}`,
+        );
+        return tokenDiff;
       default:
-        return this.fetchPortfolioAssetDifference(
+        const assetDiff = await this.fetchPortfolioAssetDifference(
           chainInfo.domain,
           address,
           minBlock,
           maxBlock,
         );
+        logger.info(
+          `Enter fetchPortfolioDifference for ${chainInfo.domain} and wallet ${address}`,
+        );
+        return assetDiff;
     }
   }
 
@@ -119,7 +131,9 @@ export class PortfolioDifferenceService {
       diff: number;
     }[]
   > {
-    const tokens = await this.subscanApi.scanTokens(chainInfo.domain);
+    const tokens = (await this.subscanApi.scanTokens(chainInfo.domain)).filter(
+      (t) => t.currency_id !== chainInfo.token,
+    ); // ensure the native token is only included once.
     const nativeToken = await this.subscanApi.fetchNativeToken(
       chainInfo.domain,
     );
@@ -129,6 +143,7 @@ export class PortfolioDifferenceService {
       symbol: chainInfo.token,
       unique_id: chainInfo.token,
       asset_id: chainInfo.token,
+      currency_id: chainInfo.token,
       native: true,
     });
 

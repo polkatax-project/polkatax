@@ -8,6 +8,7 @@ import { PortfolioMovement } from "../../src/server/data-aggregation/model/portf
 import { PortfolioChangeValidationService } from "../../src/server/data-aggregation/services/portfolio-change-validation.service";
 import { createDIContainer } from "../../src/server/di-container";
 import { PortfolioMovementsService } from "../../src/server/data-aggregation/services/portfolio-movements.service";
+import * as fs from "fs";
 
 const acceptedDeviations = [
   {
@@ -75,12 +76,8 @@ const verifyPortfolioChanges = async (
   const portfolioMovementsService: PortfolioMovementsService =
     container.resolve("portfolioMovementsService");
 
-  const today = new Date();
-  const minDate = new Date();
-  minDate.setDate(today.getDate() - 360);
-
-  const maxDate = new Date();
-  maxDate.setDate(today.getDate() - 180);
+  const minDate = new Date("2024-11-01T00:00:00.000Z");
+  const maxDate = new Date("2024-12-31T23:59:59.999Z");
 
   let { portfolioMovements } =
     (await portfolioMovementsService.fetchPortfolioMovements({
@@ -92,6 +89,7 @@ const verifyPortfolioChanges = async (
     })) as {
       portfolioMovements: PortfolioMovement[];
     };
+
   const portfolioChangeValidationService: PortfolioChangeValidationService =
     container.resolve("portfolioChangeValidationService");
   const deviations = await portfolioChangeValidationService.validate(
@@ -106,7 +104,12 @@ const verifyPortfolioChanges = async (
         `Deviation from expectation too large for ${address} and ${chainInfo.domain}:`,
       );
       console.log(JSON.stringify(d, null, 2));
+      fs.writeFileSync(
+        "./integration-tests/out-temp/portfolio-movements.json",
+        JSON.stringify(portfolioMovements, null, 2),
+      );
       expect(d.absoluteDeviationTooLarge).toBeFalsy();
+      expect(d.perPaymentDeviationTooLarge).toBeFalsy();
     }
   });
 };
@@ -191,12 +194,12 @@ describe("Verify portfolio changes", () => {
     }, 600000);
   });
 
-  describe.skip("Verify the portfolio change hydration", () => {
+  describe("Verify the portfolio change hydration", () => {
     const chainInfo = { domain: "hydration", label: "", token: "HDX" };
 
-    test("15abVnvSgRJFCqhJuvrYSNL5DscRppcog8cyYaVALLU3LFjB", async () => {
+    test("15Vut6ZxJNKSCJY87DLtZZbFyWyR1LBwXhAc7wqwVRK3ioWN", async () => {
       await verifyPortfolioChanges(
-        "15abVnvSgRJFCqhJuvrYSNL5DscRppcog8cyYaVALLU3LFjB",
+        "15Vut6ZxJNKSCJY87DLtZZbFyWyR1LBwXhAc7wqwVRK3ioWN",
         chainInfo,
       );
     }, 600000);
