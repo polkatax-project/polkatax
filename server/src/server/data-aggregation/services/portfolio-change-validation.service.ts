@@ -107,6 +107,13 @@ export class PortfolioChangeValidationService {
       return [];
     }
 
+    if (maxBlockNum === undefined && portfolioMovements.length === 0) {
+      logger.info(
+        `Exit PortfolioChangeValidationService.validate: No portfolio movements found.`,
+      );
+      return [];
+    }
+
     minBlockNum =
       minBlockNum ??
       portfolioMovements.reduce(
@@ -123,6 +130,7 @@ export class PortfolioChangeValidationService {
         (curr, next) => Math.max(curr, (next as PortfolioMovement)?.block ?? 0),
         0,
       );
+
     const [minBlock, maxBlock] = await Promise.all([
       this.subscanApi.fetchBlock(chainInfo.domain, minBlockNum),
       this.subscanApi.fetchBlock(chainInfo.domain, maxBlockNum),
@@ -143,22 +151,32 @@ export class PortfolioChangeValidationService {
       "assethub-kusama",
     ].includes(chainInfo.domain);
 
-    const portfolioTokenIds = portfolioDifference.map(d => d.unique_id )
-    const tokenIdsNotInPortfolio = []
-    const tokensNotInPortfolio = []
-    portfolioMovements.forEach(p => p.transfers.forEach((t: Transfer) => {
-      if (!portfolioTokenIds.includes(t.asset_unique_id) && !tokenIdsNotInPortfolio.includes(t)) {
-        tokenIdsNotInPortfolio.push(t)
-        tokensNotInPortfolio.push({ symbol: t.symbol, asset_unique_id: t.asset_unique_id, diff: 0, native: t.asset_unique_id === chainInfo.token })
-      }
-    }))
-    const allTokens = portfolioDifference.concat(tokensNotInPortfolio)
+    const portfolioTokenIds = portfolioDifference.map((d) => d.unique_id);
+    const tokenIdsNotInPortfolio = [];
+    const tokensNotInPortfolio = [];
+    portfolioMovements.forEach((p) =>
+      p.transfers.forEach((t: Transfer) => {
+        if (
+          !portfolioTokenIds.includes(t.asset_unique_id) &&
+          !tokenIdsNotInPortfolio.includes(t)
+        ) {
+          tokenIdsNotInPortfolio.push(t);
+          tokensNotInPortfolio.push({
+            symbol: t.symbol,
+            asset_unique_id: t.asset_unique_id,
+            diff: 0,
+            native: t.asset_unique_id === chainInfo.token,
+          });
+        }
+      }),
+    );
+    const allTokens = portfolioDifference.concat(tokensNotInPortfolio);
 
     const matchingPortfolioMovements = portfolioMovements.filter(
       (p) =>
         p.timestamp > minBlock.timestamp && p.timestamp <= maxBlock.timestamp,
     );
-      
+
     for (let tokenInPortfolio of allTokens) {
       let expectedDiff = 0;
       let transferCounter = 0;
@@ -186,7 +204,9 @@ export class PortfolioChangeValidationService {
       const maxDeviation =
         acceptedDeviations.find((a) => a.symbol === tokenInPortfolio.symbol) ??
         DEFAULT_MAX_DEVIATION;
-      const perPayment = tokenInPortfolio.native ? deviation / matchingPortfolioMovements.length : deviation / transferCounter;
+      const perPayment = tokenInPortfolio.native
+        ? deviation / matchingPortfolioMovements.length
+        : deviation / transferCounter;
       deviations.push({
         ...tokenInPortfolio,
         deviation,

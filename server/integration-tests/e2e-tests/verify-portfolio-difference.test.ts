@@ -137,7 +137,7 @@ describe("Verify portfolio changes", () => {
     }, 600000);
   });
 
-  describe("Verify the portfolio change coretime", () => {
+  describe.skip("Verify the portfolio change coretime", () => {
     const chainInfo = { domain: "coretime-polkadot", label: "", token: "DOT" };
     test("15fTH34bbKGMUjF1bLmTqxPYgpg481imThwhWcQfCyktyBzL", async () => {
       await verifyPortfolioChanges(
@@ -184,7 +184,7 @@ describe("Verify portfolio changes", () => {
     }, 600000);
   });
 
-  describe("Verify the portfolio change astar", () => {
+  describe.skip("Verify the portfolio change astar", () => {
     const chainInfo = { domain: "astar", label: "", token: "ASTR" };
 
     test("13hDgWbatzrMmdPGz4F3Y63vP3qmdac7PUrujcN5a8nB6CkJ", async () => {

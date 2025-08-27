@@ -92,10 +92,6 @@ export class XcmService {
         const from = this.mapAccountIdToAddress(xcm.from_account_id);
         const to = this.mapAccountIdToAddress(xcm.to_account_id);
 
-        if (xcm.origin_para_id === 2012 || xcm.dest_para_id === 2012) {
-          console.log("TODO:!")
-        }
-
         const outgoingTransfer = paraId === xcm.origin_para_id;
         const timestamp = outgoingTransfer
           ? xcm.origin_block_timestamp
