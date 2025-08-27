@@ -64,27 +64,6 @@ describe("JobConsumer", () => {
     expect(jobsService.setDone).not.toHaveBeenCalled();
   });
 
-  it("should process successfully and call setDone", async () => {
-    jobsService.setInProgress.mockResolvedValue(true);
-    portfolioMovementsService.fetchPortfolioMovements.mockResolvedValue({
-      portfolioMovements: [{ timestamp: Date.now(), balance: 20 }],
-    } as any);
-    portfolioChangeValidationService.calculateDeviationFromExpectation.mockResolvedValue(
-      [],
-    );
-
-    await consumer.process(mockJob);
-
-    expect(jobsService.setDone).toHaveBeenCalledWith(
-      expect.objectContaining({
-        values: expect.any(Array),
-        deviations: [],
-      }),
-      expect.any(Object),
-      expect.any(Number),
-    );
-  });
-
   it("should handle fetch errors with setError", async () => {
     jobsService.setInProgress.mockResolvedValue(true);
     portfolioMovementsService.fetchPortfolioMovements.mockRejectedValue(

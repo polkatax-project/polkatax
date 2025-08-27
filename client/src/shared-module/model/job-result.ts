@@ -1,3 +1,4 @@
+import { DailyRewards, RewardsDto, RewardSummary } from './rewards';
 import { TaxData } from './tax-data';
 
 export interface JobResult {
@@ -10,4 +11,7 @@ export interface JobResult {
   blockchain: string;
   status: string;
   syncFromDate?: number;
+  stakingRewards?: RewardsDto;
+  stakingRewardsSummary?: RewardSummary;
+  dailyStakingRewards?: DailyRewards;
 }

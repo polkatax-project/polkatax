@@ -1,13 +1,6 @@
-export interface Reward extends RewardDto {
-  timestamp: number;
-  valueNow?: number;
-  isoDate: string;
-}
-
 export interface RewardSummary {
   amount: number;
   fiatValue?: number;
-  perYear: { year: number; amount: number; fiatValue?: number }[];
 }
 
 export interface DailyRewards {
@@ -19,8 +12,8 @@ export interface Rewards {
   chain: string;
   address: string;
   currency: string;
+  values: RewardDto[];
   summary: RewardSummary;
-  values: Reward[];
   dailyValues: DailyRewards;
 }
 
@@ -36,15 +29,4 @@ export interface RewardDto {
 export interface RewardsDto {
   values: RewardDto[];
   token: string;
-}
-
-export interface StakingRewardsPerYear {
-  year: number;
-  token: string;
-  chain: string;
-  address: string;
-  currency: string;
-  summary: { year: number; amount: number; fiatValue?: number };
-  values: Reward[];
-  dailyValues: DailyRewards;
 }

@@ -66,6 +66,11 @@ const ACCEPTED_DEVIATIONS = [
     perPayment: 0.3,
     max: 2,
   },
+  {
+    symbol: "INTR",
+    perPayment: 0.1,
+    max: 10,
+  },
 ];
 
 export interface Deviation {
@@ -155,20 +160,22 @@ export class PortfolioChangeValidationService {
     const tokenIdsNotInPortfolio = [];
     const tokensNotInPortfolio = [];
     portfolioMovements.forEach((p) =>
-      p.transfers.forEach((t: Transfer) => {
-        if (
-          !portfolioTokenIds.includes(t.asset_unique_id) &&
-          !tokenIdsNotInPortfolio.includes(t)
-        ) {
-          tokenIdsNotInPortfolio.push(t);
-          tokensNotInPortfolio.push({
-            symbol: t.symbol,
-            asset_unique_id: t.asset_unique_id,
-            diff: 0,
-            native: t.asset_unique_id === chainInfo.token,
-          });
-        }
-      }),
+      p.transfers
+        .filter((t) => t.asset_unique_id)
+        .forEach((t: Transfer) => {
+          if (
+            !portfolioTokenIds.includes(t.asset_unique_id) &&
+            !tokenIdsNotInPortfolio.includes(t.asset_unique_id)
+          ) {
+            tokenIdsNotInPortfolio.push(t.asset_unique_id);
+            tokensNotInPortfolio.push({
+              symbol: t.symbol,
+              asset_unique_id: t.asset_unique_id,
+              diff: 0,
+              native: t.asset_unique_id === chainInfo.token,
+            });
+          }
+        }),
     );
     const allTokens = portfolioDifference.concat(tokensNotInPortfolio);
 

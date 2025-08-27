@@ -4,7 +4,7 @@
       :rows="rows"
       :columns="columns"
       row-key="id"
-      no-data-label="No rewards found"
+      no-data-label="No taxable events found"
       :pagination="initialPagination"
       selection="multiple"
       v-model:selected="store.excludedEntries"
@@ -45,9 +45,7 @@
           <div>
             {{ props.row.label }}
           </div>
-          <div v-if="props.row.callModuleDescription && !props.row.label">
-            ({{ props.row.callModuleDescription }})
-          </div>
+          <div v-if="props.row.isTransferToSelf">(Transfer to self)</div>
         </q-td>
       </template>
 
@@ -59,9 +57,25 @@
         </q-td>
       </template>
 
+      <template v-slot:body-cell-fiat-sent="props">
+        <q-td :props="props">
+          <div v-for="(item, idx) in props.row.fiatSent" v-bind:key="idx">
+            {{ item }}
+          </div>
+        </q-td>
+      </template>
+
       <template v-slot:body-cell-tokens-received="props">
         <q-td :props="props">
           <div v-for="(item, idx) in props.row.tokensReceived" v-bind:key="idx">
+            {{ item }}
+          </div>
+        </q-td>
+      </template>
+
+      <template v-slot:body-cell-fiat-received="props">
+        <q-td :props="props">
+          <div v-for="(item, idx) in props.row.fiatReceived" v-bind:key="idx">
             {{ item }}
           </div>
         </q-td>
@@ -88,14 +102,23 @@ import {
   formatCryptoAmount,
   formatCurrency,
 } from '../../../shared-module/util/number-formatters';
+import { useSharedStore } from '../../../shared-module/store/shared.store';
 
 const store = useTaxableEventStore();
 const taxData: Ref<TaxData | undefined> = ref(undefined);
 const tokenFilter: Ref<{ name: string; value: boolean }[]> = ref([]);
 
+const userWallets: Ref<string[]> = ref([]);
+
 const taxDataSubscription = store.visibleTaxData$.subscribe(async (data) => {
   taxData.value = data;
 });
+
+const walletSubscription = useSharedStore().walletsAddresses$.subscribe(
+  async (wallets) => {
+    userWallets.value = wallets;
+  }
+);
 
 const tokenFilterSubscription = store.visibleTokens$.subscribe(async (data) => {
   tokenFilter.value = data;
@@ -104,6 +127,7 @@ const tokenFilterSubscription = store.visibleTokens$.subscribe(async (data) => {
 onUnmounted(() => {
   taxDataSubscription.unsubscribe();
   tokenFilterSubscription.unsubscribe();
+  walletSubscription.unsubscribe();
 });
 
 function isVisible(token: string) {
@@ -146,16 +170,23 @@ const columns = computed(() => [
     sortable: false,
   },
   {
+    name: 'fiat-sent',
+    align: 'right',
+    label: 'Fiat value sent',
+    field: 'fiatSent',
+    sortable: false,
+  },
+  {
     name: 'tokens-received',
     align: 'right',
     label: 'Received tokens',
     sortable: false,
   },
   {
-    name: 'fiatValue',
+    name: 'fiat-received',
     align: 'right',
-    label: 'Fiat value',
-    field: 'fiatValue',
+    label: 'Fiat value received',
+    field: 'fiatReceived',
     sortable: false,
   },
   {
@@ -163,6 +194,13 @@ const columns = computed(() => [
     align: 'right',
     label: 'From/to',
     sortable: false,
+  },
+  {
+    name: 'notes',
+    align: 'right',
+    label: 'Notes',
+    field: 'callModuleDescription',
+    sortable: true,
   },
 ]);
 
@@ -191,31 +229,44 @@ const rows = computed(() => {
       addresses: data.transfers
         .map((t) => [t.from, t.to])
         .flat()
-        .filter((t) => !!t && t !== taxData.value?.address),
-      fiatValue: formatCurrency(
-        calculateFiatValue(data),
-        taxData.value?.currency || ''
-      ),
+        .filter((a) => !!a),
+      fiatSent: data.transfers
+        .filter((t) => t.amount < 0 && isVisible(t.symbol))
+        .map((t) =>
+          t.fiatValue
+            ? formatCurrency(
+                Math.abs(t.fiatValue),
+                taxData.value?.currency || '-'
+              )
+            : '-'
+        ),
+      fiatReceived: data.transfers
+        .filter((t) => t.amount > 0 && isVisible(t.symbol))
+        .map((t) =>
+          t.fiatValue
+            ? formatCurrency(
+                Math.abs(t.fiatValue),
+                taxData.value?.currency || '-'
+              )
+            : '-'
+        ),
       id: data.id,
       taxCategory: 'Income',
+      isTransferToSelf: isTransferToSelf(data),
     });
   });
   return flattened;
 });
 
-function calculateFiatValue(data: TaxableEvent): number | undefined {
-  const fiatSent = data.transfers
-    .filter((t) => t.amount < 0)
-    .reduce((curr, t) => curr + Math.abs(t.fiatValue ?? NaN), 0);
-  const fiatReceived = data.transfers
-    .filter((t) => t.amount > 0)
-    .reduce((curr, t) => curr + Math.abs(t.fiatValue ?? NaN), 0);
-  return fiatSent !== 0 && !isNaN(fiatSent)
-    ? fiatSent
-    : fiatReceived !== 0 && !isNaN(fiatReceived)
-    ? fiatReceived
-    : undefined;
-}
+const isTransferToSelf = (data: TaxableEvent) => {
+  return data.transfers.every(
+    (t) =>
+      t.from &&
+      t.to &&
+      userWallets.value.includes(t.from) &&
+      userWallets.value.includes(t.to)
+  );
+};
 
 const initialPagination = ref({
   sortBy: 'timestamp',

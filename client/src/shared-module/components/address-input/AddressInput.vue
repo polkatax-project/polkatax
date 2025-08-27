@@ -16,7 +16,9 @@
     >
       <template
         v-if="
-          isValidAddress(props.modelValue) && !isEvmAddress && !isCanonicalAddress
+          isValidAddress(props.modelValue) &&
+          !isEvmAddress &&
+          !isCanonicalAddress
         "
         v-slot:hint
       >

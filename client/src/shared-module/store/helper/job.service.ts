@@ -30,6 +30,7 @@ export function addMetaData(
   const fiscalYearBorders = fiscalYearToBorders(fiscalYear);
   const enriched = {
     values: addId(taxableEvents),
+    deviations: job.data?.deviations ?? [],
     chain: job.blockchain,
     currency: job.currency,
     address: job.wallet,

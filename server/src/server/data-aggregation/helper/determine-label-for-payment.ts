@@ -242,6 +242,15 @@ const callModuleClassifications: CallModuleClassification[] = [
           },
         ],
       },
+      {
+        module: "omnipoolliquiditymining",
+        functions: [
+          {
+            name: "deposit_shares",
+            label: "Farming deposit" as const,
+          },
+        ],
+      },
     ],
   },
   {

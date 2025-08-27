@@ -33,8 +33,28 @@
               <q-icon
                 :name="matOfflinePin"
                 size="md"
-                v-if="props.row.status === 'done'"
+                v-if="
+                  props.row.status === 'done' && !mayBeIncorrectData(props.row)
+                "
               />
+              <q-icon
+                :name="matWarning"
+                size="md"
+                color="orange"
+                @click.stop
+                v-if="
+                  props.row.status === 'done' && mayBeIncorrectData(props.row)
+                "
+              >
+                <q-tooltip
+                  anchor="top middle"
+                  self="bottom middle"
+                  aria-label="Error info tooltip"
+                  >Actual and calculated asset movement do not align well for
+                  tokens:
+                  {{ getTokensWithLargeDeviation(props.row) }}</q-tooltip
+                >
+              </q-icon>
               <q-icon
                 :name="matError"
                 size="md"
@@ -199,6 +219,7 @@ import {
   matSync,
   matOfflinePin,
   matError,
+  matWarning,
 } from '@quasar/extras/material-icons';
 import { exportDefaultCsv } from '../../shared-module/service/export-default-csv';
 import { exportKoinlyCsv } from '../../shared-module/service/export-koinly-csv';
@@ -305,6 +326,21 @@ function getEventCount(jobResult: JobResult) {
 
 function retry(job: JobResult) {
   store.retry(job);
+}
+
+function mayBeIncorrectData(job: JobResult): boolean {
+  return (
+    (job.data?.deviations ?? []).filter(
+      (d) => d.absoluteDeviationTooLarge || d.perPaymentDeviationTooLarge
+    ).length > 0
+  );
+}
+
+function getTokensWithLargeDeviation(job: JobResult) {
+  return job?.data?.deviations
+    .filter((d) => d.absoluteDeviationTooLarge || d.perPaymentDeviationTooLarge)
+    .map((d) => d.symbol)
+    .join(', ');
 }
 </script>
 <style lang="scss">

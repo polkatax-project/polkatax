@@ -111,14 +111,14 @@ export class PortfolioDifferenceService {
       const valueAtMinBlock = portfolioAtMinBlock.find(
         (p) => p.asset_unique_id === t.unique_id,
       )?.balance;
-      const vlaueAtMaxBlock = portfolioAtMaxBlock.find(
+      const valueAtMaxBlock = portfolioAtMaxBlock.find(
         (p) => p.asset_unique_id === t.unique_id,
       )?.balance;
       return {
         ...t,
         balanceBefore: valueAtMinBlock,
-        balanceAfter: vlaueAtMaxBlock,
-        diff: Math.abs(vlaueAtMaxBlock - valueAtMinBlock),
+        balanceAfter: valueAtMaxBlock,
+        diff: valueAtMaxBlock - valueAtMinBlock,
       };
     });
   }
@@ -185,7 +185,7 @@ export class PortfolioDifferenceService {
         ...t,
         balanceAfter: valueAtMaxBlock,
         balanceBefore: valueAtMinBlock,
-        diff: Math.abs(valueAtMaxBlock - valueAtMinBlock),
+        diff: valueAtMaxBlock - valueAtMinBlock,
       };
     });
   }

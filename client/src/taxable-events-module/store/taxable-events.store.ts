@@ -13,6 +13,8 @@ import {
 import { useSharedStore } from '../../shared-module/store/shared.store';
 import { TaxableEvent } from '../../shared-module/model/taxable-event';
 import { TaxData } from '../../shared-module/model/tax-data';
+import { Rewards } from '../../shared-module/model/rewards';
+import { JobResult } from '../../shared-module/model/job-result';
 const blockchain$ = new ReplaySubject<string>(1);
 const wallet$ = new ReplaySubject<string>(1);
 const currency$ = new ReplaySubject<string>(1);
@@ -61,6 +63,35 @@ const taxData$ = combineLatest([
       visibleTokens$.next(tokens.map((t) => ({ name: t, value: true })));
     }
   })
+);
+
+const stakingRewards$: Observable<Rewards> = combineLatest([
+  useSharedStore().jobs$,
+  blockchain$,
+  wallet$,
+  currency$,
+]).pipe(
+  map(([jobs, blockchain, wallet, currency]) => {
+    return jobs.find(
+      (j) =>
+        j.blockchain === blockchain &&
+        j.wallet === wallet &&
+        j.currency === currency
+    );
+  }),
+  filter((j) => !!j),
+  map((job) => ({
+    values: job.stakingRewards?.values ?? [],
+    summary: job.stakingRewardsSummary!,
+    dailyValues: job.dailyStakingRewards!,
+    currency: job?.currency,
+    address: job?.wallet,
+    chain: job?.blockchain,
+    token: (job as JobResult)?.stakingRewards?.token || '',
+  })),
+  distinctUntilChanged(
+    (prev, curr) => (curr?.values ?? []).length === (prev?.values ?? []).length
+  )
 );
 
 const visibleTaxData$ = combineLatest([
@@ -114,6 +145,7 @@ export const useTaxableEventStore = defineStore('taxable-events', {
     excludedEntries: TaxableEvent[];
     visibleTokens$: Observable<{ name: string; value: boolean }[]>;
     eventTypeFilter$: Observable<Record<string, boolean>>;
+    stakingRewards$: Observable<Rewards>;
   } => {
     return {
       taxData$,
@@ -122,6 +154,7 @@ export const useTaxableEventStore = defineStore('taxable-events', {
       excludedEntries: [],
       visibleTokens$: visibleTokens$.asObservable(),
       eventTypeFilter$: eventTypeFilter$.asObservable(),
+      stakingRewards$,
     };
   },
   actions: {
