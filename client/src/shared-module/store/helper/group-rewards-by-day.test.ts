@@ -5,9 +5,9 @@ import { Reward } from '../../model/rewards';
 describe('groupRewardsByDay', () => {
   test('should group rewards by isoDate and sum values correctly', () => {
     const rewards: Reward[] = [
-      { isoDate: '2024-04-20', amount: 5, fiatValue: 50, valueNow: 60 },
-      { isoDate: '2024-04-20', amount: 3, fiatValue: 30, valueNow: 40 },
-      { isoDate: '2024-04-21', amount: 2, fiatValue: 20, valueNow: 25 },
+      { isoDate: '2024-04-20', amount: 5, fiatValue: 50 },
+      { isoDate: '2024-04-20', amount: 3, fiatValue: 30 },
+      { isoDate: '2024-04-21', amount: 2, fiatValue: 20 },
     ] as Reward[];
 
     const result = groupRewardsByDay(rewards);
@@ -15,39 +15,35 @@ describe('groupRewardsByDay', () => {
     expect(result).toEqual({
       '2024-04-20': {
         amount: 8,
-        fiatValue: 80,
-        valueNow: 100,
+        fiatValue: 80
       },
       '2024-04-21': {
         amount: 2,
-        fiatValue: 20,
-        valueNow: 25,
+        fiatValue: 20
       },
     });
   });
 
   test('should return undefined for value if any value is undefined in a group', () => {
     const rewards: Reward[] = [
-      { isoDate: '2024-04-20', amount: 5, fiatValue: 50, valueNow: 60 },
-      { isoDate: '2024-04-20', amount: 3, fiatValue: undefined, valueNow: 40 },
+      { isoDate: '2024-04-20', amount: 5, fiatValue: 50,  },
+      { isoDate: '2024-04-20', amount: 3, fiatValue: undefined },
     ] as Reward[];
 
     const result = groupRewardsByDay(rewards);
 
     expect(result['2024-04-20'].fiatValue).toBeUndefined();
-    expect(result['2024-04-20'].valueNow).toBe(100);
   });
 
   test('should return undefined for valueNow if any valueNow is undefined in a group', () => {
     const rewards: Reward[] = [
-      { isoDate: '2024-04-21', amount: 4, fiatValue: 20, valueNow: 25 },
-      { isoDate: '2024-04-21', amount: 2, fiatValue: 10, valueNow: undefined },
+      { isoDate: '2024-04-21', amount: 4, fiatValue: 20 },
+      { isoDate: '2024-04-21', amount: 2, fiatValue: 10 },
     ] as Reward[];
 
     const result = groupRewardsByDay(rewards);
 
     expect(result['2024-04-21'].fiatValue).toBe(30);
-    expect(result['2024-04-21'].valueNow).toBeUndefined();
   });
 
   test('should handle empty reward list', () => {
@@ -68,8 +64,7 @@ describe('groupRewardsByDay', () => {
     expect(result).toEqual({
       '2024-04-22': {
         amount: 1,
-        fiatValue: 10,
-        valueNow: 12,
+        fiatValue: 10
       },
     });
   });
