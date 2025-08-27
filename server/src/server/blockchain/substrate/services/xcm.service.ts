@@ -68,6 +68,7 @@ export class XcmService {
       `Enter fetchXcmTransfers from ${data.chainName} for address ${data.address}, from ${new Date(data.minDate).toUTCString()}`,
     );
     const chain = subscanChains.chains.find((c) => c.domain === data.chainName);
+
     if ((!chain.relay || !chain.paraId) && !chain.isRelay) {
       logger.info(
         `Exit fetchXcmTransfers from ${data.chainName} for address ${data.address} with zero xcm`,
@@ -90,6 +91,10 @@ export class XcmService {
       rawXcmList.map(async (xcm) => {
         const from = this.mapAccountIdToAddress(xcm.from_account_id);
         const to = this.mapAccountIdToAddress(xcm.to_account_id);
+
+        if (xcm.origin_para_id === 2012 || xcm.dest_para_id === 2012) {
+          console.log("TODO:!")
+        }
 
         const outgoingTransfer = paraId === xcm.origin_para_id;
         const timestamp = outgoingTransfer
@@ -114,9 +119,9 @@ export class XcmService {
           return;
         }
 
-        if (!destChain || !fromChain) {
+        if (!destChain && !fromChain) {
           logger.warn(
-            `Destination and/or origin chain for xcm ${xcm.id}/${xcm.message_hash} not found`,
+            `Destination and origin chain for xcm ${xcm.id}/${xcm.message_hash} not found`,
           );
           return undefined;
         }

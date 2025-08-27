@@ -1,5 +1,6 @@
 import { WS_CHAIN_ENDPOINTS } from "../../blockchain/substrate/api/polkadot-api";
 import { SubscanApi } from "../../blockchain/substrate/api/subscan.api";
+import { Transfer } from "../../blockchain/substrate/model/raw-transfer";
 import { logger } from "../../logger/logger";
 import { PortfolioMovement, TaxableEvent } from "../model/portfolio-movement";
 import { PortfolioDifferenceService } from "./portfolio-difference.service";
@@ -106,10 +107,6 @@ export class PortfolioChangeValidationService {
       return [];
     }
 
-    if (portfolioMovements.length === 0) {
-      logger.info("No portfolio movements found to validate");
-      return [];
-    }
     minBlockNum =
       minBlockNum ??
       portfolioMovements.reduce(
@@ -145,14 +142,29 @@ export class PortfolioChangeValidationService {
       "assethub-polkadot",
       "assethub-kusama",
     ].includes(chainInfo.domain);
-    for (let tokenInPortfolio of portfolioDifference) {
+
+    const portfolioTokenIds = portfolioDifference.map(d => d.unique_id )
+    const tokenIdsNotInPortfolio = []
+    const tokensNotInPortfolio = []
+    portfolioMovements.forEach(p => p.transfers.forEach((t: Transfer) => {
+      if (!portfolioTokenIds.includes(t.asset_unique_id) && !tokenIdsNotInPortfolio.includes(t)) {
+        tokenIdsNotInPortfolio.push(t)
+        tokensNotInPortfolio.push({ symbol: t.symbol, asset_unique_id: t.asset_unique_id, diff: 0, native: t.asset_unique_id === chainInfo.token })
+      }
+    }))
+    const allTokens = portfolioDifference.concat(tokensNotInPortfolio)
+
+    const matchingPortfolioMovements = portfolioMovements.filter(
+      (p) =>
+        p.timestamp > minBlock.timestamp && p.timestamp <= maxBlock.timestamp,
+    );
+      
+    for (let tokenInPortfolio of allTokens) {
       let expectedDiff = 0;
-      const matchingPortfolioMovements = portfolioMovements.filter(
-        (p) =>
-          p.timestamp > minBlock.timestamp && p.timestamp <= maxBlock.timestamp,
-      );
+      let transferCounter = 0;
+
       if (!ignoreFees && tokenInPortfolio.native) {
-        portfolioMovements.forEach((p) => {
+        matchingPortfolioMovements.forEach((p) => {
           expectedDiff +=
             -((p as PortfolioMovement)?.feeUsed ?? 0) -
             ((p as PortfolioMovement)?.tip ?? 0); // - (p?.xcmFee ?? 0);
@@ -166,6 +178,7 @@ export class PortfolioChangeValidationService {
               t.module === "xcm")
           ) {
             expectedDiff += t?.amount ?? 0;
+            transferCounter++;
           }
         });
       });
@@ -173,9 +186,7 @@ export class PortfolioChangeValidationService {
       const maxDeviation =
         acceptedDeviations.find((a) => a.symbol === tokenInPortfolio.symbol) ??
         DEFAULT_MAX_DEVIATION;
-      const perPayment = tokenInPortfolio.native
-        ? deviation / portfolioMovements.length
-        : deviation / matchingPortfolioMovements.length;
+      const perPayment = tokenInPortfolio.native ? deviation / matchingPortfolioMovements.length : deviation / transferCounter;
       deviations.push({
         ...tokenInPortfolio,
         deviation,
@@ -183,7 +194,7 @@ export class PortfolioChangeValidationService {
         absoluteDeviationTooLarge: Math.abs(deviation) > maxDeviation.max,
         perPaymentDeviationTooLarge:
           Math.abs(perPayment) > maxDeviation.perPayment,
-        deviationPerPayment: perPayment,
+        deviationPerPayment: isNaN(perPayment) ? 0 : perPayment,
         numberTx: matchingPortfolioMovements.length,
       });
     }

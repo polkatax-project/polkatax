@@ -8,6 +8,18 @@ import {
 } from "../shared/helper/fetch-portfolio-movements";
 import { getApiClient } from "../shared/helper/get-balances-at";
 import { PortfolioChangeValidationService } from "../../src/server/data-aggregation/services/portfolio-change-validation.service";
+import * as fs from "fs";
+
+
+const fetchAndStorePortfolioMovements = async (address: string,
+  chain: { domain: string; label: string; token: string }) => {
+    const { portfolioMovements, minBlock, maxBlock, unmatchedEvents } = await fetchPortfolioMovements(address, chain)
+    fs.writeFileSync(
+      "./integration-tests/out-temp/portfolio-movements.json",
+      JSON.stringify(portfolioMovements, null, 2),
+    );
+    return { portfolioMovements, minBlock, maxBlock, unmatchedEvents }
+}
 
 const zoomIntoErrorTokensChange = async (
   address: string,
@@ -19,7 +31,7 @@ const zoomIntoErrorTokensChange = async (
 ) => {
   const { portfolioMovements, minBlock, maxBlock, unmatchedEvents } =
     cachedData?.portfolioMovements ??
-    (await fetchPortfolioMovements(address, chain));
+    (await fetchAndStorePortfolioMovements(address, chain));
   const container = createDIContainer();
   const subscanApi: SubscanApi = container.resolve("subscanApi");
 
@@ -46,6 +58,7 @@ const zoomIntoErrorTokensChange = async (
   const portfolioMovementsSecondHalf = portfolioMovements.filter(
     (p) => p.timestamp >= timestamps[1] && p.timestamp <= timestamps[2],
   );
+  
   const deviationsFirstHalf = (
     await portfolioChangeValidationService.calculateDeviationFromExpectation(
       chain,
@@ -85,7 +98,7 @@ const zoomIntoErrorTokensChange = async (
     endBlock: blocksToFetch[intervalNo + 1],
   };
   console.log(
-    `Next interval ${nextInterval.startBlock} - ${nextInterval.endBlock}`,
+    `Current deviation: ${Math.max(deviationsSecondHalf.deviation, deviationsFirstHalf.deviation) }. Next interval ${nextInterval.startBlock} - ${nextInterval.endBlock}`,
   );
   if (nextInterval.endBlock - nextInterval.startBlock > 1) {
     await zoomIntoErrorTokensChange(

@@ -145,13 +145,13 @@ export async function verifyBalanceHistory(
     maxDate,
   );
   const sumOfDifferences = unexplainedChanges.reduce(
-    (curr, next) => (curr += next.deviationFromExpectation),
+    (curr, next) => (curr += Math.abs(next.deviationFromExpectation)),
     0,
   );
   expect(sumOfDifferences).toBeLessThanOrEqual(maxAllowedTotalDiff);
 
   const maxDiffPerBlock = unexplainedChanges.reduce(
-    (curr, next) => (curr = Math.max(curr, next.deviationFromExpectation)),
+    (curr, next) => (curr = Math.max(curr, Math.abs(next.deviationFromExpectation))),
     0,
   );
   expect(maxDiffPerBlock).toBeLessThanOrEqual(maxAllowedDiffPerBlock);

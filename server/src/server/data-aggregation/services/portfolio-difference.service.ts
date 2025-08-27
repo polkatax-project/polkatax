@@ -18,6 +18,8 @@ export class PortfolioDifferenceService {
       asset_id: number;
       diff: number;
       native?: boolean;
+      balanceBefore: number;
+      balanceAfter: number;
     }[]
   > {
     logger.info(
@@ -64,6 +66,8 @@ export class PortfolioDifferenceService {
       decimals: number;
       asset_id: number;
       diff: number;
+      balanceBefore: number;
+      balanceAfter: number;
     }[]
   > {
     const portfolioNow = await this.subscanApi.fetchAccountTokens(
@@ -112,7 +116,9 @@ export class PortfolioDifferenceService {
       )?.balance;
       return {
         ...t,
-        diff: vlaueAtMaxBlock - valueAtMinBlock,
+        balanceBefore: valueAtMinBlock,
+        balanceAfter: vlaueAtMaxBlock,
+        diff: Math.abs(vlaueAtMaxBlock - valueAtMinBlock),
       };
     });
   }
@@ -129,6 +135,8 @@ export class PortfolioDifferenceService {
       decimals: number;
       asset_id: number;
       diff: number;
+      balanceBefore: number;
+      balanceAfter: number;
     }[]
   > {
     const tokens = (await this.subscanApi.scanTokens(chainInfo.domain)).filter(
@@ -167,7 +175,7 @@ export class PortfolioDifferenceService {
             p.asset_unique_id === t.unique_id ||
             p.asset_unique_id === t.asset_id,
         )?.balance ?? 0;
-      const vlaueAtMaxBlock =
+      const valueAtMaxBlock =
         portfolioAtMaxBlock.find(
           (p) =>
             p.asset_unique_id === t.unique_id ||
@@ -175,7 +183,9 @@ export class PortfolioDifferenceService {
         )?.balance ?? 0;
       return {
         ...t,
-        diff: vlaueAtMaxBlock - valueAtMinBlock,
+        balanceAfter: valueAtMaxBlock,
+        balanceBefore: valueAtMinBlock,
+        diff: Math.abs(valueAtMaxBlock - valueAtMinBlock),
       };
     });
   }
