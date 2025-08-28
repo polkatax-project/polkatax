@@ -3,7 +3,10 @@ import { SubscanApi } from "../../blockchain/substrate/api/subscan.api";
 import { Transfer } from "../../blockchain/substrate/model/raw-transfer";
 import { logger } from "../../logger/logger";
 import { PortfolioMovement, TaxableEvent } from "../model/portfolio-movement";
-import { PortfolioDifferenceService } from "./portfolio-difference.service";
+import {
+  PortfolioDifference,
+  PortfolioDifferenceService,
+} from "./portfolio-difference.service";
 
 const DEFAULT_MAX_DEVIATION = {
   perPayment: 0.02,
@@ -65,6 +68,11 @@ const ACCEPTED_DEVIATIONS = [
     symbol: "BNC",
     perPayment: 0.3,
     max: 2,
+  },
+  {
+    symbol: "INTR",
+    perPayment: 0.1,
+    max: 10,
   },
 ];
 
@@ -135,7 +143,7 @@ export class PortfolioChangeValidationService {
       this.subscanApi.fetchBlock(chainInfo.domain, minBlockNum),
       this.subscanApi.fetchBlock(chainInfo.domain, maxBlockNum),
     ]);
-    const portfolioDifference =
+    const portfolioDifferences: PortfolioDifference[] =
       await this.portfolioDifferenceSerivce.fetchPortfolioDifference(
         chainInfo,
         address,
@@ -151,26 +159,30 @@ export class PortfolioChangeValidationService {
       "assethub-kusama",
     ].includes(chainInfo.domain);
 
-    const portfolioTokenIds = portfolioDifference.map((d) => d.unique_id);
+    const portfolioTokenIds = portfolioDifferences.map((d) => d.unique_id);
     const tokenIdsNotInPortfolio = [];
-    const tokensNotInPortfolio = [];
+    const tokensNotInPortfolio: Partial<PortfolioDifference>[] = [];
     portfolioMovements.forEach((p) =>
-      p.transfers.forEach((t: Transfer) => {
-        if (
-          !portfolioTokenIds.includes(t.asset_unique_id) &&
-          !tokenIdsNotInPortfolio.includes(t)
-        ) {
-          tokenIdsNotInPortfolio.push(t);
-          tokensNotInPortfolio.push({
-            symbol: t.symbol,
-            asset_unique_id: t.asset_unique_id,
-            diff: 0,
-            native: t.asset_unique_id === chainInfo.token,
-          });
-        }
-      }),
+      p.transfers
+        .filter((t) => t.asset_unique_id)
+        .forEach((t: Transfer) => {
+          if (
+            !portfolioTokenIds.includes(t.asset_unique_id) &&
+            !tokenIdsNotInPortfolio.includes(t.asset_unique_id)
+          ) {
+            tokenIdsNotInPortfolio.push(t.asset_unique_id);
+            tokensNotInPortfolio.push({
+              symbol: t.symbol,
+              unique_id: t.asset_unique_id,
+              diff: 0,
+              native: t.asset_unique_id === chainInfo.token,
+            });
+          }
+        }),
     );
-    const allTokens = portfolioDifference.concat(tokensNotInPortfolio);
+    const allTokens = portfolioDifferences.concat(
+      tokensNotInPortfolio as PortfolioDifference[],
+    );
 
     const matchingPortfolioMovements = portfolioMovements.filter(
       (p) =>
@@ -205,8 +217,12 @@ export class PortfolioChangeValidationService {
         acceptedDeviations.find((a) => a.symbol === tokenInPortfolio.symbol) ??
         DEFAULT_MAX_DEVIATION;
       const perPayment = tokenInPortfolio.native
-        ? deviation / matchingPortfolioMovements.length
-        : deviation / transferCounter;
+        ? matchingPortfolioMovements.length > 0
+          ? deviation / matchingPortfolioMovements.length
+          : 0
+        : transferCounter > 0
+          ? deviation / transferCounter
+          : 0;
       deviations.push({
         ...tokenInPortfolio,
         deviation,

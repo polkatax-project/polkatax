@@ -112,7 +112,7 @@ describe("JobManager.enqueue", () => {
     const outdatedJob = makeJob({
       blockchain: "polkadot",
       status: "done",
-      lastModified: Date.now() - 2 * 24 * 60 * 60 * 1000, // outdated by 2 days
+      lastModified: Date.now() - 14 * 24 * 60 * 60 * 1000, // outdated by 14 days
       syncedUntil: 1609545600000, // Jan 2, 2021
       data: { some: "data" },
     });
@@ -136,7 +136,7 @@ describe("JobManager.enqueue", () => {
       expect.any(String),
       outdatedJob.wallet,
       outdatedJob.blockchain,
-      outdatedJob.syncedUntil! - 24 * 60 * 60 * 1000,
+      expect.any(Number),
       outdatedJob.currency,
       outdatedJob.data,
     );

@@ -1,18 +1,16 @@
-import { Reward } from '../../model/rewards';
+import { DailyRewards, RewardDto } from '../../model/rewards';
 
-export function groupRewardsByDay(rewards: Reward[]) {
+export function groupRewardsByDay(rewards: RewardDto[]): DailyRewards {
   return rewards.reduce<{
     [key: string]: {
       amount: number;
       fiatValue: number | undefined;
-      valueNow: number | undefined;
     };
   }>((groupedByDay, reward) => {
     if (!groupedByDay[reward.isoDate!]) {
       groupedByDay[reward.isoDate!] = {
         amount: 0,
         fiatValue: 0,
-        valueNow: 0,
       };
     }
     const todayValue = groupedByDay[reward.isoDate!];
@@ -20,10 +18,6 @@ export function groupRewardsByDay(rewards: Reward[]) {
     groupedByDay[reward.isoDate!].fiatValue =
       todayValue.fiatValue !== undefined && reward.fiatValue !== undefined
         ? todayValue.fiatValue + reward.fiatValue
-        : undefined;
-    groupedByDay[reward.isoDate!].valueNow =
-      todayValue.valueNow !== undefined && reward.valueNow !== undefined
-        ? todayValue.valueNow + reward.valueNow
         : undefined;
     return groupedByDay;
   }, {});

@@ -23,6 +23,9 @@ import { isValidEvmAddress } from '../util/is-valid-address';
 import { getAddress } from 'ethers';
 import { FiscalYear } from '../model/fiscal-year';
 import { filterOnFiscalYear } from './helper/filter-on-fiscal-year';
+import { extractStakingRewards } from './helper/extract-staking-rewards';
+import { calculateRewardSummary } from './helper/calculate-reward-summary';
+import { groupRewardsByDay } from './helper/group-rewards-by-day';
 
 const jobs$: BehaviorSubject<JobResult[]> = new BehaviorSubject<JobResult[]>(
   (JSON.parse(localStorage.getItem('wallets') || '[]') as string[]).map(
@@ -58,6 +61,13 @@ wsMsgReceived$
           newJobResult.data.values,
           fiscalYear
         );
+        newJobResult.stakingRewards = extractStakingRewards(newJobResult.data);
+        newJobResult.stakingRewardsSummary = calculateRewardSummary(
+          newJobResult.stakingRewards.values
+        );
+        newJobResult.dailyStakingRewards = groupRewardsByDay(
+          newJobResult.stakingRewards.values
+        );
       }
       jobs = jobs.filter(
         (j) =>
@@ -83,6 +93,8 @@ defer(() => {
   .pipe(take(1))
   .subscribe((currency) => currency$.next(currency));
 
+const fiscalYear$ = new BehaviorSubject<FiscalYear>('Jan 1 - Dec 31' as const);
+/*
 const fiscalYear$ = new ReplaySubject<FiscalYear>(1);
 currency$
   .pipe(
@@ -114,6 +126,7 @@ currency$
     })
   )
   .subscribe((fiscalYear) => fiscalYear$.next(fiscalYear));
+*/
 
 combineLatest([
   firstValueFrom(currency$),

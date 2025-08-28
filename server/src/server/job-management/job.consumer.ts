@@ -58,15 +58,12 @@ export class JobConsumer {
 
       let deviations: Deviation[] = [];
       try {
-        deviations = (
+        deviations =
           await this.portfolioChangeValidationService.calculateDeviationFromExpectation(
             chain,
             job.wallet,
             portfolioMovements,
-          )
-        ).filter(
-          (v) => v.absoluteDeviationTooLarge || v.perPaymentDeviationTooLarge,
-        );
+          );
         if (deviations.length > 0) {
           logger.warn(
             deviations,
@@ -77,10 +74,18 @@ export class JobConsumer {
         logger.warn(error, "Error when trying to objectin validation Results");
       }
 
-      const eightDaysMs = 6 * 24 * 60 * 60 * 1000;
-      job.syncedUntil = Date.now() - eightDaysMs; // "guaranteed" to be synced until 6 days ago, because backend data is not updated daily!
+      const eightDaysMs = 8 * 24 * 60 * 60 * 1000;
+      job.syncedUntil = Date.now() - eightDaysMs; // "guaranteed" to be synced until 8 days ago, because backend data is not updated daily!
+
+      const relevantPortfolioMovements = portfolioMovements.filter(
+        (p) => p.transfers.length > 0,
+      );
+
       await this.jobsService.setDone(
-        { values: portfolioMovements, deviations },
+        {
+          values: relevantPortfolioMovements,
+          deviations,
+        },
         job,
         job.syncedUntil,
       );

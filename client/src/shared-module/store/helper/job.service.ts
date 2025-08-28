@@ -9,7 +9,7 @@ export function sortJobs(jobs: JobResult[]) {
 }
 
 export function sortRewards(data: TaxData) {
-  data.values.sort((a, b) => a.timestamp - b.timestamp);
+  data.values.sort((a, b) => -a.timestamp + b.timestamp);
 }
 
 export function addId(events: TaxableEvent[]) {
@@ -30,6 +30,7 @@ export function addMetaData(
   const fiscalYearBorders = fiscalYearToBorders(fiscalYear);
   const enriched = {
     values: addId(taxableEvents),
+    deviations: job.data?.deviations ?? [],
     chain: job.blockchain,
     currency: job.currency,
     address: job.wallet,

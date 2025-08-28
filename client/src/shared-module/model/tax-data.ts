@@ -1,3 +1,4 @@
+import { Deviation } from './deviation';
 import { TaxableEvent } from './taxable-event';
 
 export interface TaxData {
@@ -5,6 +6,7 @@ export interface TaxData {
   address: string;
   currency: string;
   values: TaxableEvent[];
+  deviations: Deviation[];
   fromDate: string;
   toDate: string;
   fiscalYearIncomplete: boolean;

@@ -64,7 +64,7 @@ describe('exportKoinlyCsv', () => {
     // Assert saveAs is called with Blob containing CSV
     expect(saveAs).toHaveBeenCalledWith(
       expect.any(Blob),
-      'staking-rewards-koinly-Kusama-0x234_2027.csv'
+      'staking-rewards-koinly-Kusama-0x234.csv'
     );
   });
 });

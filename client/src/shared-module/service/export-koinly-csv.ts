@@ -1,9 +1,9 @@
 import { Parser } from '@json2csv/plainjs';
-import { StakingRewardsPerYear } from '../model/rewards';
 import { formatDateUTC } from '../util/date-utils';
 import saveAs from 'file-saver';
+import { Rewards } from '../model/rewards';
 
-export const exportKoinlyCsv = (stakingRewards: StakingRewardsPerYear) => {
+export const exportKoinlyCsv = (stakingRewards: Rewards) => {
   const parser = new Parser();
   const values = [...(stakingRewards.values || [])].map((v) => {
     return {
@@ -18,6 +18,6 @@ export const exportKoinlyCsv = (stakingRewards: StakingRewardsPerYear) => {
     new Blob([csv], { type: 'text/plain;charset=utf-8' }),
     `staking-rewards-koinly-${
       stakingRewards.chain
-    }-${stakingRewards.address.substring(0, 5)}_${stakingRewards.year}.csv`
+    }-${stakingRewards.address.substring(0, 5)}.csv`
   );
 };

@@ -13,6 +13,9 @@ import {
 import { useSharedStore } from '../../shared-module/store/shared.store';
 import { TaxableEvent } from '../../shared-module/model/taxable-event';
 import { TaxData } from '../../shared-module/model/tax-data';
+import { Rewards } from '../../shared-module/model/rewards';
+import { JobResult } from '../../shared-module/model/job-result';
+import { isTokenVisible } from '../helper/is-token-visible';
 const blockchain$ = new ReplaySubject<string>(1);
 const wallet$ = new ReplaySubject<string>(1);
 const currency$ = new ReplaySubject<string>(1);
@@ -26,8 +29,11 @@ const eventTypeFilter$ = new BehaviorSubject<Record<string, boolean>>({
   'Incoming transfers': false,
   'Outgoing transfers': true,
   Swaps: true,
-  'Tx without asset movement': true,
 });
+
+const excludedEntries$: BehaviorSubject<TaxableEvent[]> = new BehaviorSubject<
+  TaxableEvent[]
+>([]);
 
 const taxData$ = combineLatest([
   useSharedStore().jobs$,
@@ -53,14 +59,44 @@ const taxData$ = combineLatest([
       const tokens: string[] = [];
       data.values.forEach((e: TaxableEvent) =>
         e.transfers.forEach((t) => {
-          if (tokens.indexOf(t.symbol) === -1) {
-            tokens.push(t.symbol);
+          if (tokens.indexOf(t.symbol.toUpperCase()) === -1) {
+            tokens.push(t.symbol.toUpperCase());
           }
         })
       );
       visibleTokens$.next(tokens.map((t) => ({ name: t, value: true })));
     }
+    excludedEntries$.next([]);
   })
+);
+
+const stakingRewards$: Observable<Rewards> = combineLatest([
+  useSharedStore().jobs$,
+  blockchain$,
+  wallet$,
+  currency$,
+]).pipe(
+  map(([jobs, blockchain, wallet, currency]) => {
+    return jobs.find(
+      (j) =>
+        j.blockchain === blockchain &&
+        j.wallet === wallet &&
+        j.currency === currency
+    );
+  }),
+  filter((j) => !!j),
+  map((job) => ({
+    values: job.stakingRewards?.values ?? [],
+    summary: job.stakingRewardsSummary!,
+    dailyValues: job.dailyStakingRewards!,
+    currency: job?.currency,
+    address: job?.wallet,
+    chain: job?.blockchain,
+    token: (job as JobResult)?.stakingRewards?.token || '',
+  })),
+  distinctUntilChanged(
+    (prev, curr) => (curr?.values ?? []).length === (prev?.values ?? []).length
+  )
 );
 
 const visibleTaxData$ = combineLatest([
@@ -83,8 +119,6 @@ const visibleTaxData$ = combineLatest([
           v.transfers.some((t) => t.amount > 0);
         return (
           (isStakingReward && eventTypeFilter['Staking rewards']) ||
-          (v.transfers.length === 0 &&
-            eventTypeFilter['Tx without asset movement']) ||
           (!isStakingReward &&
             incomingTransfer &&
             eventTypeFilter['Incoming transfers']) ||
@@ -95,9 +129,7 @@ const visibleTaxData$ = combineLatest([
         );
       })
       .filter((e) => {
-        return e.transfers.some(
-          (t) => visibleTokens.find((v) => v.name === t.symbol)?.value
-        );
+        return e.transfers.some((t) => isTokenVisible(visibleTokens, t.symbol));
       });
     return {
       ...taxData,
@@ -111,17 +143,19 @@ export const useTaxableEventStore = defineStore('taxable-events', {
     taxData$: Observable<TaxData>;
     visibleTaxData$: Observable<TaxData>;
     year$: Observable<number>;
-    excludedEntries: TaxableEvent[];
+    excludedEntries$: Observable<TaxableEvent[]>;
     visibleTokens$: Observable<{ name: string; value: boolean }[]>;
     eventTypeFilter$: Observable<Record<string, boolean>>;
+    stakingRewards$: Observable<Rewards>;
   } => {
     return {
       taxData$,
       visibleTaxData$,
       year$: year$.asObservable(),
-      excludedEntries: [],
+      excludedEntries$: excludedEntries$.asObservable(),
       visibleTokens$: visibleTokens$.asObservable(),
       eventTypeFilter$: eventTypeFilter$.asObservable(),
+      stakingRewards$,
     };
   },
   actions: {
@@ -169,6 +203,9 @@ export const useTaxableEventStore = defineStore('taxable-events', {
       const allActive = Object.keys(filters).every((key) => filters[key]);
       Object.keys(filters).forEach((key) => (filters[key] = !allActive));
       eventTypeFilter$.next(filters);
+    },
+    async setExcludedEntries(entries: TaxableEvent[]) {
+      excludedEntries$.next(entries);
     },
   },
 });

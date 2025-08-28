@@ -9,7 +9,7 @@ import { getBeginningLastYear } from "./get-beginning-last-year";
 import { logger } from "../logger/logger";
 import { JobConsumer } from "./job.consumer";
 
-const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+const ONE_WEEK = 7 * 24 * 60 * 60 * 1000;
 
 export class JobManager {
   constructor(
@@ -25,7 +25,7 @@ export class JobManager {
   }
 
   isOutdated(job: Job): boolean {
-    return Date.now() - job.lastModified > ONE_DAY_MS;
+    return Date.now() - job.lastModified > ONE_WEEK;
   }
 
   async enqueue(
@@ -69,7 +69,7 @@ export class JobManager {
             reqId,
             wallet,
             chain,
-            job.syncedUntil ? job.syncedUntil - ONE_DAY_MS : syncFromDate,
+            job.syncedUntil ? job.syncedUntil - ONE_WEEK : syncFromDate,
             currency,
             job.data,
           ),

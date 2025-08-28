@@ -4,10 +4,11 @@
       :rows="rows"
       :columns="columns"
       row-key="id"
-      no-data-label="No rewards found"
+      no-data-label="No taxable events found"
       :pagination="initialPagination"
       selection="multiple"
-      v-model:selected="store.excludedEntries"
+      :selected="excludedEntries"
+      @update:selected="setExcludedEntries"
     >
       <template v-slot:header-selection="scope">
         Excluded <q-toggle v-model="scope.selected" />
@@ -18,15 +19,20 @@
       </template>
 
       <template v-slot:top>
-        <q-btn color="primary" class="q-mr-sm" data-testid="pdfExport"
-          >Export Pdf
-        </q-btn>
-        <q-btn color="primary" class="q-mr-sm" data-testid="csvExport"
-          >Export CSV
-        </q-btn>
-        <q-btn color="primary" class="q-mr-sm" data-testid="koinlyExport"
-          >Koinly Export
-        </q-btn>
+        <div class="column">
+          <div class="text-h6">Taxable events</div>
+          <div>
+            <q-btn color="primary" class="q-mr-sm" data-testid="pdfExport"
+              >Export Pdf
+            </q-btn>
+            <q-btn color="primary" class="q-mr-sm" data-testid="csvExport"
+              >Export CSV
+            </q-btn>
+            <q-btn color="primary" class="q-mr-sm" data-testid="koinlyExport"
+              >Koinly Export
+            </q-btn>
+          </div>
+        </div>
       </template>
 
       <template v-slot:body-cell-extrinsic-index="props">
@@ -43,10 +49,24 @@
       <template v-slot:body-cell-label="props">
         <q-td :props="props">
           <div>
-            {{ props.row.label }}
+            {{ props.row.label ?? 'Unknown' }}
           </div>
-          <div v-if="props.row.callModuleDescription && !props.row.label">
-            ({{ props.row.callModuleDescription }})
+          <div v-if="props.row.isTransferToSelf">(Transfer to self)</div>
+        </q-td>
+      </template>
+
+      <template v-slot:body-cell-tokens-received="props">
+        <q-td :props="props">
+          <div v-for="(item, idx) in props.row.tokensReceived" v-bind:key="idx">
+            {{ item }}
+          </div>
+        </q-td>
+      </template>
+
+      <template v-slot:body-cell-fiat-received="props">
+        <q-td :props="props">
+          <div v-for="(item, idx) in props.row.fiatReceived" v-bind:key="idx">
+            {{ item }}
           </div>
         </q-td>
       </template>
@@ -59,9 +79,9 @@
         </q-td>
       </template>
 
-      <template v-slot:body-cell-tokens-received="props">
+      <template v-slot:body-cell-fiat-sent="props">
         <q-td :props="props">
-          <div v-for="(item, idx) in props.row.tokensReceived" v-bind:key="idx">
+          <div v-for="(item, idx) in props.row.fiatSent" v-bind:key="idx">
             {{ item }}
           </div>
         </q-td>
@@ -88,14 +108,30 @@ import {
   formatCryptoAmount,
   formatCurrency,
 } from '../../../shared-module/util/number-formatters';
+import { useSharedStore } from '../../../shared-module/store/shared.store';
+import { isTokenVisible } from '../../helper/is-token-visible';
 
 const store = useTaxableEventStore();
 const taxData: Ref<TaxData | undefined> = ref(undefined);
 const tokenFilter: Ref<{ name: string; value: boolean }[]> = ref([]);
+const excludedEntries: Ref<TaxableEvent[]> = ref([]);
+
+function setExcludedEntries(value: TaxableEvent[]) {
+  excludedEntries.value = value;
+  store.setExcludedEntries(value);
+}
+
+const userWallets: Ref<string[]> = ref([]);
 
 const taxDataSubscription = store.visibleTaxData$.subscribe(async (data) => {
   taxData.value = data;
 });
+
+const walletSubscription = useSharedStore().walletsAddresses$.subscribe(
+  async (wallets) => {
+    userWallets.value = wallets;
+  }
+);
 
 const tokenFilterSubscription = store.visibleTokens$.subscribe(async (data) => {
   tokenFilter.value = data;
@@ -104,10 +140,11 @@ const tokenFilterSubscription = store.visibleTokens$.subscribe(async (data) => {
 onUnmounted(() => {
   taxDataSubscription.unsubscribe();
   tokenFilterSubscription.unsubscribe();
+  walletSubscription.unsubscribe();
 });
 
 function isVisible(token: string) {
-  return tokenFilter.value.find((t) => t.name === token)?.value;
+  return isTokenVisible(tokenFilter.value, token);
 }
 
 const columns = computed(() => [
@@ -120,13 +157,6 @@ const columns = computed(() => [
     sortable: true,
   },
   {
-    name: 'taxCategory',
-    align: 'right',
-    label: 'Tax Category',
-    field: 'taxCategory',
-    sortable: true,
-  },
-  {
     name: 'label',
     align: 'right',
     label: 'Type',
@@ -135,15 +165,9 @@ const columns = computed(() => [
   {
     name: 'extrinsic-index',
     align: 'right',
-    label: 'Transaction Extrinsic Idx',
+    label: 'Transaction Idx',
     field: 'extrinsic_index',
     sortable: true,
-  },
-  {
-    name: 'tokens-sent',
-    align: 'right',
-    label: 'Sent tokens',
-    sortable: false,
   },
   {
     name: 'tokens-received',
@@ -152,10 +176,23 @@ const columns = computed(() => [
     sortable: false,
   },
   {
-    name: 'fiatValue',
+    name: 'fiat-received',
     align: 'right',
-    label: 'Fiat value',
-    field: 'fiatValue',
+    label: 'Fiat value received',
+    field: 'fiatReceived',
+    sortable: false,
+  },
+  {
+    name: 'tokens-sent',
+    align: 'right',
+    label: 'Sent tokens',
+    sortable: false,
+  },
+  {
+    name: 'fiat-sent',
+    align: 'right',
+    label: 'Fiat value sent',
+    field: 'fiatSent',
     sortable: false,
   },
   {
@@ -163,6 +200,13 @@ const columns = computed(() => [
     align: 'right',
     label: 'From/to',
     sortable: false,
+  },
+  {
+    name: 'notes',
+    align: 'right',
+    label: 'Notes',
+    field: 'callModuleDescription',
+    sortable: true,
   },
 ]);
 
@@ -191,37 +235,46 @@ const rows = computed(() => {
       addresses: data.transfers
         .map((t) => [t.from, t.to])
         .flat()
-        .filter((t) => !!t && t !== taxData.value?.address),
-      fiatValue: formatCurrency(
-        calculateFiatValue(data),
-        taxData.value?.currency || ''
-      ),
+        .filter((a) => !!a),
+      fiatSent: data.transfers
+        .filter((t) => t.amount < 0 && isVisible(t.symbol))
+        .map((t) =>
+          formatCurrency(
+            Math.abs(t.fiatValue ?? NaN),
+            taxData.value?.currency || '-'
+          )
+        ),
+      fiatReceived: data.transfers
+        .filter((t) => t.amount > 0 && isVisible(t.symbol))
+        .map((t) =>
+          formatCurrency(
+            Math.abs(t.fiatValue ?? NaN),
+            taxData.value?.currency || '-'
+          )
+        ),
       id: data.id,
       taxCategory: 'Income',
+      isTransferToSelf: isTransferToSelf(data),
     });
   });
   return flattened;
 });
 
-function calculateFiatValue(data: TaxableEvent): number | undefined {
-  const fiatSent = data.transfers
-    .filter((t) => t.amount < 0)
-    .reduce((curr, t) => curr + Math.abs(t.fiatValue ?? NaN), 0);
-  const fiatReceived = data.transfers
-    .filter((t) => t.amount > 0)
-    .reduce((curr, t) => curr + Math.abs(t.fiatValue ?? NaN), 0);
-  return fiatSent !== 0 && !isNaN(fiatSent)
-    ? fiatSent
-    : fiatReceived !== 0 && !isNaN(fiatReceived)
-    ? fiatReceived
-    : undefined;
-}
+const isTransferToSelf = (data: TaxableEvent) => {
+  return data.transfers.every(
+    (t) =>
+      t.from &&
+      t.to &&
+      userWallets.value.includes(t.from) &&
+      userWallets.value.includes(t.to)
+  );
+};
 
 const initialPagination = ref({
   sortBy: 'timestamp',
   descending: true,
   page: 1,
-  rowsPerPage: 20,
+  rowsPerPage: 10,
 });
 
 function getSubScanTxLink(extrinsic_index: string) {

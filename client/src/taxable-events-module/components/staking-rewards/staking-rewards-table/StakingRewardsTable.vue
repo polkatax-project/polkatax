@@ -39,21 +39,18 @@
 <script setup lang="ts">
 import { computed, onUnmounted, Ref, ref } from 'vue';
 import {
-  Reward,
-  StakingRewardsPerYear,
-} from '../../../../shared-module/model/rewards';
-import { useStakingRewardsStore } from '../store/staking-rewards.store';
-import {
   formatCurrencyWithoutSymbol,
   formatCryptoAmount,
 } from '../../../../shared-module/util/number-formatters';
 import { exportDefaultCsv } from '../../../../shared-module/service/export-default-csv';
 import { exportKoinlyCsv } from '../../../../shared-module/service/export-koinly-csv';
+import { useTaxableEventStore } from '../../../store/taxable-events.store';
+import { RewardDto, Rewards } from '../../../../shared-module/model/rewards';
 
-const rewardsStore = useStakingRewardsStore();
-const rewards: Ref<StakingRewardsPerYear | undefined> = ref(undefined);
+const rewardsStore = useTaxableEventStore();
+const rewards: Ref<Rewards | undefined> = ref(undefined);
 
-const subscription = rewardsStore.rewardsPerYear$.subscribe(async (r) => {
+const subscription = rewardsStore.stakingRewards$.subscribe(async (r) => {
   rewards.value = r;
 });
 
@@ -62,7 +59,7 @@ onUnmounted(() => {
 });
 
 const noRewards = computed(() => {
-  return !rewards.value || rewards.value?.values.length === 0;
+  return !rewards.value || rewards.value.values.length === 0;
 });
 
 const columns = computed(() => [
@@ -71,7 +68,7 @@ const columns = computed(() => [
     required: true,
     label: 'Date',
     align: 'left',
-    field: (row: Reward) => row.isoDate,
+    field: (row: RewardDto) => row.isoDate,
     sortable: true,
   },
   {

@@ -13,6 +13,7 @@ import { onBalancesWithdraw } from "./on-balances-withdraw";
 import { onCoretimePurchased } from "./on-coretime-purchased";
 import { onHydrationLiquidityRemoved } from "./on-hydration-liquidity-removed";
 import { onMigratedDelegation } from "./on-migrated-delegation";
+import { onPhalaAssetBurned } from "./on-phala-asset-burned";
 import { onReserveRepatriated } from "./on-reserve-repatriated";
 import {
   onZenlinkProtcolAssetSwap,
@@ -160,5 +161,10 @@ export const eventConfigs: {
     chains: ["manta"],
     event: "zenlinkprotocolLiquidityAdded",
     handler: (e, context) => onZenlinkProtcolLiquidityAdded(e, context),
+  },
+  {
+    chains: ["phala"],
+    event: "assetsBurned",
+    handler: (e, context) => onPhalaAssetBurned(e, context),
   },
 ];

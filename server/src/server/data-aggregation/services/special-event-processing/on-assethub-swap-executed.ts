@@ -9,7 +9,6 @@ export const onAssethubSwapExecuted = async (
   event: EventDetails,
   { foreignAssets }: EventHandlerContext,
 ): Promise<EventDerivedAssetMovement[]> => {
-  const who = extractAddress("who", event);
   const to = extractAddress("send_to", event);
   const amountIn = getPropertyValue("amount_in", event);
   const amountOut = getPropertyValue("amount_out", event);

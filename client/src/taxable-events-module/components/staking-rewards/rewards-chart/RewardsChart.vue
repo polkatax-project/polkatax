@@ -16,11 +16,11 @@
 <script setup lang="ts">
 import { computed, onUnmounted, ref, Ref } from 'vue';
 import { GChart } from 'vue-google-charts';
-import { useStakingRewardsStore } from '../store/staking-rewards.store';
 import { formatDate } from '../../../../shared-module/util/date-utils';
-import { StakingRewardsPerYear } from '../../../../shared-module/model/rewards';
+import { useTaxableEventStore } from '../../../store/taxable-events.store';
+import { Rewards } from '../../../../shared-module/model/rewards';
 
-const rewardsStore = useStakingRewardsStore();
+const rewardsStore = useTaxableEventStore();
 const loading = ref(true);
 
 const props = defineProps({
@@ -28,9 +28,9 @@ const props = defineProps({
   chartType: String,
 });
 
-const rewards: Ref<StakingRewardsPerYear | undefined> = ref(undefined);
+const rewards: Ref<Rewards | undefined> = ref(undefined);
 
-const subscription = rewardsStore.rewardsPerYear$.subscribe((r) => {
+const subscription = rewardsStore.stakingRewards$.subscribe((r) => {
   rewards.value = r;
 });
 
@@ -50,8 +50,11 @@ const rewardDataTable = computed(() => {
   if (!rewards.value || rewards.value.values.length === 0) return [];
 
   const header = [['date', 'Amount']];
-  const minDay = rewards.value.values[0].isoDate;
-  const maxDay = rewards.value.values[rewards.value.values.length - 1].isoDate;
+  const sortedValues = (rewards.value.values || []).sort((a, b) =>
+    a.isoDate! < b.isoDate! ? -1 : 1
+  );
+  const minDay = sortedValues[0].isoDate!;
+  const maxDay = sortedValues[sortedValues.length - 1].isoDate!;
   const temp = new Date(minDay);
   temp.setHours(0);
   temp.setMilliseconds(0);
@@ -65,7 +68,7 @@ const rewardDataTable = computed(() => {
       rewards.value.dailyValues[isoDate]?.amount || 0,
     ]);
     temp.setDate(temp.getDate() + 1);
-  } while (isoDate !== maxDay);
+  } while (isoDate < maxDay);
   return [...header, ...data];
 });
 
