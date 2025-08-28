@@ -50,8 +50,11 @@ const rewardDataTable = computed(() => {
   if (!rewards.value || rewards.value.values.length === 0) return [];
 
   const header = [['date', 'Amount']];
-  const minDay = rewards.value.values[0].isoDate!;
-  const maxDay = rewards.value.values[rewards.value.values.length - 1].isoDate;
+  const sortedValues = (rewards.value.values || []).sort((a, b) =>
+    a.isoDate! < b.isoDate! ? -1 : 1
+  );
+  const minDay = sortedValues[0].isoDate!;
+  const maxDay = sortedValues[sortedValues.length - 1].isoDate!;
   const temp = new Date(minDay);
   temp.setHours(0);
   temp.setMilliseconds(0);
@@ -65,7 +68,7 @@ const rewardDataTable = computed(() => {
       rewards.value.dailyValues[isoDate]?.amount || 0,
     ]);
     temp.setDate(temp.getDate() + 1);
-  } while (isoDate !== maxDay);
+  } while (isoDate < maxDay);
   return [...header, ...data];
 });
 

@@ -7,7 +7,8 @@
       no-data-label="No taxable events found"
       :pagination="initialPagination"
       selection="multiple"
-      v-model:selected="store.excludedEntries"
+      :selected="excludedEntries"
+      @update:selected="setExcludedEntries"
     >
       <template v-slot:header-selection="scope">
         Excluded <q-toggle v-model="scope.selected" />
@@ -48,7 +49,7 @@
       <template v-slot:body-cell-label="props">
         <q-td :props="props">
           <div>
-            {{ props.row.label }}
+            {{ props.row.label ?? 'Unknown' }}
           </div>
           <div v-if="props.row.isTransferToSelf">(Transfer to self)</div>
         </q-td>
@@ -113,6 +114,12 @@ import { isTokenVisible } from '../../helper/is-token-visible';
 const store = useTaxableEventStore();
 const taxData: Ref<TaxData | undefined> = ref(undefined);
 const tokenFilter: Ref<{ name: string; value: boolean }[]> = ref([]);
+const excludedEntries: Ref<TaxableEvent[]> = ref([]);
+
+function setExcludedEntries(value: TaxableEvent[]) {
+  excludedEntries.value = value;
+  store.setExcludedEntries(value);
+}
 
 const userWallets: Ref<string[]> = ref([]);
 
@@ -147,13 +154,6 @@ const columns = computed(() => [
     label: 'Date',
     align: 'left',
     field: (row: TaxableEvent) => row.isoDate,
-    sortable: true,
-  },
-  {
-    name: 'taxCategory',
-    align: 'right',
-    label: 'Tax Category',
-    field: 'taxCategory',
     sortable: true,
   },
   {
@@ -274,7 +274,7 @@ const initialPagination = ref({
   sortBy: 'timestamp',
   descending: true,
   page: 1,
-  rowsPerPage: 20,
+  rowsPerPage: 10,
 });
 
 function getSubScanTxLink(extrinsic_index: string) {

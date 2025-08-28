@@ -2,6 +2,17 @@ import { SubscanApi } from "../../blockchain/substrate/api/subscan.api";
 import { PolkadotApi } from "../../blockchain/substrate/api/polkadot-api";
 import { logger } from "../../logger/logger";
 
+export interface PortfolioDifference {
+  symbol: string;
+  unique_id: string;
+  decimals: number;
+  asset_id: number;
+  diff: number;
+  native?: boolean;
+  balanceBefore: number;
+  balanceAfter: number;
+}
+
 export class PortfolioDifferenceService {
   constructor(private subscanApi: SubscanApi) {}
 
@@ -10,18 +21,7 @@ export class PortfolioDifferenceService {
     address: string,
     minBlock: number,
     maxBlock: number,
-  ): Promise<
-    {
-      symbol: string;
-      unique_id: string;
-      decimals: number;
-      asset_id: number;
-      diff: number;
-      native?: boolean;
-      balanceBefore: number;
-      balanceAfter: number;
-    }[]
-  > {
+  ): Promise<PortfolioDifference[]> {
     logger.info(
       `Enter fetchPortfolioDifference for ${chainInfo.domain} and wallet ${address}`,
     );

@@ -330,11 +330,17 @@ export class SubscanService {
     );
     const filtered = this.filterOnDate(result, minDate, maxDate);
     const mapped = filtered.map((transfer) => {
-      const amount = Number(transfer.amount)
-      const fiatValue = transfer.currency_amount && (transfer.currency_amount !== '0' || amount > 0)
-          ? Number(transfer.currency_amount)
-          : undefined
-      const price = fiatValue ? fiatValue / Number(transfer.amount) : undefined
+      const amount = Number(transfer.amount);
+      const fiatValue =
+        amount === 0
+          ? 0
+          : transfer.currency_amount && transfer.currency_amount !== "0"
+            ? Number(transfer.currency_amount)
+            : undefined;
+      const price =
+        fiatValue !== undefined && amount !== 0
+          ? fiatValue / Number(transfer.amount)
+          : undefined;
       return {
         symbol: transfer.symbol || transfer.asset_symbol,
         amount,

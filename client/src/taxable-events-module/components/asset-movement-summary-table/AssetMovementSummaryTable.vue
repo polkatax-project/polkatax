@@ -24,10 +24,17 @@ import { isTokenVisible } from '../../helper/is-token-visible';
 const store = useTaxableEventStore();
 const taxData: Ref<TaxData | undefined> = ref(undefined);
 const visibleTokens: Ref<{ name: string; value: boolean }[]> = ref([]);
+const excludedPaymentIds: Ref<number[]> = ref([]);
 
 const taxDataSubscription = store.visibleTaxData$.subscribe(async (data) => {
   taxData.value = data;
 });
+
+const excludedEntriesSubscription = store.excludedEntries$.subscribe(
+  async (data) => {
+    excludedPaymentIds.value = data.map((d) => d.id!);
+  }
+);
 
 const visibleTokensSubscription = store.visibleTokens$.subscribe((data) => {
   visibleTokens.value = data;
@@ -36,6 +43,7 @@ const visibleTokensSubscription = store.visibleTokens$.subscribe((data) => {
 onUnmounted(() => {
   taxDataSubscription.unsubscribe();
   visibleTokensSubscription.unsubscribe();
+  excludedEntriesSubscription.unsubscribe();
 });
 
 interface SummaryItem {
@@ -56,27 +64,29 @@ const rows = computed(() => {
       fiatValueSent: number;
     }
   > = {};
-  taxData.value?.values.forEach((v) => {
-    v.transfers.forEach((t) => {
-      const symbol = t.symbol.toUpperCase();
-      if (!tokenSummary[symbol]) {
-        tokenSummary[symbol] = {
-          sentAmount: 0,
-          receivedAmount: 0,
-          fiatValueReceived: 0,
-          fiatValueSent: 0,
-        };
-      }
-      if (t.amount < 0) {
-        tokenSummary[symbol].sentAmount += t.amount;
-        tokenSummary[symbol].fiatValueSent += t.fiatValue ?? NaN;
-      }
-      if (t.amount > 0) {
-        tokenSummary[symbol].receivedAmount += t.amount;
-        tokenSummary[symbol].fiatValueReceived += t.fiatValue ?? NaN;
-      }
+  taxData.value?.values
+    .filter((e) => !excludedPaymentIds.value.includes(e.id!))
+    .forEach((v) => {
+      v.transfers.forEach((t) => {
+        const symbol = t.symbol.toUpperCase();
+        if (!tokenSummary[symbol]) {
+          tokenSummary[symbol] = {
+            sentAmount: 0,
+            receivedAmount: 0,
+            fiatValueReceived: 0,
+            fiatValueSent: 0,
+          };
+        }
+        if (t.amount < 0) {
+          tokenSummary[symbol].sentAmount += t.amount;
+          tokenSummary[symbol].fiatValueSent += t.fiatValue ?? NaN;
+        }
+        if (t.amount > 0) {
+          tokenSummary[symbol].receivedAmount += t.amount;
+          tokenSummary[symbol].fiatValueReceived += t.fiatValue ?? NaN;
+        }
+      });
     });
-  });
   return Object.entries(tokenSummary)
     .map(([symbol, value]) => ({ symbol, ...value }))
     .filter((t) => isTokenVisible(visibleTokens.value, t.symbol));

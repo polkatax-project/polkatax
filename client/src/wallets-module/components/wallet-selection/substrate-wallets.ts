@@ -36,8 +36,8 @@ export const SUBSTRATE_WALLETS: WalletInfo[] = [
   {
     extensionName: 'nova-wallet',
     title: 'Nova Wallet',
-    installUrl: 'https://novawallet.io',
     logo: {
+      src: '/img/wallet-logos/NovaWalletLogo.svg',
       alt: 'Nova Wallet',
     },
   },

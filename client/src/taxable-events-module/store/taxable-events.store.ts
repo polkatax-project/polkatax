@@ -31,6 +31,10 @@ const eventTypeFilter$ = new BehaviorSubject<Record<string, boolean>>({
   Swaps: true,
 });
 
+const excludedEntries$: BehaviorSubject<TaxableEvent[]> = new BehaviorSubject<
+  TaxableEvent[]
+>([]);
+
 const taxData$ = combineLatest([
   useSharedStore().jobs$,
   blockchain$,
@@ -62,6 +66,7 @@ const taxData$ = combineLatest([
       );
       visibleTokens$.next(tokens.map((t) => ({ name: t, value: true })));
     }
+    excludedEntries$.next([]);
   })
 );
 
@@ -138,7 +143,7 @@ export const useTaxableEventStore = defineStore('taxable-events', {
     taxData$: Observable<TaxData>;
     visibleTaxData$: Observable<TaxData>;
     year$: Observable<number>;
-    excludedEntries: TaxableEvent[];
+    excludedEntries$: Observable<TaxableEvent[]>;
     visibleTokens$: Observable<{ name: string; value: boolean }[]>;
     eventTypeFilter$: Observable<Record<string, boolean>>;
     stakingRewards$: Observable<Rewards>;
@@ -147,7 +152,7 @@ export const useTaxableEventStore = defineStore('taxable-events', {
       taxData$,
       visibleTaxData$,
       year$: year$.asObservable(),
-      excludedEntries: [],
+      excludedEntries$: excludedEntries$.asObservable(),
       visibleTokens$: visibleTokens$.asObservable(),
       eventTypeFilter$: eventTypeFilter$.asObservable(),
       stakingRewards$,
@@ -198,6 +203,9 @@ export const useTaxableEventStore = defineStore('taxable-events', {
       const allActive = Object.keys(filters).every((key) => filters[key]);
       Object.keys(filters).forEach((key) => (filters[key] = !allActive));
       eventTypeFilter$.next(filters);
+    },
+    async setExcludedEntries(entries: TaxableEvent[]) {
+      excludedEntries$.next(entries);
     },
   },
 });

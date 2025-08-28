@@ -223,7 +223,6 @@ import {
 } from '@quasar/extras/material-icons';
 import { exportDefaultCsv } from '../../shared-module/service/export-default-csv';
 import { exportKoinlyCsv } from '../../shared-module/service/export-koinly-csv';
-import { extractStakingRewardsPerYear } from '../../shared-module/util/extract-staking-rewards-per-year';
 import { useConnectedBlockchainsStore } from '../store/connected-blockchains.store';
 import { Rewards } from '../../shared-module/model/rewards';
 
@@ -231,22 +230,17 @@ const store = useConnectedBlockchainsStore();
 const route = useRoute();
 const router = useRouter();
 
-async function exportStakingRewards(
-  rewards: { data: Rewards },
-  exportType: string
-) {
-  const year = new Date().getFullYear() - 1;
-  const rewardsForYear = extractStakingRewardsPerYear(rewards.data, year)!;
+async function exportStakingRewards(rewards: Rewards, exportType: string) {
   switch (exportType) {
     case 'CSV':
-      return exportDefaultCsv(rewardsForYear);
+      return exportDefaultCsv(rewards);
     case 'Koinly':
-      return exportKoinlyCsv(rewardsForYear);
+      return exportKoinlyCsv(rewards);
     case 'pdf':
       const { exportPdf } = await import(
         '../../shared-module/service/export-pdf'
       );
-      exportPdf(rewardsForYear);
+      exportPdf(rewards);
   }
 }
 

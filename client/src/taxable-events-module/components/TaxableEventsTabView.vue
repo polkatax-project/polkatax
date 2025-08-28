@@ -17,9 +17,9 @@
           <TaxableEventsSummary />
           <EventTypeFilter />
           <TokenFilter />
-          <AssetMovementSummaryTable />
         </div>
         <TaxableEventsTable />
+        <AssetMovementSummaryTable />
       </q-tab-panel>
 
       <q-tab-panel name="rewards">
