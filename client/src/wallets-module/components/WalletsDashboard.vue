@@ -90,17 +90,16 @@
     </div>
     <div v-if="walletAddresses.length === 0" class="q-my-xl">
       <div class="text-h6 text-center">
-        Export your staking rewards as CSV or PDF
+        Export your tax data as CSV or PDF
       </div>
       <div class="text-h6 text-center q-mt-md">
         A wide range of substrate chains and fiat currencies are supported.
       </div>
       <div class="text-h6 text-center">
-        Enter your wallet address and press submit.
+        Connect your wallet or enter your wallet address and press submit.
       </div>
       <div class="text-center q-my-md">
-        This program returns the staking rewards earned as nominator. This
-        software comes without warranty. Please verify the exported results
+        This software comes without warranty. Please verify the exported results
       </div>
       <div class="q-mx-auto text-center">
         <img :src="meme" style="max-width: 40%" />

@@ -135,7 +135,7 @@ const faqItems = computed(() => [
   {
     question: 'How do I connect my wallet?',
     answer:
-      'You don’t need to connect your wallet directly. Simply copy your wallet address from your wallet app or extension and paste it into the input field.',
+      'Click the "Connect Wallet" button on the home page. You don’t need to link your wallet directly—alternatively, copy your wallet address from your wallet app or extension and paste it into the input field.',
   },
   {
     question: 'Which chains are supported?',
@@ -144,24 +144,29 @@ const faqItems = computed(() => [
       supportedChains.value.join(', '),
   },
   {
-    question: 'How do I export my tax reports?',
+    question: 'How do I export my transaction data?',
     answer:
-      'In the "Wallets" overview, click on the wallet you wish to export data from. This will open the list of connected blockchains. Click the export icon next to a chain, then select the year you want to export in the dropdown menu.',
+      'In the "Wallets" overview, select the wallet you want to export data from. This opens the list of connected blockchains. Click the export icon next to a chain.',
   },
   {
     question: 'Is my data secure?',
     answer:
-      'PolkaTax only accesses publicly available blockchain data and stores that information in a database. No personal or sensitive data is transmitted to external servers.',
+      'PolkaTax only accesses publicly available blockchain data and stores it in a secure database. No personal or sensitive information is ever transmitted to external servers.',
   },
   {
     question: 'Can I use PolkaTax for multiple accounts?',
     answer:
-      'Absolutely. You can connect multiple wallets and manage all their tax data seamlessly from a single dashboard.',
+      'Yes. You can connect multiple wallets and manage their data seamlessly from a single dashboard. PolkaTax will automatically recognize that all the wallets you’ve connected belong to you.',
   },
   {
-    question: 'What kind of data is shown/exported?',
+    question: 'What kind of data is shown or exported?',
     answer:
-      'This application currently displays staking rewards from multiple Substrate-based chains for the previous year.',
+      'The application currently displays and exports staking rewards, transfers, swaps, liquid token minting, and more from multiple Substrate-based chains for the previous year.',
+  },
+  {
+    question: 'Can I export specific parts of my data?',
+    answer:
+      'Yes. The "Staking Rewards" tab lets you export staking data only. In the "Taxable Events" tab, you can filter exports by asset movement type and token.',
   },
 ]);
 </script>
