@@ -15,18 +15,18 @@ describe('groupRewardsByDay', () => {
     expect(result).toEqual({
       '2024-04-20': {
         amount: 8,
-        fiatValue: 80
+        fiatValue: 80,
       },
       '2024-04-21': {
         amount: 2,
-        fiatValue: 20
+        fiatValue: 20,
       },
     });
   });
 
   test('should return undefined for value if any value is undefined in a group', () => {
     const rewards: Reward[] = [
-      { isoDate: '2024-04-20', amount: 5, fiatValue: 50,  },
+      { isoDate: '2024-04-20', amount: 5, fiatValue: 50 },
       { isoDate: '2024-04-20', amount: 3, fiatValue: undefined },
     ] as Reward[];
 
@@ -64,7 +64,7 @@ describe('groupRewardsByDay', () => {
     expect(result).toEqual({
       '2024-04-22': {
         amount: 1,
-        fiatValue: 10
+        fiatValue: 10,
       },
     });
   });

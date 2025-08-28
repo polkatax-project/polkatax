@@ -18,15 +18,20 @@
       </template>
 
       <template v-slot:top>
-        <q-btn color="primary" class="q-mr-sm" data-testid="pdfExport"
-          >Export Pdf
-        </q-btn>
-        <q-btn color="primary" class="q-mr-sm" data-testid="csvExport"
-          >Export CSV
-        </q-btn>
-        <q-btn color="primary" class="q-mr-sm" data-testid="koinlyExport"
-          >Koinly Export
-        </q-btn>
+        <div class="column">
+          <div class="text-h6">Taxable events</div>
+          <div>
+            <q-btn color="primary" class="q-mr-sm" data-testid="pdfExport"
+              >Export Pdf
+            </q-btn>
+            <q-btn color="primary" class="q-mr-sm" data-testid="csvExport"
+              >Export CSV
+            </q-btn>
+            <q-btn color="primary" class="q-mr-sm" data-testid="koinlyExport"
+              >Koinly Export
+            </q-btn>
+          </div>
+        </div>
       </template>
 
       <template v-slot:body-cell-extrinsic-index="props">
@@ -49,22 +54,6 @@
         </q-td>
       </template>
 
-      <template v-slot:body-cell-tokens-sent="props">
-        <q-td :props="props">
-          <div v-for="(item, idx) in props.row.tokensSent" v-bind:key="idx">
-            {{ item }}
-          </div>
-        </q-td>
-      </template>
-
-      <template v-slot:body-cell-fiat-sent="props">
-        <q-td :props="props">
-          <div v-for="(item, idx) in props.row.fiatSent" v-bind:key="idx">
-            {{ item }}
-          </div>
-        </q-td>
-      </template>
-
       <template v-slot:body-cell-tokens-received="props">
         <q-td :props="props">
           <div v-for="(item, idx) in props.row.tokensReceived" v-bind:key="idx">
@@ -76,6 +65,22 @@
       <template v-slot:body-cell-fiat-received="props">
         <q-td :props="props">
           <div v-for="(item, idx) in props.row.fiatReceived" v-bind:key="idx">
+            {{ item }}
+          </div>
+        </q-td>
+      </template>
+
+      <template v-slot:body-cell-tokens-sent="props">
+        <q-td :props="props">
+          <div v-for="(item, idx) in props.row.tokensSent" v-bind:key="idx">
+            {{ item }}
+          </div>
+        </q-td>
+      </template>
+
+      <template v-slot:body-cell-fiat-sent="props">
+        <q-td :props="props">
+          <div v-for="(item, idx) in props.row.fiatSent" v-bind:key="idx">
             {{ item }}
           </div>
         </q-td>
@@ -103,6 +108,7 @@ import {
   formatCurrency,
 } from '../../../shared-module/util/number-formatters';
 import { useSharedStore } from '../../../shared-module/store/shared.store';
+import { isTokenVisible } from '../../helper/is-token-visible';
 
 const store = useTaxableEventStore();
 const taxData: Ref<TaxData | undefined> = ref(undefined);
@@ -131,7 +137,7 @@ onUnmounted(() => {
 });
 
 function isVisible(token: string) {
-  return tokenFilter.value.find((t) => t.name === token)?.value;
+  return isTokenVisible(tokenFilter.value, token);
 }
 
 const columns = computed(() => [
@@ -159,22 +165,9 @@ const columns = computed(() => [
   {
     name: 'extrinsic-index',
     align: 'right',
-    label: 'Transaction Extrinsic Idx',
+    label: 'Transaction Idx',
     field: 'extrinsic_index',
     sortable: true,
-  },
-  {
-    name: 'tokens-sent',
-    align: 'right',
-    label: 'Sent tokens',
-    sortable: false,
-  },
-  {
-    name: 'fiat-sent',
-    align: 'right',
-    label: 'Fiat value sent',
-    field: 'fiatSent',
-    sortable: false,
   },
   {
     name: 'tokens-received',
@@ -187,6 +180,19 @@ const columns = computed(() => [
     align: 'right',
     label: 'Fiat value received',
     field: 'fiatReceived',
+    sortable: false,
+  },
+  {
+    name: 'tokens-sent',
+    align: 'right',
+    label: 'Sent tokens',
+    sortable: false,
+  },
+  {
+    name: 'fiat-sent',
+    align: 'right',
+    label: 'Fiat value sent',
+    field: 'fiatSent',
     sortable: false,
   },
   {
@@ -233,22 +239,18 @@ const rows = computed(() => {
       fiatSent: data.transfers
         .filter((t) => t.amount < 0 && isVisible(t.symbol))
         .map((t) =>
-          t.fiatValue
-            ? formatCurrency(
-                Math.abs(t.fiatValue),
-                taxData.value?.currency || '-'
-              )
-            : '-'
+          formatCurrency(
+            Math.abs(t.fiatValue ?? NaN),
+            taxData.value?.currency || '-'
+          )
         ),
       fiatReceived: data.transfers
         .filter((t) => t.amount > 0 && isVisible(t.symbol))
         .map((t) =>
-          t.fiatValue
-            ? formatCurrency(
-                Math.abs(t.fiatValue),
-                taxData.value?.currency || '-'
-              )
-            : '-'
+          formatCurrency(
+            Math.abs(t.fiatValue ?? NaN),
+            taxData.value?.currency || '-'
+          )
         ),
       id: data.id,
       taxCategory: 'Income',

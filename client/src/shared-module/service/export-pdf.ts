@@ -1,9 +1,9 @@
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { StakingRewardsPerYear } from '../model/rewards';
+import { Rewards } from '../model/rewards';
 import { formatCryptoAmount, formatCurrency } from '../util/number-formatters';
 
-export const exportPdf = (rewards: StakingRewardsPerYear) => {
+export const exportPdf = (rewards: Rewards) => {
   const doc = new jsPDF();
 
   doc.setFontSize(14);
@@ -17,10 +17,9 @@ export const exportPdf = (rewards: StakingRewardsPerYear) => {
     y += distance;
   };
 
-  const timeFrame =
-    rewards.year === new Date().getFullYear()
-      ? `from ${rewards.year}-01-01`
-      : `From ${rewards.year}-01-01 until ${rewards.year}-12-31`;
+  const timeFrame = `From ${new Date().getFullYear() - 1}-01-01 until ${
+    new Date().getFullYear() - 1
+  }-12-31`;
 
   // Add meta info
   doc.setFontSize(10);
@@ -75,8 +74,6 @@ export const exportPdf = (rewards: StakingRewardsPerYear) => {
   });
 
   doc.save(
-    `staking-rewards-${rewards.chain}-${rewards.address.substring(0, 5)}-${
-      rewards.year
-    }.pdf`
+    `staking-rewards-${rewards.chain}-${rewards.address.substring(0, 5)}.pdf`
   );
 };

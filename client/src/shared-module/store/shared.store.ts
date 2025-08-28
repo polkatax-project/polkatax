@@ -93,6 +93,8 @@ defer(() => {
   .pipe(take(1))
   .subscribe((currency) => currency$.next(currency));
 
+const fiscalYear$ = new BehaviorSubject<FiscalYear>('Jan 1 - Dec 31' as const);
+/*
 const fiscalYear$ = new ReplaySubject<FiscalYear>(1);
 currency$
   .pipe(
@@ -124,6 +126,7 @@ currency$
     })
   )
   .subscribe((fiscalYear) => fiscalYear$.next(fiscalYear));
+*/
 
 combineLatest([
   firstValueFrom(currency$),

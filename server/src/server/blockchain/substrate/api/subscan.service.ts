@@ -330,9 +330,14 @@ export class SubscanService {
     );
     const filtered = this.filterOnDate(result, minDate, maxDate);
     const mapped = filtered.map((transfer) => {
+      const amount = Number(transfer.amount)
+      const fiatValue = transfer.currency_amount && (transfer.currency_amount !== '0' || amount > 0)
+          ? Number(transfer.currency_amount)
+          : undefined
+      const price = fiatValue ? fiatValue / Number(transfer.amount) : undefined
       return {
         symbol: transfer.symbol || transfer.asset_symbol,
-        amount: Number(transfer.amount),
+        amount,
         from: transfer.from,
         to: transfer.to,
         module:
@@ -341,12 +346,8 @@ export class SubscanService {
         timestamp: transfer.timestamp,
         hash: transfer.hash,
         extrinsic_index: transfer.extrinsic_index,
-        fiatValue: transfer.currency_amount
-          ? Number(transfer.currency_amount)
-          : undefined,
-        price: transfer.currency_amount
-          ? Number(transfer.currency_amount) / Number(transfer.amount)
-          : undefined,
+        fiatValue,
+        price,
         asset_type: transfer.asset_type ? transfer.asset_type : undefined,
         asset_unique_id: transfer.asset_unique_id || transfer.contract,
       };

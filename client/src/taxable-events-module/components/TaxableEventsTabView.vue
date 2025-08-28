@@ -1,10 +1,5 @@
 <template>
   <div>
-    <div class="content q-mx-auto">
-      <div class="q-my-lg">
-        <TaxableEventsSummary />
-      </div>
-    </div>
     <q-tabs v-model="tab" active-color="primary" indicator-color="primary">
       <q-tab name="events" icon="receipt_long" label="All Taxable Events">
       </q-tab>
@@ -19,8 +14,10 @@
     <q-tab-panels v-model="tab" animated>
       <q-tab-panel name="events">
         <div class="content q-mx-auto">
+          <TaxableEventsSummary />
           <EventTypeFilter />
           <TokenFilter />
+          <AssetMovementSummaryTable />
         </div>
         <TaxableEventsTable />
       </q-tab-panel>
@@ -45,6 +42,7 @@ import { useTaxableEventStore } from '../store/taxable-events.store';
 import TaxableEventsSummary from './taxable-events-summary/TaxableEventsSummary.vue';
 import { ref } from 'vue';
 import StakingRewards from './staking-rewards/StakingRewards.vue';
+import AssetMovementSummaryTable from './asset-movement-summary-table/AssetMovementSummaryTable.vue';
 
 const tab = ref('events');
 

@@ -15,6 +15,7 @@ import { TaxableEvent } from '../../shared-module/model/taxable-event';
 import { TaxData } from '../../shared-module/model/tax-data';
 import { Rewards } from '../../shared-module/model/rewards';
 import { JobResult } from '../../shared-module/model/job-result';
+import { isTokenVisible } from '../helper/is-token-visible';
 const blockchain$ = new ReplaySubject<string>(1);
 const wallet$ = new ReplaySubject<string>(1);
 const currency$ = new ReplaySubject<string>(1);
@@ -28,7 +29,6 @@ const eventTypeFilter$ = new BehaviorSubject<Record<string, boolean>>({
   'Incoming transfers': false,
   'Outgoing transfers': true,
   Swaps: true,
-  'Tx without asset movement': true,
 });
 
 const taxData$ = combineLatest([
@@ -55,8 +55,8 @@ const taxData$ = combineLatest([
       const tokens: string[] = [];
       data.values.forEach((e: TaxableEvent) =>
         e.transfers.forEach((t) => {
-          if (tokens.indexOf(t.symbol) === -1) {
-            tokens.push(t.symbol);
+          if (tokens.indexOf(t.symbol.toUpperCase()) === -1) {
+            tokens.push(t.symbol.toUpperCase());
           }
         })
       );
@@ -114,8 +114,6 @@ const visibleTaxData$ = combineLatest([
           v.transfers.some((t) => t.amount > 0);
         return (
           (isStakingReward && eventTypeFilter['Staking rewards']) ||
-          (v.transfers.length === 0 &&
-            eventTypeFilter['Tx without asset movement']) ||
           (!isStakingReward &&
             incomingTransfer &&
             eventTypeFilter['Incoming transfers']) ||
@@ -126,9 +124,7 @@ const visibleTaxData$ = combineLatest([
         );
       })
       .filter((e) => {
-        return e.transfers.some(
-          (t) => visibleTokens.find((v) => v.name === t.symbol)?.value
-        );
+        return e.transfers.some((t) => isTokenVisible(visibleTokens, t.symbol));
       });
     return {
       ...taxData,

@@ -1,5 +1,21 @@
 <template>
   <div class="q-pa-md">
+    <div style="max-width: 600px; margin: 0 auto; text-align: left">
+      <strong>Balance Differences</strong>
+      <p>
+        This table compares actual token balance changes with those calculated
+        from transactions. Differences mostly occur because:
+      </p>
+      <ul>
+        <li>Some cross-chain (XCM) transfers may not be fully recognized.</li>
+        <li>
+          Wrapped vs. native assets (e.g., USDT.wh vs. USDT) may be
+          misclassified in cross-chain transfers.
+        </li>
+        <li>Transaction fees are not yet included.</li>
+      </ul>
+    </div>
+
     <q-table
       :rows="rows"
       :columns="columns"
@@ -41,28 +57,18 @@
 import { computed, onUnmounted, Ref, ref } from 'vue';
 import { useTaxableEventStore } from '../../store/taxable-events.store';
 import { TaxData } from '../../../shared-module/model/tax-data';
-import { useSharedStore } from '../../../shared-module/store/shared.store';
 import { formatCryptoAmount } from '../../../shared-module/util/number-formatters';
 import { Deviation } from '../../../shared-module/model/deviation';
 
 const store = useTaxableEventStore();
 const taxData: Ref<TaxData | undefined> = ref(undefined);
 
-const userWallets: Ref<string[]> = ref([]);
-
-const taxDataSubscription = store.visibleTaxData$.subscribe(async (data) => {
+const taxDataSubscription = store.taxData$.subscribe(async (data) => {
   taxData.value = data;
 });
 
-const walletSubscription = useSharedStore().walletsAddresses$.subscribe(
-  async (wallets) => {
-    userWallets.value = wallets;
-  }
-);
-
 onUnmounted(() => {
   taxDataSubscription.unsubscribe();
-  walletSubscription.unsubscribe();
 });
 
 const columns = computed(() => [

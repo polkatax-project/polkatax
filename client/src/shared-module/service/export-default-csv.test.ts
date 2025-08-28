@@ -73,7 +73,7 @@ describe('exportDefaultCsv', () => {
 
     expect(saveAs).toHaveBeenCalledWith(
       expect.any(Blob),
-      'staking-rewards-Kusama-0x123_2024.csv'
+      'staking-rewards-Kusama-0x123.csv'
     );
   });
 });

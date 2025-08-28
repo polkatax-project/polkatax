@@ -18,12 +18,12 @@
         </div>
       </q-card-section>
 
-      <q-card-section>
+      <!-- <q-card-section>
         <div class="row justify-between items-center">
           <div>Fiscal year</div>
           <FiscalYearDropdown />
         </div>
-      </q-card-section>
+      </q-card-section> -->
       <q-card-actions align="right">
         <q-btn flat label="Close" color="primary" @click="closeDialog" />
       </q-card-actions>
@@ -33,7 +33,6 @@
 
 <script setup lang="ts">
 import CurrencyDropdown from './currency-dropdown/CurrencyDropdown.vue';
-import FiscalYearDropdown from './fiscal-year-dropdown/FiscalYearDropdown.vue';
 
 const emit = defineEmits(['update:showDialog']);
 

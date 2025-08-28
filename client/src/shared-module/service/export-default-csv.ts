@@ -1,22 +1,21 @@
 import { Parser } from '@json2csv/plainjs';
-import { Reward, StakingRewardsPerYear } from '../model/rewards';
 import { formatDateUTC } from '../util/date-utils';
 import saveAs from 'file-saver';
+import { RewardDto, Rewards } from '../model/rewards';
 
-interface RewardsTableHeader extends Reward {
+interface RewardsTableHeader extends RewardDto {
   'Reward token': string;
   Chain: string;
   Currency: string;
   'Wallet address': string;
   totalAmount: number;
   totalValue: number;
-  totalValueNow: number;
   utcDate: string;
 }
 
-export const exportDefaultCsv = (rewards: StakingRewardsPerYear) => {
+export const exportDefaultCsv = (rewards: Rewards) => {
   const parser = new Parser();
-  const values = [...(rewards.values || [])].map((v) => {
+  const values: RewardDto[] = [...(rewards.values || [])].map((v) => {
     return {
       ...v,
       nominationPool: v.nominationPool || false,
@@ -36,8 +35,6 @@ export const exportDefaultCsv = (rewards: StakingRewardsPerYear) => {
   const csv = parser.parse(values);
   saveAs(
     new Blob([csv], { type: 'text/plain;charset=utf-8' }),
-    `staking-rewards-${rewards.chain}-${rewards.address.substring(0, 5)}_${
-      rewards.year
-    }.csv`
+    `staking-rewards-${rewards.chain}-${rewards.address.substring(0, 5)}.csv`
   );
 };
