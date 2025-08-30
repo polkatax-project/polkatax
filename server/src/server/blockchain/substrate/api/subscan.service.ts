@@ -13,6 +13,7 @@ import { RawXcmMessage } from "../model/xcm-transfer";
 import { Block } from "../model/block";
 import { ForeignAsset } from "../model/foreign-asset";
 import { Asset } from "../model/asset";
+import * as subscanChains from "../../../../../res/gen/subscan-chains.json";
 
 export class SubscanService {
   constructor(private subscanApi: SubscanApi) {}
@@ -401,5 +402,21 @@ export class SubscanService {
       result[chainNames[i]] = tokens[i];
     }
     return result;
+  }
+
+  async scanTokensAndAssets(chain: string): Promise<Asset[]> {
+    const chainInfo = subscanChains.chains.find((c) => c.domain === chain);
+    const results = (
+      await Promise.all([
+        this.scanTokens(chain),
+        chainInfo?.assetPallet
+          ? this.scanAssets(chain)
+          : Promise.resolve(undefined),
+        chainInfo?.foreignAssetsPallet
+          ? this.fetchForeignAssets(chain)
+          : Promise.resolve(undefined),
+      ])
+    ).filter((v) => !!v);
+    return results.flat();
   }
 }

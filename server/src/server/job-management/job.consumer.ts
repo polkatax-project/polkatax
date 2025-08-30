@@ -6,7 +6,7 @@ import { PortfolioMovementsService } from "../data-aggregation/services/portfoli
 import {
   Deviation,
   PortfolioChangeValidationService,
-} from "../data-aggregation/services/portfolio-change-validation.service";
+} from "../data-correction/portfolio-change-validation.service";
 
 export class JobConsumer {
   constructor(

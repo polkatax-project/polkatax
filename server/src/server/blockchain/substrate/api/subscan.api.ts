@@ -306,6 +306,7 @@ export class SubscanApi {
         block_timestamp,
         only_head: true,
       },
+      24,
     );
     return response.data
       ? {

@@ -4,6 +4,7 @@ import { registerServices as registerDataAggregationServices } from "./data-aggr
 import { registerServices as registerJobServices } from "./job-management/registerServices";
 import { registerServices as registerEndpointsServices } from "./endpoints/registerServices";
 import { registerServices as registerDataPlatformServices } from "./data-platform-api/registerServices";
+import { registerServices as registerDataCorrectionPlatformService } from "./data-correction/registerServices";
 
 export const createDIContainer = () => {
   const container = createContainer({
@@ -15,6 +16,7 @@ export const createDIContainer = () => {
   registerJobServices(container);
   registerEndpointsServices(container);
   registerDataPlatformServices(container);
+  registerDataCorrectionPlatformService(container);
   container.register({
     DIContainer: asValue(container),
   });

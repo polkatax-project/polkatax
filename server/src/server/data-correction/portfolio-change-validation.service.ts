@@ -1,8 +1,11 @@
-import { WS_CHAIN_ENDPOINTS } from "../../blockchain/substrate/api/polkadot-api";
-import { SubscanApi } from "../../blockchain/substrate/api/subscan.api";
-import { Transfer } from "../../blockchain/substrate/model/raw-transfer";
-import { logger } from "../../logger/logger";
-import { PortfolioMovement, TaxableEvent } from "../model/portfolio-movement";
+import { WS_CHAIN_ENDPOINTS } from "../blockchain/substrate/api/polkadot-api";
+import { SubscanApi } from "../blockchain/substrate/api/subscan.api";
+import { Transfer } from "../blockchain/substrate/model/raw-transfer";
+import {
+  PortfolioMovement,
+  TaxableEvent,
+} from "../data-aggregation/model/portfolio-movement";
+import { logger } from "../logger/logger";
 import {
   PortfolioDifference,
   PortfolioDifferenceService,
@@ -84,6 +87,7 @@ export interface Deviation {
   diff: number;
   expectedDiff: number;
   deviation: number;
+  signedDeviation: number;
   absoluteDeviationTooLarge: boolean;
   perPaymentDeviationTooLarge: boolean;
   deviationPerPayment: number;
@@ -202,20 +206,18 @@ export class PortfolioChangeValidationService {
       }
       matchingPortfolioMovements.forEach((p) => {
         p.transfers.forEach((t) => {
-          if (
-            t.asset_unique_id === tokenInPortfolio.unique_id ||
-            (t.symbol.toUpperCase() === tokenInPortfolio.symbol.toUpperCase() &&
-              t.module === "xcm")
-          ) {
+          if (t.asset_unique_id === tokenInPortfolio.unique_id) {
             expectedDiff += t?.amount ?? 0;
             transferCounter++;
           }
         });
       });
-      const deviation = Math.abs(tokenInPortfolio.diff - expectedDiff);
+      const signedDeviation = tokenInPortfolio.diff - expectedDiff;
+      const deviation = Math.abs(signedDeviation);
       const maxDeviation =
         acceptedDeviations.find((a) => a.symbol === tokenInPortfolio.symbol) ??
         DEFAULT_MAX_DEVIATION;
+
       const perPayment = tokenInPortfolio.native
         ? matchingPortfolioMovements.length > 0
           ? deviation / matchingPortfolioMovements.length
@@ -226,6 +228,7 @@ export class PortfolioChangeValidationService {
       deviations.push({
         ...tokenInPortfolio,
         deviation,
+        signedDeviation,
         expectedDiff,
         absoluteDeviationTooLarge: Math.abs(deviation) > maxDeviation.max,
         perPaymentDeviationTooLarge:

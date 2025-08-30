@@ -7,7 +7,7 @@ export const WS_CHAIN_ENDPOINTS = {
   bifrost: "wss://bifrost.public.curie.radiumblock.co/ws",
   polkadot: "wss://polkadot.api.onfinality.io/public-ws",
   kusama: "wss://kusama.api.onfinality.io/public-ws",
-  hydration: "wss://hydradx-rpc.dwellir.com",
+  hydration: "wss://hydradx.paras.ibp.network",
   "coretime-polkadot": "wss://coretime-polkadot.dotters.network",
   acala: "wss://acala-rpc.dwellir.com",
   astar: "wss://rpc.astar.network",

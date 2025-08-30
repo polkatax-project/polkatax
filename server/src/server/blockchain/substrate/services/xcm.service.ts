@@ -7,9 +7,23 @@ import { logger } from "../../../logger/logger";
 import { isEvmAddress } from "../../../data-aggregation/helper/is-evm-address";
 import { XcmTransfer } from "../model/xcm-transfer";
 import { getAddress } from "ethers";
+import { Asset } from "../model/asset";
+import stringSimilarity from "string-similarity";
 
 export class XcmService {
   constructor(private subscanService: SubscanService) {}
+
+  private determineTokenFromSymbol(
+    symbol: string,
+    tokens: Asset[],
+  ): string | undefined {
+    const { bestMatch } = stringSimilarity.findBestMatch(
+      symbol,
+      tokens.map((a) => a.symbol),
+    );
+    const bestAsset = tokens.find((a) => a.symbol === bestMatch.target);
+    return bestAsset?.unique_id;
+  }
 
   private findChainName(relayOrMain: string, paraId: number) {
     if (
@@ -87,6 +101,10 @@ export class XcmService {
       data.minDate,
     );
 
+    const tokens = await this.subscanService.scanTokensAndAssets(
+      data.chainName,
+    );
+
     const xcmList = await Promise.all(
       rawXcmList.map(async (xcm) => {
         const from = this.mapAccountIdToAddress(xcm.from_account_id);
@@ -143,6 +161,14 @@ export class XcmService {
           transfers: (
             await Promise.all(
               xcm.assets.map(async (a) => {
+                const tokenIdMyChain = tokens.find(
+                  (t) =>
+                    a.asset_unique_id &&
+                    t.unique_id === a.asset_unique_id &&
+                    t.symbol.toUpperCase() === a.symbol.toUpperCase(),
+                );
+                const isOutGoingTransfer = fromChain === data.chainName;
+
                 const symbol = a?.symbol?.replace(/^xc/, "");
 
                 if (!symbol) {
@@ -171,9 +197,13 @@ export class XcmService {
 
                 return {
                   symbol,
-                  asset_unique_id: a?.asset_unique_id,
+                  asset_unique_id:
+                    (tokenIdMyChain?.unique_id ?? isOutGoingTransfer)
+                      ? this.determineTokenFromSymbol(a.symbol, tokens)
+                      : undefined,
+                  asset_unique_id_as_given: a.asset_unique_id,
                   rawAmount: a.amount,
-                  amount: (fromChain === data.chainName ? -1 : 1) * amount,
+                  amount: (isOutGoingTransfer ? -1 : 1) * amount,
                   from,
                   to,
                   module: "xcm",

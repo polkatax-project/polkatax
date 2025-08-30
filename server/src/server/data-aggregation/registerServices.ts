@@ -1,5 +1,4 @@
 import { asClass, AwilixContainer } from "awilix";
-import { PortfolioMovementsService } from "./services/portfolio-movements.service";
 import { CryptoCurrencyPricesService } from "./services/crypto-currency-prices.service";
 import { FiatExchangeRateService } from "./services/fiat-exchange-rate.service";
 import { ChainAdjustments } from "./helper/chain-adjustments";
@@ -10,8 +9,7 @@ import { SpecialEventsToTransfersService } from "./services/special-event-proces
 import { XcmTokenResolutionService } from "./services/xcm-token-resolution.service";
 import { TokenFromMultiLocationService } from "./services/special-event-processing/token-from-multi-location.service";
 import { StakingRewardsAggregatorService } from "./services/staking-rewards-aggregator.service";
-import { PortfolioDifferenceService } from "./services/portfolio-difference.service";
-import { PortfolioChangeValidationService } from "./services/portfolio-change-validation.service";
+import { PortfolioMovementsService } from "./services/portfolio-movements.service";
 
 export const registerServices = (container: AwilixContainer) => {
   container.register({
@@ -28,7 +26,5 @@ export const registerServices = (container: AwilixContainer) => {
     transferMerger: asClass(TransferMerger),
     xcmTokenResolutionService: asClass(XcmTokenResolutionService),
     tokenFromMultiLocationService: asClass(TokenFromMultiLocationService),
-    portfolioDifferenceSerivce: asClass(PortfolioDifferenceService),
-    portfolioChangeValidationService: asClass(PortfolioChangeValidationService),
   });
 };
