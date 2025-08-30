@@ -7,8 +7,8 @@ import {
   stopStubs,
 } from "../shared/helper/fetch-portfolio-movements";
 import { getApiClient } from "../shared/helper/get-balances-at";
-import { PortfolioChangeValidationService } from "../../src/server/data-aggregation/services/portfolio-change-validation.service";
 import * as fs from "fs";
+import { PortfolioChangeValidationService } from "../../src/server/data-correction/portfolio-change-validation.service";
 
 const fetchAndStorePortfolioMovements = async (
   address: string,
