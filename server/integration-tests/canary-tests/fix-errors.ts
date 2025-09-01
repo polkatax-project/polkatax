@@ -22,6 +22,8 @@ export const fixErrors = async (
     address,
     portfolioMovements,
     unmatchedEvents,
+    portfolioMovements.reduce((mindate, p) => Math.min(mindate, p.timestamp), Number.MAX_SAFE_INTEGER),
+    portfolioMovements.reduce((maxdate, p) => Math.max(maxdate, p.timestamp), 0)
   );
 
   fs.writeFileSync(
