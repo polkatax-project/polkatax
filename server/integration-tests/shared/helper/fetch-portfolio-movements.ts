@@ -3,8 +3,8 @@ import { startStub as cryptoPricesStub } from "../../../src/crypto-currency-pric
 import { startStub as fiatPricesStub } from "../../../src/fiat-exchange-rates/stub";
 import { SubscanEvent } from "../../../src/server/blockchain/substrate/model/subscan-event";
 import { PortfolioMovement } from "../../../src/server/data-aggregation/model/portfolio-movement";
-import { PortfolioMovementsService } from "../../../src/server/data-aggregation/services/portfolio-movements.service";
 import { createDIContainer } from "../../../src/server/di-container";
+import { PortfolioMovementsService } from "../../../src/server/data-aggregation/services/portfolio-movements.service";
 
 let cryptoPriceServer: FastifyInstance;
 let fiatPriceServer: FastifyInstance;
@@ -32,10 +32,6 @@ export const fetchPortfolioMovements = async (
 }> => {
   const container = createDIContainer();
   try {
-    const today = new Date();
-    const pastDate = new Date();
-    pastDate.setDate(today.getDate() - 14);
-
     const currency = "usd";
     const portfolioMovementsService: PortfolioMovementsService =
       container.resolve("portfolioMovementsService");
@@ -44,7 +40,7 @@ export const fetchPortfolioMovements = async (
         chain,
         address,
         currency,
-        minDate: minDate ?? pastDate.getTime(),
+        minDate,
         maxDate,
       })) as {
         portfolioMovements: PortfolioMovement[];
