@@ -27,6 +27,7 @@ const knownChainProperties = [
   { domain: "polkadot", isRelay: true, paraId: 0 },
   { domain: "kusama", isRelay: true, paraId: 0 },
   { domain: "enjin", isRelay: true, paraId: 0 },
+  { domain: "phala", excluded: true },
 ];
 
 const fetchParaChainIds = async (): Promise<

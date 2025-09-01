@@ -325,14 +325,14 @@ function retry(job: JobResult) {
 function mayBeIncorrectData(job: JobResult): boolean {
   return (
     (job.data?.deviations ?? []).filter(
-      (d) => d.absoluteDeviationTooLarge || d.perPaymentDeviationTooLarge
+      (d) => d.absoluteDeviationTooLarge
     ).length > 0
   );
 }
 
 function getTokensWithLargeDeviation(job: JobResult) {
   return job?.data?.deviations
-    .filter((d) => d.absoluteDeviationTooLarge || d.perPaymentDeviationTooLarge)
+    .filter((d) => d.absoluteDeviationTooLarge)
     .map((d) => d.symbol)
     .join(', ');
 }

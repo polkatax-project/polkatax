@@ -9,7 +9,7 @@ import { EventEnrichedXcmTransfer } from "../model/event-enriched-xcm-transfer";
 import * as subscanChains from "../../../../res/gen/subscan-chains.json";
 import isEqual from "lodash.isequal";
 import { XcmTransfer } from "../../blockchain/substrate/model/xcm-transfer";
-import BigNumber from "bignumber.js";
+import stringSimilarity from "string-similarity";
 
 const extractAsset = (
   property: string | string[],
@@ -92,18 +92,10 @@ export class XcmTokenResolutionService {
         asset_unique_id: asset?.unique_id,
       };
     });
-    const nativeToken = await this.subscanService.fetchNativeToken(
-      chain.domain,
-    );
     messages.forEach((xcm) => {
-      if (
-        xcm.messageHash ===
-        "0xc4c975ee31ab5f76cdd23180056176c847afb82b6f7c1bfb2ac9d06f3ec806b7"
-      ) {
-        console.log(JSON.stringify(xcm));
-      }
       xcm.transfers
         .filter((t) => t.destChain === chain.domain)
+        .filter((t) => !t.asset_unique_id)
         .forEach((transfer) => {
           const symbol = transfer.symbol;
 
@@ -118,7 +110,7 @@ export class XcmTokenResolutionService {
 
           // Match by asset unique id of another chain
           const byAssetId = assets.find(
-            (t) => t.unique_id === transfer.asset_unique_id,
+            (t) => t.unique_id === transfer.asset_unique_id_as_given,
           );
           if (byAssetId) {
             transfer.symbol = byAssetId.symbol;
@@ -148,8 +140,18 @@ export class XcmTokenResolutionService {
             return;
           }
 
-          // anything else
-          transfer.asset_unique_id = undefined;
+          // we pick the first asset id - even if this turns out to be wrong. it will be resolved during data-correction
+          let bestAsset = assets.find(
+            (a) => a.symbol.toUpperCase() === transfer.symbol.toUpperCase(),
+          );
+          if (!bestAsset) {
+            const { bestMatch } = stringSimilarity.findBestMatch(
+              transfer.symbol,
+              assets.map((a) => a.symbol),
+            );
+            bestAsset = assets.find((a) => a.symbol === bestMatch.target);
+          }
+          transfer.asset_unique_id = bestAsset?.unique_id;
           transfer.symbol = symbol;
         });
     });

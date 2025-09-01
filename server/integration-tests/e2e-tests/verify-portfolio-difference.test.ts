@@ -5,65 +5,66 @@ import {
 } from "../shared/helper/fetch-portfolio-movements";
 import { waitForPortToBeFree } from "../shared/helper/wait-for-port-to-be-free";
 import { PortfolioMovement } from "../../src/server/data-aggregation/model/portfolio-movement";
-import { PortfolioChangeValidationService } from "../../src/server/data-aggregation/services/portfolio-change-validation.service";
 import { createDIContainer } from "../../src/server/di-container";
-import { PortfolioMovementsService } from "../../src/server/data-aggregation/services/portfolio-movements.service";
 import * as fs from "fs";
+import { PortfolioMovementsService } from "../../src/server/data-aggregation/services/portfolio-movements.service";
+import { PortfolioChangeValidationService } from "../../src/server/data-correction/portfolio-change-validation.service";
+import { PortfolioMovementCorrectionService } from "../../src/server/data-correction/portfolio-movement-correction.service";
 
 const acceptedDeviations = [
   {
     symbol: "DOT",
-    perPayment: 0.5,
+    singlePayment: 0.5,
     max: 20,
   },
   {
     symbol: "TBTC",
-    perPayment: 0.001,
+    singlePayment: 0.001,
     max: 0.001,
   },
   {
     symbol: "WETH",
-    perPayment: 0.01,
+    singlePayment: 0.01,
     max: 0.01,
   },
   {
     symbol: "KSM",
-    perPayment: 0.1,
+    singlePayment: 0.1,
     max: 10,
   },
   {
     symbol: "USDT",
-    perPayment: 0.1,
+    singlePayment: 0.1,
     max: 10,
   },
   {
     symbol: "ASTR",
-    perPayment: 1,
+    singlePayment: 1,
     max: 500,
   },
   {
     symbol: "HDX",
-    perPayment: 3,
+    singlePayment: 3,
     max: 500,
   },
   {
     symbol: "PHA",
-    perPayment: 1,
+    singlePayment: 1,
     max: 500,
   },
   {
     symbol: "MYTH",
-    perPayment: 0.02,
+    singlePayment: 0.02,
     max: 100,
   },
   {
     symbol: "EWT",
-    perPayment: 0.01,
+    singlePayment: 0.01,
     max: 10,
   },
   {
     symbol: "BNC",
-    perPayment: 0.3,
+    singlePayment: 0.3,
     max: 20,
   },
 ];
@@ -90,6 +91,18 @@ const verifyPortfolioChanges = async (
       portfolioMovements: PortfolioMovement[];
     };
 
+  const portfolioMovementCorrectionService: PortfolioMovementCorrectionService =
+    container.resolve("portfolioMovementCorrectionService");
+
+  await portfolioMovementCorrectionService.fixErrorsAndMissingData(
+    chainInfo,
+    address,
+    portfolioMovements,
+    [],
+    minDate.getTime(),
+    maxDate.getTime(),
+  );
+
   const portfolioChangeValidationService: PortfolioChangeValidationService =
     container.resolve("portfolioChangeValidationService");
   const deviations =
@@ -100,7 +113,7 @@ const verifyPortfolioChanges = async (
       acceptedDeviations,
     );
   deviations.forEach((d) => {
-    if (d.absoluteDeviationTooLarge || d.perPaymentDeviationTooLarge) {
+    if (d.absoluteDeviationTooLarge) {
       console.log(
         `Deviation from expectation too large for ${address} and ${chainInfo.domain}:`,
       );
@@ -110,7 +123,6 @@ const verifyPortfolioChanges = async (
         JSON.stringify(portfolioMovements, null, 2),
       );
       expect(d.absoluteDeviationTooLarge).toBeFalsy();
-      expect(d.perPaymentDeviationTooLarge).toBeFalsy();
     }
   });
 };

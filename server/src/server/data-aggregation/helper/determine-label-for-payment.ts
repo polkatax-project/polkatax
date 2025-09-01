@@ -104,6 +104,11 @@ const eventClassifications: EventClassification[] = [
         eventId: "RewardClaimed",
         label: "Reward" as const,
       },
+      {
+        moduleId: "staking",
+        eventId: "RewardsClaimed",
+        label: "Reward" as const,
+      },
     ],
   },
   {

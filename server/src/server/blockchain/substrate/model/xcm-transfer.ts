@@ -61,6 +61,7 @@ export interface XcmTransfer {
     fiatValue?: number;
     fromChain?: string;
     destChain?: string;
-    asset_unique_id;
+    asset_unique_id: string;
+    asset_unique_id_as_given: string;
   }[];
 }

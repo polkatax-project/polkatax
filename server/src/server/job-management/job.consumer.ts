@@ -3,16 +3,14 @@ import { logger } from "../logger/logger";
 import { JobsService } from "./jobs.service";
 import * as subscanChains from "../../../res/gen/subscan-chains.json";
 import { PortfolioMovementsService } from "../data-aggregation/services/portfolio-movements.service";
-import {
-  Deviation,
-  PortfolioChangeValidationService,
-} from "../data-aggregation/services/portfolio-change-validation.service";
+import { PortfolioMovementCorrectionService } from "../data-correction/portfolio-movement-correction.service";
+import { getEndOfLastYear } from "./get-beginning-last-year";
 
 export class JobConsumer {
   constructor(
     private jobsService: JobsService,
     private portfolioMovementsService: PortfolioMovementsService,
-    private portfolioChangeValidationService: PortfolioChangeValidationService,
+    private portfolioMovementCorrectionService: PortfolioMovementCorrectionService,
   ) {}
 
   async process(job: Job): Promise<void> {
@@ -45,6 +43,7 @@ export class JobConsumer {
           address: job.wallet,
           currency: job.currency,
           minDate: job.syncFromDate,
+          maxDate: getEndOfLastYear(),
         });
       const portfolioMovements = result.portfolioMovements;
 
@@ -56,26 +55,17 @@ export class JobConsumer {
         portfolioMovements.push(...previous);
       }
 
-      let deviations: Deviation[] = [];
-      try {
-        deviations =
-          await this.portfolioChangeValidationService.calculateDeviationFromExpectation(
-            chain,
-            job.wallet,
-            portfolioMovements,
-          );
-        if (deviations.length > 0) {
-          logger.warn(
-            deviations,
-            `Possibly incorrect results for ${chain.domain}, ${job.wallet}`,
-          );
-        }
-      } catch (error) {
-        logger.warn(error, "Error when trying to objectin validation Results");
-      }
+      const deviations =
+        await this.portfolioMovementCorrectionService.fixErrorsAndMissingData(
+          chain,
+          job.wallet,
+          portfolioMovements,
+          result.unmatchedEvents,
+          job.syncFromDate,
+          getEndOfLastYear(),
+        );
 
-      const eightDaysMs = 8 * 24 * 60 * 60 * 1000;
-      job.syncedUntil = Date.now() - eightDaysMs; // "guaranteed" to be synced until 8 days ago, because backend data is not updated daily!
+      job.syncedUntil = getEndOfLastYear();
 
       const relevantPortfolioMovements = portfolioMovements.filter(
         (p) => p.transfers.length > 0,

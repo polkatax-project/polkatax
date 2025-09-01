@@ -7,7 +7,8 @@ export type Provenance =
   | "event"
   | "stakingRewards"
   | "tx"
-  | "aggregatedData";
+  | "aggregatedData"
+  | "deviationCompensation";
 
 export interface PortfolioMovement {
   hash?: string;

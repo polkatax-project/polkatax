@@ -7,8 +7,9 @@ import {
   stopStubs,
 } from "../shared/helper/fetch-portfolio-movements";
 import { getApiClient } from "../shared/helper/get-balances-at";
-import { PortfolioChangeValidationService } from "../../src/server/data-aggregation/services/portfolio-change-validation.service";
 import * as fs from "fs";
+import { PortfolioChangeValidationService } from "../../src/server/data-correction/portfolio-change-validation.service";
+import { logger } from "../../src/server/logger/logger";
 
 const fetchAndStorePortfolioMovements = async (
   address: string,
@@ -74,7 +75,7 @@ const zoomIntoErrorTokensChange = async (
     (d) =>
       d.unique_id === tokenUniqueId ||
       (!tokenUniqueId && d.symbol === tokenSymbol),
-  ) ?? { deviationPerPayment: 0, deviation: 0 };
+  ) ?? { deviation: 0 };
   const deviationsSecondHalf = (
     await portfolioChangeValidationService.calculateDeviationFromExpectation(
       chain,
@@ -88,18 +89,15 @@ const zoomIntoErrorTokensChange = async (
     (d) =>
       d.unique_id === tokenUniqueId ||
       (!tokenUniqueId && d.symbol === tokenSymbol),
-  ) ?? { deviationPerPayment: 0, deviation: 0 };
+  ) ?? { deviation: 0 };
 
   const intervalNo =
-    deviationsFirstHalf.deviationPerPayment >
-    deviationsSecondHalf.deviationPerPayment
-      ? 0
-      : 1;
+    deviationsFirstHalf.deviation > deviationsSecondHalf.deviation ? 0 : 1;
   const nextInterval = {
     startBlock: blocksToFetch[intervalNo],
     endBlock: blocksToFetch[intervalNo + 1],
   };
-  console.log(
+  logger.debug(
     `Current deviation: ${Math.max(deviationsSecondHalf.deviation, deviationsFirstHalf.deviation)}. Next interval ${nextInterval.startBlock} - ${nextInterval.endBlock}`,
   );
   if (nextInterval.endBlock - nextInterval.startBlock > 1) {

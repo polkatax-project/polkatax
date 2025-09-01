@@ -7,7 +7,7 @@ export const WS_CHAIN_ENDPOINTS = {
   bifrost: "wss://bifrost.public.curie.radiumblock.co/ws",
   polkadot: "wss://polkadot.api.onfinality.io/public-ws",
   kusama: "wss://kusama.api.onfinality.io/public-ws",
-  hydration: "wss://hydradx-rpc.dwellir.com",
+  hydration: "wss://hydradx.paras.ibp.network",
   "coretime-polkadot": "wss://coretime-polkadot.dotters.network",
   acala: "wss://acala-rpc.dwellir.com",
   astar: "wss://rpc.astar.network",
@@ -113,11 +113,10 @@ export class PolkadotApi {
     const nativeBalance = await this.getNativeTokenBalance(address);
     const nativeToken = assets.find((a) => a.native);
 
-    const decMul = Math.pow(10, nativeToken.decimals);
     values.push({
       asset_unique_id: nativeToken.unique_id,
       symbol: nativeToken.symbol,
-      balance: nativeBalance / decMul,
+      balance: nativeBalance / Math.pow(10, nativeToken.decimals),
       native: true,
     });
     return values;
