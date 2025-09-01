@@ -41,8 +41,7 @@
           <span
             :style="{
               'background-color':
-                props.row.absoluteDeviationTooLarge ||
-                props.row.perPaymentDeviationTooLarge
+                props.row.absoluteDeviationTooLarge
                   ? 'yellow'
                   : '',
             }"
@@ -77,7 +76,7 @@ const columns = computed(() => [
     label: '',
     align: 'left',
     field: (row: Deviation) =>
-      row.absoluteDeviationTooLarge || row.perPaymentDeviationTooLarge
+      row.absoluteDeviationTooLarge
         ? '⚠️'
         : '',
     sortable: true,
