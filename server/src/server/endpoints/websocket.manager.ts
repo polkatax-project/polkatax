@@ -124,6 +124,12 @@ export class WebSocketManager {
   }
 
   wsHandler = (socket: WebSocket): void => {
+    (socket as any).isAlive = true;
+
+    socket.on("pong", () => {
+      (socket as any).isAlive = true;
+    });
+
     socket.on("message", async (raw) => {
       let msg: WebSocketIncomingMessage;
       try {
