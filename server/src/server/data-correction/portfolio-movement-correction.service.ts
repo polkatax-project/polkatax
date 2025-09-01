@@ -46,6 +46,7 @@ export class PortfolioMovementCorrectionService {
   ): Promise<Deviation[]> {
     logger.info(`Enter fixErrorsAndMissingData for ${chainInfo.domain}, ${address}`);
 
+
     if (portfolioMovements.length === 0) {
       logger.info(`Exit fixErrorsAndMissingData. No portfolio movements`);
       return [];
@@ -62,6 +63,21 @@ export class PortfolioMovementCorrectionService {
     );
 
     const acceptedDeviations = await this.determineAdequateMaxDeviations();
+
+    if (process.env['USE_DATA_PLATFORM_API'] === 'true' && (chainInfo.domain === 'polkadot' || chainInfo.domain === 'kusama' || chainInfo.domain === 'enjin')) {
+      let deviations = await this.portfolioChangeValidationService.calculateDeviationFromExpectation(
+        chainInfo,
+        address,
+        portfolioMovements,
+        acceptedDeviations,
+        blockMin,
+        blockMax,
+        chainInfo.token,
+      );
+      logger.info(`Exit fixErrorsAndMissingData. No correction was done due to working with aggregated data.`);
+      return deviations
+    }
+
     const feeToken = await this.portfolioChangeValidationService.findBestFeeToken(
       chainInfo,
       address,
