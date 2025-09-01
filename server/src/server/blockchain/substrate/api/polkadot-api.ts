@@ -113,11 +113,10 @@ export class PolkadotApi {
     const nativeBalance = await this.getNativeTokenBalance(address);
     const nativeToken = assets.find((a) => a.native);
 
-    const decMul = Math.pow(10, nativeToken.decimals);
     values.push({
       asset_unique_id: nativeToken.unique_id,
       symbol: nativeToken.symbol,
-      balance: nativeBalance / decMul,
+      balance: nativeBalance / Math.pow(10, nativeToken.decimals),
       native: true,
     });
     return values;

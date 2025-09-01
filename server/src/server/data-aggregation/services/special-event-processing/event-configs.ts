@@ -7,11 +7,11 @@ import { EventDerivedAssetMovement } from "./event-derived-asset-movement";
 import { EventHandlerContext } from "./event-handler-context";
 import { onAssethubAssetsIssued } from "./on-assethub-asset-issued";
 import { onAssethubForeignAssetsIssued } from "./on-assethub-foreign-asset-issued";
-import { onAssethubSwapExecuted } from "./on-assethub-swap-executed";
 import { onBalancesDeposit } from "./on-balances-deposit";
 import { onBalancesWithdraw } from "./on-balances-withdraw";
 import { onCoretimePurchased } from "./on-coretime-purchased";
 import { onHydrationLiquidityRemoved } from "./on-hydration-liquidity-removed";
+import { onHydrationStableSwapLiquidityAdded } from "./on-hydration-stable-swap-liquidity-added";
 import { onMigratedDelegation } from "./on-migrated-delegation";
 import { onPhalaAssetBurned } from "./on-phala-asset-burned";
 import { onReserveRepatriated } from "./on-reserve-repatriated";
@@ -90,9 +90,9 @@ export const eventConfigs: {
       ),
   },
   {
-    chains: ["assethub-polkadot", "assethub-kusama"],
-    event: "assetconversionSwapExecuted",
-    handler: (e, context) => onAssethubSwapExecuted(e, context),
+    chains: ["hydration", "bifrsot"],
+    event: "stableswapLiquidityAdded",
+    handler: (e, context) => onHydrationStableSwapLiquidityAdded(e, context),
   },
   {
     chains: ["assethub-polkadot", "assethub-kusama"],

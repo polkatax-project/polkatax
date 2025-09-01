@@ -30,7 +30,7 @@ const generateKey = (shortElements: (string | number)[], obj?: any) => {
 };
 
 export class PortfolioDifferenceService {
-  private polkadotApi: any;
+  private polkadotApi: PolkadotApi | undefined;
 
   constructor(private subscanApi: SubscanApi) {}
 
@@ -50,9 +50,6 @@ export class PortfolioDifferenceService {
     minBlock: number,
     maxBlock: number,
   ): Promise<PortfolioDifference[]> {
-    logger.info(
-      `Enter fetchPortfolioDifference for ${chainInfo.domain} and wallet ${address}`,
-    );
     switch (chainInfo.domain) {
       case "hydration":
       case "basilisk":
@@ -64,19 +61,13 @@ export class PortfolioDifferenceService {
           minBlock,
           maxBlock,
         );
-        logger.info(
-          `Exit fetchPortfolioDifference for ${chainInfo.domain} and wallet ${address}`,
-        );
         return tokenDiff;
       default:
         const assetDiff = await this.fetchPortfolioAssetDifference(
-          chainInfo.domain,
+          chainInfo,
           address,
           minBlock,
           maxBlock,
-        );
-        logger.info(
-          `Exit fetchPortfolioDifference for ${chainInfo.domain} and wallet ${address}`,
         );
         return assetDiff;
     }
@@ -95,8 +86,8 @@ export class PortfolioDifferenceService {
       native: boolean;
     }[],
   ) {
-    const key1 = generateKey([chain, address, minBlock], relevantTokens);
-    const key2 = generateKey([chain, address, maxBlock], relevantTokens);
+    const key1 = generateKey([chain, address, minBlock], relevantTokens.map(r => r.unique_id));
+    const key2 = generateKey([chain, address, maxBlock], relevantTokens.map(r => r.unique_id));
 
     const fetchAssetsViaApi = async (block: number, key: string) => {
       this.polkadotApi = this.polkadotApi ?? new PolkadotApi(chain);
@@ -116,39 +107,86 @@ export class PortfolioDifferenceService {
     return { portfolioAtMinBlock, portfolioAtMaxBlock };
   }
 
+  private async fetchPortfolios<T>(
+    domain: string,
+    minBlock: number,
+    maxBlock: number,
+    address: string,
+    tokens: T[],
+    getPortfolioFn: (api: PolkadotApi, address: string, tokens: T[]) => Promise<
+      {
+        asset_unique_id: string;
+        symbol: string;
+        balance: number;
+        native?: boolean;
+      }[]
+    >,
+  ) {
+    const key1 = generateKey([domain, address, minBlock], tokens);
+    const key2 = generateKey([domain, address, maxBlock], tokens);
+
+    const fetchViaApi = async (block: number, key: string) => {
+      this.polkadotApi = this.polkadotApi ?? new PolkadotApi(domain);
+      await this.polkadotApi.setApiAt(block);
+      const portfolio = await getPortfolioFn(this.polkadotApi, address, tokens);
+      this.assetsCache[key] = portfolio;
+      return portfolio;
+    };
+
+    const portfolioAtMinBlock =
+      this.assetsCache[key1] ?? (await fetchViaApi(minBlock, key1));
+    const portfolioAtMaxBlock =
+      this.assetsCache[key2] ?? (await fetchViaApi(maxBlock, key2));
+
+    return { portfolioAtMinBlock, portfolioAtMaxBlock };
+  }
+
+  private calculateDiffs<T extends { unique_id: string; asset_id: any }>(
+    tokens: T[],
+    portfolioAtMinBlock: { asset_unique_id: string; balance: number }[],
+    portfolioAtMaxBlock: { asset_unique_id: string; balance: number }[],
+  ) {
+    return tokens.map((t) => {
+      const balanceBefore =
+        portfolioAtMinBlock.find(
+          (p) =>
+            p.asset_unique_id === t.unique_id ||
+            p.asset_unique_id === t.asset_id,
+        )?.balance ?? 0;
+      const balanceAfter =
+        portfolioAtMaxBlock.find(
+          (p) =>
+            p.asset_unique_id === t.unique_id ||
+            p.asset_unique_id === t.asset_id,
+        )?.balance ?? 0;
+      return {
+        ...t,
+        balanceBefore,
+        balanceAfter,
+        diff: balanceAfter - balanceBefore,
+      };
+    });
+  }
+
   async fetchPortfolioAssetDifference(
-    chain: string,
+    chain: { domain: string; token: string },
     address: string,
     minBlock: number,
     maxBlock: number,
-  ): Promise<
-    {
-      symbol: string;
-      unique_id: string;
-      decimals: number;
-      asset_id: number;
-      diff: number;
-      balanceBefore: number;
-      balanceAfter: number;
-    }[]
-  > {
+  ): Promise<PortfolioDifference[]> {
     const portfolioNow = await this.subscanApi.fetchAccountTokens(
-      chain,
+      chain.domain,
       address,
     );
     const mergedPortfolio = [
       ...(portfolioNow.builtin ?? []),
-      ...(portfolioNow.native.map((n) => ({
-        ...n,
-        native: true,
-      })) ?? []),
+      ...((portfolioNow.native ?? []).map((n) => ({ ...n, native: true })) ??
+        []),
       ...(portfolioNow.assets ?? []),
     ];
+
     const relevantTokens = mergedPortfolio
-      .filter(
-        // current limitation: only validate standard assets
-        (b) => b.unique_id.startsWith("standard_assets/") || b.native,
-      )
+      .filter((b) => b.unique_id.startsWith("standard_assets/") || b.native)
       .map((b) => ({
         unique_id: b.unique_id,
         symbol: b.symbol,
@@ -157,58 +195,32 @@ export class PortfolioDifferenceService {
         native: b.native,
       }));
 
+    if (!relevantTokens.find((t) => t.native)) {
+      const nativeToken = await this.subscanApi.fetchNativeToken(chain.domain);
+      relevantTokens.push({
+        unique_id: chain.token,
+        symbol: chain.token,
+        decimals: nativeToken.token_decimals,
+        asset_id: chain.token,
+        native: true,
+      });
+    }
+
     const { portfolioAtMinBlock, portfolioAtMaxBlock } =
-      await this.fetchPortfolioAssets(
-        chain,
+      await this.fetchPortfolios(
+        chain.domain,
         minBlock,
         maxBlock,
         address,
         relevantTokens,
+        (api, addr, tokens) => api.getAssetPortfolio(addr, tokens),
       );
 
-    return relevantTokens.map((t) => {
-      const valueAtMinBlock = portfolioAtMinBlock.find(
-        (p) => p.asset_unique_id === t.unique_id,
-      )?.balance;
-      const valueAtMaxBlock = portfolioAtMaxBlock.find(
-        (p) => p.asset_unique_id === t.unique_id,
-      )?.balance;
-      return {
-        ...t,
-        balanceBefore: valueAtMinBlock,
-        balanceAfter: valueAtMaxBlock,
-        diff: valueAtMaxBlock - valueAtMinBlock,
-      };
-    });
-  }
-
-  private async fetchTokenPortfolios(
-    domain: string,
-    minBlock: number,
-    maxBlock: number,
-    address: string,
-    tokens: Asset[],
-  ) {
-    const key1 = generateKey([domain, address, minBlock]);
-    const key2 = generateKey([domain, address, maxBlock]);
-
-    const fetchAssetsViaApi = async (block: number, key: string) => {
-      this.polkadotApi = this.polkadotApi ?? new PolkadotApi(domain);
-      await this.polkadotApi.setApiAt(block);
-      const portfolio = await this.polkadotApi.getTokenPortfolio(
-        address,
-        tokens,
-      );
-      this.assetsCache[key] = portfolio;
-      return portfolio;
-    };
-
-    const portfolioAtMinBlock =
-      this.assetsCache[key1] ?? (await fetchAssetsViaApi(minBlock, key1));
-    const portfolioAtMaxBlock =
-      this.assetsCache[key2] ?? (await fetchAssetsViaApi(maxBlock, key2));
-
-    return { portfolioAtMinBlock, portfolioAtMaxBlock };
+    return this.calculateDiffs(
+      relevantTokens,
+      portfolioAtMinBlock,
+      portfolioAtMaxBlock,
+    );
   }
 
   async fetchPortfolioTokenDifference(
@@ -216,23 +228,15 @@ export class PortfolioDifferenceService {
     address: string,
     minBlock: number,
     maxBlock: number,
-  ): Promise<
-    {
-      symbol: string;
-      unique_id: string;
-      decimals: number;
-      asset_id: number;
-      diff: number;
-      balanceBefore: number;
-      balanceAfter: number;
-    }[]
-  > {
-    const tokens = (await this.subscanApi.scanTokens(chainInfo.domain)).filter(
-      (t) => t.currency_id !== chainInfo.token,
-    ); // ensure the native token is only included once.
+  ): Promise<PortfolioDifference[]> {
+    const tokens = (await this.subscanApi.scanTokens(chainInfo.domain))
+      .filter((t) => t.currency_id !== chainInfo.token)
+      .filter((t) => !!t.symbol);
+
     const nativeToken = await this.subscanApi.fetchNativeToken(
       chainInfo.domain,
     );
+
     tokens.push({
       id: chainInfo.token,
       decimals: nativeToken.token_decimals,
@@ -244,33 +248,15 @@ export class PortfolioDifferenceService {
     });
 
     const { portfolioAtMinBlock, portfolioAtMaxBlock } =
-      await this.fetchTokenPortfolios(
+      await this.fetchPortfolios(
         chainInfo.domain,
         minBlock,
         maxBlock,
         address,
         tokens,
+        (api, addr, toks) => api.getTokenPortfolio(addr, toks),
       );
 
-    return tokens.map((t) => {
-      const valueAtMinBlock =
-        portfolioAtMinBlock.find(
-          (p) =>
-            p.asset_unique_id === t.unique_id ||
-            p.asset_unique_id === t.asset_id,
-        )?.balance ?? 0;
-      const valueAtMaxBlock =
-        portfolioAtMaxBlock.find(
-          (p) =>
-            p.asset_unique_id === t.unique_id ||
-            p.asset_unique_id === t.asset_id,
-        )?.balance ?? 0;
-      return {
-        ...t,
-        balanceAfter: valueAtMaxBlock,
-        balanceBefore: valueAtMinBlock,
-        diff: valueAtMaxBlock - valueAtMinBlock,
-      };
-    });
+    return this.calculateDiffs(tokens, portfolioAtMinBlock, portfolioAtMaxBlock);
   }
 }

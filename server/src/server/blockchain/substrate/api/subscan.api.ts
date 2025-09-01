@@ -571,4 +571,20 @@ export class SubscanApi {
       hasNext: list.length >= 100 && list[list.length - 1].timestamp >= minDate,
     };
   }
+
+  async fetchMetadata(chainName: string): Promise<{
+    avgBlockTime: number;
+    blockNum: number;
+  }> {
+    const response = await this.requestHelper.req(
+      `https://${chainName}.api.subscan.io/api/scan/metadata`,
+      `post`,
+      {},
+    );
+    const meta = response.data;
+    return {
+      avgBlockTime: Number(meta.avgBlockTime) || Number(meta.blockTime),
+      blockNum: Number(meta.blockNum),
+    };
+  }
 }

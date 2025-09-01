@@ -1,80 +1,85 @@
 import { WS_CHAIN_ENDPOINTS } from "../blockchain/substrate/api/polkadot-api";
 import { SubscanApi } from "../blockchain/substrate/api/subscan.api";
+import { Block } from "../blockchain/substrate/model/block";
 import { Transfer } from "../blockchain/substrate/model/raw-transfer";
 import {
   PortfolioMovement,
   TaxableEvent,
 } from "../data-aggregation/model/portfolio-movement";
-import { logger } from "../logger/logger";
 import {
   PortfolioDifference,
   PortfolioDifferenceService,
 } from "./portfolio-difference.service";
 
-const DEFAULT_MAX_DEVIATION = {
-  perPayment: 0.02,
-  max: 0.1,
+const DEFAULT_MAX_ALLOWED_DEVIATION = {
+  singlePayment: 1,
+  max: 3,
 };
 
 const ACCEPTED_DEVIATIONS = [
   {
     symbol: "DOT",
-    perPayment: 0.5,
+    singlePayment: 0.5,
     max: 2,
   },
   {
     symbol: "TBTC",
-    perPayment: 0.001,
+    singlePayment: 0.001,
     max: 0.001,
   },
   {
     symbol: "WETH",
-    perPayment: 0.01,
+    singlePayment: 0.01,
     max: 0.01,
   },
   {
     symbol: "KSM",
-    perPayment: 0.1,
+    singlePayment: 0.1,
     max: 1,
   },
   {
     symbol: "USDT",
-    perPayment: 0.1,
-    max: 1,
+    singlePayment: 0.5,
+    max: 2.5,
   },
   {
     symbol: "ASTR",
-    perPayment: 1,
+    singlePayment: 1,
     max: 100,
   },
   {
     symbol: "HDX",
-    perPayment: 3,
+    singlePayment: 1,
     max: 200,
   },
   {
     symbol: "PHA",
-    perPayment: 1,
+    singlePayment: 1,
     max: 100,
   },
   {
     symbol: "MYTH",
-    perPayment: 0.02,
+    singlePayment: 1,
     max: 10,
   },
   {
     symbol: "EWT",
-    perPayment: 0.01,
-    max: 1,
-  },
-  {
-    symbol: "BNC",
-    perPayment: 0.3,
+    singlePayment: 1,
     max: 2,
   },
   {
+    symbol: "BNC",
+    singlePayment: 1,
+    max: 10,
+  },
+  {
     symbol: "INTR",
-    perPayment: 0.1,
+    singlePayment: 1,
+    max: 100,
+  },
+  {
+    symbol: "GLMR",
+    singlePayment: 1,
     max: 10,
   },
 ];
@@ -89,8 +94,7 @@ export interface Deviation {
   deviation: number;
   signedDeviation: number;
   absoluteDeviationTooLarge: boolean;
-  perPaymentDeviationTooLarge: boolean;
-  deviationPerPayment: number;
+  singlePaymentDeviationTooLarge: boolean;
   numberTx: number;
 }
 
@@ -100,30 +104,34 @@ export class PortfolioChangeValidationService {
     private subscanApi: SubscanApi,
   ) {}
 
-  async calculateDeviationFromExpectation(
+  private async fetchPortfolioDifferences(
     chainInfo: { domain: string; token: string },
     address: string,
     portfolioMovements: TaxableEvent[],
-    acceptedDeviations = ACCEPTED_DEVIATIONS,
     minBlockNum?: number,
     maxBlockNum?: number,
-  ): Promise<Deviation[]> {
-    logger.info(
-      `Enter PortfolioChangeValidationService.validate for ${chainInfo.domain} and wallet ${address}`,
-    );
-
+  ): Promise<
+    | {
+        portfolioDifferences: PortfolioDifference[];
+        minBlock?: Block;
+        maxBlock?: Block;
+      }
+    | undefined
+  > {
     if (!Object.keys(WS_CHAIN_ENDPOINTS).includes(chainInfo.domain)) {
-      logger.info(
-        `Exit PortfolioChangeValidationService.validate: chain ${chainInfo.domain} not supported.`,
-      );
-      return [];
+      return {
+        portfolioDifferences: [],
+        minBlock: undefined,
+        maxBlock: undefined,
+      };
     }
 
     if (maxBlockNum === undefined && portfolioMovements.length === 0) {
-      logger.info(
-        `Exit PortfolioChangeValidationService.validate: No portfolio movements found.`,
-      );
-      return [];
+      return {
+        portfolioDifferences: [],
+        minBlock: undefined,
+        maxBlock: undefined,
+      };
     }
 
     minBlockNum =
@@ -154,18 +162,192 @@ export class PortfolioChangeValidationService {
         minBlockNum,
         maxBlockNum,
       );
-    const deviations = [];
-    const ignoreFees = [
-      "hydration",
-      "basilisk",
-      "bifrost",
-      "assethub-polkadot",
-      "assethub-kusama",
-    ].includes(chainInfo.domain);
+
+    return { portfolioDifferences, minBlock, maxBlock };
+  }
+
+  async calculateDeviationFromExpectation(
+    chainInfo: { domain: string; token: string },
+    address: string,
+    portfolioMovements: TaxableEvent[],
+    acceptedDeviations = ACCEPTED_DEVIATIONS,
+    minBlockNum?: number,
+    maxBlockNum?: number,
+    feeToken?: string,
+  ): Promise<Deviation[]> {
+    if (!Object.keys(WS_CHAIN_ENDPOINTS).includes(chainInfo.domain)) {
+      return [];
+    }
+
+    if (maxBlockNum === undefined && portfolioMovements.length === 0) {
+      return [];
+    }
+
+    const { portfolioDifferences, minBlock, maxBlock } =
+      await this.fetchPortfolioDifferences(
+        chainInfo,
+        address,
+        portfolioMovements,
+        minBlockNum,
+        maxBlockNum,
+      );
+
+    if (portfolioDifferences.length === 0) {
+      return [];
+    }
+
+    return this.calculateDeviation(
+      chainInfo,
+      portfolioMovements,
+      portfolioDifferences,
+      acceptedDeviations,
+      minBlock,
+      maxBlock,
+      feeToken,
+    );
+  }
+
+  async findBestFeeToken(
+    chainInfo: { domain: string; token: string },
+    address: string,
+    portfolioMovements: TaxableEvent[],
+    acceptedDeviations = ACCEPTED_DEVIATIONS,
+    minBlockNum?: number,
+    maxBlockNum?: number,
+  ): Promise<string | undefined> {
+    if (!Object.keys(WS_CHAIN_ENDPOINTS).includes(chainInfo.domain)) {
+      return;
+    }
+    if (maxBlockNum === undefined && portfolioMovements.length === 0) {
+      return;
+    }
+    const { portfolioDifferences, minBlock, maxBlock } =
+      await this.fetchPortfolioDifferences(
+        chainInfo,
+        address,
+        portfolioMovements,
+        minBlockNum,
+        maxBlockNum,
+      );
+
+    if (portfolioDifferences.length === 0) {
+      return;
+    }
+    let feeTokens = [chainInfo.token, undefined];
+
+    let minDeviation = Number.MAX_SAFE_INTEGER;
+    let minFeeToken = undefined;
+    for (let feeToken of feeTokens) {
+      const deviations = await this.calculateDeviation(
+        chainInfo,
+        portfolioMovements,
+        portfolioDifferences,
+        acceptedDeviations,
+        minBlock,
+        maxBlock,
+        feeToken,
+      );
+      const total = deviations.reduce((curr, d) => curr + d.deviation, 0);
+      if (total < minDeviation) {
+        minFeeToken = feeToken;
+        minDeviation = total;
+      }
+    }
+    return minFeeToken;
+  }
+
+  private filterMovementsWithinRange(
+    portfolioMovements: TaxableEvent[],
+    minBlock: Block,
+    maxBlock: Block,
+  ): TaxableEvent[] {
+    return portfolioMovements.filter(
+      (p) =>
+        p.timestamp > minBlock.timestamp && p.timestamp <= maxBlock.timestamp,
+    );
+  }
+
+  private async calculateExpectedDiffForToken(
+    chainInfo: { domain: string; token: string },
+    tokenInPortfolio: PortfolioDifference,
+    matchingPortfolioMovements: TaxableEvent[],
+    feeToken?: string,
+  ): Promise<number> {
+    let expectedDiff = 0;
+
+    if (feeToken === tokenInPortfolio.unique_id) {
+      const totalFees = matchingPortfolioMovements.reduce(
+        (curr, p) =>
+          curr +
+          ((p as PortfolioMovement)?.feeUsed ?? 0) +
+          ((p as PortfolioMovement)?.tip ?? 0), // - (p?.xcmFee ?? 0);
+        0,
+      );
+      const nativeToken = await this.subscanApi.fetchNativeToken(
+        chainInfo.domain,
+      );
+      if (feeToken !== chainInfo.token) {
+        throw new Error("Only native token accepted as fee token for now!");
+      }
+      expectedDiff -= totalFees / 10 ** -nativeToken.token_decimals;
+    }
+
+    matchingPortfolioMovements.forEach((p) => {
+      p.transfers.forEach((t) => {
+        if (t.asset_unique_id === tokenInPortfolio.unique_id) {
+          expectedDiff += t?.amount ?? 0;
+        }
+      });
+    });
+
+    return expectedDiff;
+  }
+
+  private evaluateDeviationAgainstThreshold(
+    tokenInPortfolio: PortfolioDifference,
+    expectedDiff: number,
+    acceptedDeviations: typeof ACCEPTED_DEVIATIONS,
+    numberTx: number,
+  ): Deviation {
+    const signedDeviation = tokenInPortfolio.diff - expectedDiff;
+    const deviation = Math.abs(signedDeviation);
+
+    const maxAllowedDeviation =
+      acceptedDeviations.find(
+        (a) => a.symbol.toUpperCase() === tokenInPortfolio.symbol.toUpperCase(),
+      ) ??
+      ACCEPTED_DEVIATIONS.find(
+        (a) => a.symbol.toUpperCase() === tokenInPortfolio.symbol.toUpperCase(),
+      ) ??
+      DEFAULT_MAX_ALLOWED_DEVIATION;
+
+    return {
+      ...tokenInPortfolio,
+      deviation,
+      signedDeviation,
+      expectedDiff,
+      absoluteDeviationTooLarge: Math.abs(deviation) > maxAllowedDeviation.max,
+      singlePaymentDeviationTooLarge:
+        Math.abs(deviation) > maxAllowedDeviation.singlePayment,
+      numberTx,
+    };
+  }
+
+  async calculateDeviation(
+    chainInfo: { domain: string; token: string },
+    portfolioMovements: TaxableEvent[],
+    portfolioDifferences: PortfolioDifference[],
+    acceptedDeviations = ACCEPTED_DEVIATIONS,
+    minBlock: Block,
+    maxBlock: Block,
+    feeToken?: string,
+  ): Promise<Deviation[]> {
+    const deviations: Deviation[] = [];
 
     const portfolioTokenIds = portfolioDifferences.map((d) => d.unique_id);
-    const tokenIdsNotInPortfolio = [];
+    const tokenIdsNotInPortfolio: string[] = [];
     const tokensNotInPortfolio: Partial<PortfolioDifference>[] = [];
+
     portfolioMovements.forEach((p) =>
       p.transfers
         .filter((t) => t.asset_unique_id)
@@ -184,63 +366,36 @@ export class PortfolioChangeValidationService {
           }
         }),
     );
+
     const allTokens = portfolioDifferences.concat(
       tokensNotInPortfolio as PortfolioDifference[],
     );
 
-    const matchingPortfolioMovements = portfolioMovements.filter(
-      (p) =>
-        p.timestamp > minBlock.timestamp && p.timestamp <= maxBlock.timestamp,
+    const matchingPortfolioMovements = this.filterMovementsWithinRange(
+      portfolioMovements,
+      minBlock,
+      maxBlock,
     );
 
-    for (let tokenInPortfolio of allTokens) {
-      let expectedDiff = 0;
-      let transferCounter = 0;
+    // compute deviations per token
+    for (const tokenInPortfolio of allTokens) {
+      const expectedDiff = await this.calculateExpectedDiffForToken(
+        chainInfo,
+        tokenInPortfolio,
+        matchingPortfolioMovements,
+        feeToken,
+      );
 
-      if (!ignoreFees && tokenInPortfolio.native) {
-        matchingPortfolioMovements.forEach((p) => {
-          expectedDiff +=
-            -((p as PortfolioMovement)?.feeUsed ?? 0) -
-            ((p as PortfolioMovement)?.tip ?? 0); // - (p?.xcmFee ?? 0);
-        });
-      }
-      matchingPortfolioMovements.forEach((p) => {
-        p.transfers.forEach((t) => {
-          if (t.asset_unique_id === tokenInPortfolio.unique_id) {
-            expectedDiff += t?.amount ?? 0;
-            transferCounter++;
-          }
-        });
-      });
-      const signedDeviation = tokenInPortfolio.diff - expectedDiff;
-      const deviation = Math.abs(signedDeviation);
-      const maxDeviation =
-        acceptedDeviations.find((a) => a.symbol === tokenInPortfolio.symbol) ??
-        DEFAULT_MAX_DEVIATION;
-
-      const perPayment = tokenInPortfolio.native
-        ? matchingPortfolioMovements.length > 0
-          ? deviation / matchingPortfolioMovements.length
-          : 0
-        : transferCounter > 0
-          ? deviation / transferCounter
-          : 0;
-      deviations.push({
-        ...tokenInPortfolio,
-        deviation,
-        signedDeviation,
-        expectedDiff,
-        absoluteDeviationTooLarge: Math.abs(deviation) > maxDeviation.max,
-        perPaymentDeviationTooLarge:
-          Math.abs(perPayment) > maxDeviation.perPayment,
-        deviationPerPayment: isNaN(perPayment) ? 0 : perPayment,
-        numberTx: matchingPortfolioMovements.length,
-      });
+      deviations.push(
+        this.evaluateDeviationAgainstThreshold(
+          tokenInPortfolio,
+          expectedDiff,
+          acceptedDeviations,
+          matchingPortfolioMovements.length,
+        ),
+      );
     }
 
-    logger.info(
-      `Exit PortfolioChangeValidationService.validate for ${chainInfo.domain} and wallet ${address}`,
-    );
     return deviations;
   }
 }

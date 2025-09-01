@@ -9,8 +9,6 @@ import { getBeginningLastYear } from "./get-beginning-last-year";
 import { logger } from "../logger/logger";
 import { JobConsumer } from "./job.consumer";
 
-const ONE_WEEK = 7 * 24 * 60 * 60 * 1000;
-
 export class JobManager {
   constructor(
     private jobsService: JobsService,
@@ -22,10 +20,6 @@ export class JobManager {
     return subscanChains.chains
       .filter((c) => !isEvm || c.evmPallet || c.evmAddressSupport)
       .map((c) => c.domain);
-  }
-
-  isOutdated(job: Job): boolean {
-    return Date.now() - job.lastModified > ONE_WEEK;
   }
 
   async enqueue(
@@ -40,7 +34,10 @@ export class JobManager {
     const chains = blockchains.length ? blockchains : this.getChains(wallet);
     const jobs = await this.jobsService.fetchJobs(wallet);
     const matchingJobs = jobs.filter(
-      (j) => chains.includes(j.blockchain) && j.currency === currency,
+      (j) =>
+        chains.includes(j.blockchain) &&
+        j.currency === currency &&
+        j.syncFromDate === syncFromDate,
     );
 
     const newJobs: Job[] = [];
@@ -57,21 +54,6 @@ export class JobManager {
             chain,
             syncFromDate,
             currency,
-          ),
-        );
-        continue;
-      }
-
-      if (job.status === "done" && this.isOutdated(job)) {
-        await this.jobsService.delete(job);
-        newJobs.push(
-          await this.jobsService.addJob(
-            reqId,
-            wallet,
-            chain,
-            job.syncedUntil ? job.syncedUntil - ONE_WEEK : syncFromDate,
-            currency,
-            job.data,
           ),
         );
         continue;

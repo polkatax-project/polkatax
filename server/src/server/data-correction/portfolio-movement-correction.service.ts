@@ -1,6 +1,7 @@
 import { SubscanApi } from "../blockchain/substrate/api/subscan.api";
 import { Block } from "../blockchain/substrate/model/block";
 import { SubscanEvent } from "../blockchain/substrate/model/subscan-event";
+import * as substraeteToCoingeckoIds from "../../../res/substrate-token-to-coingecko-id.json";
 import {
   PortfolioMovement,
   TaxableEvent,
@@ -10,11 +11,29 @@ import {
   Deviation,
   PortfolioChangeValidationService,
 } from "./portfolio-change-validation.service";
+import { FetchCurrentPrices } from "./fetch-crypto-prices";
+import { BlockTimeService } from "../blockchain/substrate/services/block-time.service";
+import { isEvmAddress } from "../data-aggregation/helper/is-evm-address";
+import { SubscanService } from "../blockchain/substrate/api/subscan.service";
+import { chown } from "fs";
+
+const emptyDeviation = {
+  deviation: 0,
+  signedDeviation: 0,
+  balanceBefore: 0,
+  balanceAfter: 0,
+  expectedDiff: 0,
+  diff: 0,
+  singlePaymentDeviationTooLarge: false,
+};
 
 export class PortfolioMovementCorrectionService {
   constructor(
     private subscanApi: SubscanApi,
     private portfolioChangeValidationService: PortfolioChangeValidationService,
+    private fetchCurrentPrices: FetchCurrentPrices,
+    private blockTimeService: BlockTimeService,
+    private subscanService: SubscanService,
   ) {}
 
   async zoomInAndFixLargestError(
@@ -26,16 +45,7 @@ export class PortfolioMovementCorrectionService {
     maxBlock: Block,
     tokenSymbol: string,
     tokenUniqueId?: string,
-  ): Promise<
-    | {
-        deviations: Deviation[];
-        tokenDeviation: number;
-        startBlock: Block;
-        endBlock: Block;
-        portfolioMovements: PortfolioMovement[];
-      }
-    | undefined
-  > {
+  ): Promise<boolean> {
     const timestamps = [];
     const middleBlock = await this.subscanApi.fetchBlock(
       chain.domain,
@@ -65,19 +75,12 @@ export class PortfolioMovementCorrectionService {
         blocks[0].block_num,
         blocks[1].block_num,
       );
-    const tokenDeviationFirstHalf = deviationsFirstHalf.find(
-      (d) =>
-        d.unique_id === tokenUniqueId ||
-        (!tokenUniqueId && d.symbol === tokenSymbol),
-    ) ?? {
-      deviationPerPayment: 0,
-      deviation: 0,
-      signedDeviation: 0,
-      balanceBefore: 0,
-      balanceAfter: 0,
-      expectedDiff: 0,
-      diff: 0,
-    };
+    const tokenDeviationFirstHalf =
+      deviationsFirstHalf.find(
+        (d) =>
+          d.unique_id === tokenUniqueId ||
+          (!tokenUniqueId && d.symbol === tokenSymbol),
+      ) ?? emptyDeviation;
 
     const deviationsSecondHalf =
       await this.portfolioChangeValidationService.calculateDeviationFromExpectation(
@@ -89,19 +92,12 @@ export class PortfolioMovementCorrectionService {
         blocks[2].block_num,
       );
 
-    const tokenDeviationSecondHalf = deviationsSecondHalf.find(
-      (d) =>
-        d.unique_id === tokenUniqueId ||
-        (!tokenUniqueId && d.symbol === tokenSymbol),
-    ) ?? {
-      deviationPerPayment: 0,
-      deviation: 0,
-      signedDeviation: 0,
-      balanceBefore: 0,
-      balanceAfter: 0,
-      expectedDiff: 0,
-      diff: 0,
-    };
+    const tokenDeviationSecondHalf =
+      deviationsSecondHalf.find(
+        (d) =>
+          d.unique_id === tokenUniqueId ||
+          (!tokenUniqueId && d.symbol === tokenSymbol),
+      ) ?? emptyDeviation;
 
     const intervalNo =
       tokenDeviationFirstHalf.deviation > tokenDeviationSecondHalf.deviation
@@ -111,21 +107,17 @@ export class PortfolioMovementCorrectionService {
       startBlock: blocks[intervalNo],
       endBlock: blocks[intervalNo + 1],
     };
-    console.log(
-      `Current deviations: ${JSON.stringify(tokenDeviationFirstHalf, null, 2)} ${JSON.stringify(tokenDeviationSecondHalf, null, 2)}`,
-    );
-    console.log(
-      `Current deviation: ${Math.max(tokenDeviationSecondHalf.deviation, tokenDeviationFirstHalf.deviation)}. Next interval ${nextInterval.startBlock.block_num} - ${nextInterval.endBlock.block_num}`,
-    );
 
     const deviations =
       intervalNo == 0 ? deviationsFirstHalf : deviationsSecondHalf;
     const tokenDeviation =
       intervalNo == 0 ? tokenDeviationFirstHalf : tokenDeviationSecondHalf;
 
+    logger.info("Deviation: " + tokenDeviation.signedDeviation);
+
     if (
       deviations.find((d) => d.unique_id === tokenUniqueId)
-        .absoluteDeviationTooLarge
+        .singlePaymentDeviationTooLarge
     ) {
       const otherTokenWithSameSymbolSimilarDeviation = deviations.find(
         (d) =>
@@ -139,25 +131,34 @@ export class PortfolioMovementCorrectionService {
           intervalNo == 0
             ? portfolioMovementsFirstHalf
             : portfolioMovementsSecondHalf;
-        const matchingXcm = movements.find(
+        const matchingXcms = movements.filter(
           (p) =>
-            p.label === "XCM transfer" &&
+            p.timestamp > nextInterval.startBlock.timestamp &&
+            p.timestamp <= nextInterval.endBlock.timestamp &&
             p.transfers.some(
-              (t) => t.symbol.toUpperCase() === tokenSymbol.toUpperCase(),
+              (t) =>
+                t.symbol.toUpperCase() === tokenSymbol.toUpperCase() &&
+                t.module === "xcm" &&
+                !(t as any).asset_unique_id_before_correction,
             ),
         );
-        const matchingXcmTransfer = (matchingXcm?.transfers ?? []).find(
-          (t) => t.symbol.toUpperCase() === tokenSymbol.toUpperCase(),
-        );
-        if (matchingXcmTransfer) {
-          // swap unique_asset_id
-          (matchingXcmTransfer as any).asset_unique_id_before_correction =
-            matchingXcmTransfer.asset_unique_id;
-          matchingXcmTransfer.asset_unique_id =
-            matchingXcmTransfer.asset_unique_id === tokenUniqueId
-              ? otherTokenWithSameSymbolSimilarDeviation.unique_id
-              : tokenUniqueId;
-          return;
+        if (matchingXcms.length === 1) {
+          const matchingXcmTransfer = (matchingXcms[0]?.transfers ?? []).find(
+            (t) => t.symbol.toUpperCase() === tokenSymbol.toUpperCase(),
+          );
+          if (matchingXcmTransfer) {
+            // swap unique_asset_id
+            logger.info(
+              `Fix: Updating asset in xcm transfer ${matchingXcms[0].extrinsic_index}, ${matchingXcms[0].timestamp}`,
+            );
+            (matchingXcmTransfer as any).asset_unique_id_before_correction =
+              matchingXcmTransfer.asset_unique_id;
+            matchingXcmTransfer.asset_unique_id =
+              matchingXcmTransfer.asset_unique_id === tokenUniqueId
+                ? otherTokenWithSameSymbolSimilarDeviation.unique_id
+                : tokenUniqueId;
+            return false;
+          }
         }
       }
     }
@@ -197,10 +198,11 @@ export class PortfolioMovementCorrectionService {
         tokenSymbol,
         tokenUniqueId,
       );
+      return false;
     }
   }
 
-  compensateDeviation(
+  private compensateDeviation(
     address: string,
     taxableEvents: PortfolioMovement[],
     unmatchedEvents: SubscanEvent[],
@@ -236,8 +238,10 @@ export class PortfolioMovementCorrectionService {
     );
 
     if (matchingTransfer) {
+      logger.info(
+        `Fix: Updating transfer amount in ${matchingMovement.extrinsic_index}`,
+      );
       if (matchingTransfer.amount === -deviation) {
-        // TODO:! matchingMovement.transfers = matchingMovement.transfers.filter(t => t !== matchingTransfer)
         (matchingTransfer as any).amountBeforeCorrection =
           matchingTransfer.amount;
         matchingTransfer.amount = 0;
@@ -253,9 +257,9 @@ export class PortfolioMovementCorrectionService {
       (p) =>
         p.timestamp <= endBlock.timestamp &&
         p.timestamp > startBlock.timestamp &&
-        p.label === "XCM transfer" &&
         p.transfers.some(
           (t) =>
+            t.module === "xcm" &&
             t.symbol.toUpperCase() === tokenSymbol.toUpperCase() &&
             amountSuitable(t.amount) &&
             !t.asset_unique_id,
@@ -275,13 +279,15 @@ export class PortfolioMovementCorrectionService {
           d.symbol.toUpperCase() === tokenSymbol.toUpperCase() &&
           !d.absoluteDeviationTooLarge,
       );
+      logger.info(
+        `Fix: Updating transfer amount in xcm ${matchingXcmTransfer.extrinsic_index}`,
+      );
       if (xcmMeantForThisToken) {
         matchingXcmTransfer.asset_unique_id = xcmMeantForThisToken.unique_id;
       } else {
         (matchingXcmTransfer as any).amountBeforeCorrection =
           matchingXcmTransfer.amount;
         matchingXcmTransfer.amount = 0;
-        // TODO matchingXcm.transfers = matchingXcm.transfers.filter(t => t !== matchingXcmTransfer)
       }
       return;
     }
@@ -304,8 +310,12 @@ export class PortfolioMovementCorrectionService {
       })),
     };
     if (exsitingTx) {
+      logger.info(
+        `Fix: Adding transfer to existing tx ${exsitingTx.extrinsic_index}`,
+      );
       exsitingTx.transfers.push(transferData);
     } else {
+      logger.info(`Fix: Creating new tx`);
       taxableEvents.push({
         events: matchingEvents.map((e) => ({
           moduleId: e.module_id,
@@ -321,64 +331,106 @@ export class PortfolioMovementCorrectionService {
     }
   }
 
+  async determineAdequateMaxDeviations() {
+    const goingeckoIds = substraeteToCoingeckoIds.tokens.map(
+      (t) => t.coingeckoId,
+    );
+    const values = await this.fetchCurrentPrices.fetchPrices(
+      goingeckoIds,
+      "usd",
+    );
+    const boundaries = [];
+    substraeteToCoingeckoIds.tokens.forEach((token) => {
+      const value = values[token.coingeckoId]?.usd;
+      if (value) {
+        boundaries.push({
+          symbol: token.token,
+          singlePayment: 1 / value,
+          max: 10 / value,
+        });
+      }
+    });
+    return boundaries;
+  }
+
   async fixErrorsAndMissingData(
     chainInfo: { domain: string; token: string },
     address: string,
     portfolioMovements: TaxableEvent[],
     unmatchedEvents: SubscanEvent[],
-    acceptedDeviations?: {
-      symbol: string;
-      perPayment: number;
-      max: number;
-    }[],
-    minBlockNum?: number,
-    maxBlockNum?: number,
-  ) {
-    minBlockNum =
-      minBlockNum ??
-      portfolioMovements.reduce(
-        (curr, next) =>
-          Math.min(
-            curr,
-            (next as PortfolioMovement)?.block ?? Number.MAX_SAFE_INTEGER,
-          ),
-        Number.MAX_SAFE_INTEGER,
+    minDate: number,
+    maxDate: number,
+  ): Promise<Deviation[]> {
+    logger.info(
+      `Enter fixErrorsAndMissingData for ${chainInfo.domain}, ${address}`,
+    );
+
+    if (portfolioMovements.length === 0) {
+      logger.info(
+        `Exit fixErrorsAndMissingData for ${chainInfo.domain}, ${address}. No portfolio movements`,
       );
-    maxBlockNum =
-      maxBlockNum ??
-      portfolioMovements.reduce(
-        (curr, next) => Math.max(curr, (next as PortfolioMovement)?.block ?? 0),
-        0,
+      return [];
+    }
+
+    if (isEvmAddress(address)) {
+      address =
+        (await this.subscanService.mapToSubstrateAccount(
+          chainInfo.domain,
+          address,
+        )) || address;
+    }
+
+    const { blockMin, blockMax } = await this.blockTimeService.getMinMaxBlock(
+      chainInfo.domain,
+      minDate,
+      maxDate,
+    );
+
+    const acceptedDeviations = await this.determineAdequateMaxDeviations();
+
+    const feeToken =
+      await this.portfolioChangeValidationService.findBestFeeToken(
+        chainInfo,
+        address,
+        portfolioMovements,
+        acceptedDeviations,
+        blockMin,
+        blockMax,
       );
 
-    const initialDeviations =
+    let deviations =
       await this.portfolioChangeValidationService.calculateDeviationFromExpectation(
         chainInfo,
         address,
         portfolioMovements,
         acceptedDeviations,
-        minBlockNum,
-        maxBlockNum,
+        blockMin,
+        blockMax,
+        feeToken,
       );
 
     const minBlock = await this.subscanApi.fetchBlock(
       chainInfo.domain,
-      minBlockNum,
+      blockMin,
     );
     const maxBlock = await this.subscanApi.fetchBlock(
       chainInfo.domain,
-      maxBlockNum,
+      blockMax,
     );
 
-    // TODO
-    let selectedToken =
-      initialDeviations.find((d) => d.absoluteDeviationTooLarge) ??
-      initialDeviations.find((d) => d.perPaymentDeviationTooLarge);
+    let selectedToken = deviations.find((d) => d.absoluteDeviationTooLarge);
 
-    const maxTurns = 100;
+    const maxTurns = 500;
     let counter = 0;
     while (selectedToken && counter <= maxTurns) {
-      logger.info("Fixing errors counter: " + counter);
+      logger.info(
+        {
+          deviation: selectedToken.deviation,
+          token: selectedToken.symbol,
+          uniqueId: selectedToken.unique_id,
+        },
+        "Fixing errors counter: " + counter + " . Deviation",
+      );
       await this.zoomInAndFixLargestError(
         chainInfo,
         address,
@@ -390,20 +442,43 @@ export class PortfolioMovementCorrectionService {
         selectedToken.unique_id,
       );
 
-      const updatedDeviations =
+      deviations =
         await this.portfolioChangeValidationService.calculateDeviationFromExpectation(
           chainInfo,
           address,
           portfolioMovements,
           acceptedDeviations,
-          minBlockNum,
-          maxBlockNum,
-        ); // TODO
-      selectedToken =
-        updatedDeviations.find((d) => d.absoluteDeviationTooLarge) ??
-        updatedDeviations.find((d) => d.perPaymentDeviationTooLarge);
+          blockMin,
+          blockMax,
+          feeToken,
+        );
+      selectedToken = deviations.find((d) => d.absoluteDeviationTooLarge);
       counter++;
     }
-    logger.info("All errors fixed");
+    const problematicDeviations = deviations
+      .filter((d) => d.absoluteDeviationTooLarge)
+      .map((d) => {
+        return {
+          symbol: d.symbol,
+          unique_id: d.unique_id,
+          signedDeviation: d.signedDeviation,
+        };
+      });
+    if (counter < maxTurns) {
+      logger.info(
+        problematicDeviations,
+        "fixErrorsAndMissingData: All errors fixed. " + counter + " steps.",
+      );
+    } else {
+      logger.info(
+        problematicDeviations,
+        "fixErrorsAndMissingData: Stopping after " + counter + " steps",
+      );
+    }
+
+    logger.info(
+      `Exit fixErrorsAndMissingData for ${chainInfo.domain}, ${address}`,
+    );
+    return deviations;
   }
 }

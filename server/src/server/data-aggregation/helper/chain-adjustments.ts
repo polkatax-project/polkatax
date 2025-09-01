@@ -8,6 +8,9 @@ export class ChainAdjustments {
     if (domain === "hydration" || domain === "basilisk") {
       return this.handleHydration(portfolioMovements);
     }
+    if (domain === "assethub-polkadot" || domain === "assethub-kusama") {
+      return this.handleAssetHub(portfolioMovements);
+    }
     return portfolioMovements;
   }
 
@@ -35,34 +38,23 @@ export class ChainAdjustments {
         }
       }
     });
+    return portfolioMovements;
+  }
 
+  handleAssetHub(portfolioMovements: PortfolioMovement[]): PortfolioMovement[] {
     portfolioMovements.forEach((s) => {
-      const isLiquidityAdded = (s.events ?? []).find(
-        (e) => e.moduleId === "stableswap" && e.eventId === "LiquidityAdded",
-      );
-      if (isLiquidityAdded) {
-        s.transfers = s.transfers.filter(
-          (t) =>
-            !["2-pool", "4-pool", "2-Pool", "4-Pool"].includes(t.symbol) ||
-            t.amount > 0,
-        );
+      const xcmTransfers = s.transfers.filter((t) => t.module === "xcm");
+      if (xcmTransfers.length > 0) {
+        for (let xcmTransfer of xcmTransfers) {
+          s.transfers = s.transfers.filter(
+            (t) =>
+              t.module === "xcm" ||
+              t.from !== xcmTransfer.from ||
+              t.symbol.toUpperCase() !== xcmTransfer.symbol.toUpperCase(),
+          );
+        }
       }
     });
-
-    const movements = portfolioMovements.filter((s) => {
-      if (
-        (s?.events ?? []).find(
-          (e) =>
-            e.moduleId === "staking" &&
-            e.eventId === "RewardsClaimed" &&
-            process.env["USE_DATA_PLATFORM_API"] === "true",
-        )
-      ) {
-        return false;
-      }
-      return true;
-    });
-
-    return movements;
+    return portfolioMovements;
   }
 }

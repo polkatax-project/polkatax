@@ -70,7 +70,6 @@ export class StakingRewardsAggregatorService {
     switch (stakingRewardsRequest.chain.domain) {
       case "polkadot":
       case "kusama":
-      case "hydration":
       case "enjin":
         if (process.env["USE_DATA_PLATFORM_API"] === "true") {
           const data = {
