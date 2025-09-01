@@ -18,7 +18,7 @@ export class JobManager {
   getChains(wallet: string): string[] {
     const isEvm = isEvmAddress(wallet);
     return subscanChains.chains
-      .filter(c => !c.excluded)
+      .filter((c) => !c.excluded)
       .filter((c) => !isEvm || c.evmPallet || c.evmAddressSupport)
       .map((c) => c.domain);
   }

@@ -86,8 +86,14 @@ export class PortfolioDifferenceService {
       native: boolean;
     }[],
   ) {
-    const key1 = generateKey([chain, address, minBlock], relevantTokens.map(r => r.unique_id));
-    const key2 = generateKey([chain, address, maxBlock], relevantTokens.map(r => r.unique_id));
+    const key1 = generateKey(
+      [chain, address, minBlock],
+      relevantTokens.map((r) => r.unique_id),
+    );
+    const key2 = generateKey(
+      [chain, address, maxBlock],
+      relevantTokens.map((r) => r.unique_id),
+    );
 
     const fetchAssetsViaApi = async (block: number, key: string) => {
       this.polkadotApi = this.polkadotApi ?? new PolkadotApi(chain);
@@ -113,7 +119,11 @@ export class PortfolioDifferenceService {
     maxBlock: number,
     address: string,
     tokens: T[],
-    getPortfolioFn: (api: PolkadotApi, address: string, tokens: T[]) => Promise<
+    getPortfolioFn: (
+      api: PolkadotApi,
+      address: string,
+      tokens: T[],
+    ) => Promise<
       {
         asset_unique_id: string;
         symbol: string;
@@ -257,6 +267,10 @@ export class PortfolioDifferenceService {
         (api, addr, toks) => api.getTokenPortfolio(addr, toks),
       );
 
-    return this.calculateDiffs(tokens, portfolioAtMinBlock, portfolioAtMaxBlock);
+    return this.calculateDiffs(
+      tokens,
+      portfolioAtMinBlock,
+      portfolioAtMaxBlock,
+    );
   }
 }

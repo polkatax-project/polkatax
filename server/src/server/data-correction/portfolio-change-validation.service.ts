@@ -289,7 +289,7 @@ export class PortfolioChangeValidationService {
       if (feeToken !== chainInfo.token) {
         throw new Error("Only native token accepted as fee token for now!");
       }
-      expectedDiff -= totalFees / (10 ** nativeToken.token_decimals);
+      expectedDiff -= totalFees / 10 ** nativeToken.token_decimals;
     }
 
     matchingPortfolioMovements.forEach((p) => {

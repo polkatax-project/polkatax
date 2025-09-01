@@ -1,8 +1,14 @@
 import { SubscanApi } from "../blockchain/substrate/api/subscan.api";
 import { SubscanEvent } from "../blockchain/substrate/model/subscan-event";
-import { PortfolioMovement, TaxableEvent } from "../data-aggregation/model/portfolio-movement";
+import {
+  PortfolioMovement,
+  TaxableEvent,
+} from "../data-aggregation/model/portfolio-movement";
 import { logger } from "../logger/logger";
-import { Deviation, PortfolioChangeValidationService } from "./portfolio-change-validation.service";
+import {
+  Deviation,
+  PortfolioChangeValidationService,
+} from "./portfolio-change-validation.service";
 import { FetchCurrentPrices } from "./fetch-crypto-prices";
 import { BlockTimeService } from "../blockchain/substrate/services/block-time.service";
 import { isEvmAddress } from "../data-aggregation/helper/is-evm-address";
@@ -21,8 +27,13 @@ export class PortfolioMovementCorrectionService {
   ) {}
 
   async determineAdequateMaxDeviations() {
-    const goingeckoIds = substraeteToCoingeckoIds.tokens.map((t) => t.coingeckoId);
-    const values = await this.fetchCurrentPrices.fetchPrices(goingeckoIds, "usd");
+    const goingeckoIds = substraeteToCoingeckoIds.tokens.map(
+      (t) => t.coingeckoId,
+    );
+    const values = await this.fetchCurrentPrices.fetchPrices(
+      goingeckoIds,
+      "usd",
+    );
     return substraeteToCoingeckoIds.tokens
       .map((token) => {
         const value = values[token.coingeckoId]?.usd;
@@ -44,8 +55,9 @@ export class PortfolioMovementCorrectionService {
     minDate: number,
     maxDate: number,
   ): Promise<Deviation[]> {
-    logger.info(`Enter fixErrorsAndMissingData for ${chainInfo.domain}, ${address}`);
-
+    logger.info(
+      `Enter fixErrorsAndMissingData for ${chainInfo.domain}, ${address}`,
+    );
 
     if (portfolioMovements.length === 0) {
       logger.info(`Exit fixErrorsAndMissingData. No portfolio movements`);
@@ -53,7 +65,11 @@ export class PortfolioMovementCorrectionService {
     }
 
     if (isEvmAddress(address)) {
-      address = (await this.subscanService.mapToSubstrateAccount(chainInfo.domain, address)) || address;
+      address =
+        (await this.subscanService.mapToSubstrateAccount(
+          chainInfo.domain,
+          address,
+        )) || address;
     }
 
     const { blockMin, blockMax } = await this.blockTimeService.getMinMaxBlock(
@@ -64,41 +80,57 @@ export class PortfolioMovementCorrectionService {
 
     const acceptedDeviations = await this.determineAdequateMaxDeviations();
 
-    if (process.env['USE_DATA_PLATFORM_API'] === 'true' && (chainInfo.domain === 'polkadot' || chainInfo.domain === 'kusama' || chainInfo.domain === 'enjin')) {
-      let deviations = await this.portfolioChangeValidationService.calculateDeviationFromExpectation(
+    if (
+      process.env["USE_DATA_PLATFORM_API"] === "true" &&
+      (chainInfo.domain === "polkadot" ||
+        chainInfo.domain === "kusama" ||
+        chainInfo.domain === "enjin")
+    ) {
+      let deviations =
+        await this.portfolioChangeValidationService.calculateDeviationFromExpectation(
+          chainInfo,
+          address,
+          portfolioMovements,
+          acceptedDeviations,
+          blockMin,
+          blockMax,
+          chainInfo.token,
+        );
+      logger.info(
+        `Exit fixErrorsAndMissingData. No correction was done due to working with aggregated data.`,
+      );
+      return deviations;
+    }
+
+    const feeToken =
+      await this.portfolioChangeValidationService.findBestFeeToken(
         chainInfo,
         address,
         portfolioMovements,
         acceptedDeviations,
         blockMin,
         blockMax,
-        chainInfo.token,
       );
-      logger.info(`Exit fixErrorsAndMissingData. No correction was done due to working with aggregated data.`);
-      return deviations
-    }
 
-    const feeToken = await this.portfolioChangeValidationService.findBestFeeToken(
-      chainInfo,
-      address,
-      portfolioMovements,
-      acceptedDeviations,
+    let deviations =
+      await this.portfolioChangeValidationService.calculateDeviationFromExpectation(
+        chainInfo,
+        address,
+        portfolioMovements,
+        acceptedDeviations,
+        blockMin,
+        blockMax,
+        feeToken,
+      );
+
+    const minBlock = await this.subscanApi.fetchBlock(
+      chainInfo.domain,
       blockMin,
+    );
+    const maxBlock = await this.subscanApi.fetchBlock(
+      chainInfo.domain,
       blockMax,
     );
-
-    let deviations = await this.portfolioChangeValidationService.calculateDeviationFromExpectation(
-      chainInfo,
-      address,
-      portfolioMovements,
-      acceptedDeviations,
-      blockMin,
-      blockMax,
-      feeToken,
-    );
-
-    const minBlock = await this.subscanApi.fetchBlock(chainInfo.domain, blockMin);
-    const maxBlock = await this.subscanApi.fetchBlock(chainInfo.domain, blockMax);
 
     let selectedToken = deviations.find((d) => d.absoluteDeviationTooLarge);
     const maxTurns = 500;
@@ -125,15 +157,16 @@ export class PortfolioMovementCorrectionService {
         selectedToken.unique_id,
       );
 
-      deviations = await this.portfolioChangeValidationService.calculateDeviationFromExpectation(
-        chainInfo,
-        address,
-        portfolioMovements,
-        acceptedDeviations,
-        blockMin,
-        blockMax,
-        feeToken,
-      );
+      deviations =
+        await this.portfolioChangeValidationService.calculateDeviationFromExpectation(
+          chainInfo,
+          address,
+          portfolioMovements,
+          acceptedDeviations,
+          blockMin,
+          blockMax,
+          feeToken,
+        );
 
       selectedToken = deviations.find((d) => d.absoluteDeviationTooLarge);
       counter++;
@@ -141,15 +174,24 @@ export class PortfolioMovementCorrectionService {
 
     const problematicDeviations = deviations
       .filter((d) => d.absoluteDeviationTooLarge)
-      .map((d) => ({ symbol: d.symbol, unique_id: d.unique_id, signedDeviation: d.signedDeviation }));
+      .map((d) => ({
+        symbol: d.symbol,
+        unique_id: d.unique_id,
+        signedDeviation: d.signedDeviation,
+      }));
 
     if (counter < maxTurns) {
-      logger.info(problematicDeviations, `All errors fixed in ${counter} steps`);
+      logger.info(
+        problematicDeviations,
+        `All errors fixed in ${counter} steps`,
+      );
     } else {
       logger.info(problematicDeviations, `Stopping after ${counter} steps`);
     }
 
-    logger.info(`Exit fixErrorsAndMissingData for ${chainInfo.domain}, ${address}`);
+    logger.info(
+      `Exit fixErrorsAndMissingData for ${chainInfo.domain}, ${address}`,
+    );
     return deviations;
   }
 }
