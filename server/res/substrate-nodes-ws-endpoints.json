@@ -6,8 +6,7 @@
   ],
   "bifrost": [
     "wss://bifrost-polkadot.ibp.network",
-    "wss://bifrost-polkadot.dotters.network",
-    "wss://bifrost.public.curie.radiumblock.co/ws"
+    "wss://bifrost-polkadot.dotters.network"
   ],
   "polkadot": [
     "wss://polkadot.api.onfinality.io/public-ws",
@@ -40,7 +39,7 @@
     "wss://ajuna.api.onfinality.io/public-ws",
     "wss://ajuna.public.curie.radiumblock.co/ws"
   ],
-  "mythos": "wss://polkadot-mythos-rpc.polkadot.io",
+  "mythos": ["wss://polkadot-mythos-rpc.polkadot.io"],
   "unique": [
     "wss://unique.ibp.network",
     "wss://unique.dotters.network",
@@ -59,7 +58,7 @@
     "wss://polkadot-people-rpc.polkadot.io",
     "wss://people-polkadot.public.curie.radiumblock.co/ws"
   ],
-  "energywebx": "wss://public-rpc.mainnet.energywebx.com",
+  "energywebx": ["wss://public-rpc.mainnet.energywebx.com"],
   "phala": [
     "wss://phala-rpc.dwellir.com",
     "wss://rpc.helikon.io/phala",
@@ -67,23 +66,14 @@
     "wss://api.phala.network/ws",
     "wss://phala.public.curie.radiumblock.co/ws"
   ],
-  "neuroweb": [
-    "wss://neuroweb-rpc.dwellir.com",
-    "wss://parachain-rpc.origin-trail.network"
-  ],
-  "spiritnet": [
-    "wss://spiritnet.kilt.io/",
-    "wss://kilt-rpc.dwellir.com",
-    "wss://kilt.ibp.network",
-    "wss://kilt.dotters.network"
-  ],
+  "neuroweb": ["wss://parachain-rpc.origin-trail.network"],
   "darwinia": [
     "wss://rpc.darwinia.network",
     "wss://darwinia-rpc.dcdao.box",
     "wss://darwinia-rpc.dwellir.com"
   ],
-  "alephzero": "wss://aleph-zero.api.onfinality.io/public-ws",
-  "manta": "wss://ws.manta.systems",
+  "alephzero": ["wss://aleph-zero.api.onfinality.io/public-ws"],
+  "manta": ["wss://ws.manta.systems"],
   "moonbeam": [
     "wss://moonbeam-rpc.dwellir.com",
     "wss://moonbeam.ibp.network",
@@ -107,10 +97,6 @@
     "wss://crust-parachain.crustnetwork.cc",
     "wss://crust-parachain.crustnetwork.xyz"
   ],
-  "zeitgeist": [
-    "wss://zeitgeist.api.onfinality.io/public-ws",
-    "wss://main.rpc.zeitgeist.pm/ws"
-  ],
   "polkadot_bridge_hub": [
     "wss://bridge-hub-polkadot-rpc.dwellir.com",
     "wss://polkadot-bridge-hub-rpc-tn.dwellir.com",
@@ -122,7 +108,6 @@
     "wss://bridgehub-polkadot.public.curie.radiumblock.co/ws",
     "wss://dot-rpc.stakeworld.io/bridgehub"
   ],
-  "bitgreen": ["wss://mainnet.bitgreen.org"],
   "centrifuge": [
     "wss://fullnode.centrifuge.io",
     "wss://centrifuge-rpc.dwellir.com",
@@ -134,33 +119,13 @@
     "wss://nexus.ibp.network",
     "wss://nexus.dotters.network"
   ],
-  "integritee": [
-    "wss://integritee-rpc.dwellir.com",
-    "wss://polkadot.api.integritee.network"
-  ],
-  "invarch": ["wss://invarch-rpc.dwellir.com"],
-  "laos": ["wss://laos-rpc.dwellir.com", "wss://rpc.laos.laosfoundation.io"],
-  "litentry": [
-    "wss://litentry-rpc.dwellir.com",
-    "wss://rpc.litentry-parachain.litentry.io"
-  ],
+  "integritee": ["wss://polkadot.api.integritee.network"],
   "logion": ["wss://para-rpc01.logion.network"],
   "nodle": [
     "wss://nodle-rpc.dwellir.com",
     "wss://nodle-parachain.api.onfinality.io/public-ws"
   ],
-  "kusama": [
-    "wss://kusama-rpc.publicnode.com",
-    "wss://kusama-rpc.dwellir.com",
-    "wss://kusama-rpc-tn.dwellir.com",
-    "wss://rpc.ibp.network/kusama",
-    "wss://kusama.dotters.network",
-    "wss://rpc-kusama.luckyfriday.io",
-    "wss://kusama.api.onfinality.io/public-ws",
-    "wss://rockx-ksm.w3node.com/polka-public-ksm/ws",
-    "wss://ksm-rpc.stakeworld.io",
-    "wss://kusama.rpc.subquery.network/public/ws"
-  ],
+  "kusama": ["wss://kusama.api.onfinality.io/public-ws"],
   "assethub-kusama": [
     "wss://asset-hub-kusama-rpc.dwellir.com",
     "wss://statemine-rpc-tn.dwellir.com",
@@ -207,53 +172,26 @@
     "wss://fullnode.altair.centrifuge.io",
     "wss://altair.api.onfinality.io/public-ws"
   ],
-  "amplitude": [
-    "wss://amplitude-rpc.dwellir.com",
-    "wss://rpc-amplitude.pendulumchain.tech"
-  ],
-  "bajun": [
-    "wss://rpc-parachain.bajun.network",
-    "wss://bajun.api.onfinality.io/public-ws",
-    "wss://bajun.public.curie.radiumblock.co/ws"
-  ],
   "basilisk": ["wss://rpc.basilisk.cloud", "wss://basilisk-rpc.dwellir.com"],
   "bifrost-kusama": [
     "wss://bifrost-rpc.dwellir.com",
     "wss://bifrost-rpc.liebi.com/ws",
     "wss://us.bifrost-rpc.liebi.com/ws"
   ],
-  "calamari": ["wss://calamari.systems"],
   "crab": [
     "wss://crab-rpc.darwinia.network/",
     "wss://crab-rpc.dcdao.box",
     "wss://darwiniacrab-rpc.dwellir.com"
   ],
-  "imbue": ["wss://kusama.imbuenetwork.com"],
   "integritee-kusama": [
     "wss://kusama.api.integritee.network",
     "wss://integritee-kusama.api.onfinality.io/public-ws"
   ],
-  "tinker": ["wss://tinkernet-rpc.dwellir.com"],
   "karura": [
     "wss://karura-rpc.dwellir.com",
     "wss://karura.api.onfinality.io/public-ws"
   ],
-  "khala": [
-    "wss://khala-rpc.dwellir.com",
-    "wss://rpc.helikon.io/khala",
-    "wss://khala.api.onfinality.io/public-ws",
-    "wss://khala-api.phala.network/ws",
-    "wss://khala.public.curie.radiumblock.co/ws"
-  ],
-  "kreivo": ["wss://kreivo.io/"],
-  "moonriver": [
-    "wss://wss.api.moonriver.moonbeam.network",
-    "wss://moonriver-rpc.publicnode.com",
-    "wss://moonriver-rpc.dwellir.com",
-    "wss://moonriver.api.onfinality.io/public-ws",
-    "wss://moonriver.public.curie.radiumblock.co/ws",
-    "wss://moonriver.unitedbloc.com"
-  ],
+  "moonriver": ["wss://moonriver.api.onfinality.io/public-ws"],
   "quartz": [
     "wss://quartz-rpc.dwellir.com",
     "wss://ws-quartz.unique.network",
@@ -275,7 +213,6 @@
   "sora": ["wss://ws.parachain-collator-3.pc3.sora2.soramitsu.co.jp/"],
   "xcavate": ["wss://xcavate.ibp.network/", "wss://xcavate.dotters.network/"],
   "xode": ["wss://xcavate.dotters.network/"],
-  "acurast": ["wss://public-rpc.canary.acurast.com/"],
   "kintsugi": ["wss://kintsugi.api.onfinality.io/public-ws"],
   "krest": ["wss://krest.api.onfinality.io/public-ws"],
   "autonomys": [
@@ -284,6 +221,5 @@
   ],
   "creditcoin": ["wss://mainnet3.creditcoin.network/"],
   "humanode": ["wss://explorer-rpc-ws.mainnet.stages.humanode.io/"],
-  "tanssi": ["wss://services.tanssi-mainnet.network/tanssi"],
-  "vara": ["wss://rpc.vara.network/"]
+  "tanssi": ["wss://services.tanssi-mainnet.network/tanssi"]
 }
