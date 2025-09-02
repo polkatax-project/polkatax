@@ -96,6 +96,7 @@ export interface Deviation {
   absoluteDeviationTooLarge: boolean;
   singlePaymentDeviationTooLarge: boolean;
   numberTx: number;
+  maxAllowedDeviation: number;
 }
 
 export class PortfolioChangeValidationService {
@@ -330,6 +331,7 @@ export class PortfolioChangeValidationService {
       singlePaymentDeviationTooLarge:
         Math.abs(deviation) > maxAllowedDeviation.singlePayment,
       numberTx,
+      maxAllowedDeviation: maxAllowedDeviation.max,
     };
   }
 

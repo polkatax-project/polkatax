@@ -131,52 +131,20 @@
                 v-if="props.row.status === 'done'"
               >
                 <q-btn
-                  size="12px"
-                  flat
-                  dense
-                  round
-                  icon="picture_as_pdf"
-                  @click.stop="exportStakingRewards(props.row, 'pdf')"
-                  aria-label="Export as PDF"
-                >
-                  <q-tooltip
-                    anchor="top middle"
-                    self="bottom middle"
-                    aria-label="Export as PDF tooltip"
-                    >Export as PDF</q-tooltip
-                  >
-                </q-btn>
-                <q-btn
-                  size="12px"
-                  flat
-                  dense
-                  round
-                  icon="view_list"
-                  @click.stop="exportStakingRewards(props.row, 'CSV')"
-                  aria-label="Export as CSV"
-                >
-                  <q-tooltip
-                    anchor="top middle"
-                    self="bottom middle"
-                    aria-label="Export as CSV tooltip"
-                    >Export as CSV</q-tooltip
-                  >
-                </q-btn>
-                <q-btn
                   ref="btnRef"
                   size="12px"
                   flat
                   dense
                   round
                   icon="receipt"
-                  @click.stop="exportStakingRewards(props.row, 'Koinly')"
+                  @click.stop="exportData(props.row)"
                   aria-label="Export as Koinly CSV"
                 >
                   <q-tooltip
                     anchor="top middle"
                     self="bottom middle"
-                    aria-label="Export as Koinly tooltip"
-                    >Koinly export</q-tooltip
+                    aria-label="Export as CSV"
+                    >CSV export</q-tooltip
                   >
                 </q-btn>
               </div>
@@ -221,27 +189,18 @@ import {
   matError,
   matWarning,
 } from '@quasar/extras/material-icons';
-import { exportDefaultCsv } from '../../shared-module/service/export-default-csv';
-import { exportKoinlyCsv } from '../../shared-module/service/export-koinly-csv';
 import { useConnectedBlockchainsStore } from '../store/connected-blockchains.store';
-import { Rewards } from '../../shared-module/model/rewards';
+import { exportKoinlyCsv } from '../../shared-module/service/export-koinly-csv';
 
 const store = useConnectedBlockchainsStore();
 const route = useRoute();
 const router = useRouter();
 
-async function exportStakingRewards(rewards: Rewards, exportType: string) {
-  switch (exportType) {
-    case 'CSV':
-      return exportDefaultCsv(rewards);
-    case 'Koinly':
-      return exportKoinlyCsv(rewards);
-    case 'pdf':
-      const { exportPdf } = await import(
-        '../../shared-module/service/export-pdf'
-      );
-      exportPdf(rewards);
+async function exportData(jobResult: JobResult) {
+  if (!jobResult.data) {
+    return;
   }
+  return exportKoinlyCsv(jobResult.data!);
 }
 
 const jobs: Ref<JobResult[]> = ref([]);
@@ -324,9 +283,8 @@ function retry(job: JobResult) {
 
 function mayBeIncorrectData(job: JobResult): boolean {
   return (
-    (job.data?.deviations ?? []).filter(
-      (d) => d.absoluteDeviationTooLarge
-    ).length > 0
+    (job.data?.deviations ?? []).filter((d) => d.absoluteDeviationTooLarge)
+      .length > 0
   );
 }
 

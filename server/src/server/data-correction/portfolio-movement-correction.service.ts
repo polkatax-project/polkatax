@@ -15,6 +15,7 @@ import { isEvmAddress } from "../data-aggregation/helper/is-evm-address";
 import { SubscanService } from "../blockchain/substrate/api/subscan.service";
 import { DeviationZoomer } from "./deviation-zoomer";
 import * as substraeteToCoingeckoIds from "../../../res/substrate-token-to-coingecko-id.json";
+import { selectToken } from "./helper/select-token";
 
 export class PortfolioMovementCorrectionService {
   constructor(
@@ -23,7 +24,7 @@ export class PortfolioMovementCorrectionService {
     private fetchCurrentPrices: FetchCurrentPrices,
     private blockTimeService: BlockTimeService,
     private subscanService: SubscanService,
-    private deviationZoomer: DeviationZoomer, // inject the zoomer
+    private deviationZoomer: DeviationZoomer,
   ) {}
 
   async determineAdequateMaxDeviations() {
@@ -132,7 +133,8 @@ export class PortfolioMovementCorrectionService {
       blockMax,
     );
 
-    let selectedToken = deviations.find((d) => d.absoluteDeviationTooLarge);
+    let selectedToken = selectToken(deviations);
+
     const maxTurns = 500;
     let counter = 0;
 
@@ -168,7 +170,7 @@ export class PortfolioMovementCorrectionService {
           feeToken,
         );
 
-      selectedToken = deviations.find((d) => d.absoluteDeviationTooLarge);
+      selectedToken = selectToken(deviations);
       counter++;
     }
 

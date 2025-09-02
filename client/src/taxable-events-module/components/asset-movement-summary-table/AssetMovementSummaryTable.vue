@@ -89,7 +89,8 @@ const rows = computed(() => {
     });
   return Object.entries(tokenSummary)
     .map(([symbol, value]) => ({ symbol, ...value }))
-    .filter((t) => isTokenVisible(visibleTokens.value, t.symbol));
+    .filter((t) => isTokenVisible(visibleTokens.value, t.symbol))
+    .sort((a, b) => (a.symbol > b.symbol ? 1 : -1));
 });
 
 const columns = computed(() => [

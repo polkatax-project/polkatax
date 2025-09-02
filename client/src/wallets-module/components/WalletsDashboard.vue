@@ -89,9 +89,7 @@
       </q-table>
     </div>
     <div v-if="walletAddresses.length === 0" class="q-my-xl">
-      <div class="text-h6 text-center">
-        Export your tax data as CSV or PDF
-      </div>
+      <div class="text-h6 text-center">Export your tax data as CSV or PDF</div>
       <div class="text-h6 text-center q-mt-md">
         A wide range of substrate chains and fiat currencies are supported.
       </div>

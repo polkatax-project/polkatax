@@ -40,10 +40,9 @@
         <q-td :props="props">
           <span
             :style="{
-              'background-color':
-                props.row.absoluteDeviationTooLarge
-                  ? 'yellow'
-                  : '',
+              'background-color': props.row.absoluteDeviationTooLarge
+                ? 'yellow'
+                : '',
             }"
             >{{ formatCryptoAmount(props.row.deviation) }}</span
           >
@@ -75,10 +74,7 @@ const columns = computed(() => [
     name: 'warn',
     label: '',
     align: 'left',
-    field: (row: Deviation) =>
-      row.absoluteDeviationTooLarge
-        ? '⚠️'
-        : '',
+    field: (row: Deviation) => (row.absoluteDeviationTooLarge ? '⚠️' : ''),
     sortable: true,
   },
   {

@@ -13,19 +13,21 @@ export interface TaxableEvent {
   xcmFee?: number;
   label?: string;
   isoDate?: string;
-  transfers: {
-    symbol: string;
-    amount: number;
-    from: string;
-    to: string;
-    extrinsic_index?: string;
-    price?: number;
-    fiatValue?: number;
-    coingeckoId?: string;
-    module?: string;
-    fromChain?: string;
-    toChain?: string;
-    asset_type?: string;
-    asset_unique_id?: string;
-  }[];
+  transfers: TaxableEventTransfer[];
+}
+
+export interface TaxableEventTransfer {
+  symbol: string;
+  amount: number;
+  from: string;
+  to: string;
+  extrinsic_index?: string;
+  price?: number;
+  fiatValue?: number;
+  coingeckoId?: string;
+  module?: string;
+  fromChain?: string;
+  toChain?: string;
+  asset_type?: string;
+  asset_unique_id?: string;
 }

@@ -22,14 +22,12 @@
         <div class="column">
           <div class="text-h6">Taxable events</div>
           <div>
-            <q-btn color="primary" class="q-mr-sm" data-testid="pdfExport"
-              >Export Pdf
-            </q-btn>
-            <q-btn color="primary" class="q-mr-sm" data-testid="csvExport"
+            <q-btn
+              color="primary"
+              class="q-mr-sm"
+              data-testid="csvExport"
+              @click="csvExport"
               >Export CSV
-            </q-btn>
-            <q-btn color="primary" class="q-mr-sm" data-testid="koinlyExport"
-              >Koinly Export
             </q-btn>
           </div>
         </div>
@@ -109,7 +107,7 @@ import {
   formatCurrency,
 } from '../../../shared-module/util/number-formatters';
 import { useSharedStore } from '../../../shared-module/store/shared.store';
-import { isTokenVisible } from '../../helper/is-token-visible';
+import { exportKoinlyCsv } from '../../../shared-module/service/export-koinly-csv';
 
 const store = useTaxableEventStore();
 const taxData: Ref<TaxData | undefined> = ref(undefined);
@@ -119,6 +117,10 @@ const excludedEntries: Ref<TaxableEvent[]> = ref([]);
 function setExcludedEntries(value: TaxableEvent[]) {
   excludedEntries.value = value;
   store.setExcludedEntries(value);
+}
+
+function csvExport() {
+  exportKoinlyCsv(taxData.value!);
 }
 
 const userWallets: Ref<string[]> = ref([]);
@@ -142,10 +144,6 @@ onUnmounted(() => {
   tokenFilterSubscription.unsubscribe();
   walletSubscription.unsubscribe();
 });
-
-function isVisible(token: string) {
-  return isTokenVisible(tokenFilter.value, token);
-}
 
 const columns = computed(() => [
   {
@@ -219,10 +217,10 @@ const rows = computed(() => {
       isoDate: data.isoDate,
       hash: data.hash,
       tokensSent: data.transfers
-        .filter((t) => t.amount < 0 && isVisible(t.symbol))
+        .filter((t) => t.amount < 0)
         .map((t) => `${formatCryptoAmount(-t.amount)} ${t.symbol}`),
       tokensReceived: data.transfers
-        .filter((t) => t.amount > 0 && isVisible(t.symbol))
+        .filter((t) => t.amount > 0)
         .map((t) => `${formatCryptoAmount(t.amount)} ${t.symbol}`),
       label: data.label,
       callModuleDescription: [
@@ -237,7 +235,7 @@ const rows = computed(() => {
         .flat()
         .filter((a) => !!a),
       fiatSent: data.transfers
-        .filter((t) => t.amount < 0 && isVisible(t.symbol))
+        .filter((t) => t.amount < 0)
         .map((t) =>
           formatCurrency(
             Math.abs(t.fiatValue ?? NaN),
@@ -245,7 +243,7 @@ const rows = computed(() => {
           )
         ),
       fiatReceived: data.transfers
-        .filter((t) => t.amount > 0 && isVisible(t.symbol))
+        .filter((t) => t.amount > 0)
         .map((t) =>
           formatCurrency(
             Math.abs(t.fiatValue ?? NaN),

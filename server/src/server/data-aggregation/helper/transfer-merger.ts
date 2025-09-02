@@ -68,6 +68,9 @@ export class TransferMerger {
       target[key].transfers = target[key]?.transfers.filter(
         (t) => t.amount !== 0,
       );
+      target[key]?.transfers
+        .filter((t) => t.fiatValue)
+        .forEach((t) => (t.fiatValue = Math.abs(t.fiatValue)));
     }
   }
 

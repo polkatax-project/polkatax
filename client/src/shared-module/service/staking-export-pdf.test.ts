@@ -1,5 +1,5 @@
 import { expect, jest, it, describe } from '@jest/globals';
-import { exportPdf } from './export-pdf';
+import { stakingExportPdf } from './staking-export-pdf';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
@@ -40,7 +40,7 @@ describe('exportPdf', () => {
       },
     } as any;
 
-    exportPdf(rewards);
+    stakingExportPdf(rewards);
 
     expect(jsPDF).toHaveBeenCalled();
     expect(autoTable).toHaveBeenCalledWith(

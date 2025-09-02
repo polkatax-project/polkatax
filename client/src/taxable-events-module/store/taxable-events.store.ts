@@ -64,7 +64,11 @@ const taxData$ = combineLatest([
           }
         })
       );
-      visibleTokens$.next(tokens.map((t) => ({ name: t, value: true })));
+      visibleTokens$.next(
+        tokens
+          .map((t) => ({ name: t, value: true }))
+          .sort((a, b) => (a.name > b.name ? 1 : -1))
+      );
     }
     excludedEntries$.next([]);
   })

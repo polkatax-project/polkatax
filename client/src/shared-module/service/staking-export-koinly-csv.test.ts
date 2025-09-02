@@ -1,7 +1,7 @@
 import { expect, jest, it, describe, beforeEach } from '@jest/globals';
 import { formatDateUTC } from '../util/date-utils';
 import saveAs from 'file-saver';
-import { exportKoinlyCsv } from './export-koinly-csv';
+import { stakingExportKoinlyCsv } from './staking-export-koinly-csv';
 
 // Mocks
 const parse = jest.fn().mockReturnValue('csv_content');
@@ -41,7 +41,7 @@ describe('exportKoinlyCsv', () => {
 
     (formatDateUTC as jest.Mock).mockImplementation((ts) => `formatted-${ts}`);
 
-    exportKoinlyCsv(mockRewards);
+    stakingExportKoinlyCsv(mockRewards);
 
     const expectedRows = [
       {

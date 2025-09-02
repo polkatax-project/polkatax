@@ -14,15 +14,7 @@
           @click="exportRewardsAsPdf"
           :disable="noRewards"
           data-testid="pdfExport"
-          >Export Pdf
-        </q-btn>
-        <q-btn
-          color="primary"
-          class="q-mr-sm"
-          @click="exportRewardsAsCsv"
-          data-testid="csvExport"
-          :disable="noRewards"
-          >Export CSV
+          >Pdf Export
         </q-btn>
         <q-btn
           color="primary"
@@ -30,7 +22,7 @@
           @click="exportRewardsAsKoinlyCsv"
           data-testid="koinlyExport"
           :disable="noRewards"
-          >Koinly Export
+          >CVS Export
         </q-btn>
       </template>
     </q-table>
@@ -42,10 +34,9 @@ import {
   formatCurrencyWithoutSymbol,
   formatCryptoAmount,
 } from '../../../../shared-module/util/number-formatters';
-import { exportDefaultCsv } from '../../../../shared-module/service/export-default-csv';
-import { exportKoinlyCsv } from '../../../../shared-module/service/export-koinly-csv';
 import { useTaxableEventStore } from '../../../store/taxable-events.store';
 import { RewardDto, Rewards } from '../../../../shared-module/model/rewards';
+import { stakingExportKoinlyCsv } from '../../../../shared-module/service/staking-export-koinly-csv';
 
 const rewardsStore = useTaxableEventStore();
 const rewards: Ref<Rewards | undefined> = ref(undefined);
@@ -110,22 +101,17 @@ const initialPagination = ref({
   rowsPerPage: 10,
 });
 
-function exportRewardsAsCsv() {
-  if (!rewards.value) return;
-  exportDefaultCsv(rewards.value);
-}
-
 function exportRewardsAsKoinlyCsv() {
   if (!rewards.value) return;
-  exportKoinlyCsv(rewards.value);
+  stakingExportKoinlyCsv(rewards.value);
 }
 
 async function exportRewardsAsPdf() {
   if (!rewards.value) return;
   // loading exportPdf on demand due to module size.
-  const { exportPdf } = await import(
-    '../../../../shared-module/service/export-pdf'
+  const { stakingExportPdf } = await import(
+    '../../../../shared-module/service/staking-export-pdf'
   );
-  exportPdf(rewards.value);
+  stakingExportPdf(rewards.value);
 }
 </script>
