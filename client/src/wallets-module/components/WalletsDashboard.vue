@@ -151,6 +151,8 @@ const jobsSubscription = store.jobs$.subscribe((jobs: JobResult[]) => {
         blockchainsEvaluated:
           j.status === 'done' || j.status === 'error' ? 1 : 0,
         chainsTotal: jobs.filter((job) => job.wallet === j.wallet).length,
+        syncFromDate: j.syncFromDate,
+        syncUntilDate: j.syncUntilDate,
       });
     } else {
       existing.done =
