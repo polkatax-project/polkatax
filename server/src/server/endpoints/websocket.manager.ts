@@ -190,6 +190,11 @@ export class WebSocketManager {
       if (!matches.length) return;
 
       const job = await this.jobRepository.findJob(jobId);
+
+      if (job.status === "post_processing") {
+        return; // only pending - processing - done is relevant for the client.
+      }
+
       const message: WebSocketOutgoingMessage = {
         reqId: job.reqId,
         payload: [job],

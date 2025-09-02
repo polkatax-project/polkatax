@@ -194,6 +194,25 @@ export class JobRepository {
     await this.notifyJobChanged(jobId);
   }
 
+  async setToPostProcessing(jobId: JobId, data: any) {
+    const query = `
+      UPDATE jobs
+      SET status = 'post_processing', error = 'null', last_modified = $1, data = $2 
+      WHERE wallet = $3 AND blockchain = $4 AND currency = $5
+    `;
+
+    const values = [
+      new Date(),
+      JSON.stringify(data),
+      jobId.wallet,
+      jobId.blockchain,
+      jobId.currency,
+    ];
+    const client = await this.getClient();
+    await client.query(query, values);
+    await this.notifyJobChanged(jobId);
+  }
+
   private async notifyJobChanged(jobId: JobId) {
     /**
      * Just using blockchain, currency, wallet is necessary bc the interface can be called with

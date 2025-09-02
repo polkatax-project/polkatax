@@ -8,10 +8,10 @@ dotenv.config({ path: envFile });
 
   await dbClient.query(`
     UPDATE jobs
-    SET status = 'pending'
-    WHERE status = 'in_progress'
+    SET status = 'pending', data = 'null'
+    WHERE status = 'in_progress' OR WHERE status = 'post_processing'
   `);
 
-  console.log("✅ Reset all in_progress jobs to pending");
+  console.log("✅ Reset all in_progress and post_processing jobs to pending");
   process.exit(0);
 })();

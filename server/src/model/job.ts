@@ -8,7 +8,7 @@ export interface JobId {
 
 export interface Job extends JobId {
   reqId: string;
-  status: "pending" | "in_progress" | "done" | "error";
+  status: "pending" | "in_progress" | "post_processing" | "done" | "error";
   data?: any;
   error?: WsError;
   lastModified: number;
