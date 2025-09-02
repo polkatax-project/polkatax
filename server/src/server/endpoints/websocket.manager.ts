@@ -8,13 +8,18 @@ import {
   WebSocketIncomingMessageSchema,
 } from "./incoming-message-schema";
 import { JobRepository } from "../job-management/job.repository";
-import { JobId } from "../../model/job";
 import { convertToCanonicalAddress } from "../../common/util/convert-to-canonical-address";
 import { isValidEvmAddress } from "../../common/util/is-valid-address";
+import * as subscanChains from "../../../res/gen/subscan-chains.json";
+import { createJobId } from "../job-management/helper/create-job-id";
+import {
+  getBeginningLastYear,
+  getEndOfLastYear,
+} from "../job-management/get-beginning-last-year";
 
 interface Subscription {
+  jobId: string;
   wallet: string;
-  currency: string;
 }
 
 export class WebSocketManager {
@@ -26,8 +31,11 @@ export class WebSocketManager {
     private jobRepository: JobRepository,
   ) {}
 
-  private match(sub1: Subscription, sub2: Subscription): boolean {
-    return sub1.wallet === sub2.wallet && sub1.currency === sub2.currency;
+  private match(
+    sub1: Partial<Subscription>,
+    sub2: Partial<Subscription>,
+  ): boolean {
+    return sub1.jobId === sub2.jobId;
   }
 
   private addSubscription(socket: WebSocket, sub: Subscription) {
@@ -49,22 +57,46 @@ export class WebSocketManager {
     socket: WebSocket,
     msg: WebSocketIncomingMessage,
   ): Promise<WebSocketOutgoingMessage> {
-    const { wallet, currency, blockchains } = msg.payload;
-    const subscription = { wallet, currency };
+    const { wallet, currency, blockchains, syncFromDate, syncUntilDate } =
+      msg.payload;
 
-    this.addSubscription(socket, subscription);
+    if (
+      Math.abs(syncFromDate - getBeginningLastYear()) > 25 * 60 * 60 * 1000 ||
+      Math.abs(syncUntilDate - getEndOfLastYear()) > 25 * 60 * 60 * 1000
+    ) {
+      this.sendError(socket, {
+        code: 400,
+        msg: "Sync date invalid",
+      });
+      return;
+    }
 
     const jobs = await this.jobManager.enqueue(
       msg.reqId,
       wallet,
       currency,
+      syncFromDate,
+      syncUntilDate,
       blockchains,
     );
+
+    jobs.forEach((job) => {
+      this.addSubscription(socket, { jobId: job.id, wallet: job.wallet });
+    });
 
     return {
       type: "data",
       reqId: msg.reqId,
-      payload: jobs,
+      payload: jobs.map((job) => {
+        if (job.status === "post_processing") {
+          return {
+            ...job,
+            data: undefined,
+            status: "in_progress",
+          };
+        }
+        return job;
+      }),
       timestamp: Date.now(),
     };
   }
@@ -73,8 +105,19 @@ export class WebSocketManager {
     socket: WebSocket,
     msg: WebSocketIncomingMessage,
   ): Promise<WebSocketOutgoingMessage> {
-    const { wallet, currency } = msg.payload;
-    this.removeSubscription(socket, { wallet, currency });
+    const { wallet, currency, syncFromDate, syncUntilDate } = msg.payload;
+    subscanChains.chains.forEach((chain) => {
+      this.removeSubscription(socket, {
+        wallet,
+        jobId: createJobId({
+          wallet,
+          currency,
+          syncFromDate,
+          syncUntilDate,
+          blockchain: chain.domain,
+        }),
+      });
+    });
 
     return {
       type: "acknowledgeUnsubscribe",
@@ -179,12 +222,9 @@ export class WebSocketManager {
   };
 
   async startJobNotificationChannel(): Promise<void> {
-    this.jobRepository.jobChanged$.subscribe(async (jobId: JobId) => {
+    this.jobRepository.jobChanged$.subscribe(async (jobId: string) => {
       const matches = this.connections.filter((c) =>
-        this.match(c.subscription, {
-          wallet: jobId.wallet,
-          currency: jobId.currency,
-        }),
+        this.match(c.subscription, { jobId }),
       );
 
       if (!matches.length) return;
@@ -203,9 +243,7 @@ export class WebSocketManager {
       };
 
       matches.forEach((c) => {
-        logger.info(
-          `Notifying wallet ${c.subscription.wallet}, currency ${c.subscription.currency}`,
-        );
+        logger.info(`Notifying wallet ${c.subscription.wallet}`);
         c.socket.send(JSON.stringify(message));
       });
     });

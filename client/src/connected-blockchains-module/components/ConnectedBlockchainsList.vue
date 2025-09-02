@@ -91,19 +91,6 @@
             </q-td>
             <q-td key="timeFrame" :props="props">
               {{ getTimeFrame(props.row) }}
-              <q-icon
-                name="info"
-                aria-describedby="fiscal-year-incomplete-warning"
-                v-if="props.row?.data?.fiscalYearIncomplete"
-              >
-                <q-tooltip
-                  anchor="top middle"
-                  self="bottom middle"
-                  aria-label="Error info tooltip"
-                  >The synchronized data does not yet include the entire fiscal
-                  year. Try synchronizing at a later time point.</q-tooltip
-                ></q-icon
-              >
             </q-td>
             <q-td key="lastSynchronized" :props="props">
               {{

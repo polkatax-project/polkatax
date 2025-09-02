@@ -1,22 +1,19 @@
 import { JobsService } from "./jobs.service";
 import * as subscanChains from "../../../res/gen/subscan-chains.json";
-import { Job, JobId } from "../../model/job";
+import { Job } from "../../model/job";
 import { filter, firstValueFrom, mergeMap, Subject } from "rxjs";
 import { determineNextJob } from "./determine-next-job";
 import { AwilixContainer } from "awilix";
 import { isEvmAddress } from "../data-aggregation/helper/is-evm-address";
-import {
-  getBeginningLastYear,
-  getEndOfLastYear,
-} from "./get-beginning-last-year";
 import { logger } from "../logger/logger";
 import { JobProcessor } from "./job.processor";
 import { JobPostProcessor } from "./job.post-processor";
+import { createJobId } from "./helper/create-job-id";
 
 const PARALLEL_POST_PROCESSING_JOBS = 2;
 
 export class JobManager {
-  private postProcessingQueue = new Subject<JobId>();
+  private postProcessingQueue = new Subject<string>();
 
   constructor(
     private jobsService: JobsService,
@@ -35,19 +32,24 @@ export class JobManager {
     reqId: string,
     wallet: string,
     currency: string,
+    syncFromDate: number,
+    syncUntilDate: number,
     blockchains: string[] = [],
   ): Promise<Job[]> {
     logger.info(`Enter enqueue jobs ${reqId}, ${wallet}, ${currency}`);
 
-    const syncFromDate = getBeginningLastYear();
     const chains = blockchains.length ? blockchains : this.getChains(wallet);
     const jobs = await this.jobsService.fetchJobs(wallet);
-    const matchingJobs = jobs.filter(
-      (j) =>
-        chains.includes(j.blockchain) &&
-        j.currency === currency &&
-        j.syncFromDate === syncFromDate,
-    );
+    const jobIds = this.getChains(wallet).map((b) => {
+      return createJobId({
+        blockchain: b,
+        wallet,
+        currency,
+        syncFromDate,
+        syncUntilDate,
+      });
+    });
+    const matchingJobs = jobs.filter((j) => jobIds.includes(j.id));
 
     const newJobs: Job[] = [];
 
@@ -62,6 +64,7 @@ export class JobManager {
             wallet,
             chain,
             syncFromDate,
+            syncUntilDate,
             currency,
           ),
         );
@@ -94,19 +97,15 @@ export class JobManager {
         const jobInfo = determineNextJob(jobs, previousWallet);
         if (!jobInfo) continue;
 
-        job = await this.jobsService.fetchJob(
-          jobInfo.wallet,
-          jobInfo.blockchain,
-          jobInfo.currency,
-        );
+        job = await this.jobsService.fetchJob(jobInfo.id);
 
         previousWallet = job.wallet;
         const jobProcessor: JobProcessor =
           this.DIContainer.resolve("jobProcessor");
         job = await jobProcessor.process(job);
-        job.status = "post_processing";
+
         await this.jobsService.setToPostProcessing(job);
-        this.enqueueForPostProcessing(job);
+        this.enqueueForPostProcessing(job.id);
         const allPendingJobs = await this.jobsService.fetchAllPendingJobs();
         logger.info("Remaining pending jobs:" + allPendingJobs.length);
       } catch (error) {
@@ -116,34 +115,26 @@ export class JobManager {
     }
   }
 
-  private async enqueueForPostProcessing(jobId: JobId) {
-    this.postProcessingQueue.next({
-      wallet: jobId.wallet,
-      blockchain: jobId.blockchain,
-      currency: jobId.currency,
-    });
+  private async enqueueForPostProcessing(jobId: string) {
+    this.postProcessingQueue.next(jobId);
   }
 
   private async startPostProcessing() {
     this.postProcessingQueue
       .pipe(
-        mergeMap(async (job) => {
-          logger.info(job, "Postprocessing job");
-          await this.doPostProcessing(job);
-          logger.info(job, "Finished postprocessing");
+        mergeMap(async (jobId) => {
+          logger.info("Postprocessing job: " + jobId);
+          await this.doPostProcessing(jobId);
+          logger.info("Finished postprocessing" + jobId);
         }, PARALLEL_POST_PROCESSING_JOBS),
       )
       .subscribe();
   }
 
-  private async doPostProcessing(jobId: JobId) {
+  private async doPostProcessing(jobId: string) {
     let job: Job | undefined;
     try {
-      job = await this.jobsService.fetchJob(
-        jobId.wallet,
-        jobId.blockchain,
-        jobId.currency,
-      );
+      job = await this.jobsService.fetchJob(jobId);
 
       if (job.status !== "post_processing") {
         return;
@@ -153,7 +144,7 @@ export class JobManager {
         this.DIContainer.resolve("jobPostProcessor");
       job = await jobPostProcessor.postProcess(job);
       job.status = "done";
-      await this.jobsService.setDone(job, getEndOfLastYear());
+      await this.jobsService.setDone(job);
     } catch (error) {
       this.handleError(error, job);
       logger.error(error);
@@ -169,7 +160,7 @@ export class JobManager {
             error?.message ??
             `Unhandled error processing job: ${JSON.stringify(job)}`,
         },
-        job,
+        job.id,
       );
     } catch (nestedError) {
       logger.error(nestedError, "JobConsumer: failed to set error state: ");

@@ -1,4 +1,3 @@
-import { FiscalYear, fiscalYearToBorders } from '../../model/fiscal-year';
 import { JobResult } from '../../model/job-result';
 import { TaxData } from '../../model/tax-data';
 import { TaxableEvent } from '../../model/taxable-event';
@@ -23,23 +22,18 @@ export function addId(events: TaxableEvent[]) {
 
 export function addMetaData(
   job: JobResult,
-  taxableEvents: TaxableEvent[],
-  fiscalYear: FiscalYear
+  taxableEvents: TaxableEvent[]
 ): TaxData {
-  const syncedUntilAsDate = formatDate(new Date(job.syncedUntil!).getTime());
-  const fiscalYearBorders = fiscalYearToBorders(fiscalYear);
+  const syncedUntilDay = formatDate(new Date(job.syncUntilDate).getTime());
+  const syncedFromDay = formatDate(new Date(job.syncFromDate).getTime());
   const enriched = {
     values: addId(taxableEvents),
     deviations: job.data?.deviations ?? [],
     chain: job.blockchain,
     currency: job.currency,
     address: job.wallet,
-    fromDate: fiscalYearToBorders(fiscalYear).start,
-    toDate:
-      syncedUntilAsDate > fiscalYearBorders.end
-        ? fiscalYearBorders.end
-        : syncedUntilAsDate,
-    fiscalYearIncomplete: syncedUntilAsDate <= fiscalYearBorders.end,
+    fromDate: syncedFromDay,
+    toDate: syncedUntilDay,
   };
   sortRewards(enriched);
   return enriched;

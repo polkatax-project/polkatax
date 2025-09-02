@@ -57,6 +57,8 @@ export const useConnectedBlockchainsStore = defineStore(
           wallet: job.wallet,
           blockchains: [job.blockchain],
           currency: job.currency,
+          syncFromDate: job.syncFromDate,
+          syncUntilDate: job.syncUntilDate,
         },
       });
     }

@@ -3,7 +3,6 @@ import { logger } from "../logger/logger";
 import { JobsService } from "./jobs.service";
 import * as subscanChains from "../../../res/gen/subscan-chains.json";
 import { PortfolioMovementsService } from "../data-aggregation/services/portfolio-movements.service";
-import { getEndOfLastYear } from "./get-beginning-last-year";
 
 export class JobProcessor {
   constructor(
@@ -24,12 +23,12 @@ export class JobProcessor {
     if (!chain) {
       await this.jobsService.setError(
         { code: 400, msg: `Chain ${job.blockchain} not found` },
-        job,
+        job.id,
       );
       return job;
     }
 
-    const claimed = await this.jobsService.setInProgress(job);
+    const claimed = await this.jobsService.setInProgress(job.id);
     if (!claimed) {
       logger.info("Job already claimed by another process");
       return;
@@ -41,20 +40,10 @@ export class JobProcessor {
         address: job.wallet,
         currency: job.currency,
         minDate: job.syncFromDate,
-        maxDate: getEndOfLastYear(),
+        maxDate: job.syncUntilDate,
       },
     );
-    const portfolioMovements = result.portfolioMovements;
-
-    // Merge previously synced values (if any)
-    if (job.data) {
-      const previous = job.data.values.filter(
-        (v) => v.timestamp < job.syncFromDate,
-      );
-      portfolioMovements.push(...previous);
-    }
-
-    job.data = { values: portfolioMovements };
+    job.data = { values: result.portfolioMovements };
 
     logger.info(
       {
