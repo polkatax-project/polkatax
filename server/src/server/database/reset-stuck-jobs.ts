@@ -7,9 +7,10 @@ dotenv.config({ path: envFile });
   const dbClient = await initPostgresDbClient();
 
   await dbClient.query(`
-    UPDATE jobs
-    SET status = 'pending', data = 'null'
-    WHERE status = 'in_progress' OR WHERE status = 'post_processing'
+    UPDATE jobs 
+    SET status = 'pending', data = NULL
+    WHERE status = 'in_progress'
+    OR status = 'post_processing';
   `);
 
   console.log("✅ Reset all in_progress and post_processing jobs to pending");
