@@ -58,8 +58,12 @@ export class JobsService {
     return jobs.length > 0;
   }
 
-  setDone(data: any, jobId: JobId, syncedUntil: number) {
-    return this.jobRepository.setDone(jobId, data, syncedUntil);
+  setDone(job: Job, syncedUntil: number) {
+    return this.jobRepository.setDone(job, job.data, syncedUntil);
+  }
+
+  setToPostProcessing(job: Job) {
+    return this.jobRepository.setToPostProcessing(job, job.data);
   }
 
   setError(error: WsError, jobId: JobId) {

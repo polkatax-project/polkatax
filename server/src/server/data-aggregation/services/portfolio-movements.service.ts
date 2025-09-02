@@ -21,7 +21,6 @@ import { Transaction } from "../../blockchain/substrate/model/transaction";
 import { StakingRewardsAggregatorService } from "./staking-rewards-aggregator.service";
 import { AddFiatValuesToTaxableEventsService } from "./add-fiat-values-to-taxable-events.service";
 import { DataPlatformLiquidStakingService } from "../../data-platform-api/data-platform-liquidstaking.service";
-import * as fs from "fs";
 
 const ignoreIncomingXcm = [
   "assethub-polkadot",
@@ -266,14 +265,6 @@ export class PortfolioMovementsService {
 
     logger.info(
       `PortfolioMovementsService: Exit fetchPortfolioMovements with ${portfolioMovements.length} entries for ${request.chain.domain} and wallet ${request.address}`,
-    );
-    fs.writeFileSync(
-      "./" + request.address + "_" + request.chain.domain + ".json",
-      JSON.stringify(
-        { portfolioMovements: sortedTaxableEvents, unmatchedEvents },
-        null,
-        2,
-      ),
     );
 
     return { portfolioMovements: sortedTaxableEvents, unmatchedEvents };
