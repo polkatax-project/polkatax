@@ -219,7 +219,6 @@
     "wss://rpc-0.mainnet.autonomys.xyz/ws",
     "wss://rpc.mainnet.subspace.foundation/ws"
   ],
-  "creditcoin": ["wss://mainnet3.creditcoin.network/"],
   "humanode": ["wss://explorer-rpc-ws.mainnet.stages.humanode.io/"],
   "tanssi": ["wss://services.tanssi-mainnet.network/tanssi"]
 }
