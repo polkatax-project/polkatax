@@ -12,6 +12,10 @@ import { convertToCanonicalAddress } from "../../common/util/convert-to-canonica
 import { isValidEvmAddress } from "../../common/util/is-valid-address";
 import * as subscanChains from "../../../res/gen/subscan-chains.json";
 import { createJobId } from "../job-management/helper/create-job-id";
+import {
+  getBeginningLastYear,
+  getEndOfLastYear,
+} from "../job-management/get-beginning-last-year";
 
 interface Subscription {
   jobId: string;
@@ -55,6 +59,17 @@ export class WebSocketManager {
   ): Promise<WebSocketOutgoingMessage> {
     const { wallet, currency, blockchains, syncFromDate, syncUntilDate } =
       msg.payload;
+
+    if (
+      Math.abs(syncFromDate - getBeginningLastYear()) > 25 * 60 * 60 * 1000 ||
+      Math.abs(syncUntilDate - getEndOfLastYear()) > 25 * 60 * 60 * 1000
+    ) {
+      this.sendError(socket, {
+        code: 400,
+        msg: "Sync date invalid",
+      });
+      return;
+    }
 
     const jobs = await this.jobManager.enqueue(
       msg.reqId,
