@@ -5,9 +5,9 @@
     "wss://statemint.api.onfinality.io/public-ws"
   ],
   "bifrost": [
-    "wss://bifrost.public.curie.radiumblock.co/ws",
     "wss://bifrost-polkadot.ibp.network",
-    "wss://bifrost-polkadot.dotters.network"
+    "wss://bifrost-polkadot.dotters.network",
+    "wss://bifrost.public.curie.radiumblock.co/ws"
   ],
   "polkadot": [
     "wss://polkadot.api.onfinality.io/public-ws",

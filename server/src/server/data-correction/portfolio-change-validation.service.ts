@@ -9,7 +9,7 @@ import {
   PortfolioDifference,
   PortfolioDifferenceService,
 } from "./portfolio-difference.service";
-import * as substrateNodesWsEndpoints from "../../../res/substrate-nodes-ws-endpoints.json"
+import * as substrateNodesWsEndpoints from "../../../res/substrate-nodes-ws-endpoints.json";
 
 const DEFAULT_MAX_ALLOWED_DEVIATION = {
   singlePayment: 1,

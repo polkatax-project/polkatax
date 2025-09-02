@@ -1,7 +1,7 @@
 import { ApiPromise, WsProvider } from "@polkadot/api";
 import { Asset } from "../model/asset";
 import { logger } from "../../../logger/logger";
-import * as substrateNodesWsEndpoints from "../../../../../res/substrate-nodes-ws-endpoints.json"
+import * as substrateNodesWsEndpoints from "../../../../../res/substrate-nodes-ws-endpoints.json";
 
 export class PolkadotApi {
   private api: ApiPromise;
@@ -13,7 +13,10 @@ export class PolkadotApi {
     if (this.api) {
       await this.api.disconnect();
     }
-    const provider = new WsProvider(substrateNodesWsEndpoints[this.domain], 5000);
+    const provider = new WsProvider(
+      substrateNodesWsEndpoints[this.domain],
+      5000,
+    );
     this.api = await ApiPromise.create({ provider, noInitWarn: true });
   }
 
