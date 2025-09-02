@@ -21,11 +21,11 @@ import { addIsoDate } from './helper/add-iso-date';
 import { convertToCanonicalAddress } from '../util/convert-to-canonical-address';
 import { isValidEvmAddress } from '../util/is-valid-address';
 import { getAddress } from 'ethers';
-import { FiscalYear } from '../model/fiscal-year';
-import { filterOnFiscalYear } from './helper/filter-on-fiscal-year';
 import { extractStakingRewards } from './helper/extract-staking-rewards';
 import { calculateRewardSummary } from './helper/calculate-reward-summary';
 import { groupRewardsByDay } from './helper/group-rewards-by-day';
+import { getBeginningOfLastYear } from './helper/get-beginning-of-last-year';
+import { getEndOfLastYear } from './helper/get-end-of-last-year';
 
 const jobs$: BehaviorSubject<JobResult[]> = new BehaviorSubject<JobResult[]>(
   (JSON.parse(localStorage.getItem('wallets') || '[]') as string[]).map(
@@ -35,6 +35,8 @@ const jobs$: BehaviorSubject<JobResult[]> = new BehaviorSubject<JobResult[]>(
       currency: '',
       status: 'pending',
       lastModified: new Date().getTime(),
+      syncFromDate: getBeginningOfLastYear(),
+      syncUntilDate: getEndOfLastYear(),
     })
   )
 );
@@ -50,17 +52,11 @@ wsMsgReceived$
   )
   .subscribe(async (payload: JobResult | JobResult[]) => {
     let jobs = await firstValueFrom(jobs$);
-    const fiscalYear = await firstValueFrom(fiscalYear$);
     const list: JobResult[] = Array.isArray(payload) ? payload : [payload];
     for (const newJobResult of list) {
       if (newJobResult.data) {
         newJobResult.data.values = addIsoDate(newJobResult.data.values);
-        filterOnFiscalYear(newJobResult.data, fiscalYear);
-        newJobResult.data = addMetaData(
-          newJobResult,
-          newJobResult.data.values,
-          fiscalYear
-        );
+        newJobResult.data = addMetaData(newJobResult, newJobResult.data.values);
         newJobResult.stakingRewards = extractStakingRewards(newJobResult.data);
         newJobResult.stakingRewardsSummary = calculateRewardSummary(
           newJobResult.stakingRewards.values
@@ -93,41 +89,6 @@ defer(() => {
   .pipe(take(1))
   .subscribe((currency) => currency$.next(currency));
 
-const fiscalYear$ = new BehaviorSubject<FiscalYear>('Jan 1 - Dec 31' as const);
-/*
-const fiscalYear$ = new ReplaySubject<FiscalYear>(1);
-currency$
-  .pipe(
-    take(1),
-    map((currency) => {
-      const fiscalYear = localStorage.getItem('fiscalYear');
-      if (fiscalYear) {
-        return fiscalYear as FiscalYear;
-      } else {
-        switch (currency) {
-          case 'USD':
-            return 'Oct 1 - Sep 30' as const;
-          case 'CAD':
-          case 'GBP':
-          case 'INR':
-          case 'JPY':
-          case 'SGD':
-          case 'CNY':
-            return 'Apr 1 - Mar 31' as const;
-          case 'AUD':
-          case 'NZD':
-            return 'Jul 1 - Jun 30' as const;
-          case 'ZAR':
-            return 'Mar 1 - Feb 28/29' as const;
-          default:
-            return 'Jan 1 - Dec 31' as const;
-        }
-      }
-    })
-  )
-  .subscribe((fiscalYear) => fiscalYear$.next(fiscalYear));
-*/
-
 combineLatest([
   firstValueFrom(currency$),
   from([JSON.parse(localStorage.getItem('wallets') || '[]') as string[]]),
@@ -140,6 +101,8 @@ combineLatest([
         payload: {
           currency: currency,
           wallet: w,
+          syncFromDate: getBeginningOfLastYear(),
+          syncUntilDate: getEndOfLastYear(),
         },
       });
     });
@@ -154,7 +117,6 @@ export const useSharedStore = defineStore('shared', {
   state: () => {
     return {
       currency$: currency$.asObservable(),
-      fiscalYear$: fiscalYear$.asObservable(),
       webSocketResponseError$,
       subscanChains$,
       jobs$: jobs$.asObservable(),
@@ -166,10 +128,6 @@ export const useSharedStore = defineStore('shared', {
     selectCurrency(newCurrency: string) {
       localStorage.setItem('currency', newCurrency);
       currency$.next(newCurrency);
-    },
-    selectFiscalYear(fiscalYear: FiscalYear) {
-      localStorage.setItem('fiscalYear', fiscalYear);
-      fiscalYear$.next(fiscalYear);
     },
     addWallets(wallets: string[]) {
       const existingWallets = JSON.parse(
@@ -198,6 +156,8 @@ export const useSharedStore = defineStore('shared', {
           payload: {
             wallet: canonicaAddress,
             currency: currency,
+            syncFromDate: getBeginningOfLastYear(),
+            syncUntilDate: getEndOfLastYear(),
           },
         });
       }
@@ -213,6 +173,8 @@ export const useSharedStore = defineStore('shared', {
           currency,
           status: 'pending',
           lastModified: new Date().getTime(),
+          syncFromDate: getBeginningOfLastYear(),
+          syncUntilDate: getEndOfLastYear(),
         };
       });
       jobs.push(...dummyJobs);
@@ -233,6 +195,8 @@ export const useSharedStore = defineStore('shared', {
         payload: {
           wallet: job.wallet,
           currency: job.currency,
+          syncFromDate: job.syncFromDate,
+          syncUntilDate: job.syncUntilDate,
         },
       });
       await firstValueFrom(

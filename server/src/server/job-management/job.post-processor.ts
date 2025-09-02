@@ -14,7 +14,6 @@ export class JobPostProcessor {
       (c) => c.domain.toLowerCase() === job.blockchain.toLowerCase(),
     );
 
-    job.syncedUntil = getEndOfLastYear();
     const deviations =
       await this.portfolioMovementCorrectionService.fixErrorsAndMissingData(
         chain,
@@ -22,7 +21,7 @@ export class JobPostProcessor {
         job.data.values,
         [],
         job.syncFromDate,
-        job.syncedUntil,
+        job.syncUntilDate,
       );
 
     const relevantPortfolioMovements = job.data.values.filter(

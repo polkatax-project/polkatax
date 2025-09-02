@@ -6,7 +6,8 @@ export interface WebSocketOutGoingMessage {
     wallet: string;
     currency: string;
     blockchains?: string[];
-    syncFromDate?: number;
+    syncFromDate: number;
+    syncUntilDate: number;
   };
 }
 

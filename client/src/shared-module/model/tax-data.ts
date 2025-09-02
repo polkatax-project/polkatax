@@ -9,5 +9,4 @@ export interface TaxData {
   deviations: Deviation[];
   fromDate: string;
   toDate: string;
-  fiscalYearIncomplete: boolean;
 }

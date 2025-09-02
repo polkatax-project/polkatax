@@ -1,6 +1,6 @@
 import { Client } from "pg";
 import { connectToDb } from "../database/db-connection";
-import { Job, JobId } from "../../model/job";
+import { Job } from "../../model/job";
 import { WsError } from "../model/ws-error";
 import { Subject } from "rxjs";
 import { logger } from "../logger/logger";
@@ -13,7 +13,7 @@ const mapToCamelCase = (row: any) =>
 
 export class JobRepository {
   pendingJobsChanged$ = new Subject<void>();
-  jobChanged$ = new Subject<JobId>();
+  jobChanged$ = new Subject<string>();
 
   private _clientPromise: Promise<Client>;
 
@@ -35,9 +35,9 @@ export class JobRepository {
         const payload = JSON.parse(msg.payload || "{}");
         if (msg.channel === "job_changed") {
           logger.info(
-            `JobRepository: Notification on ${msg.channel}, wallet: ${payload.wallet}, blockchain: ${payload.blockchain}`,
+            `JobRepository: Notification on ${msg.channel}, jobId: ${payload.id}`,
           );
-          this.jobChanged$.next(payload);
+          this.jobChanged$.next(payload.id);
         } else if (msg.channel === "pending_jobs_changed") {
           logger.info(`JobRepository: Notification on ${msg.channel}.`);
           this.pendingJobsChanged$.next(payload);
@@ -66,7 +66,7 @@ export class JobRepository {
 
   mapToJob(row: any): Job {
     const job = mapToCamelCase(row);
-    ["syncFromDate", "syncedUntil", "lastModified"].forEach((field) => {
+    ["syncFromDate", "syncUntilDate", "lastModified"].forEach((field) => {
       if (job[field] instanceof Date) job[field] = job[field].getTime();
     });
     return job as unknown as Job;
@@ -81,18 +81,20 @@ export class JobRepository {
   async insertJob(job: Job) {
     const query = `
       INSERT INTO jobs (
-        wallet, blockchain, sync_from_date, currency, req_id, last_modified, status, data
-      ) VALUES ($1, $2, $3, $4, $5, $6, 'pending', $7)
+        wallet, blockchain, sync_from_date, sync_until_date, currency, req_id, last_modified, status, data, id
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, 'pending', $8, $9)
     `;
 
     const values = [
       job.wallet,
       job.blockchain,
       new Date(job.syncFromDate),
+      new Date(job.syncUntilDate),
       job.currency,
       job.reqId,
       new Date(),
       job.data,
+      job.id,
     ];
 
     const client = await this.getClient();
@@ -107,44 +109,43 @@ export class JobRepository {
     ]);
   }
 
-  async findJob(jobId: JobId) {
+  async findJob(jobId: string) {
     const jobs = await this.executeJobQuery(
-      `SELECT * FROM jobs WHERE wallet = $1 AND blockchain = $2 AND currency = $3`,
-      [jobId.wallet, jobId.blockchain, jobId.currency],
+      `SELECT * FROM jobs WHERE id = $1`,
+      [jobId],
     );
     return jobs[0];
   }
 
   async fetchAllJobs() {
     return this.executeJobQuery(
-      `SELECT req_id, wallet, error, blockchain, sync_from_date, status, last_modified, currency, synced_until FROM jobs`,
+      `SELECT id, req_id, wallet, error, blockchain, sync_from_date, status, last_modified, currency, sync_until_date FROM jobs`,
     );
   }
 
   async fetchAllPendingJobs() {
     return this.executeJobQuery(
-      `SELECT req_id, wallet, error, blockchain, sync_from_date, status, last_modified, currency, synced_until FROM jobs WHERE status = 'pending'`,
+      `SELECT id, req_id, wallet, error, blockchain, sync_from_date, status, last_modified, currency, sync_until_date FROM jobs WHERE status = 'pending'`,
     );
   }
 
   async deleteJob(job: Job) {
     const client = await this.getClient();
-    const { rows } = await client.query(
-      `DELETE FROM jobs WHERE wallet = $1 AND blockchain = $2 AND currency = $3`,
-      [job.wallet, job.blockchain, job.currency],
-    );
+    const { rows } = await client.query(`DELETE FROM jobs WHERE id = $1`, [
+      job.id,
+    ]);
     return rows;
   }
 
-  async setInProgress(jobId: JobId) {
+  async setInProgress(jobId: string) {
     const query = `
       UPDATE jobs
       SET status = 'in_progress', last_modified = $1
-      WHERE wallet = $2 AND blockchain = $3 AND currency = $4 AND status != 'in_progress'
+      WHERE id = $2 AND status != 'in_progress'
       RETURNING *
     `;
 
-    const values = [new Date(), jobId.wallet, jobId.blockchain, jobId.currency];
+    const values = [new Date(), jobId];
     const client = await this.getClient();
     const { rows } = await client.query(query, values);
 
@@ -155,74 +156,40 @@ export class JobRepository {
     return rows;
   }
 
-  async setError(jobId: JobId, error: WsError) {
+  async setError(jobId: string, error: WsError) {
     const query = `
       UPDATE jobs
       SET status = 'error', error = $1, last_modified = $2
-      WHERE wallet = $3 AND blockchain = $4 AND currency = $5
+      WHERE id = $3
     `;
 
-    const values = [
-      error,
-      new Date(),
-      jobId.wallet,
-      jobId.blockchain,
-      jobId.currency,
-    ];
+    const values = [error, new Date(), jobId];
     const client = await this.getClient();
     await client.query(query, values);
     await this.notifyJobChanged(jobId);
   }
 
-  async setDone(jobId: JobId, data: any, syncedUntil: number) {
+  async updateJobData(
+    jobId: string,
+    data: any,
+    newStatus: "post_processing" | "done",
+  ) {
     const query = `
       UPDATE jobs
-      SET status = 'done', error = 'null', last_modified = $1, data = $2, synced_until = $3
-      WHERE wallet = $4 AND blockchain = $5 AND currency = $6
+      SET status = $1, error = 'null', last_modified = $2, data = $3 
+      WHERE id = $4
     `;
 
-    const values = [
-      new Date(),
-      JSON.stringify(data),
-      new Date(syncedUntil),
-      jobId.wallet,
-      jobId.blockchain,
-      jobId.currency,
-    ];
+    const values = [newStatus, new Date(), JSON.stringify(data), jobId];
     const client = await this.getClient();
     await client.query(query, values);
     await this.notifyJobChanged(jobId);
   }
 
-  async setToPostProcessing(jobId: JobId, data: any) {
-    const query = `
-      UPDATE jobs
-      SET status = 'post_processing', error = 'null', last_modified = $1, data = $2 
-      WHERE wallet = $3 AND blockchain = $4 AND currency = $5
-    `;
-
-    const values = [
-      new Date(),
-      JSON.stringify(data),
-      jobId.wallet,
-      jobId.blockchain,
-      jobId.currency,
-    ];
-    const client = await this.getClient();
-    await client.query(query, values);
-    await this.notifyJobChanged(jobId);
-  }
-
-  private async notifyJobChanged(jobId: JobId) {
-    /**
-     * Just using blockchain, currency, wallet is necessary bc the interface can be called with
-     * Job object which is too large for Notify
-     */
+  private async notifyJobChanged(jobId: string) {
     const payload = JSON.stringify({
-      wallet: jobId.wallet,
-      blockchain: jobId.blockchain,
-      currency: jobId.currency,
-    } as JobId);
+      id: jobId,
+    });
     const client = await this.getClient();
     await client.query(`NOTIFY job_changed, '${payload}';`);
   }

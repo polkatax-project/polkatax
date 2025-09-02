@@ -3,6 +3,7 @@ import { newDb } from "pg-mem";
 
 const createDb = async (client: Client) => {
   await (client as any).none(`CREATE TABLE IF NOT EXISTS jobs (
+    id TEXT PRIMARY KEY,
     status TEXT,
     wallet TEXT,
     blockchain TEXT,
@@ -11,7 +12,7 @@ const createDb = async (client: Client) => {
     error JSONB,
     sync_from_date TIMESTAMPTZ,
     currency TEXT,
-    synced_until TIMESTAMPTZ,
+    sync_until_date TIMESTAMPTZ,
     req_id TEXT
     );`);
   await (client as any).none(`CREATE TABLE fetched_data (

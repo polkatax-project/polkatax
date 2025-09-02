@@ -10,7 +10,7 @@ export class BlockTimeService {
     date: number,
     minBlock: Block,
     maxBlock: Block,
-    tolerance = 10 * 60 * 60 * 1000,
+    tolerance = 15 * 60 * 1000,
   ): Promise<number> {
     const estimate = this.estimateBlockNum(minBlock, maxBlock, date);
     const currentBlock: Block = await this.subscanApi.fetchBlock(
@@ -55,8 +55,6 @@ export class BlockTimeService {
     logger.info(
       `Entry getMinMaxBlock for chain ${chainName} and minDate ${new Date(minDate).toISOString()}, maxDate ${maxDate ? new Date(maxDate).toISOString() : "undefined"}`,
     );
-    const tolerance = 10 * 60 * 60 * 1000;
-    const meta = await this.subscanApi.fetchMetadata(chainName);
     const firstBlock: Block = await this.subscanApi.fetchBlock(chainName, 1);
     const lastBlock: Block = (
       await this.subscanApi.fetchBlockList(chainName, 0, 1)

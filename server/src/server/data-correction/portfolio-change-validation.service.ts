@@ -1,4 +1,3 @@
-import { WS_CHAIN_ENDPOINTS } from "../blockchain/substrate/api/polkadot-api";
 import { SubscanApi } from "../blockchain/substrate/api/subscan.api";
 import { Block } from "../blockchain/substrate/model/block";
 import { Transfer } from "../blockchain/substrate/model/raw-transfer";
@@ -10,6 +9,7 @@ import {
   PortfolioDifference,
   PortfolioDifferenceService,
 } from "./portfolio-difference.service";
+import * as substrateNodesWsEndpoints from "../../../res/substrate-nodes-ws-endpoints.json"
 
 const DEFAULT_MAX_ALLOWED_DEVIATION = {
   singlePayment: 1,
@@ -119,7 +119,7 @@ export class PortfolioChangeValidationService {
       }
     | undefined
   > {
-    if (!Object.keys(WS_CHAIN_ENDPOINTS).includes(chainInfo.domain)) {
+    if (!Object.keys(substrateNodesWsEndpoints).includes(chainInfo.domain)) {
       return {
         portfolioDifferences: [],
         minBlock: undefined,
@@ -176,7 +176,7 @@ export class PortfolioChangeValidationService {
     maxBlockNum?: number,
     feeToken?: string,
   ): Promise<Deviation[]> {
-    if (!Object.keys(WS_CHAIN_ENDPOINTS).includes(chainInfo.domain)) {
+    if (!Object.keys(substrateNodesWsEndpoints).includes(chainInfo.domain)) {
       return [];
     }
 
@@ -216,7 +216,7 @@ export class PortfolioChangeValidationService {
     minBlockNum?: number,
     maxBlockNum?: number,
   ): Promise<string | undefined> {
-    if (!Object.keys(WS_CHAIN_ENDPOINTS).includes(chainInfo.domain)) {
+    if (!Object.keys(substrateNodesWsEndpoints).includes(chainInfo.domain)) {
       return;
     }
     if (maxBlockNum === undefined && portfolioMovements.length === 0) {
