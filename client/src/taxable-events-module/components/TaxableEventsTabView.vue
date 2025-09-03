@@ -6,14 +6,37 @@
       <div>Time frame: {{ taxData?.fromDate }} - {{ taxData?.toDate }}</div>
     </div>
     <q-tabs v-model="tab" active-color="primary" indicator-color="primary">
-      <q-tab name="events" icon="receipt_long" label="All Taxable Events">
+      <q-tab
+        name="events"
+        icon="receipt_long"
+        label="All Taxable Events"
+        :disable="!taxData?.portfolioSupported"
+      >
+        <q-tooltip
+          v-if="!taxData?.portfolioSupported"
+          anchor="top middle"
+          self="bottom middle"
+          >For this chain only staking rewards are exported.</q-tooltip
+        >
       </q-tab>
       <q-tab
         name="rewards"
         icon="currency_bitcoin"
         label="Staking Rewards"
       ></q-tab>
-      <q-tab name="portfolio" icon="work" label="Portfolio"> </q-tab>
+      <q-tab
+        name="portfolio"
+        icon="work"
+        label="Portfolio"
+        :disable="!taxData?.portfolioSupported"
+      >
+        <q-tooltip
+          v-if="!taxData?.portfolioSupported"
+          anchor="top middle"
+          self="bottom middle"
+          >For this chain only staking rewards are exported.</q-tooltip
+        >
+      </q-tab>
     </q-tabs>
     <q-separator />
     <q-tab-panels v-model="tab" animated>
@@ -64,8 +87,11 @@ const subscanChainsSubscription = sharedStore.subscanChains$.subscribe(
   }
 );
 
-const taxDataSubscription = store.taxData$.subscribe((data) => {
+const taxDataSubscription = store.visibleTaxData$.subscribe((data) => {
   taxData.value = data;
+  if (!data.portfolioSupported) {
+    tab.value = 'rewards';
+  }
 });
 
 const chainName = computed(() => {

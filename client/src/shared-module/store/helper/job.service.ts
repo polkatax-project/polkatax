@@ -29,6 +29,7 @@ export function addMetaData(
   const enriched = {
     values: addId(taxableEvents),
     deviations: job.data?.deviations ?? [],
+    portfolioSupported: job.data?.deviations !== undefined,
     chain: job.blockchain,
     currency: job.currency,
     address: job.wallet,

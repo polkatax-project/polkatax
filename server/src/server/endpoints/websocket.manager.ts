@@ -150,9 +150,13 @@ export class WebSocketManager {
     socket: WebSocket,
     msg: WebSocketIncomingMessage,
   ): boolean {
-    const wallets = this.connections
-      .filter((c) => c.socket === socket)
-      .map((c) => c.subscription.wallet);
+    const wallets = [
+      ...new Set(
+        this.connections
+          .filter((c) => c.socket === socket)
+          .map((c) => c.subscription.wallet),
+      ),
+    ];
 
     return (
       !wallets.includes(msg.payload.wallet) &&

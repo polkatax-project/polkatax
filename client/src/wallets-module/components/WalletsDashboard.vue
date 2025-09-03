@@ -31,7 +31,7 @@
         <template v-slot:body="props">
           <q-tr
             :props="props"
-            style="cursor: pointer"
+            :style="{ cursor: props.row.walletsWithTxFound ? 'pointer' : '' }"
             @click="navigateToJob(props.row)"
           >
             <q-td key="done" :props="props" style="overflow: hidden">
@@ -122,10 +122,7 @@ const $q = useQuasar();
 const store = useSharedStore();
 const router = useRouter();
 
-const wallets: Ref<
-  | { wallet: string; currency: string; done: boolean; walletsWithTx: number }[]
-  | undefined
-> = ref(undefined);
+const wallets: Ref<WalletRow[] | undefined> = ref(undefined);
 
 const walletAddresses: Ref<string[]> = ref([]);
 const showWalletSelectionDialog = ref(false);
@@ -135,6 +132,17 @@ const walletAddressesSub = store.walletsAddresses$.subscribe(
     walletAddresses.value = addresses;
   }
 );
+
+interface WalletRow {
+  wallet: string;
+  currency: string;
+  done: boolean;
+  walletsWithTxFound: boolean;
+  blockchainsEvaluated: number;
+  chainsTotal: number;
+  syncFromDate: number;
+  syncUntilDate: number;
+}
 
 const jobsSubscription = store.jobs$.subscribe((jobs: JobResult[]) => {
   const r: any[] = [];
@@ -193,11 +201,13 @@ const columns = ref([
   { name: 'delete', label: 'Delete' },
 ]);
 
-function navigateToJob(job: any) {
-  router.push(`/wallets/${job.wallet}/${job.currency}`);
+function navigateToJob(row: WalletRow) {
+  if (row.walletsWithTxFound) {
+    router.push(`/wallets/${row.wallet}/${row.currency}`);
+  }
 }
 
-function confirmDelete(job: JobResult) {
+function confirmDelete(job: WalletRow) {
   $q.dialog({
     title: 'Do you want to remove this wallet and its data?',
     cancel: true,

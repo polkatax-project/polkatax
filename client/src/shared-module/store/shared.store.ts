@@ -40,7 +40,9 @@ const jobs$: BehaviorSubject<JobResult[]> = new BehaviorSubject<JobResult[]>(
     })
   )
 );
-const subscanChains$ = from(fetchSubscanChains()).pipe(shareReplay(1));
+const subscanChains$ = defer(() => from(fetchSubscanChains())).pipe(
+  shareReplay(1)
+);
 const walletsAddresses$ = new BehaviorSubject(
   JSON.parse(localStorage.getItem('wallets') || '[]')
 );
@@ -183,7 +185,12 @@ export const useSharedStore = defineStore('shared', {
     async sync() {
       this.syncWallets([this.address.trim()]);
     },
-    async removeWallet(job: JobResult) {
+    async removeWallet(job: {
+      wallet: string;
+      currency: string;
+      syncFromDate: number;
+      syncUntilDate: number;
+    }) {
       const wallets: string[] = JSON.parse(
         localStorage.getItem('wallets') || '[]'
       );

@@ -8,6 +8,7 @@ import {
   map,
   Observable,
   ReplaySubject,
+  shareReplay,
   tap,
 } from 'rxjs';
 import { useSharedStore } from '../../shared-module/store/shared.store';
@@ -19,8 +20,6 @@ import { isTokenVisible } from '../helper/is-token-visible';
 const blockchain$ = new ReplaySubject<string>(1);
 const wallet$ = new ReplaySubject<string>(1);
 const currency$ = new ReplaySubject<string>(1);
-
-const year$ = new BehaviorSubject(new Date().getFullYear() - 1);
 
 const visibleTokens$ = new ReplaySubject<{ name: string; value: boolean }[]>(1);
 
@@ -139,14 +138,14 @@ const visibleTaxData$ = combineLatest([
       ...taxData,
       values: visibleTaxableEvents,
     };
-  })
+  }),
+  shareReplay(1)
 );
 
 export const useTaxableEventStore = defineStore('taxable-events', {
   state: (): {
     taxData$: Observable<TaxData>;
     visibleTaxData$: Observable<TaxData>;
-    year$: Observable<number>;
     excludedEntries$: Observable<TaxableEvent[]>;
     visibleTokens$: Observable<{ name: string; value: boolean }[]>;
     eventTypeFilter$: Observable<Record<string, boolean>>;
@@ -155,7 +154,6 @@ export const useTaxableEventStore = defineStore('taxable-events', {
     return {
       taxData$,
       visibleTaxData$,
-      year$: year$.asObservable(),
       excludedEntries$: excludedEntries$.asObservable(),
       visibleTokens$: visibleTokens$.asObservable(),
       eventTypeFilter$: eventTypeFilter$.asObservable(),
@@ -171,9 +169,6 @@ export const useTaxableEventStore = defineStore('taxable-events', {
     },
     setCurrency(currency: string) {
       currency$.next(currency);
-    },
-    setYear(year: number) {
-      year$.next(year);
     },
     async toggleAllVisibleTokens() {
       const tokens = await firstValueFrom(visibleTokens$);

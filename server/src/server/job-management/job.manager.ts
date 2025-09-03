@@ -1,5 +1,6 @@
 import { JobsService } from "./jobs.service";
 import * as subscanChains from "../../../res/gen/subscan-chains.json";
+import * as substrateNodesWsEndpoints from "../../../res/substrate-nodes-ws-endpoints.json";
 import { Job } from "../../model/job";
 import { filter, firstValueFrom, mergeMap, Subject } from "rxjs";
 import { determineNextJob } from "./determine-next-job";
@@ -9,6 +10,7 @@ import { logger } from "../logger/logger";
 import { JobProcessor } from "./job.processor";
 import { JobPostProcessor } from "./job.post-processor";
 import { createJobId } from "./helper/create-job-id";
+import { TaxableEvent } from "../data-aggregation/model/portfolio-movement";
 
 const PARALLEL_POST_PROCESSING_JOBS = 2;
 
@@ -24,8 +26,17 @@ export class JobManager {
     const isEvm = isEvmAddress(wallet);
     return subscanChains.chains
       .filter((c) => !c.excluded)
+      .filter(
+        (c) =>
+          Object.keys(substrateNodesWsEndpoints).includes(c.domain) ||
+          c.stakingPallets.length > 0,
+      )
       .filter((c) => !isEvm || c.evmPallet || c.evmAddressSupport)
       .map((c) => c.domain);
+  }
+
+  isPolkadotApiSupported(chain: string): boolean {
+    return Object.keys(substrateNodesWsEndpoints).includes(chain);
   }
 
   async enqueue(
@@ -140,9 +151,17 @@ export class JobManager {
         return;
       }
 
-      const jobPostProcessor: JobPostProcessor =
-        this.DIContainer.resolve("jobPostProcessor");
-      job = await jobPostProcessor.postProcess(job);
+      if (this.isPolkadotApiSupported(job.blockchain)) {
+        const jobPostProcessor: JobPostProcessor =
+          this.DIContainer.resolve("jobPostProcessor");
+        job = await jobPostProcessor.postProcess(job);
+      } else {
+        job.data.values = job.data.values.filter(
+          (v: TaxableEvent) =>
+            v.label === "Staking reward" || v.label === "Staking slashed",
+        );
+        job.data.deviations = undefined;
+      }
       job.status = "done";
       await this.jobsService.setDone(job);
     } catch (error) {

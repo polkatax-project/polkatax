@@ -14,4 +14,5 @@ export interface JobResult {
   stakingRewards?: RewardsDto;
   stakingRewardsSummary?: RewardSummary;
   dailyStakingRewards?: DailyRewards;
+  portfolioSupported?: boolean;
 }
