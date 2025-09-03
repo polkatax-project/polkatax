@@ -9,7 +9,6 @@ import {
   map,
   of,
   ReplaySubject,
-  shareReplay,
   take,
 } from 'rxjs';
 import { fetchCurrency } from '../service/fetch-currency';
@@ -26,6 +25,7 @@ import { calculateRewardSummary } from './helper/calculate-reward-summary';
 import { groupRewardsByDay } from './helper/group-rewards-by-day';
 import { getBeginningOfLastYear } from './helper/get-beginning-of-last-year';
 import { getEndOfLastYear } from './helper/get-end-of-last-year';
+import { SubstrateChains } from '../model/substrate-chain';
 
 const jobs$: BehaviorSubject<JobResult[]> = new BehaviorSubject<JobResult[]>(
   (JSON.parse(localStorage.getItem('wallets') || '[]') as string[]).map(
@@ -40,9 +40,10 @@ const jobs$: BehaviorSubject<JobResult[]> = new BehaviorSubject<JobResult[]>(
     })
   )
 );
-const subscanChains$ = defer(() => from(fetchSubscanChains())).pipe(
-  shareReplay(1)
-);
+
+const subscanChains$ = new ReplaySubject<SubstrateChains>(1);
+fetchSubscanChains().then((chains) => subscanChains$.next(chains));
+
 const walletsAddresses$ = new BehaviorSubject(
   JSON.parse(localStorage.getItem('wallets') || '[]')
 );

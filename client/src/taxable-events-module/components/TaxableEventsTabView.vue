@@ -2,7 +2,7 @@
   <div>
     <div class="q-ma-sm text-center">
       <div class="text-bold">{{ chainName }}</div>
-      <div>Wallet: {{ taxData?.address }}</div>
+      <div>Wallet: {{ route.params.wallet }}</div>
       <div>Time frame: {{ taxData?.fromDate }} - {{ taxData?.toDate }}</div>
     </div>
     <q-tabs v-model="tab" active-color="primary" indicator-color="primary">
@@ -65,13 +65,14 @@ import TokenFilter from './token-filter/TokenFilter.vue';
 import EventTypeFilter from './event-type-filter/EventTypeFilter.vue';
 import { useRoute } from 'vue-router';
 import { useTaxableEventStore } from '../store/taxable-events.store';
-import { computed, onBeforeMount, Ref, ref } from 'vue';
+import { computed, onBeforeMount, onMounted, Ref, ref } from 'vue';
 import StakingRewards from './staking-rewards/StakingRewards.vue';
 import AssetMovementSummaryTable from './asset-movement-summary-table/AssetMovementSummaryTable.vue';
 import PortfolioTable from './portfolio-table/PortfolioTable.vue';
 import { useSharedStore } from '../../shared-module/store/shared.store';
 import { SubstrateChain } from '../../shared-module/model/substrate-chain';
 import { TaxData } from '../../shared-module/model/tax-data';
+import { Subscription } from 'rxjs';
 
 const tab = ref('events');
 
@@ -81,17 +82,20 @@ const chains: Ref<SubstrateChain[]> = ref([]);
 const taxData: Ref<TaxData | undefined> = ref(undefined);
 
 const sharedStore = useSharedStore();
-const subscanChainsSubscription = sharedStore.subscanChains$.subscribe(
-  (data) => {
-    chains.value = data.chains;
-  }
-);
+let subscanChainsSubscription: Subscription;
+let taxDataSubscription: Subscription;
 
-const taxDataSubscription = store.visibleTaxData$.subscribe((data) => {
-  taxData.value = data;
-  if (!data.portfolioSupported) {
-    tab.value = 'rewards';
-  }
+onMounted(() => {
+  subscanChainsSubscription = sharedStore.subscanChains$.subscribe((data) => {
+    chains.value = data.chains;
+  });
+
+  taxDataSubscription = store.visibleTaxData$.subscribe((data) => {
+    taxData.value = data;
+    if (!data.portfolioSupported) {
+      tab.value = 'rewards';
+    }
+  });
 });
 
 const chainName = computed(() => {
@@ -102,8 +106,12 @@ const chainName = computed(() => {
 });
 
 onBeforeMount(() => {
-  subscanChainsSubscription.unsubscribe();
-  taxDataSubscription.unsubscribe();
+  if (subscanChainsSubscription) {
+    subscanChainsSubscription.unsubscribe();
+  }
+  if (taxDataSubscription) {
+    taxDataSubscription.unsubscribe();
+  }
 });
 
 store.setCurrency(route.params.currency as string);

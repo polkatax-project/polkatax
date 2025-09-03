@@ -8,7 +8,6 @@ import {
   map,
   Observable,
   ReplaySubject,
-  shareReplay,
   tap,
 } from 'rxjs';
 import { useSharedStore } from '../../shared-module/store/shared.store';
@@ -34,113 +33,110 @@ const excludedEntries$: BehaviorSubject<TaxableEvent[]> = new BehaviorSubject<
   TaxableEvent[]
 >([]);
 
-const taxData$ = combineLatest([
-  useSharedStore().jobs$,
-  blockchain$,
-  wallet$,
-  currency$,
-]).pipe(
-  map(([jobs, blockchain, wallet, currency]) => {
-    return jobs.find(
-      (j) =>
-        j.blockchain === blockchain &&
-        j.wallet === wallet &&
-        j.currency === currency
-    );
-  }),
-  map((jobResult) => jobResult?.data),
-  filter((data) => !!data),
-  distinctUntilChanged(
-    (prev, curr) => curr.values.length === prev.values.length
-  ),
-  tap((data) => {
-    if (data) {
-      const tokens: string[] = [];
-      data.values.forEach((e: TaxableEvent) =>
-        e.transfers.forEach((t) => {
-          if (tokens.indexOf(t.symbol.toUpperCase()) === -1) {
-            tokens.push(t.symbol.toUpperCase());
-          }
-        })
+const taxData$ = new ReplaySubject<TaxData>(1);
+combineLatest([useSharedStore().jobs$, blockchain$, wallet$, currency$])
+  .pipe(
+    map(([jobs, blockchain, wallet, currency]) => {
+      return jobs.find(
+        (j) =>
+          j.blockchain === blockchain &&
+          j.wallet === wallet &&
+          j.currency === currency
       );
-      visibleTokens$.next(
-        tokens
-          .map((t) => ({ name: t, value: true }))
-          .sort((a, b) => (a.name > b.name ? 1 : -1))
-      );
-    }
-    excludedEntries$.next([]);
-  })
-);
-
-const stakingRewards$: Observable<Rewards> = combineLatest([
-  useSharedStore().jobs$,
-  blockchain$,
-  wallet$,
-  currency$,
-]).pipe(
-  map(([jobs, blockchain, wallet, currency]) => {
-    return jobs.find(
-      (j) =>
-        j.blockchain === blockchain &&
-        j.wallet === wallet &&
-        j.currency === currency
-    );
-  }),
-  filter((j) => !!j),
-  map((job) => ({
-    values: job.stakingRewards?.values ?? [],
-    summary: job.stakingRewardsSummary!,
-    dailyValues: job.dailyStakingRewards!,
-    currency: job?.currency,
-    address: job?.wallet,
-    chain: job?.blockchain,
-    token: (job as JobResult)?.stakingRewards?.token || '',
-  })),
-  distinctUntilChanged(
-    (prev, curr) => (curr?.values ?? []).length === (prev?.values ?? []).length
-  )
-);
-
-const visibleTaxData$ = combineLatest([
-  taxData$,
-  eventTypeFilter$,
-  visibleTokens$,
-]).pipe(
-  map(([taxData, eventTypeFilter, visibleTokens]) => {
-    const visibleTaxableEvents = taxData?.values
-      .filter((v) => {
-        const isStakingReward = v.label === 'Staking reward';
-        const incomingTransfer =
-          v.transfers.some((t) => t.amount > 0) &&
-          !v.transfers.some((t) => t.amount < 0);
-        const outgoingTransfer =
-          v.transfers.some((t) => t.amount < 0) &&
-          !v.transfers.some((t) => t.amount > 0);
-        const swap =
-          v.transfers.some((t) => t.amount < 0) &&
-          v.transfers.some((t) => t.amount > 0);
-        return (
-          (isStakingReward && eventTypeFilter['Staking rewards']) ||
-          (!isStakingReward &&
-            incomingTransfer &&
-            eventTypeFilter['Incoming transfers']) ||
-          (!isStakingReward &&
-            outgoingTransfer &&
-            eventTypeFilter['Outgoing transfers']) ||
-          (swap && eventTypeFilter['Swaps'])
+    }),
+    map((jobResult) => jobResult?.data),
+    filter((data) => !!data),
+    distinctUntilChanged(
+      (prev, curr) => curr.values.length === prev.values.length
+    ),
+    tap((data) => {
+      if (data) {
+        const tokens: string[] = [];
+        data.values.forEach((e: TaxableEvent) =>
+          e.transfers.forEach((t) => {
+            if (tokens.indexOf(t.symbol.toUpperCase()) === -1) {
+              tokens.push(t.symbol.toUpperCase());
+            }
+          })
         );
-      })
-      .filter((e) => {
-        return e.transfers.some((t) => isTokenVisible(visibleTokens, t.symbol));
-      });
-    return {
-      ...taxData,
-      values: visibleTaxableEvents,
-    };
-  }),
-  shareReplay(1)
-);
+        visibleTokens$.next(
+          tokens
+            .map((t) => ({ name: t, value: true }))
+            .sort((a, b) => (a.name > b.name ? 1 : -1))
+        );
+      }
+      excludedEntries$.next([]);
+    })
+  )
+  .subscribe((data) => taxData$.next(data));
+
+const stakingRewards$ = new ReplaySubject<Rewards>(1);
+combineLatest([useSharedStore().jobs$, blockchain$, wallet$, currency$])
+  .pipe(
+    map(([jobs, blockchain, wallet, currency]) => {
+      return jobs.find(
+        (j) =>
+          j.blockchain === blockchain &&
+          j.wallet === wallet &&
+          j.currency === currency
+      );
+    }),
+    filter((j) => !!j),
+    map((job) => ({
+      values: job.stakingRewards?.values ?? [],
+      summary: job.stakingRewardsSummary!,
+      dailyValues: job.dailyStakingRewards!,
+      currency: job?.currency,
+      address: job?.wallet,
+      chain: job?.blockchain,
+      token: (job as JobResult)?.stakingRewards?.token || '',
+    })),
+    distinctUntilChanged(
+      (prev, curr) =>
+        (curr?.values ?? []).length === (prev?.values ?? []).length
+    )
+  )
+  .subscribe((data) => stakingRewards$.next(data));
+
+const visibleTaxData$ = new ReplaySubject<TaxData>(1);
+combineLatest([taxData$, eventTypeFilter$, visibleTokens$])
+  .pipe(
+    map(([taxData, eventTypeFilter, visibleTokens]) => {
+      const visibleTaxableEvents = taxData?.values
+        .filter((v) => {
+          const isStakingReward = v.label === 'Staking reward';
+          const incomingTransfer =
+            v.transfers.some((t) => t.amount > 0) &&
+            !v.transfers.some((t) => t.amount < 0);
+          const outgoingTransfer =
+            v.transfers.some((t) => t.amount < 0) &&
+            !v.transfers.some((t) => t.amount > 0);
+          const swap =
+            v.transfers.some((t) => t.amount < 0) &&
+            v.transfers.some((t) => t.amount > 0);
+          return (
+            (isStakingReward && eventTypeFilter['Staking rewards']) ||
+            (!isStakingReward &&
+              incomingTransfer &&
+              eventTypeFilter['Incoming transfers']) ||
+            (!isStakingReward &&
+              outgoingTransfer &&
+              eventTypeFilter['Outgoing transfers']) ||
+            (swap && eventTypeFilter['Swaps'])
+          );
+        })
+        .filter((e) => {
+          return e.transfers.some((t) =>
+            isTokenVisible(visibleTokens, t.symbol)
+          );
+        });
+      return {
+        ...taxData,
+        values: visibleTaxableEvents,
+      };
+    })
+  )
+  .subscribe((data) => visibleTaxData$.next(data));
 
 export const useTaxableEventStore = defineStore('taxable-events', {
   state: (): {
