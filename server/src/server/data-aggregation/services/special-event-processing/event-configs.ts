@@ -7,6 +7,7 @@ import { EventDerivedAssetMovement } from "./event-derived-asset-movement";
 import { EventHandlerContext } from "./event-handler-context";
 import { onAssethubAssetsIssued } from "./on-assethub-asset-issued";
 import { onAssethubForeignAssetsIssued } from "./on-assethub-foreign-asset-issued";
+import { onAssethubSwapExecuted } from "./on-assethub-swap-executed";
 import { onBalancesDeposit } from "./on-balances-deposit";
 import { onBalancesWithdraw } from "./on-balances-withdraw";
 import { onCoretimePurchased } from "./on-coretime-purchased";
@@ -98,6 +99,11 @@ export const eventConfigs: {
     chains: ["assethub-polkadot", "assethub-kusama"],
     event: "foreignassetsIssued",
     handler: (e, context) => onAssethubForeignAssetsIssued(e, context),
+  },
+  {
+    chains: ["assethub-polkadot", "assethub-kusama"],
+    event: "assetconversionSwapExecuted",
+    handler: (e, context) => onAssethubSwapExecuted(e, context),
   },
   {
     chains: [

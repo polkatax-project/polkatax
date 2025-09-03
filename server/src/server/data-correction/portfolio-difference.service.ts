@@ -273,4 +273,10 @@ export class PortfolioDifferenceService {
       portfolioAtMaxBlock,
     );
   }
+
+  disconnectApi() {
+    if (this.polkadotApi) {
+      this.polkadotApi.disconnect();
+    }
+  }
 }

@@ -77,7 +77,7 @@ const verifyPortfolioChanges = async (
   const portfolioMovementsService: PortfolioMovementsService =
     container.resolve("portfolioMovementsService");
 
-  const minDate = new Date("2024-11-01T00:00:00.000Z");
+  const minDate = new Date("2024-09-01T00:00:00.000Z");
   const maxDate = new Date("2024-12-31T23:59:59.999Z");
 
   let { portfolioMovements } =
@@ -112,6 +112,8 @@ const verifyPortfolioChanges = async (
       portfolioMovements,
       acceptedDeviations,
     );
+  portfolioChangeValidationService.disconnectApi();
+
   deviations.forEach((d) => {
     if (d.absoluteDeviationTooLarge) {
       console.log(
@@ -138,6 +140,42 @@ afterAll(async () => {
 });
 
 describe("Verify portfolio changes", () => {
+  describe("Verify the portfolio change polkadot", () => {
+    const chainInfo = { domain: "polkadot", label: "", token: "DOT" };
+
+    test("13fvj4bNfrTo8oW6U8525soRp6vhjAFLum6XBdtqq9yP22E7", async () => {
+      await verifyPortfolioChanges(
+        "13fvj4bNfrTo8oW6U8525soRp6vhjAFLum6XBdtqq9yP22E7",
+        chainInfo,
+      );
+    }, 600000);
+
+    test("12s37eSMQPEN5cuVyBxk2UypUHntwumqBHy7sJkoKpZ1v3HV", async () => {
+      await verifyPortfolioChanges(
+        "12s37eSMQPEN5cuVyBxk2UypUHntwumqBHy7sJkoKpZ1v3HV",
+        chainInfo,
+      );
+    }, 600000);
+  });
+
+  describe("Verify the portfolio change kusama", () => {
+    const chainInfo = { domain: "polkadot", label: "", token: "DOT" };
+
+    test("142zGifFwRrDbFLJD7LvbyoHQAqDaXeHjkxJbUVwmDYBD7Gf", async () => {
+      await verifyPortfolioChanges(
+        "142zGifFwRrDbFLJD7LvbyoHQAqDaXeHjkxJbUVwmDYBD7Gf",
+        chainInfo,
+      );
+    }, 600000);
+
+    test("142zGifFwRrDbFLJD7LvbyoHQAqDaXeHjkxJbUVwmDYBD7Gf", async () => {
+      await verifyPortfolioChanges(
+        "142zGifFwRrDbFLJD7LvbyoHQAqDaXeHjkxJbUVwmDYBD7Gf",
+        chainInfo,
+      );
+    }, 600000);
+  });
+
   describe("Verify the portfolio change assethub polkadot", () => {
     const chainInfo = { domain: "assethub-polkadot", label: "", token: "DOT" };
 
@@ -149,7 +187,7 @@ describe("Verify portfolio changes", () => {
     }, 600000);
   });
 
-  describe.skip("Verify the portfolio change coretime", () => {
+  describe("Verify the portfolio change coretime", () => {
     const chainInfo = { domain: "coretime-polkadot", label: "", token: "DOT" };
     test("15fTH34bbKGMUjF1bLmTqxPYgpg481imThwhWcQfCyktyBzL", async () => {
       await verifyPortfolioChanges(
@@ -196,7 +234,7 @@ describe("Verify portfolio changes", () => {
     }, 600000);
   });
 
-  describe.skip("Verify the portfolio change astar", () => {
+  describe("Verify the portfolio change astar", () => {
     const chainInfo = { domain: "astar", label: "", token: "ASTR" };
 
     test("13hDgWbatzrMmdPGz4F3Y63vP3qmdac7PUrujcN5a8nB6CkJ", async () => {

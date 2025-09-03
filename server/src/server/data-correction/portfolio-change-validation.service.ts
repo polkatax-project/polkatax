@@ -400,4 +400,8 @@ export class PortfolioChangeValidationService {
 
     return deviations;
   }
+
+  disconnectApi() {
+    this.portfolioDifferenceSerivce.disconnectApi();
+  }
 }
