@@ -1,6 +1,6 @@
 <template>
   <q-page class="q-px-sm q-mx-auto content">
-    <div class="text-center q-my-xl">
+    <div class="text-center q-pa-md">
       <reward-summary />
     </div>
     <div

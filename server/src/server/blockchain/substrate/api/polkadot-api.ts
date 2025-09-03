@@ -36,7 +36,7 @@ export class PolkadotApi {
     const accountInfo: any = await this.apiAt.query.system.account(address);
     const json = accountInfo.toJSON();
     const nativeBalance =
-      Number(BigInt(json.data.free)) +
+      Number(BigInt(json.data?.free ?? 0n)) +
       Number(BigInt(json.data?.reserved ?? 0n));
     return nativeBalance;
   }

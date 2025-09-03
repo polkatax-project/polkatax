@@ -1,17 +1,14 @@
 <template>
-  <div class="q-pa-md">
+  <div class="q-pa-md content q-mx-auto">
     <div style="max-width: 600px; margin: 0 auto; text-align: left">
       <strong>Balance Differences</strong>
       <p>
         This table compares actual token balance changes with those calculated
-        from transactions. Differences mostly occur because:
+        from transactions. Unexplained differences mostly occur because:
       </p>
       <ul>
         <li>Some cross-chain (XCM) transfers may not be fully recognized.</li>
-        <li>
-          Wrapped vs. native assets (e.g., USDT.wh vs. USDT) may be
-          misclassified in cross-chain transfers.
-        </li>
+        <li>Some events not not processed.</li>
         <li>Transaction fees are not yet included.</li>
       </ul>
     </div>
@@ -21,7 +18,7 @@
       :columns="columns"
       row-key="id"
       :pagination="{ rowsPerPage: 20 }"
-      no-data-label="No deviations found"
+      no-data-label="No balances found"
     >
       <template v-slot:body-cell-symbol="props">
         <q-td :props="props">
@@ -63,6 +60,7 @@ const taxData: Ref<TaxData | undefined> = ref(undefined);
 
 const taxDataSubscription = store.taxData$.subscribe(async (data) => {
   taxData.value = data;
+  taxData.value.deviations.sort((a, b) => (a.symbol > b.symbol ? 1 : -1));
 });
 
 onUnmounted(() => {
