@@ -34,7 +34,7 @@ export class BlockTimeService {
           minBlock,
           currentBlock,
           tolerance,
-          depth++,
+          depth + 1,
         );
       } else {
         return this.searchBlock(
@@ -43,7 +43,7 @@ export class BlockTimeService {
           currentBlock,
           maxBlock,
           tolerance,
-          depth++,
+          depth + 1,
         );
       }
     }
