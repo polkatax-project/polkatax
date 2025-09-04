@@ -85,6 +85,8 @@ const ACCEPTED_DEVIATIONS = [
 ];
 
 export interface Deviation {
+  balanceBefore: number;
+  balanceAfter: number;
   symbol: string;
   unique_id: string;
   decimals: number;
@@ -325,7 +327,13 @@ export class PortfolioChangeValidationService {
       DEFAULT_MAX_ALLOWED_DEVIATION;
 
     return {
-      ...tokenInPortfolio,
+      balanceBefore: tokenInPortfolio.balanceBefore,
+      balanceAfter: tokenInPortfolio.balanceAfter,
+      symbol: tokenInPortfolio.symbol,
+      unique_id: tokenInPortfolio.unique_id,
+      asset_id: tokenInPortfolio.asset_id,
+      diff: tokenInPortfolio.diff,
+      decimals: tokenInPortfolio.decimals,
       deviation,
       signedDeviation,
       expectedDiff,

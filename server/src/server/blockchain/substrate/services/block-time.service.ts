@@ -2,6 +2,8 @@ import { SubscanApi } from "../api/subscan.api";
 import { Block } from "../model/block";
 import { logger } from "../../../logger/logger";
 
+const MAX_DEPTH = 50;
+
 export class BlockTimeService {
   constructor(private subscanApi: SubscanApi) {}
 
@@ -10,18 +12,39 @@ export class BlockTimeService {
     date: number,
     minBlock: Block,
     maxBlock: Block,
-    tolerance = 15 * 60 * 1000,
+    tolerance,
+    depth = 0,
   ): Promise<number> {
     const estimate = this.estimateBlockNum(minBlock, maxBlock, date);
+    if (depth > MAX_DEPTH) {
+      logger.info(
+        `Exit findBlock: Block for date ${date} on ${chainName} could not be found in ${MAX_DEPTH} steps. Returning: ${estimate}`,
+      );
+      return estimate;
+    }
     const currentBlock: Block = await this.subscanApi.fetchBlock(
       chainName,
       estimate,
     );
     if (Math.abs(currentBlock.timestamp - date) > tolerance) {
       if (currentBlock?.timestamp > date) {
-        return this.searchBlock(chainName, date, minBlock, currentBlock);
+        return this.searchBlock(
+          chainName,
+          date,
+          minBlock,
+          currentBlock,
+          tolerance,
+          depth++,
+        );
       } else {
-        return this.searchBlock(chainName, date, currentBlock, maxBlock);
+        return this.searchBlock(
+          chainName,
+          date,
+          currentBlock,
+          maxBlock,
+          tolerance,
+          depth++,
+        );
       }
     }
     return currentBlock.block_num;
@@ -47,34 +70,26 @@ export class BlockTimeService {
     );
   }
 
-  async getMinMaxBlock(
+  async findBlock(
     chainName: string,
-    minDate: number,
-    maxDate?: number,
-  ): Promise<{ blockMin: number; blockMax: number }> {
+    date: number,
+    tolerance: number,
+  ): Promise<number> {
     logger.info(
-      `Entry getMinMaxBlock for chain ${chainName} and minDate ${new Date(minDate).toISOString()}, maxDate ${maxDate ? new Date(maxDate).toISOString() : "undefined"}`,
+      `Entry findBlock for chain ${chainName} and date ${new Date(date).toISOString()}}`,
     );
     const firstBlock: Block = await this.subscanApi.fetchBlock(chainName, 1);
     const lastBlock: Block = (
       await this.subscanApi.fetchBlockList(chainName, 0, 1)
     ).list[0];
-    const blockMin = await this.searchBlock(
+    const block = await this.searchBlock(
       chainName,
-      Math.max(minDate, firstBlock.timestamp),
+      Math.min(lastBlock.timestamp, Math.max(date, firstBlock.timestamp)),
       firstBlock,
       lastBlock,
+      tolerance,
     );
-    const blockMax = await this.searchBlock(
-      chainName,
-      Math.min(maxDate || Date.now(), lastBlock.timestamp),
-      firstBlock,
-      lastBlock,
-    );
-    logger.info(`Exit getMinMaxBlock for chain ${chainName}`);
-    return {
-      blockMin: Math.max(1, blockMin),
-      blockMax: Math.min(lastBlock.block_num, blockMax),
-    };
+    logger.info(`Exit findBlock for chain ${chainName}`);
+    return block;
   }
 }
