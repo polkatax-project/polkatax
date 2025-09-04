@@ -273,7 +273,8 @@ export class PortfolioChangeValidationService {
     tokenInPortfolio: PortfolioDifference,
     matchingPortfolioMovements: TaxableEvent[],
     feeToken?: string,
-  ): Promise<number> {
+  ): Promise<{ expectedDiff: number; transferCounter: number }> {
+    let transferCounter = 0;
     let expectedDiff = 0;
 
     if (feeToken === tokenInPortfolio.unique_id) {
@@ -296,12 +297,13 @@ export class PortfolioChangeValidationService {
     matchingPortfolioMovements.forEach((p) => {
       p.transfers.forEach((t) => {
         if (t.asset_unique_id === tokenInPortfolio.unique_id) {
+          transferCounter++;
           expectedDiff += t?.amount ?? 0;
         }
       });
     });
 
-    return expectedDiff;
+    return { expectedDiff, transferCounter };
   }
 
   private evaluateDeviationAgainstThreshold(
@@ -381,19 +383,20 @@ export class PortfolioChangeValidationService {
 
     // compute deviations per token
     for (const tokenInPortfolio of allTokens) {
-      const expectedDiff = await this.calculateExpectedDiffForToken(
-        chainInfo,
-        tokenInPortfolio,
-        matchingPortfolioMovements,
-        feeToken,
-      );
+      const { expectedDiff, transferCounter } =
+        await this.calculateExpectedDiffForToken(
+          chainInfo,
+          tokenInPortfolio,
+          matchingPortfolioMovements,
+          feeToken,
+        );
 
       deviations.push(
         this.evaluateDeviationAgainstThreshold(
           tokenInPortfolio,
           expectedDiff,
           acceptedDeviations,
-          matchingPortfolioMovements.length,
+          transferCounter,
         ),
       );
     }

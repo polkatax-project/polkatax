@@ -159,7 +159,7 @@ export class JobRepository {
   async setError(jobId: string, error: WsError) {
     const query = `
       UPDATE jobs
-      SET status = 'error', error = $1, last_modified = $2
+      SET status = 'error', error = $1, last_modified = $2, data = NULL
       WHERE id = $3
     `;
 
@@ -176,7 +176,7 @@ export class JobRepository {
   ) {
     const query = `
       UPDATE jobs
-      SET status = $1, error = 'null', last_modified = $2, data = $3 
+      SET status = $1, error = NULL, last_modified = $2, data = $3 
       WHERE id = $4
     `;
 

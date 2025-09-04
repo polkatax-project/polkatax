@@ -130,6 +130,6 @@ function getSubScanAssetLink(deviation: Deviation) {
 }
 
 const rows = computed(() => {
-  return (taxData.value?.deviations ?? []).filter((d) => d.deviation > 0);
+  return (taxData.value?.deviations ?? []).filter(d => d.deviation > 0 || d.balanceAfter > 0 || d.balanceBefore > 0 || d.numberTx > 0);
 });
 </script>

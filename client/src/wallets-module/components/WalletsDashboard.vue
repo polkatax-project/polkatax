@@ -142,6 +142,7 @@ interface WalletRow {
   chainsTotal: number;
   syncFromDate: number;
   syncUntilDate: number;
+  hasErrors: boolean;
 }
 
 const jobsSubscription = store.jobs$.subscribe((jobs: JobResult[]) => {
@@ -161,6 +162,7 @@ const jobsSubscription = store.jobs$.subscribe((jobs: JobResult[]) => {
         chainsTotal: jobs.filter((job) => job.wallet === j.wallet).length,
         syncFromDate: j.syncFromDate,
         syncUntilDate: j.syncUntilDate,
+        hasErrors: jobs.filter(j => j.error) ?? false
       });
     } else {
       existing.done =
@@ -168,6 +170,7 @@ const jobsSubscription = store.jobs$.subscribe((jobs: JobResult[]) => {
       if (j.status === 'done' || j.status === 'error') {
         existing.blockchainsEvaluated += 1;
       }
+      existing.hasErrors = existing.hasErrors || (jobs.filter(j => j.error) ?? false)
       existing.walletsWithTxFound =
         existing.walletsWithTxFound + (j.data?.values?.length ?? 0 > 0 ? 1 : 0);
     }
@@ -202,7 +205,7 @@ const columns = ref([
 ]);
 
 function navigateToJob(row: WalletRow) {
-  if (row.walletsWithTxFound) {
+  if (row.walletsWithTxFound || row.hasErrors) {
     router.push(`/wallets/${row.wallet}/${row.currency}`);
   }
 }

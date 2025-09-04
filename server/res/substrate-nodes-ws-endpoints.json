@@ -76,13 +76,7 @@
   "manta": ["wss://ws.manta.systems"],
   "moonbeam": [
     "wss://moonbeam-rpc.dwellir.com",
-    "wss://moonbeam.ibp.network",
-    "wss://moonbeam.dotters.network",
-    "wss://wss.api.moonbeam.network",
-    "wss://moonbeam.api.onfinality.io/public-ws",
-    "wss://moonbeam.public.curie.radiumblock.co/ws",
-    "wss://moonbeam.unitedbloc.com",
-    "wss://moonbeam-rpc.publicnode.com"
+    "wss://moonbeam.api.onfinality.io/public-ws"
   ],
   "polimec": [
     "wss://polimec.rpc.amforc.com",
@@ -209,7 +203,8 @@
     "wss://heima-rpc.n.dwellir.com/",
     "wss://rpc.heima-parachain.heima.network/"
   ],
-  "robonomics-freemium": ["wss://polimec.ibp.network/"],
+  "robonomics": ["wss://polkadot.rpc.robonomics.network/"],
+  "robonomics-freemium": ["wss://kusama.rpc.robonomics.network/"],
   "sora": ["wss://ws.parachain-collator-3.pc3.sora2.soramitsu.co.jp/"],
   "xcavate": ["wss://xcavate.ibp.network/", "wss://xcavate.dotters.network/"],
   "xode": ["wss://xcavate.dotters.network/"],
