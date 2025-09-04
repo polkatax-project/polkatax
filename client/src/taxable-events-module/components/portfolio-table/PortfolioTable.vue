@@ -8,7 +8,7 @@
       </p>
       <ul>
         <li>Some cross-chain (XCM) transfers may not be fully recognized.</li>
-        <li>Some events not not processed.</li>
+        <li>Some events were not processed.</li>
         <li>Transaction fees are not yet included.</li>
       </ul>
     </div>
@@ -130,6 +130,12 @@ function getSubScanAssetLink(deviation: Deviation) {
 }
 
 const rows = computed(() => {
-  return (taxData.value?.deviations ?? []).filter(d => d.deviation > 0 || d.balanceAfter > 0 || d.balanceBefore > 0 || d.numberTx > 0);
+  return (taxData.value?.deviations ?? []).filter(
+    (d) =>
+      d.deviation > 0 ||
+      d.balanceAfter > 0 ||
+      d.balanceBefore > 0 ||
+      d.numberTx > 0
+  );
 });
 </script>

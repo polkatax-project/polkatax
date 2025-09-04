@@ -10,7 +10,7 @@
       <template v-slot:top>
         <q-btn
           color="primary"
-          class="q-mr-sm"
+          class="q-mr-sm q-mb-xs"
           @click="exportRewardsAsPdf"
           :disable="noRewards"
           data-testid="pdfExport"
@@ -18,7 +18,7 @@
         </q-btn>
         <q-btn
           color="primary"
-          class="q-mr-sm"
+          class="q-mr-sm q-mb-xs"
           @click="exportRewardsAsKoinlyCsv"
           data-testid="koinlyExport"
           :disable="noRewards"

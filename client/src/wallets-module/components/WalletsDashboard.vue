@@ -1,6 +1,8 @@
 <template>
   <q-page class="q-px-sm q-mx-auto content margin-auto">
-    <div class="q-my-md flex justify-center align-center items-center row">
+    <div
+      class="q-mt-md q-mb-xl flex justify-center align-center items-center row-xl row-md row-lg row-sm column-xs"
+    >
       <q-btn
         color="primary"
         label="Connect Wallet"
@@ -12,7 +14,7 @@
       <q-btn
         color="primary"
         label="Add"
-        class="q-ml-xs"
+        class="q-ml-lg-xs q-ml-md-xs q-ml-xl-xs q-ml-sm-xs q-mt-xs-xs"
         data-testid="submit"
         @click="startSyncing"
         :disable="isDisabled"
@@ -162,7 +164,7 @@ const jobsSubscription = store.jobs$.subscribe((jobs: JobResult[]) => {
         chainsTotal: jobs.filter((job) => job.wallet === j.wallet).length,
         syncFromDate: j.syncFromDate,
         syncUntilDate: j.syncUntilDate,
-        hasErrors: jobs.filter(j => j.error) ?? false
+        hasErrors: j.error ?? false,
       });
     } else {
       existing.done =
@@ -170,7 +172,7 @@ const jobsSubscription = store.jobs$.subscribe((jobs: JobResult[]) => {
       if (j.status === 'done' || j.status === 'error') {
         existing.blockchainsEvaluated += 1;
       }
-      existing.hasErrors = existing.hasErrors || (jobs.filter(j => j.error) ?? false)
+      existing.hasErrors = existing.hasErrors || (j.error ?? false);
       existing.walletsWithTxFound =
         existing.walletsWithTxFound + (j.data?.values?.length ?? 0 > 0 ? 1 : 0);
     }
