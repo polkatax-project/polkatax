@@ -46,7 +46,7 @@ export class DeviationZoomer {
         tokenUniqueId,
       );
 
-    logger.info("Deviation: " + tokenDeviation.signedDeviation);
+    logger.info("zoomInAndFix Deviation: " + tokenDeviation.signedDeviation);
 
     if (
       this.fixSymbolConfusion(

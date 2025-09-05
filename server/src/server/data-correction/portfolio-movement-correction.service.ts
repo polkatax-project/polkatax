@@ -197,6 +197,9 @@ export class PortfolioMovementCorrectionService {
           );
 
         selectedToken = selectToken(deviations);
+        if (selectToken) {
+          logger.info(`PortfolioMovementCorrectionService next token: ` + selectedToken.symbol)
+        }
         counter++;
       }
 
@@ -214,7 +217,7 @@ export class PortfolioMovementCorrectionService {
           `All errors fixed in ${counter} steps`,
         );
       } else {
-        logger.info(problematicDeviations, `Stopping after ${counter} steps`);
+        logger.info(problematicDeviations, `Stopping after ${counter} steps when fixing ${chainInfo.domain}, ${address}`);
       }
 
       logger.info(
