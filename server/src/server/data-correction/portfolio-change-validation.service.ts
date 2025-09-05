@@ -43,6 +43,16 @@ const ACCEPTED_DEVIATIONS = [
     max: 2.5,
   },
   {
+    symbol: "USDC",
+    singlePayment: 0.5,
+    max: 2.5,
+  },
+  {
+    symbol: "DAI",
+    singlePayment: 0.5,
+    max: 2.5,
+  },
+  {
     symbol: "ASTR",
     singlePayment: 1,
     max: 100,
@@ -236,7 +246,9 @@ export class PortfolioChangeValidationService {
     if (portfolioDifferences.length === 0) {
       return;
     }
+
     let feeTokens = [chainInfo.token, undefined];
+    portfolioDifferences.forEach((p) => feeTokens.push(p.unique_id));
 
     let minDeviation = Number.MAX_SAFE_INTEGER;
     let minFeeToken = undefined;
@@ -287,13 +299,7 @@ export class PortfolioChangeValidationService {
           ((p as PortfolioMovement)?.tip ?? 0), // - (p?.xcmFee ?? 0);
         0,
       );
-      const nativeToken = await this.subscanApi.fetchNativeToken(
-        chainInfo.domain,
-      );
-      if (feeToken !== chainInfo.token) {
-        throw new Error("Only native token accepted as fee token for now!");
-      }
-      expectedDiff -= totalFees / 10 ** nativeToken.token_decimals;
+      expectedDiff -= totalFees / 10 ** tokenInPortfolio.decimals;
     }
 
     matchingPortfolioMovements.forEach((p) => {

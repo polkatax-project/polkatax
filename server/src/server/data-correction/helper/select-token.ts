@@ -1,5 +1,13 @@
-export const selectToken = (deviations) => {
+import { Deviation } from "../portfolio-change-validation.service";
+
+export const selectToken = (
+  deviations: Deviation[],
+  excludedTokens: string[] = [],
+): Deviation => {
   return deviations.reduce((curr, d) => {
+    if (excludedTokens.includes(d.unique_id)) {
+      return curr;
+    }
     if (!d.absoluteDeviationTooLarge) {
       return curr;
     }

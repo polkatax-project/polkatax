@@ -34,7 +34,7 @@ export class DeviationZoomer {
     maxBlock: Block,
     tokenSymbol: string,
     tokenUniqueId?: string,
-  ): Promise<void> {
+  ): Promise<number> {
     const { interval, deviations, tokenDeviation } =
       await this.splitIntervalAndFindDeviations(
         chain,
@@ -58,7 +58,7 @@ export class DeviationZoomer {
         tokenUniqueId,
       )
     ) {
-      return;
+      return tokenDeviation.deviation;
     }
 
     if (interval.endBlock.block_num - interval.startBlock.block_num > 1) {
@@ -84,7 +84,7 @@ export class DeviationZoomer {
         tokenSymbol,
         tokenUniqueId,
       );
-      return;
+      return tokenDeviation.deviation;
     }
   }
 
@@ -306,7 +306,7 @@ export class DeviationZoomer {
       return;
     }
 
-    const exsitingTx = taxableEvents.find(
+    const existingTx = taxableEvents.find(
       (p) =>
         p.timestamp <= endBlock.timestamp && p.timestamp > startBlock.timestamp,
     );
@@ -323,11 +323,11 @@ export class DeviationZoomer {
         eventIndex: e.event_index,
       })),
     };
-    if (exsitingTx) {
+    if (existingTx) {
       logger.info(
-        `Fix: Adding transfer to existing tx ${exsitingTx.extrinsic_index}`,
+        `Fix: Adding transfer to existing tx ${existingTx.extrinsic_index}`,
       );
-      exsitingTx.transfers.push(transferData);
+      existingTx.transfers.push(transferData);
     } else {
       logger.info(`Fix: Creating new tx`);
       taxableEvents.push({
