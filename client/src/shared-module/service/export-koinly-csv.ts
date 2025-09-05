@@ -5,10 +5,9 @@ import { TaxData } from '../model/tax-data';
 import { TaxableEvent, TaxableEventTransfer } from '../model/taxable-event';
 
 const extractCurrency = (
-  t: TaxableEventTransfer | undefined,
-  chain: string
+  t: TaxableEventTransfer | undefined
 ) => {
-  return t ? `${t.symbol.toUpperCase()}:${t.asset_unique_id}:${chain}` : '';
+  return t ? `${t.symbol.toUpperCase()}` : '';
 };
 
 const getNetWorth = (t: (TaxableEventTransfer | undefined)[]) => {
@@ -35,9 +34,9 @@ export const exportKoinlyCsv = (taxdata: TaxData) => {
       values.push({
         Date: formatDateUTC(t.timestamp),
         'Sent Amount': sent ? Math.abs(sent.amount) : '',
-        'Sent Currency': extractCurrency(sent, taxdata.chain),
+        'Sent Currency': extractCurrency(sent),
         'Received Amount': received?.amount ?? '',
-        'Received Currency': extractCurrency(received, taxdata.chain),
+        'Received Currency': extractCurrency(received),
         'Net Worth Amount': getNetWorth([received, sent]) || '',
         'Net Worth Currency': taxdata.currency,
         Label: '',
