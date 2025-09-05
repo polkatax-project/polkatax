@@ -5,7 +5,8 @@ export const verifyEventTransferIsValid = (t: EventDerivedTransfer) => {
   expect(t.asset_unique_id).not.toBeFalsy();
   expect(t.symbol).not.toBeFalsy();
   expect(t.to || t.from).not.toBeFalsy();
-  expect(t.amount).toBeGreaterThan(0);
+  expect(t.amount).not.toBeNull();
+  expect(t.amount).not.toBeUndefined();
 };
 
 export const verifyEventTransfersAreValid = (

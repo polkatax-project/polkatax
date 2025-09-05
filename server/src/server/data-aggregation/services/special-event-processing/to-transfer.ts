@@ -12,7 +12,7 @@ export const toTransfer = (
   xcm?: XcmTransfer,
   label?: Label,
 ): EventDerivedTransfer => {
-  if ((to === undefined && from === undefined) || !token || !amount) {
+  if ((to === undefined && from === undefined) || !token || amount === null || amount === undefined) {
     throw `Missing data: to: ${to}, from: ${from}, token: ${JSON.stringify(token)}, amount: ${amount}, event: ${event.original_event_index}, extrinsic: ${event.extrinsic_index}`;
   }
   return {
