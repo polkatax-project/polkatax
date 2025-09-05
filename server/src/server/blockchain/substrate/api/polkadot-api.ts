@@ -2,6 +2,7 @@ import { ApiPromise, WsProvider } from "@polkadot/api";
 import { Asset } from "../model/asset";
 import { logger } from "../../../logger/logger";
 import * as substrateNodesWsEndpoints from "../../../../../res/substrate-nodes-ws-endpoints.json";
+import { withTimeout } from "../../../../common/util/with-timeout";
 
 export class PolkadotApi {
   private api: ApiPromise;
@@ -34,7 +35,7 @@ export class PolkadotApi {
   }
 
   async disconnect() {
-    logger.info("Disconnecting Polkadot API")
+    logger.info("Disconnecting Polkadot API");
     if (this.api) {
       await this.api.disconnect();
     }
@@ -82,6 +83,27 @@ export class PolkadotApi {
     };
   }
 
+  async getAssetPortfolioWithTimeout(
+    address: string,
+    assets: {
+      symbol: string;
+      decimals: number;
+      unique_id: string;
+      asset_id: string;
+      native: boolean;
+    }[],
+    timeout = 60_000,
+  ): Promise<
+    {
+      asset_unique_id: string;
+      symbol: string;
+      balance: number;
+      native?: boolean;
+    }[]
+  > {
+    return withTimeout(this.getAssetPortfolio(address, assets), timeout);
+  }
+
   async getAssetPortfolio(
     address: string,
     assets: {
@@ -114,6 +136,21 @@ export class PolkadotApi {
       native: true,
     });
     return values;
+  }
+
+  async getTokenPortfolioWithTimeout(
+    address: string,
+    assets: Asset[],
+    timeout = 60_000,
+  ): Promise<
+    {
+      asset_unique_id: string;
+      symbol: string;
+      balance: number;
+      native?: boolean;
+    }[]
+  > {
+    return withTimeout(this.getTokenPortfolio(address, assets), timeout);
   }
 
   async getTokenPortfolio(

@@ -16,6 +16,7 @@ import { SubscanService } from "../blockchain/substrate/api/subscan.service";
 import { DeviationZoomer } from "./deviation-zoomer";
 import * as substraeteToCoingeckoIds from "../../../res/substrate-token-to-coingecko-id.json";
 import { selectToken } from "./helper/select-token";
+import { TimeoutError } from "../../common/util/with-timeout";
 
 export class PortfolioMovementCorrectionService {
   constructor(
@@ -163,44 +164,74 @@ export class PortfolioMovementCorrectionService {
 
       const maxTurns = 500;
       let counter = 0;
+      const progress: Record<string, number[]> = {};
+      const excludedTokens = [];
 
       while (selectedToken && counter <= maxTurns) {
-        logger.info(
-          {
-            deviation: selectedToken.deviation,
-            token: selectedToken.symbol,
-            uniqueId: selectedToken.unique_id,
-          },
-          "Fixing errors counter: " + counter,
-        );
-
-        await this.deviationZoomer.zoomInAndFix(
-          chainInfo,
-          address,
-          portfolioMovements as PortfolioMovement[],
-          unmatchedEvents,
-          minBlock,
-          maxBlock,
-          selectedToken.symbol,
-          selectedToken.unique_id,
-        );
-
-        deviations =
-          await this.portfolioChangeValidationService.calculateDeviationFromExpectation(
-            chainInfo,
-            address,
-            portfolioMovements,
-            acceptedDeviations,
-            blockMin,
-            blockMax,
-            feeToken,
+        try {
+          logger.info(
+            {
+              deviation: selectedToken.deviation,
+              token: selectedToken.symbol,
+              uniqueId: selectedToken.unique_id,
+            },
+            "Fixing errors counter: " + counter,
           );
 
-        selectedToken = selectToken(deviations);
-        if (selectToken) {
-          logger.info(`PortfolioMovementCorrectionService next token: ` + selectedToken.symbol)
+          const gain = await this.deviationZoomer.zoomInAndFix(
+            chainInfo,
+            address,
+            portfolioMovements as PortfolioMovement[],
+            unmatchedEvents,
+            minBlock,
+            maxBlock,
+            selectedToken.symbol,
+            selectedToken.unique_id,
+          );
+          progress[selectedToken.unique_id] =
+            progress[selectedToken.unique_id] ?? [];
+          progress[selectedToken.unique_id].push(
+            gain / selectedToken.maxAllowedDeviation,
+          );
+          if (progress[selectedToken.unique_id].length >= 5) {
+            /**
+             * Virtually no progress has been made. Very likely the deviations are caused by (xcm) fees.
+             */
+            const max = progress[selectedToken.unique_id]
+              .slice(-5)
+              .reduce((curr, next) => Math.max(curr, next), 0);
+            if (max < 0.1) {
+              excludedTokens.push(selectedToken.unique_id);
+            }
+          }
+
+          deviations =
+            await this.portfolioChangeValidationService.calculateDeviationFromExpectation(
+              chainInfo,
+              address,
+              portfolioMovements,
+              acceptedDeviations,
+              blockMin,
+              blockMax,
+              feeToken,
+            );
+
+          selectedToken = selectToken(deviations, excludedTokens);
+          if (selectedToken) {
+            logger.info(
+              `PortfolioMovementCorrectionService next token: ` +
+                selectedToken.symbol,
+            );
+          }
+          counter++;
+        } catch (error) {
+          if (error instanceof TimeoutError) {
+            logger.warn(`Timeout wen calling node WS. Pausing 3 min.`);
+            await new Promise((resolve) => setTimeout(resolve, 180_000));
+          } else {
+            throw error;
+          }
         }
-        counter++;
       }
 
       const problematicDeviations = deviations
@@ -217,12 +248,16 @@ export class PortfolioMovementCorrectionService {
           `All errors fixed in ${counter} steps`,
         );
       } else {
-        logger.info(problematicDeviations, `Stopping after ${counter} steps when fixing ${chainInfo.domain}, ${address}`);
+        logger.info(
+          problematicDeviations,
+          `Stopping after ${counter} steps when fixing ${chainInfo.domain}, ${address}`,
+        );
       }
 
       logger.info(
         `Exit fixErrorsAndMissingData for ${chainInfo.domain}, ${address}`,
       );
+
       return deviations;
     } finally {
       this.portfolioChangeValidationService.disconnectApi();
