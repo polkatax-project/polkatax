@@ -1,7 +1,5 @@
 import { SubscanApi } from "../blockchain/substrate/api/subscan.api";
 import { PolkadotApi } from "../blockchain/substrate/api/polkadot-api";
-import { logger } from "../logger/logger";
-import { Asset } from "../blockchain/substrate/model/asset";
 
 export interface PortfolioDifference {
   symbol: string;
@@ -277,6 +275,7 @@ export class PortfolioDifferenceService {
   disconnectApi() {
     if (this.polkadotApi) {
       this.polkadotApi.disconnect();
+      this.polkadotApi = undefined
     }
   }
 }

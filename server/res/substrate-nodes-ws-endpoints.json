@@ -14,16 +14,18 @@
     "wss://rpc.ibp.network/polkadot"
   ],
   "hydration": [
-    "wss://hydradx.paras.ibp.network",
+    "wss://hydration.ibp.network",
     "wss://hydration.dotters.network",
     "wss://hydradx-rpc.dwellir.com"
   ],
   "coretime-polkadot": [
+    "wss://sys.ibp.network/coretime-polkadot",
     "wss://coretime-polkadot.dotters.network",
     "wss://polkadot-coretime-rpc.polkadot.io"
   ],
   "acala": [
-    "wss://acala-rpc.dwellir.com",
+    "wss://acala.ibp.network",
+    "wss://acala.dotters.network",
     "wss://acala-polkadot.api.onfinality.io/public-ws"
   ],
   "astar": [
@@ -33,13 +35,13 @@
   ],
   "peaq": ["wss://peaq.api.onfinality.io/public"],
   "ajuna": [
-    "wss://rpc-para.ajuna.network",
     "wss://ajuna.ibp.network",
     "wss://ajuna.dotters.network",
     "wss://ajuna.api.onfinality.io/public-ws",
     "wss://ajuna.public.curie.radiumblock.co/ws"
   ],
-  "mythos": ["wss://polkadot-mythos-rpc.polkadot.io"],
+  "mythos": ["wss://mythos.ibp.network",
+    "wss://mythos.dotters.network"],
   "unique": [
     "wss://unique.ibp.network",
     "wss://unique.dotters.network",
@@ -47,9 +49,8 @@
   ],
   "pendulum": ["wss://rpc-pendulum.prd.pendulumchain.tech"],
   "collectives-polkadot": [
-    "wss://collectives-polkadot-rpc.dwellir.com",
-    "wss://collectives-polkadot.dotters.network",
-    "wss://rpc-collectives-polkadot.luckyfriday.io"
+    "wss://sys.ibp.network/collectives-polkadot",
+    "wss://collectives-polkadot.dotters.network"
   ],
   "people-polkadot": [
     "wss://sys.ibp.network/people-polkadot",
@@ -74,11 +75,9 @@
   ],
   "alephzero": ["wss://aleph-zero.api.onfinality.io/public-ws"],
   "manta": ["wss://ws.manta.systems"],
-  "moonbeam": [
-    "wss://moonbeam-rpc.dwellir.com",
-    "wss://moonbeam.api.onfinality.io/public-ws"
-  ],
   "polimec": [
+    "wss://polimec.ibp.network",
+    "wss://polimec.dotters.network",
     "wss://polimec.rpc.amforc.com",
     "wss://rpc.helikon.io/polimec",
     "wss://polimec.ibp.network",
@@ -119,12 +118,13 @@
     "wss://nodle-rpc.dwellir.com",
     "wss://nodle-parachain.api.onfinality.io/public-ws"
   ],
-  "kusama": ["wss://kusama.api.onfinality.io/public-ws"],
+  "kusama": ["wss://rpc.ibp.network/kusama",
+"wss://kusama.dotters.network", "wss://kusama.api.onfinality.io/public-ws"],
   "assethub-kusama": [
+    "wss://sys.ibp.network/asset-hub-kusama",
+    "wss://asset-hub-kusama.dotters.network",
     "wss://asset-hub-kusama-rpc.dwellir.com",
     "wss://statemine-rpc-tn.dwellir.com",
-    "wss://sys.ibp.network/statemine",
-    "wss://asset-hub-kusama.dotters.network",
     "wss://rpc-asset-hub-kusama.luckyfriday.io",
     "wss://kusama-asset-hub-rpc.polkadot.io",
     "wss://statemine.public.curie.radiumblock.co/ws",
@@ -185,7 +185,6 @@
     "wss://karura-rpc.dwellir.com",
     "wss://karura.api.onfinality.io/public-ws"
   ],
-  "moonriver": ["wss://moonriver.api.onfinality.io/public-ws"],
   "quartz": [
     "wss://quartz-rpc.dwellir.com",
     "wss://ws-quartz.unique.network",
@@ -215,5 +214,7 @@
     "wss://rpc.mainnet.subspace.foundation/ws"
   ],
   "humanode": ["wss://explorer-rpc-ws.mainnet.stages.humanode.io/"],
-  "tanssi": ["wss://services.tanssi-mainnet.network/tanssi"]
+  "tanssi": ["wss://services.tanssi-mainnet.network/tanssi"],
+  "spiritnet": ["wss://kilt.ibp.network",
+    "wss://kilt.dotters.network"]
 }

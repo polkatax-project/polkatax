@@ -175,7 +175,7 @@ export class PortfolioMovementCorrectionService {
               token: selectedToken.symbol,
               uniqueId: selectedToken.unique_id,
             },
-            "Fixing errors counter: " + counter,
+            "Fixing errors counter for ${chainInfo.domain} and ${address}: " + counter,
           );
 
           const gain = await this.deviationZoomer.zoomInAndFix(
@@ -219,14 +219,15 @@ export class PortfolioMovementCorrectionService {
           selectedToken = selectToken(deviations, excludedTokens);
           if (selectedToken) {
             logger.info(
-              `PortfolioMovementCorrectionService next token: ` +
+              `PortfolioMovementCorrectionService for ${chainInfo.domain} and ${address} next token: ` +
                 selectedToken.symbol,
             );
           }
           counter++;
         } catch (error) {
           if (error instanceof TimeoutError) {
-            logger.warn(`Timeout wen calling node WS. Pausing 3 min.`);
+            logger.warn(`Timeout when calling node WS for ${chainInfo.domain} and ${address}. Pausing 3 min.`);
+            this.portfolioChangeValidationService.disconnectApi();
             await new Promise((resolve) => setTimeout(resolve, 180_000));
           } else {
             throw error;
@@ -245,7 +246,7 @@ export class PortfolioMovementCorrectionService {
       if (counter < maxTurns) {
         logger.info(
           problematicDeviations,
-          `All errors fixed in ${counter} steps`,
+          `All errors fixed in ${counter} steps for ${chainInfo.domain} and ${address}`,
         );
       } else {
         logger.info(
@@ -255,7 +256,7 @@ export class PortfolioMovementCorrectionService {
       }
 
       logger.info(
-        `Exit fixErrorsAndMissingData for ${chainInfo.domain}, ${address}`,
+        `Exit fixErrorsAndMissingData for ${chainInfo.domain} and ${address}`,
       );
 
       return deviations;

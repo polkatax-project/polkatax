@@ -56,7 +56,7 @@ export class WebSocketManager {
   private async handleFetchDataRequest(
     socket: WebSocket,
     msg: WebSocketIncomingMessage,
-  ): Promise<WebSocketOutgoingMessage> {
+  ): Promise<WebSocketOutgoingMessage[]> {
     const { wallet, currency, blockchains, syncFromDate, syncUntilDate } =
       msg.payload;
 
@@ -84,21 +84,18 @@ export class WebSocketManager {
       this.addSubscription(socket, { jobId: job.id, wallet: job.wallet });
     });
 
-    return {
-      type: "data",
-      reqId: msg.reqId,
-      payload: jobs.map((job) => {
-        if (job.status === "post_processing") {
-          return {
-            ...job,
-            data: undefined,
-            status: "in_progress",
-          };
-        }
-        return job;
-      }),
-      timestamp: Date.now(),
-    };
+    return jobs.map((job) => {
+      return {
+        type: "data",
+        reqId: msg.reqId,
+        payload: [job.status === "post_processing" ? {
+              ...job,
+              data: undefined,
+              status: "in_progress",
+            } : job],
+        timestamp: Date.now(),
+      }
+    });
   }
 
   private async handleUnsubscribeRequest(
@@ -130,7 +127,7 @@ export class WebSocketManager {
   private async handleMessage(
     socket: WebSocket,
     msg: WebSocketIncomingMessage,
-  ): Promise<WebSocketOutgoingMessage | void> {
+  ): Promise<WebSocketOutgoingMessage[] | void> {
     if (msg.type === "fetchDataRequest" && this.isThrottled(socket, msg)) {
       return this.sendError(socket, {
         code: 429,
@@ -140,9 +137,9 @@ export class WebSocketManager {
 
     switch (msg.type) {
       case "fetchDataRequest":
-        return this.handleFetchDataRequest(socket, msg);
+        return await this.handleFetchDataRequest(socket, msg);
       case "unsubscribeRequest":
-        return this.handleUnsubscribeRequest(socket, msg);
+        return [await this.handleUnsubscribeRequest(socket, msg)];
     }
   }
 
@@ -202,12 +199,14 @@ export class WebSocketManager {
       }
 
       try {
-        const response = await this.handleMessage(socket, result.data);
-        if (response) {
-          logger.info(
-            `Sending response reqId: ${response.reqId}, type: ${response.type}, payload.length: ${response.payload.length}`,
-          );
-          socket.send(JSON.stringify(response));
+        const responses = await this.handleMessage(socket, result.data);
+        if (responses && responses.length > 0) {
+          responses.forEach(r => {
+            logger.info(
+              `Sending response reqId: ${r.reqId}, type: ${r.type}, payload.length: ${r.payload.length}`,
+            );
+            socket.send(JSON.stringify(r));
+          })
         }
       } catch (err) {
         logger.error("Message handling failed");

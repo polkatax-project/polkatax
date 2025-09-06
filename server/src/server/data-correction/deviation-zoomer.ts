@@ -35,6 +35,7 @@ export class DeviationZoomer {
     tokenSymbol: string,
     tokenUniqueId?: string,
   ): Promise<number> {
+    logger.info(`enter splitIntervalAndFindDeviations on ${chain.domain} and ${address}`);
     const { interval, deviations, tokenDeviation } =
       await this.splitIntervalAndFindDeviations(
         chain,
@@ -46,7 +47,7 @@ export class DeviationZoomer {
         tokenUniqueId,
       );
 
-    logger.info("zoomInAndFix Deviation: " + tokenDeviation.signedDeviation);
+    logger.info(`zoomInAndFix on ${chain.domain} and ${address}. Deviation  ${tokenDeviation.signedDeviation}`);
 
     if (
       this.fixSymbolConfusion(
@@ -73,6 +74,7 @@ export class DeviationZoomer {
         tokenUniqueId,
       );
     } else {
+      logger.info(`enter compensateDeviation on ${chain.domain} and ${address}`);
       this.compensateDeviation(
         address,
         portfolioMovements,
@@ -84,6 +86,7 @@ export class DeviationZoomer {
         tokenSymbol,
         tokenUniqueId,
       );
+      logger.info(`exit compensateDeviation on ${chain.domain} and ${address}`);
       return tokenDeviation.deviation;
     }
   }
