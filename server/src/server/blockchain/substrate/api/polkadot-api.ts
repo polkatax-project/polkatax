@@ -41,6 +41,11 @@ export class PolkadotApi {
     }
   }
 
+
+  async setApiAtWithTimeout(blockNumber: number, timeout: number) {
+    return withTimeout(this.setApiAt(blockNumber), timeout)
+  }
+
   async setApiAt(blockNumber: number) {
     await this.createApi();
     const blockHash = await this.api.rpc.chain.getBlockHash(blockNumber);

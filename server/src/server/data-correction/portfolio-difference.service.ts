@@ -95,7 +95,7 @@ export class PortfolioDifferenceService {
 
     const fetchAssetsViaApi = async (block: number, key: string) => {
       this.polkadotApi = this.polkadotApi ?? new PolkadotApi(chain);
-      await this.polkadotApi.setApiAt(block);
+      await this.polkadotApi.setApiAtWithTimeout(block, 60_000);
       const portfolio = await this.polkadotApi.getAssetPortfolioWithTimeout(
         address,
         relevantTokens,
@@ -135,7 +135,7 @@ export class PortfolioDifferenceService {
 
     const fetchViaApi = async (block: number, key: string) => {
       this.polkadotApi = this.polkadotApi ?? new PolkadotApi(domain);
-      await this.polkadotApi.setApiAt(block);
+      await this.polkadotApi.setApiAtWithTimeout(block, 60_000);
       const portfolio = await getPortfolioFn(this.polkadotApi, address, tokens);
       this.assetsCache[key] = portfolio;
       return portfolio;

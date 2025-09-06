@@ -175,7 +175,7 @@ export class PortfolioMovementCorrectionService {
               token: selectedToken.symbol,
               uniqueId: selectedToken.unique_id,
             },
-            "Fixing errors counter for ${chainInfo.domain} and ${address}: " + counter,
+            `Fixing errors counter for ${chainInfo.domain} and ${address}: ${counter}`,
           );
 
           const gain = await this.deviationZoomer.zoomInAndFix(
