@@ -145,7 +145,7 @@ export class PortfolioMovementCorrectionService {
 
     const blocksOfInterest = Array.from(blocks).sort((a, b) => a - b);
 
-    const deviationsBefore = await this.calculateDeviationWithRetry(
+    await this.calculateDeviationWithRetry(
       chainInfo,
       address,
       portfolioMovements,
@@ -258,27 +258,6 @@ export class PortfolioMovementCorrectionService {
     const acceptedDeviations = await this.determineAdequateMaxDeviations();
 
     try {
-      if (
-        process.env["USE_DATA_PLATFORM_API"] === "true" &&
-        (chainInfo.domain === "polkadot" ||
-          chainInfo.domain === "kusama" ||
-          chainInfo.domain === "enjin")
-      ) {
-        let deviations = await this.calculateDeviationWithRetry(
-          chainInfo,
-          address,
-          portfolioMovements,
-          acceptedDeviations,
-          blockMin,
-          blockMax,
-          chainInfo.token,
-        );
-        logger.info(
-          `Exit fixErrorsAndMissingData. No correction was done due to working with aggregated data.`,
-        );
-        return deviations;
-      }
-
       const feeToken =
         await this.portfolioChangeValidationService.findBestFeeToken(
           chainInfo,
@@ -288,6 +267,35 @@ export class PortfolioMovementCorrectionService {
           blockMin,
           blockMax,
         );
+
+      const deviations = await this.calculateDeviationWithRetry(
+        chainInfo,
+        address,
+        portfolioMovements,
+        acceptedDeviations,
+        blockMin,
+        blockMax,
+        feeToken,
+      );
+
+      if (
+        process.env["USE_DATA_PLATFORM_API"] === "true" &&
+        (chainInfo.domain === "polkadot" ||
+          chainInfo.domain === "kusama" ||
+          chainInfo.domain === "enjin")
+      ) {
+        logger.info(
+          `Exit fixErrorsAndMissingData. No correction was done due to working with aggregated data.`,
+        );
+        return deviations;
+      }
+
+      if (!deviations.find((d) => d.absoluteDeviationTooLarge)) {
+        logger.info(
+          `Exit fixErrorsAndMissingData. No Meaningful deviations found.`,
+        );
+        return deviations;
+      }
 
       await this.fixErrorsValidateEachBlock(
         chainInfo,
