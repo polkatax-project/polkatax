@@ -35,7 +35,9 @@ export class DeviationZoomer {
     tokenSymbol: string,
     tokenUniqueId?: string,
   ): Promise<number> {
-    logger.info(`enter splitIntervalAndFindDeviations on ${chain.domain} and ${address}`);
+    logger.info(
+      `enter splitIntervalAndFindDeviations on ${chain.domain} and ${address}`,
+    );
     const { interval, deviations, tokenDeviation } =
       await this.splitIntervalAndFindDeviations(
         chain,
@@ -47,16 +49,16 @@ export class DeviationZoomer {
         tokenUniqueId,
       );
 
-    logger.info(`zoomInAndFix on ${chain.domain} and ${address}. Deviation  ${tokenDeviation.signedDeviation}`);
+    logger.info(
+      `zoomInAndFix on ${chain.domain} and ${address}. Deviation  ${tokenDeviation.signedDeviation}`,
+    );
 
     if (
       this.fixSymbolConfusion(
         deviations,
-        tokenDeviation,
+        { ...tokenDeviation, symbol: tokenSymbol, unique_id: tokenUniqueId },
         interval,
         portfolioMovements,
-        tokenSymbol,
-        tokenUniqueId,
       )
     ) {
       return tokenDeviation.deviation;
@@ -74,17 +76,17 @@ export class DeviationZoomer {
         tokenUniqueId,
       );
     } else {
-      logger.info(`enter compensateDeviation on ${chain.domain} and ${address}`);
+      logger.info(
+        `enter compensateDeviation on ${chain.domain} and ${address}`,
+      );
       this.compensateDeviation(
         address,
         portfolioMovements,
         unmatchedEvents,
-        tokenDeviation.signedDeviation,
+        { ...tokenDeviation, symbol: tokenSymbol, unique_id: tokenUniqueId },
         deviations,
         interval.startBlock,
         interval.endBlock,
-        tokenSymbol,
-        tokenUniqueId,
       );
       logger.info(`exit compensateDeviation on ${chain.domain} and ${address}`);
       return tokenDeviation.deviation;
@@ -163,16 +165,19 @@ export class DeviationZoomer {
     };
   }
 
-  private fixSymbolConfusion(
+  fixSymbolConfusion(
     deviations: Deviation[],
-    tokenDeviation: { deviation: number; signedDeviation: number },
+    tokenDeviation: {
+      deviation: number;
+      signedDeviation: number;
+      symbol: string;
+      unique_id: string;
+    },
     interval: { startBlock: Block; endBlock: Block },
     portfolioMovements: PortfolioMovement[],
-    tokenSymbol: string,
-    tokenUniqueId?: string,
   ): boolean {
     const problematicToken = deviations.find(
-      (d) => d.unique_id === tokenUniqueId,
+      (d) => d.unique_id === tokenDeviation.unique_id,
     )?.singlePaymentDeviationTooLarge;
     if (!problematicToken) return false;
 
@@ -180,8 +185,8 @@ export class DeviationZoomer {
       (d) =>
         d.signedDeviation + tokenDeviation.signedDeviation <
           0.05 * tokenDeviation.deviation &&
-        d.symbol.toUpperCase() === tokenSymbol.toUpperCase() &&
-        d.unique_id !== tokenUniqueId,
+        d.symbol.toUpperCase() === tokenDeviation.symbol.toUpperCase() &&
+        d.unique_id !== tokenDeviation.unique_id,
     );
     if (!otherToken) return false;
 
@@ -193,7 +198,7 @@ export class DeviationZoomer {
     const matchingXcms = movements.filter((p) =>
       p.transfers.some(
         (t) =>
-          t.symbol.toUpperCase() === tokenSymbol.toUpperCase() &&
+          t.symbol.toUpperCase() === tokenDeviation.symbol.toUpperCase() &&
           t.module === "xcm" &&
           !(t as any).asset_unique_id_before_correction,
       ),
@@ -201,7 +206,7 @@ export class DeviationZoomer {
 
     if (matchingXcms.length === 1) {
       const xcmTransfer = (matchingXcms[0].transfers ?? []).find(
-        (t) => t.symbol.toUpperCase() === tokenSymbol.toUpperCase(),
+        (t) => t.symbol.toUpperCase() === tokenDeviation.symbol.toUpperCase(),
       );
       if (xcmTransfer) {
         logger.info(
@@ -210,28 +215,31 @@ export class DeviationZoomer {
         (xcmTransfer as any).asset_unique_id_before_correction =
           xcmTransfer.asset_unique_id;
         xcmTransfer.asset_unique_id =
-          xcmTransfer.asset_unique_id === tokenUniqueId
+          xcmTransfer.asset_unique_id === tokenDeviation.unique_id
             ? otherToken.unique_id
-            : tokenUniqueId;
+            : tokenDeviation.unique_id;
         return true;
       }
     }
     return false;
   }
 
-  private compensateDeviation(
+  compensateDeviation(
     address: string,
     taxableEvents: PortfolioMovement[],
     unmatchedEvents: SubscanEvent[],
-    signedDeviation: number,
+    tokenDeviation: {
+      deviation: number;
+      signedDeviation: number;
+      symbol: string;
+      unique_id: string;
+    },
     deviations: Deviation[],
     startBlock: Block,
     endBlock: Block,
-    tokenSymbol: string,
-    tokenUniqueId?: string,
   ) {
     const amountSuitable = (transferAmount: number) => {
-      if (signedDeviation > 0) {
+      if (tokenDeviation.signedDeviation > 0) {
         return transferAmount <= 0;
       } else {
         return transferAmount >= 0;
@@ -247,25 +255,28 @@ export class DeviationZoomer {
         p.timestamp > startBlock.timestamp &&
         p.transfers.some(
           (t) =>
-            t.asset_unique_id === tokenUniqueId && amountSuitable(t.amount),
+            t.asset_unique_id === tokenDeviation.unique_id &&
+            amountSuitable(t.amount),
         ),
     );
     const matchingTransfer = (matchingMovement?.transfers ?? []).find(
-      (t) => t.asset_unique_id === tokenUniqueId && amountSuitable(t.amount),
+      (t) =>
+        t.asset_unique_id === tokenDeviation.unique_id &&
+        amountSuitable(t.amount),
     );
 
     if (matchingTransfer) {
       logger.info(
         `Fix: Updating transfer amount in ${matchingMovement.extrinsic_index}`,
       );
-      if (matchingTransfer.amount === -signedDeviation) {
+      if (matchingTransfer.amount === -tokenDeviation.signedDeviation) {
         (matchingTransfer as any).amountBeforeCorrection =
           matchingTransfer.amount;
         matchingTransfer.amount = 0;
       } else {
         (matchingTransfer as any).amountBeforeCorrection =
           matchingTransfer.amount;
-        matchingTransfer.amount += signedDeviation;
+        matchingTransfer.amount += tokenDeviation.signedDeviation;
       }
       return;
     }
@@ -277,14 +288,14 @@ export class DeviationZoomer {
         p.transfers.some(
           (t) =>
             t.module === "xcm" &&
-            t.symbol.toUpperCase() === tokenSymbol.toUpperCase() &&
+            t.symbol.toUpperCase() === tokenDeviation.symbol.toUpperCase() &&
             amountSuitable(t.amount) &&
             !t.asset_unique_id,
         ),
     );
     const matchingXcmTransfer = (matchingXcm?.transfers ?? []).find(
       (t) =>
-        t.symbol.toUpperCase() === tokenSymbol.toUpperCase() &&
+        t.symbol.toUpperCase() === tokenDeviation.symbol.toUpperCase() &&
         amountSuitable(t.amount) &&
         !t.asset_unique_id,
     );
@@ -293,7 +304,7 @@ export class DeviationZoomer {
     if (matchingXcmTransfer) {
       const xcmMeantForThisToken = deviations.find(
         (d) =>
-          d.symbol.toUpperCase() === tokenSymbol.toUpperCase() &&
+          d.symbol.toUpperCase() === tokenDeviation.symbol.toUpperCase() &&
           !d.absoluteDeviationTooLarge,
       );
       logger.info(
@@ -314,11 +325,11 @@ export class DeviationZoomer {
         p.timestamp <= endBlock.timestamp && p.timestamp > startBlock.timestamp,
     );
     const transferData = {
-      symbol: tokenSymbol,
-      asset_unique_id: tokenUniqueId,
-      to: signedDeviation > 0 ? address : "",
-      from: signedDeviation < 0 ? address : "",
-      amount: Math.abs(signedDeviation),
+      symbol: tokenDeviation.symbol,
+      asset_unique_id: tokenDeviation.unique_id,
+      to: tokenDeviation.signedDeviation > 0 ? address : "",
+      from: tokenDeviation.signedDeviation < 0 ? address : "",
+      amount: Math.abs(tokenDeviation.signedDeviation),
       provenance: "deviationCompensation",
       events: matchingEvents.map((e) => ({
         moduleId: e.module_id,

@@ -30,20 +30,39 @@ const getPropertyValue = (property: string | string[], event: EventDetails) => {
 export class XcmTokenResolutionService {
   constructor(private subscanService: SubscanService) {}
 
-  private async fetchAssets(chain: string): Promise<Asset[]> {
-    const chainInfo = subscanChains.chains.find((c) => c.domain === chain);
+  private async fetchAssets(chain: {
+    domain: string;
+    token: string;
+  }): Promise<Asset[]> {
+    const chainInfo = subscanChains.chains.find(
+      (c) => c.domain === chain.domain,
+    );
     const results = (
       await Promise.all([
-        this.subscanService.scanTokens(chain),
+        this.subscanService.scanTokens(chain.domain),
         chainInfo?.assetPallet
-          ? this.subscanService.scanAssets(chain)
+          ? this.subscanService.scanAssets(chain.domain)
           : Promise.resolve(undefined),
         chainInfo?.foreignAssetsPallet
-          ? this.subscanService.fetchForeignAssets(chain)
+          ? this.subscanService.fetchForeignAssets(chain.domain)
           : Promise.resolve(undefined),
       ])
     ).filter((v) => !!v);
-    return results.flat();
+    const tokens: Asset[] = results.flat();
+    const hasNative = tokens.find(
+      (t) => t.unique_id === chain.token || t.native,
+    );
+    if (!hasNative) {
+      tokens.push({
+        id: chain.token,
+        symbol: chain.token,
+        unique_id: chain.token,
+        decimals: (await this.subscanService.fetchNativeToken(chain.domain))
+          .token_decimals,
+        asset_id: chain.token,
+      });
+    }
+    return tokens;
   }
 
   async resolveTokens(
@@ -51,7 +70,7 @@ export class XcmTokenResolutionService {
     messages: XcmTransfer[],
     events: SubscanEvent[],
   ): Promise<EventEnrichedXcmTransfer[]> {
-    const assets = await this.fetchAssets(chain.domain);
+    const assets = await this.fetchAssets(chain);
     const tokenDepositEvents = events.filter(
       (e) => e.event_id === "Deposited" && e.module_id !== "balances",
     );
@@ -152,7 +171,7 @@ export class XcmTokenResolutionService {
             bestAsset = assets.find((a) => a.symbol === bestMatch.target);
           }
           transfer.asset_unique_id = bestAsset?.unique_id;
-          transfer.symbol = symbol;
+          transfer.symbol = bestAsset?.symbol ?? symbol;
         });
     });
     return messages as EventEnrichedXcmTransfer[];

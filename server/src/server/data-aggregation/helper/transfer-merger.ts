@@ -36,9 +36,10 @@ export class TransferMerger {
         };
       }
       target[key].label = target[key].label ?? entry?.label;
-      let matchingTransfer = target[key].transfers.find(
+      /*let matchingTransfer = target[key].transfers.find(
         (t) => t.asset_unique_id === entry.asset_unique_id,
       );
+      let matchingTransfer = undefined;
       if (!matchingTransfer) {
         matchingTransfer = {
           ...entry,
@@ -46,7 +47,15 @@ export class TransferMerger {
           fiatValue: 0,
         };
         target[key].transfers.push(matchingTransfer);
-      }
+      }*/
+
+      const matchingTransfer = {
+        ...entry,
+        amount: 0,
+        fiatValue: 0,
+      };
+      target[key].transfers.push(matchingTransfer);
+
       if (isMyAccount(entry.to)) {
         matchingTransfer.amount += Number(entry.amount);
         matchingTransfer.fiatValue += entry.fiatValue;
