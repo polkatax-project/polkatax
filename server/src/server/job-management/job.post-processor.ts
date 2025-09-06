@@ -19,7 +19,6 @@ export class JobPostProcessor {
         chain,
         job.wallet,
         job.data.values,
-        [],
         job.syncFromDate,
         job.syncUntilDate,
       );

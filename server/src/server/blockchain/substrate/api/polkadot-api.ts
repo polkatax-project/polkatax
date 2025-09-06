@@ -3,6 +3,26 @@ import { Asset } from "../model/asset";
 import { logger } from "../../../logger/logger";
 import * as substrateNodesWsEndpoints from "../../../../../res/substrate-nodes-ws-endpoints.json";
 import { withTimeout } from "../../../../common/util/with-timeout";
+import isEqual from "lodash.isequal";
+
+/**
+ * This will normalize object the properties.
+ */
+function normalizeKeys(value: any): any {
+  if (Array.isArray(value)) {
+    return value.map((v) => normalizeKeys(v));
+  }
+
+  if (value && typeof value === "object" && value.constructor === Object) {
+    const result: Record<string, any> = {};
+    for (const key of Object.keys(value)) {
+      result[key.toLowerCase()] = normalizeKeys(value[key]);
+    }
+    return result;
+  }
+
+  return value; // number, string, boolean, null, etc.
+}
 
 export class PolkadotApi {
   private api: ApiPromise;
@@ -41,9 +61,8 @@ export class PolkadotApi {
     }
   }
 
-
-  async setApiAtWithTimeout(blockNumber: number, timeout: number) {
-    return withTimeout(this.setApiAt(blockNumber), timeout)
+  async setApiAtWithTimeout(blockNumber: number, timeout = 60_000) {
+    return withTimeout(this.setApiAt(blockNumber), timeout);
   }
 
   async setApiAt(blockNumber: number) {
@@ -169,23 +188,6 @@ export class PolkadotApi {
       native?: boolean;
     }[]
   > {
-    function capitalizeFirst(str) {
-      if (!str) return "";
-      return str[0].toUpperCase() + str.slice(1);
-    }
-
-    function isSameToken(obj: any, target: any) {
-      return typeof obj !== "object"
-        ? obj == target
-        : Object.entries(target).every(
-            ([key, value]) =>
-              (obj[key] ??
-                obj[key.replace("vs", "VS")] ??
-                obj[key.toUpperCase()] ??
-                obj[capitalizeFirst(key)]) == value,
-          );
-    }
-
     function convert(balanceInfo: Record<string, any>): {
       asset_unique_id: string;
       symbol: string;
@@ -198,8 +200,10 @@ export class PolkadotApi {
         balance: number;
       }[] = [];
       balanceInfo.forEach(([key, val]) => {
-        const tokenDescr = key.args[1].toJSON();
-        const token = assets.find((t) => isSameToken(t.token_id, tokenDescr));
+        const tokenDescr = normalizeKeys(key.args[1].toJSON());
+        const token = assets.find((t) =>
+          isEqual(normalizeKeys(t.token_id), tokenDescr),
+        );
         const values = val.toJSON();
         const balance =
           (Number(values.free) + Number(values.reserved)) /

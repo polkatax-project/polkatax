@@ -1,6 +1,8 @@
 import { SubscanApi } from "../blockchain/substrate/api/subscan.api";
 import { PolkadotApi } from "../blockchain/substrate/api/polkadot-api";
 
+const POLKADOT_API_TIMEOUT = 30_000;
+
 export interface PortfolioDifference {
   symbol: string;
   unique_id: string;
@@ -95,10 +97,11 @@ export class PortfolioDifferenceService {
 
     const fetchAssetsViaApi = async (block: number, key: string) => {
       this.polkadotApi = this.polkadotApi ?? new PolkadotApi(chain);
-      await this.polkadotApi.setApiAtWithTimeout(block, 60_000);
+      await this.polkadotApi.setApiAtWithTimeout(block, POLKADOT_API_TIMEOUT);
       const portfolio = await this.polkadotApi.getAssetPortfolioWithTimeout(
         address,
         relevantTokens,
+        POLKADOT_API_TIMEOUT,
       );
       this.assetsCache[key] = portfolio;
       return portfolio;
@@ -135,7 +138,7 @@ export class PortfolioDifferenceService {
 
     const fetchViaApi = async (block: number, key: string) => {
       this.polkadotApi = this.polkadotApi ?? new PolkadotApi(domain);
-      await this.polkadotApi.setApiAtWithTimeout(block, 60_000);
+      await this.polkadotApi.setApiAtWithTimeout(block, POLKADOT_API_TIMEOUT);
       const portfolio = await getPortfolioFn(this.polkadotApi, address, tokens);
       this.assetsCache[key] = portfolio;
       return portfolio;
@@ -221,7 +224,8 @@ export class PortfolioDifferenceService {
         maxBlock,
         address,
         relevantTokens,
-        (api, addr, tokens) => api.getAssetPortfolioWithTimeout(addr, tokens),
+        (api, addr, tokens) =>
+          api.getAssetPortfolioWithTimeout(addr, tokens, POLKADOT_API_TIMEOUT),
       );
 
     return this.calculateDiffs(
@@ -262,7 +266,8 @@ export class PortfolioDifferenceService {
         maxBlock,
         address,
         tokens,
-        (api, addr, toks) => api.getTokenPortfolioWithTimeout(addr, toks),
+        (api, addr, toks) =>
+          api.getTokenPortfolioWithTimeout(addr, toks, POLKADOT_API_TIMEOUT),
       );
 
     return this.calculateDiffs(
@@ -275,7 +280,7 @@ export class PortfolioDifferenceService {
   disconnectApi() {
     if (this.polkadotApi) {
       this.polkadotApi.disconnect();
-      this.polkadotApi = undefined
+      this.polkadotApi = undefined;
     }
   }
 }

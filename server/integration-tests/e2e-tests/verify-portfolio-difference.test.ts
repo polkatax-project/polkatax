@@ -77,7 +77,7 @@ const verifyPortfolioChanges = async (
   const portfolioMovementsService: PortfolioMovementsService =
     container.resolve("portfolioMovementsService");
 
-  const minDate = new Date("2024-09-01T00:00:00.000Z");
+  const minDate = new Date("2024-11-01T00:00:00.000Z");
   const maxDate = new Date("2024-12-31T23:59:59.999Z");
 
   let { portfolioMovements } =
@@ -98,7 +98,6 @@ const verifyPortfolioChanges = async (
     chainInfo,
     address,
     portfolioMovements,
-    [],
     minDate.getTime(),
     maxDate.getTime(),
   );
