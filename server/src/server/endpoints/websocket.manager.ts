@@ -88,13 +88,17 @@ export class WebSocketManager {
       return {
         type: "data",
         reqId: msg.reqId,
-        payload: [job.status === "post_processing" ? {
-              ...job,
-              data: undefined,
-              status: "in_progress",
-            } : job],
+        payload: [
+          job.status === "post_processing"
+            ? {
+                ...job,
+                data: undefined,
+                status: "in_progress",
+              }
+            : job,
+        ],
         timestamp: Date.now(),
-      }
+      };
     });
   }
 
@@ -201,12 +205,12 @@ export class WebSocketManager {
       try {
         const responses = await this.handleMessage(socket, result.data);
         if (responses && responses.length > 0) {
-          responses.forEach(r => {
+          responses.forEach((r) => {
             logger.info(
               `Sending response reqId: ${r.reqId}, type: ${r.type}, payload.length: ${r.payload.length}`,
             );
             socket.send(JSON.stringify(r));
-          })
+          });
         }
       } catch (err) {
         logger.error("Message handling failed");

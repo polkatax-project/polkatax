@@ -37,5 +37,6 @@ export const toTransfer = (
     destChain: xcm?.transfers[0]?.destChain,
     messageHash: xcm?.messageHash,
     label,
+    module: xcm ? "xcm" : undefined,
   };
 };

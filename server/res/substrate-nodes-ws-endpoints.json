@@ -40,8 +40,7 @@
     "wss://ajuna.api.onfinality.io/public-ws",
     "wss://ajuna.public.curie.radiumblock.co/ws"
   ],
-  "mythos": ["wss://mythos.ibp.network",
-    "wss://mythos.dotters.network"],
+  "mythos": ["wss://mythos.ibp.network", "wss://mythos.dotters.network"],
   "unique": [
     "wss://unique.ibp.network",
     "wss://unique.dotters.network",
@@ -118,8 +117,11 @@
     "wss://nodle-rpc.dwellir.com",
     "wss://nodle-parachain.api.onfinality.io/public-ws"
   ],
-  "kusama": ["wss://rpc.ibp.network/kusama",
-"wss://kusama.dotters.network", "wss://kusama.api.onfinality.io/public-ws"],
+  "kusama": [
+    "wss://rpc.ibp.network/kusama",
+    "wss://kusama.dotters.network",
+    "wss://kusama.api.onfinality.io/public-ws"
+  ],
   "assethub-kusama": [
     "wss://sys.ibp.network/asset-hub-kusama",
     "wss://asset-hub-kusama.dotters.network",
@@ -167,11 +169,6 @@
     "wss://altair.api.onfinality.io/public-ws"
   ],
   "basilisk": ["wss://rpc.basilisk.cloud", "wss://basilisk-rpc.dwellir.com"],
-  "bifrost-kusama": [
-    "wss://bifrost-rpc.dwellir.com",
-    "wss://bifrost-rpc.liebi.com/ws",
-    "wss://us.bifrost-rpc.liebi.com/ws"
-  ],
   "crab": [
     "wss://crab-rpc.darwinia.network/",
     "wss://crab-rpc.dcdao.box",
@@ -215,6 +212,5 @@
   ],
   "humanode": ["wss://explorer-rpc-ws.mainnet.stages.humanode.io/"],
   "tanssi": ["wss://services.tanssi-mainnet.network/tanssi"],
-  "spiritnet": ["wss://kilt.ibp.network",
-    "wss://kilt.dotters.network"]
+  "spiritnet": ["wss://kilt.ibp.network", "wss://kilt.dotters.network"]
 }
