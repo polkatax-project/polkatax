@@ -28,7 +28,17 @@ const ACCEPTED_DEVIATIONS = [
     max: 0.001,
   },
   {
+    symbol: "WBTC",
+    singlePayment: 0.001,
+    max: 0.001,
+  },
+  {
     symbol: "WETH",
+    singlePayment: 0.01,
+    max: 0.01,
+  },
+    {
+    symbol: "ETH",
     singlePayment: 0.01,
     max: 0.01,
   },
