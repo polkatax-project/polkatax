@@ -1,8 +1,6 @@
 import { Job } from "../../model/job";
-import { logger } from "../logger/logger";
 import * as subscanChains from "../../../res/gen/subscan-chains.json";
 import { PortfolioMovementCorrectionService } from "../data-correction/portfolio-movement-correction.service";
-import { getEndOfLastYear } from "./get-beginning-last-year";
 
 export class JobPostProcessor {
   constructor(
