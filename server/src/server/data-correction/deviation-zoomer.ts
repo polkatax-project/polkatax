@@ -206,11 +206,13 @@ export class DeviationZoomer {
 
     if (matchingXcms.length === 1) {
       const xcmTransfer = (matchingXcms[0].transfers ?? []).find(
-        (t) => t.symbol.toUpperCase() === tokenDeviation.symbol.toUpperCase(),
+        (t) =>
+          t.symbol.toUpperCase() === tokenDeviation.symbol.toUpperCase() &&
+          t.module === "xcm",
       );
       if (xcmTransfer) {
         logger.info(
-          `Fix: Updating asset in xcm transfer ${matchingXcms[0].extrinsic_index}, ${matchingXcms[0].timestamp}`,
+          `Fix: Adjusting assets in xcm transfer swapping ${tokenDeviation.symbol}. ${matchingXcms[0].extrinsic_index}, ${matchingXcms[0].timestamp}`,
         );
         (xcmTransfer as any).asset_unique_id_before_correction =
           xcmTransfer.asset_unique_id;
@@ -267,7 +269,7 @@ export class DeviationZoomer {
 
     if (matchingTransfer) {
       logger.info(
-        `Fix: Updating transfer amount in ${matchingMovement.extrinsic_index}`,
+        `Fix: Adjusting transfer by ${tokenDeviation.signedDeviation} ${tokenDeviation.symbol} in ${matchingMovement.extrinsic_index}. `,
       );
       if (matchingTransfer.amount === -tokenDeviation.signedDeviation) {
         (matchingTransfer as any).amountBeforeCorrection =
@@ -297,6 +299,7 @@ export class DeviationZoomer {
       (t) =>
         t.symbol.toUpperCase() === tokenDeviation.symbol.toUpperCase() &&
         amountSuitable(t.amount) &&
+        t.module === "xcm" &&
         !t.asset_unique_id,
     );
 
@@ -308,7 +311,7 @@ export class DeviationZoomer {
           !d.absoluteDeviationTooLarge,
       );
       logger.info(
-        `Fix: Updating transfer amount in xcm ${matchingXcmTransfer.extrinsic_index}`,
+        `Fix: Adjusting xcm transfer by ${tokenDeviation.signedDeviation} ${tokenDeviation.symbol} ${matchingXcmTransfer.extrinsic_index}`,
       );
       if (xcmMeantForThisToken) {
         matchingXcmTransfer.asset_unique_id = xcmMeantForThisToken.unique_id;
@@ -339,11 +342,13 @@ export class DeviationZoomer {
     };
     if (existingTx) {
       logger.info(
-        `Fix: Adding transfer to existing tx ${existingTx.extrinsic_index}`,
+        `Fix: Adding transfer of ${tokenDeviation.signedDeviation} ${tokenDeviation.symbol} to existing tx ${existingTx.extrinsic_index}`,
       );
       existingTx.transfers.push(transferData);
     } else {
-      logger.info(`Fix: Creating new tx`);
+      logger.info(
+        `Fix: Creating new tx with ${tokenDeviation.signedDeviation} ${tokenDeviation.symbol}`,
+      );
       taxableEvents.push({
         events: matchingEvents.map((e) => ({
           moduleId: e.module_id,

@@ -109,6 +109,7 @@ export interface Deviation {
   singlePaymentDeviationTooLarge: boolean;
   numberTx: number;
   maxAllowedDeviation: number;
+  maxDeviationSinglePayment: number;
 }
 
 export class PortfolioChangeValidationService {
@@ -120,9 +121,8 @@ export class PortfolioChangeValidationService {
   private async fetchPortfolioDifferences(
     chainInfo: { domain: string; token: string },
     address: string,
-    portfolioMovements: TaxableEvent[],
-    minBlockNum?: number,
-    maxBlockNum?: number,
+    minBlockNum: number,
+    maxBlockNum: number,
   ): Promise<
     | {
         portfolioDifferences: PortfolioDifference[];
@@ -138,31 +138,6 @@ export class PortfolioChangeValidationService {
         maxBlock: undefined,
       };
     }
-
-    if (maxBlockNum === undefined && portfolioMovements.length === 0) {
-      return {
-        portfolioDifferences: [],
-        minBlock: undefined,
-        maxBlock: undefined,
-      };
-    }
-
-    minBlockNum =
-      minBlockNum ??
-      portfolioMovements.reduce(
-        (curr, next) =>
-          Math.min(
-            curr,
-            (next as PortfolioMovement)?.block ?? Number.MAX_SAFE_INTEGER,
-          ),
-        Number.MAX_SAFE_INTEGER,
-      );
-    maxBlockNum =
-      maxBlockNum ??
-      portfolioMovements.reduce(
-        (curr, next) => Math.max(curr, (next as PortfolioMovement)?.block ?? 0),
-        0,
-      );
 
     const [minBlock, maxBlock] = await Promise.all([
       this.subscanApi.fetchBlock(chainInfo.domain, minBlockNum),
@@ -184,15 +159,11 @@ export class PortfolioChangeValidationService {
     address: string,
     portfolioMovements: TaxableEvent[],
     acceptedDeviations = ACCEPTED_DEVIATIONS,
-    minBlockNum?: number,
-    maxBlockNum?: number,
+    minBlockNum: number,
+    maxBlockNum: number,
     feeToken?: string,
   ): Promise<Deviation[]> {
     if (!Object.keys(substrateNodesWsEndpoints).includes(chainInfo.domain)) {
-      return [];
-    }
-
-    if (maxBlockNum === undefined && portfolioMovements.length === 0) {
       return [];
     }
 
@@ -200,7 +171,6 @@ export class PortfolioChangeValidationService {
       await this.fetchPortfolioDifferences(
         chainInfo,
         address,
-        portfolioMovements,
         minBlockNum,
         maxBlockNum,
       );
@@ -225,20 +195,16 @@ export class PortfolioChangeValidationService {
     address: string,
     portfolioMovements: TaxableEvent[],
     acceptedDeviations = ACCEPTED_DEVIATIONS,
-    minBlockNum?: number,
-    maxBlockNum?: number,
+    minBlockNum: number,
+    maxBlockNum: number,
   ): Promise<string | undefined> {
     if (!Object.keys(substrateNodesWsEndpoints).includes(chainInfo.domain)) {
-      return;
-    }
-    if (maxBlockNum === undefined && portfolioMovements.length === 0) {
       return;
     }
     const { portfolioDifferences, minBlock, maxBlock } =
       await this.fetchPortfolioDifferences(
         chainInfo,
         address,
-        portfolioMovements,
         minBlockNum,
         maxBlockNum,
       );
@@ -348,6 +314,7 @@ export class PortfolioChangeValidationService {
         Math.abs(deviation) > maxAllowedDeviation.singlePayment,
       numberTx,
       maxAllowedDeviation: maxAllowedDeviation.max,
+      maxDeviationSinglePayment: maxAllowedDeviation.singlePayment,
     };
   }
 

@@ -16,6 +16,7 @@ import { DeviationZoomer } from "./deviation-zoomer";
 import * as substraeteToCoingeckoIds from "../../../res/substrate-token-to-coingecko-id.json";
 import { selectToken } from "./helper/select-token";
 import { TimeoutError } from "../../common/util/with-timeout";
+import * as fs from "fs";
 
 export class PortfolioMovementCorrectionService {
   constructor(
@@ -117,6 +118,16 @@ export class PortfolioMovementCorrectionService {
         );
         this.portfolioChangeValidationService.disconnectApi();
         await new Promise((resolve) => setTimeout(resolve, 180_000));
+        return this.calculateDeviationWithRetry(
+          chainInfo,
+          address,
+          portfolioMovements,
+          acceptedDeviations,
+          blockMin,
+          blockMax,
+          feeToken,
+          maxRetry,
+        );
       } else {
         throw error;
       }
@@ -137,7 +148,12 @@ export class PortfolioMovementCorrectionService {
     );
     const blocks = new Set<number>();
     for (const p of portfolioMovements as PortfolioMovement[]) {
-      if (p.block !== undefined && p.block !== null) {
+      if (
+        p.block !== undefined &&
+        p.block !== null &&
+        p.label !== "Staking reward" &&
+        p.label !== "Staking slashed"
+      ) {
         blocks.add(p.block);
         blocks.add(p.block - 1);
       }
@@ -155,22 +171,12 @@ export class PortfolioMovementCorrectionService {
       feeToken,
     );
 
-    for (let idx = 0; idx < blocksOfInterest.length; idx++) {
+    for (let idx = 0; idx < blocksOfInterest.length - 1; idx++) {
       const blockMin = blocksOfInterest[idx];
       const blockMax = blocksOfInterest[idx + 1];
       if (blockMax - blockMin > 1) {
         continue;
       }
-
-      const deviations = await this.calculateDeviationWithRetry(
-        chainInfo,
-        address,
-        portfolioMovements,
-        acceptedDeviations,
-        blockMin,
-        blockMax,
-        feeToken,
-      );
 
       const startBlock = await this.subscanApi.fetchBlock(
         chainInfo.domain,
@@ -180,14 +186,29 @@ export class PortfolioMovementCorrectionService {
         chainInfo.domain,
         blockMax,
       );
-      const relevantDeviations = deviations.filter(
-        (d) => d.absoluteDeviationTooLarge,
+
+      let deviations = await this.calculateDeviationWithRetry(
+        chainInfo,
+        address,
+        portfolioMovements.filter(
+          (p) =>
+            p.timestamp > startBlock.timestamp &&
+            p.timestamp <= endBlock.timestamp,
+        ),
+        acceptedDeviations,
+        blockMin,
+        blockMax,
+        feeToken,
       );
 
-      if (relevantDeviations.length > 0) {
+      if (deviations.find((d) => d.singlePaymentDeviationTooLarge)) {
         logger.info(`Found deviations in block ${endBlock.block_num}`);
       }
-      for (const selectedToken of relevantDeviations) {
+      for (let j = 0; j < deviations.length; j++) {
+        const selectedToken = deviations[j];
+        if (!selectedToken.singlePaymentDeviationTooLarge) {
+          continue;
+        }
         if (
           this.deviationZoomer.fixSymbolConfusion(
             deviations,
@@ -196,6 +217,20 @@ export class PortfolioMovementCorrectionService {
             portfolioMovements as PortfolioMovement[],
           )
         ) {
+          deviations = await this.calculateDeviationWithRetry(
+            chainInfo,
+            address,
+            portfolioMovements.filter(
+              (p) =>
+                p.timestamp > startBlock.timestamp &&
+                p.timestamp <= endBlock.timestamp,
+            ),
+            acceptedDeviations,
+            blockMin,
+            blockMax,
+            feeToken,
+          );
+          j = 0;
           continue;
         }
 
@@ -210,15 +245,6 @@ export class PortfolioMovementCorrectionService {
         );
       }
     }
-    const deviations = await this.calculateDeviationWithRetry(
-      chainInfo,
-      address,
-      portfolioMovements,
-      acceptedDeviations,
-      blockMin,
-      blockMax,
-      feeToken,
-    );
     logger.info(
       `Exit fixErrorsValidateEachBlock for ${chainInfo.domain}, ${address}`,
     );
@@ -297,6 +323,13 @@ export class PortfolioMovementCorrectionService {
         return deviations;
       }
 
+      if (process.env["WRITE_RESULTS_TO_DISK"] === "true") {
+        fs.writeFileSync(
+          `./${chainInfo.domain}-${address}-deviations.json`,
+          JSON.stringify(deviations, null, 2),
+        );
+      }
+
       await this.fixErrorsValidateEachBlock(
         chainInfo,
         address,
@@ -307,7 +340,14 @@ export class PortfolioMovementCorrectionService {
         feeToken,
       );
 
-      await this.fixErrorsAndMissingDataRecursively(
+      if (process.env["WRITE_RESULTS_TO_DISK"] === "true") {
+        fs.writeFileSync(
+          `./${chainInfo.domain}-${address}-linear-fix.json`,
+          JSON.stringify(portfolioMovements, null, 2),
+        );
+      }
+
+      const deviationsAfterFix = await this.fixErrorsAndMissingDataRecursively(
         chainInfo,
         address,
         portfolioMovements,
@@ -316,6 +356,17 @@ export class PortfolioMovementCorrectionService {
         blockMax,
         feeToken,
       );
+
+      if (process.env["WRITE_RESULTS_TO_DISK"] === "true") {
+        fs.writeFileSync(
+          `./${chainInfo.domain}-${address}-recursive-fix.json`,
+          JSON.stringify(portfolioMovements, null, 2),
+        );
+        fs.writeFileSync(
+          `./${chainInfo.domain}-${address}-deviations-fixed.json`,
+          JSON.stringify(deviationsAfterFix, null, 2),
+        );
+      }
 
       logger.info(
         `Exit fixErrorsAndMissingData for ${chainInfo.domain}, ${address}`,
@@ -362,6 +413,7 @@ export class PortfolioMovementCorrectionService {
     const maxTurns = 500;
     let counter = 0;
     let timeoutErrors = 0;
+    const excludeTokens = [];
 
     while (selectedToken && counter <= maxTurns) {
       try {
@@ -374,7 +426,7 @@ export class PortfolioMovementCorrectionService {
           `Fixing errors counter for ${chainInfo.domain} and ${address}: ${counter}`,
         );
 
-        await this.deviationZoomer.zoomInAndFix(
+        const gain = await this.deviationZoomer.zoomInAndFix(
           chainInfo,
           address,
           portfolioMovements as PortfolioMovement[],
@@ -384,6 +436,13 @@ export class PortfolioMovementCorrectionService {
           selectedToken.symbol,
           selectedToken.unique_id,
         );
+
+        if (Math.abs(gain) < selectedToken.maxDeviationSinglePayment) {
+          logger.info(
+            `fixErrorsAndMissingDataRecursively excluding token ${selectedToken.symbol}. Chain ${chainInfo.domain}`,
+          );
+          excludeTokens.push(selectedToken.unique_id);
+        }
 
         deviations =
           await this.portfolioChangeValidationService.calculateDeviationFromExpectation(
@@ -396,7 +455,7 @@ export class PortfolioMovementCorrectionService {
             feeToken,
           );
 
-        selectedToken = selectToken(deviations);
+        selectedToken = selectToken(deviations, excludeTokens);
         if (selectedToken) {
           logger.info(
             `PortfolioMovementCorrectionService for ${chainInfo.domain} and ${address} next token: ` +
@@ -409,7 +468,7 @@ export class PortfolioMovementCorrectionService {
           logger.warn(
             `Timeout when calling node WS for ${chainInfo.domain} and ${address}. Pausing 3 min.`,
           );
-          if (timeoutErrors > 5) {
+          if (timeoutErrors > 3) {
             logger.warn(`Several timeout errors received. Rethrowing.`);
             throw error;
           }
