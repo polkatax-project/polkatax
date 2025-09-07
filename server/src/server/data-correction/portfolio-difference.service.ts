@@ -1,5 +1,6 @@
 import { SubscanApi } from "../blockchain/substrate/api/subscan.api";
 import { PolkadotApi } from "../blockchain/substrate/api/polkadot-api";
+import * as subscanChains from "../../../res/gen/subscan-chains.json";
 
 const POLKADOT_API_TIMEOUT = 30_000;
 
@@ -50,26 +51,25 @@ export class PortfolioDifferenceService {
     minBlock: number,
     maxBlock: number,
   ): Promise<PortfolioDifference[]> {
-    switch (chainInfo.domain) {
-      case "hydration":
-      case "basilisk":
-      case "bifrost":
-      case "bofrost-kusama":
-        const tokenDiff = await this.fetchPortfolioTokenDifference(
-          chainInfo,
-          address,
-          minBlock,
-          maxBlock,
-        );
-        return tokenDiff;
-      default:
-        const assetDiff = await this.fetchPortfolioAssetDifference(
-          chainInfo,
-          address,
-          minBlock,
-          maxBlock,
-        );
-        return assetDiff;
+    const tokenPallet = subscanChains.chains.find(
+      (c) => c.domain === chainInfo.domain,
+    )?.tokenPallet;
+    if (tokenPallet) {
+      const tokenDiff = await this.fetchPortfolioTokenDifference(
+        chainInfo,
+        address,
+        minBlock,
+        maxBlock,
+      );
+      return tokenDiff;
+    } else {
+      const assetDiff = await this.fetchPortfolioAssetDifference(
+        chainInfo,
+        address,
+        minBlock,
+        maxBlock,
+      );
+      return assetDiff;
     }
   }
 

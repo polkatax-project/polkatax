@@ -121,6 +121,7 @@ const fetchListOfSupportedChains = async () => {
         stakingPallets: pallets.filter(
           (name) => name.toLowerCase().indexOf("staking") > -1,
         ),
+        tokenPallet: pallets.indexOf("Tokens") > -1,
         evmPallet: pallets.indexOf("EVM") > -1,
         assetPallet: pallets.indexOf("Assets") > -1,
         foreignAssetsPallet: pallets.indexOf("ForeignAssets") > -1,

@@ -83,9 +83,7 @@
     "wss://polimec.dotters.network",
     "wss://rpc.polimec.org"
   ],
-  "crust": [
-    "wss://crust.api.onfinality.io/public-ws"
-  ],
+  "crust": ["wss://crust.api.onfinality.io/public-ws"],
   "polkadot_bridge_hub": [
     "wss://bridge-hub-polkadot-rpc.dwellir.com",
     "wss://polkadot-bridge-hub-rpc-tn.dwellir.com",
