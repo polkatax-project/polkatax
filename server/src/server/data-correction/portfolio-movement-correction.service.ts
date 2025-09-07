@@ -371,7 +371,7 @@ export class PortfolioMovementCorrectionService {
       logger.info(
         `Exit fixErrorsAndMissingData for ${chainInfo.domain}, ${address}`,
       );
-      return deviationsAfterFix
+      return deviationsAfterFix;
     } finally {
       this.portfolioChangeValidationService.disconnectApi();
     }

@@ -5,8 +5,10 @@ import { dataPlatformChains } from "./model/data-platform-chains";
 import { SubscanService } from "../blockchain/substrate/api/subscan.service";
 import { AggregatedStakingReward } from "../data-aggregation/model/aggregated-staking-reward";
 import * as subscanChains from "../../../res/gen/subscan-chains.json";
-import { StakingResults } from "./model/staking-results";
 import { ChainSlashes } from "./model/chain-slashes";
+import { StakingResultsDetailed } from "./model/staking-results";
+import { toSubscanExtrinsixIndex } from "./helper/to-subscan-extrinsic-id";
+import { parseCETDate } from "./helper/parse-cet-date";
 
 function endOfDayUTC(dateStr: string): number {
   const dateTimeStr = `${dateStr}T23:59:59.999Z`;
@@ -25,52 +27,52 @@ export class DataPlatformStakingService {
     minDate: string = `${new Date().getUTCFullYear() - 1}-01-01`,
     maxDate: string = `${new Date().getUTCFullYear() - 1}-12-31`,
   ): Promise<AggregatedStakingReward[]> {
-    logger.info(
-      `Entry fetchAggregatedStakingRewards for ${address} and chain ${chain}`,
+    logger.info(`Entry fetchStakingRewards for ${address} and chain ${chain}`);
+    const { stakingResults, chainSlashes } = await this.fetchRewards(
+      address,
+      chain,
+      minDate,
+      maxDate,
     );
-    const { stakingResults, chainSlashes } =
-      await this.fetchAggregatedStakingResults(
-        address,
-        chain,
-        minDate,
-        maxDate,
-      );
-    const rewards = await this.mapToAggregatedStakingRewards(
+    const rewards = await this.mapToDataPlatformStakingRewards(
       address,
       chain,
       stakingResults,
       chainSlashes,
     );
-    logger.info(
-      `Exit fetchAggregatedStakingRewards with ${rewards.length} entries`,
-    );
+    logger.info(`Exit fetchStakingRewards with ${rewards.length} entries`);
     return rewards;
   }
 
-  private async mapToAggregatedStakingRewards(
+  private async mapToDataPlatformStakingRewards(
     address: string,
     domain: string,
-    stakingResults: StakingResults,
+    stakingResults: StakingResultsDetailed,
     chainSlashes: ChainSlashes,
   ): Promise<AggregatedStakingReward[]> {
     const token = await this.subscanService.fetchNativeToken(domain);
     const symbol = subscanChains.chains.find((c) => c.domain === domain)?.token;
-    const rewardToTransfer = (reward: { totalAmount; executionDate }) => ({
+    const rewardToTransfer = (reward: {
+      amount;
+      blockTimestamp;
+      blockNumber;
+      extrinsicId;
+    }): any => ({
       label: "Staking reward" as const,
-      provenance: "aggregatedData" as const,
+      provenance: "dataPlatformApi" as const,
       transfers: [
         {
           symbol,
-          amount: BigNumber(reward.totalAmount)
+          amount: BigNumber(reward.amount)
             .multipliedBy(Math.pow(10, -token.token_decimals))
             .toNumber(),
           to: address,
           asset_unique_id: symbol,
-          nominationPool: true,
         },
       ],
-      timestamp: endOfDayUTC(reward.executionDate),
-      isoDate: reward.executionDate,
+      timestamp: parseCETDate(reward.blockTimestamp),
+      block: reward.blockNumber,
+      extrinsic_index: toSubscanExtrinsixIndex(reward.extrinsicId),
     });
 
     const aggregatedRewards: AggregatedStakingReward[] = (
@@ -81,14 +83,21 @@ export class DataPlatformStakingService {
     );
 
     const slashToTransfer = (slash: { totalAmount; executionDate }) => {
-      const transfer = rewardToTransfer(slash);
       return {
-        ...transfer,
         label: "Staking slashed" as const,
-        transfers: transfer.transfers.map((t) => ({
-          ...t,
-          amount: -t.amount,
-        })),
+        provenance: "aggregatedData" as const,
+        transfers: [
+          {
+            symbol,
+            amount: -BigNumber(slash.totalAmount)
+              .multipliedBy(Math.pow(10, -token.token_decimals))
+              .toNumber(),
+            to: address,
+            asset_unique_id: symbol,
+            nominationPool: true,
+          },
+        ],
+        timestamp: endOfDayUTC(slash.executionDate),
       };
     };
     (chainSlashes?.balanceSlashingResults || []).forEach((slash) => {
@@ -101,13 +110,16 @@ export class DataPlatformStakingService {
     return aggregatedRewards;
   }
 
-  private async fetchAggregatedStakingResults(
+  private async fetchRewards(
     address: string,
     domain: string,
     minDate: string = `${new Date().getUTCFullYear() - 1}-01-01`,
     maxDate: string = `${new Date().getUTCFullYear() - 1}-12-31`,
-  ): Promise<{ stakingResults: StakingResults; chainSlashes: ChainSlashes }> {
-    logger.info(`Entry fetchAggregatedStakingRewards for ${address}`);
+  ): Promise<{
+    stakingResults: StakingResultsDetailed;
+    chainSlashes: ChainSlashes;
+  }> {
+    logger.info(`Entry fetchRewards for ${address}`);
     const rewards = await this.dataPlatformApi.fetchStakingRewards(
       address,
       minDate,

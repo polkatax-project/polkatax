@@ -8,6 +8,7 @@ export type Provenance =
   | "stakingRewards"
   | "tx"
   | "aggregatedData"
+  | "dataPlatformApi"
   | "deviationCompensation";
 
 export interface PortfolioMovement {
