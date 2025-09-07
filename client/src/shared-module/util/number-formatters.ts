@@ -30,6 +30,10 @@ export const formatCurrency = (value: number | undefined, currency: string) => {
 };
 
 export const formatCryptoAmount = (value: number): string => {
+  if (value === null || value === undefined) {
+    return '-'
+  }
+
   if (value === 0) {
     return '0';
   }

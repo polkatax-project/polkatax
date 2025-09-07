@@ -1,6 +1,7 @@
 import { Job } from "../../model/job";
 import * as subscanChains from "../../../res/gen/subscan-chains.json";
 import { PortfolioMovementCorrectionService } from "../data-correction/portfolio-movement-correction.service";
+import { simplifyAssetMovements } from "../data-aggregation/helper/simplify-asset-movements";
 
 export class JobPostProcessor {
   constructor(
@@ -21,8 +22,9 @@ export class JobPostProcessor {
         job.syncUntilDate,
       );
 
-    const relevantPortfolioMovements = job.data.values.filter(
-      (p) => p.transfers.length > 0,
+    const relevantPortfolioMovements = simplifyAssetMovements(
+      job.wallet,
+      job.data.values,
     );
     job.data = { values: relevantPortfolioMovements, deviations };
     return job;

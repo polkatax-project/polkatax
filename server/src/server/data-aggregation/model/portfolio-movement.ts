@@ -26,21 +26,23 @@ export interface PortfolioMovement {
   events: { moduleId: string; eventId: string; eventIndex: string }[];
   label?: Label;
   provenance?: Provenance;
-  transfers: {
-    symbol: string;
-    amount: number;
-    from: string;
-    to: string;
-    extrinsic_index?: string;
-    price?: number;
-    fiatValue?: number;
-    coingeckoId?: string;
-    module?: string;
-    fromChain?: string;
-    toChain?: string;
-    asset_type?: string;
-    asset_unique_id?: string;
-  }[];
+  transfers: TaxableEventTransfer[];
+}
+
+export interface TaxableEventTransfer {
+  symbol: string;
+  amount: number;
+  from: string;
+  to: string;
+  extrinsic_index?: string;
+  price?: number;
+  fiatValue?: number;
+  coingeckoId?: string;
+  module?: string;
+  fromChain?: string;
+  toChain?: string;
+  asset_type?: string;
+  asset_unique_id?: string;
 }
 
 export type TaxableEvent = PortfolioMovement | AggregatedStakingReward;

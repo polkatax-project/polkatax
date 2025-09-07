@@ -156,7 +156,7 @@ export class PortfolioDifferenceService {
     tokens: T[],
     portfolioAtMinBlock: { asset_unique_id: string; balance: number }[],
     portfolioAtMaxBlock: { asset_unique_id: string; balance: number }[],
-    defaultValue: undefined | number
+    defaultValue: undefined | number,
   ) {
     return tokens.map((t) => {
       const balanceBefore =
@@ -233,7 +233,7 @@ export class PortfolioDifferenceService {
       relevantTokens,
       portfolioAtMinBlock,
       portfolioAtMaxBlock,
-      undefined
+      undefined,
     );
   }
 
@@ -276,7 +276,7 @@ export class PortfolioDifferenceService {
       tokens,
       portfolioAtMinBlock,
       portfolioAtMaxBlock,
-      0
+      0,
     );
   }
 

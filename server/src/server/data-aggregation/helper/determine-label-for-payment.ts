@@ -236,6 +236,18 @@ const callModuleClassifications: CallModuleClassification[] = [
             name: "add_liquidity",
             label: "Liquidity added" as const,
           },
+          {
+            name: "add_liquidity_one_asset",
+            label: "Liquidity added" as const,
+          },
+          {
+            name: "remove_liquidity_one_asset",
+            label: "Liquidity removed" as const,
+          },
+          {
+            name: "remove_liquidity",
+            label: "Liquidity removed" as const,
+          },
         ],
       },
       {

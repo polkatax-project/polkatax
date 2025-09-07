@@ -230,10 +230,10 @@ const rows = computed(() => {
         .filter((t) => !!t)
         .join('-'),
       extrinsic_index: data.extrinsic_index,
-      addresses: data.transfers
+      addresses: [...new Set(data.transfers
         .map((t) => [t.from, t.to])
         .flat()
-        .filter((a) => !!a),
+        .filter((a) => !!a))],
       fiatSent: data.transfers
         .filter((t) => t.amount < 0)
         .map((t) =>

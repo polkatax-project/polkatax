@@ -37,7 +37,7 @@ const ACCEPTED_DEVIATIONS = [
     singlePayment: 0.01,
     max: 0.01,
   },
-    {
+  {
     symbol: "ETH",
     singlePayment: 0.01,
     max: 0.01,
