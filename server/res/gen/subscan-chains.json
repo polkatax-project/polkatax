@@ -131,7 +131,7 @@
       "label": "SORA",
       "token": "XOR",
       "stakingPallets": ["Staking", "CeresStaking"],
-      "tokenPallet": true,
+      "tokenPallet": false,
       "evmPallet": false,
       "assetPallet": true,
       "foreignAssetsPallet": false,

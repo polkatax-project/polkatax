@@ -28,6 +28,7 @@ const knownChainProperties = [
   { domain: "kusama", isRelay: true, paraId: 0 },
   { domain: "enjin", isRelay: true, paraId: 0 },
   { domain: "phala", excluded: true },
+  { domain: "sora", tokenPallet: false },
 ];
 
 const fetchParaChainIds = async (): Promise<
