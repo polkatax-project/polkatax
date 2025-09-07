@@ -163,13 +163,13 @@ export class PortfolioDifferenceService {
           (p) =>
             p.asset_unique_id === t.unique_id ||
             p.asset_unique_id === t.asset_id,
-        )?.balance ?? 0;
+        )?.balance;
       const balanceAfter =
         portfolioAtMaxBlock.find(
           (p) =>
             p.asset_unique_id === t.unique_id ||
             p.asset_unique_id === t.asset_id,
-        )?.balance ?? 0;
+        )?.balance;
       return {
         ...t,
         balanceBefore,
