@@ -329,33 +329,6 @@ export class PortfolioChangeValidationService {
   ): Promise<Deviation[]> {
     const deviations: Deviation[] = [];
 
-    const portfolioTokenIds = portfolioDifferences.map((d) => d.unique_id);
-    const tokenIdsNotInPortfolio: string[] = [];
-    const tokensNotInPortfolio: Partial<PortfolioDifference>[] = [];
-
-    portfolioMovements.forEach((p) =>
-      p.transfers
-        .filter((t) => t.asset_unique_id)
-        .forEach((t: Transfer) => {
-          if (
-            !portfolioTokenIds.includes(t.asset_unique_id) &&
-            !tokenIdsNotInPortfolio.includes(t.asset_unique_id)
-          ) {
-            tokenIdsNotInPortfolio.push(t.asset_unique_id);
-            tokensNotInPortfolio.push({
-              symbol: t.symbol,
-              unique_id: t.asset_unique_id,
-              diff: 0,
-              native: t.asset_unique_id === chainInfo.token,
-            });
-          }
-        }),
-    );
-
-    const allTokens = portfolioDifferences.concat(
-      tokensNotInPortfolio as PortfolioDifference[],
-    );
-
     const matchingPortfolioMovements = this.filterMovementsWithinRange(
       portfolioMovements,
       minBlock,
@@ -363,7 +336,7 @@ export class PortfolioChangeValidationService {
     );
 
     // compute deviations per token
-    for (const tokenInPortfolio of allTokens) {
+    for (const tokenInPortfolio of portfolioDifferences) {
       const { expectedDiff, transferCounter } =
         await this.calculateExpectedDiffForToken(
           chainInfo,

@@ -90,11 +90,17 @@ const verifyPortfolioChanges = async (
     };
 
   if (portfolioMovements.length === 0) {
-    return 
+    return;
   }
 
-  const minBlock = portfolioMovements.reduce((curr, next) => Math.min(curr, next.block ?? Number.MAX_SAFE_INTEGER), Number.MAX_SAFE_INTEGER)
-  const maxBlock = portfolioMovements.reduce((curr, next) => Math.max(curr, next.block ?? 0), 0)
+  const minBlock = portfolioMovements.reduce(
+    (curr, next) => Math.min(curr, next.block ?? Number.MAX_SAFE_INTEGER),
+    Number.MAX_SAFE_INTEGER,
+  );
+  const maxBlock = portfolioMovements.reduce(
+    (curr, next) => Math.max(curr, next.block ?? 0),
+    0,
+  );
 
   const portfolioChangeValidationService: PortfolioChangeValidationService =
     container.resolve("portfolioChangeValidationService");
@@ -105,7 +111,7 @@ const verifyPortfolioChanges = async (
       portfolioMovements,
       acceptedDeviations,
       minBlock,
-      maxBlock
+      maxBlock,
     );
   deviations.forEach((d) => {
     if (d.absoluteDeviationTooLarge) {

@@ -3,7 +3,7 @@ import { ChainSlashes } from "./model/chain-slashes";
 import { LiquidStakingMintedInfos } from "./model/liquid-staking-minted-infos";
 import { LiquidStakingRebondedInfos } from "./model/liquid-staking-rebonded-infos";
 import { LiquidStakingRedeemedInfos } from "./model/liquid-staking-redeemed-infos";
-import { StakingResults } from "./model/staking-results";
+import { StakingResultsDetailed } from "./model/staking-results";
 
 export class DataPlatformApi {
   private requestHelper: RequestHelper;
@@ -19,9 +19,9 @@ export class DataPlatformApi {
     accountId: string,
     startDate: string,
     endDate: string,
-  ): Promise<{ items: StakingResults[] }> {
+  ): Promise<{ items: StakingResultsDetailed[] }> {
     return this.requestHelper.req(
-      `http://localhost:${process.env["DATA_PLATFORM_PORT"] || 9090}/api/rewards/list-account-rewards`,
+      `http://localhost:${process.env["DATA_PLATFORM_PORT"] || 9090}/api/rewards/list-account-rewards-detailed`,
       "POST",
       {
         accountId,

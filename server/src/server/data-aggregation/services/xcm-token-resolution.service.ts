@@ -109,7 +109,7 @@ export class XcmTokenResolutionService {
         amount,
         symbol: asset?.symbol,
         asset_unique_id: asset?.unique_id,
-        extrinsic_index: e.extrinsic_index
+        extrinsic_index: e.extrinsic_index,
       };
     });
     messages.forEach((xcm) => {
@@ -118,15 +118,16 @@ export class XcmTokenResolutionService {
         .filter((t) => !t.asset_unique_id)
         .forEach((transfer) => {
           const symbol = transfer.symbol;
-          const depositsMatchingTimestamp = balancesdepositEvents.filter((d) => d.timestamp)
+          const depositsMatchingTimestamp = balancesdepositEvents.filter(
+            (d) => d.timestamp,
+          );
 
           // there's a balances deposit and the symbol matches the chain native symbol
-          if (
-            depositsMatchingTimestamp.length > 0 &&
-            chain.token === symbol
-          ) {
+          if (depositsMatchingTimestamp.length > 0 && chain.token === symbol) {
             transfer.asset_unique_id = symbol;
-            xcm.extrinsic_index = xcm.extrinsic_index ?? depositsMatchingTimestamp[0].extrinsic_index
+            xcm.extrinsic_index =
+              xcm.extrinsic_index ??
+              depositsMatchingTimestamp[0].extrinsic_index;
             return;
           }
 
@@ -159,7 +160,8 @@ export class XcmTokenResolutionService {
           if (matchingDeposits.length === 1) {
             transfer.symbol = matchingDeposits[0].symbol;
             transfer.asset_unique_id = matchingDeposits[0].asset_unique_id;
-            xcm.extrinsic_index = xcm.extrinsic_index ?? matchingDeposits[0].extrinsic_index
+            xcm.extrinsic_index =
+              xcm.extrinsic_index ?? matchingDeposits[0].extrinsic_index;
             return;
           }
 

@@ -6,6 +6,8 @@ import isEqual from "lodash.isequal";
 import { Asset } from "../blockchain/substrate/model/asset";
 import { Transfer } from "../blockchain/substrate/model/raw-transfer";
 import { formatDate } from "../../common/util/date-utils";
+import { toSubscanExtrinsixIndex } from "./helper/to-subscan-extrinsic-id";
+import { parseCETDate } from "./helper/parse-cet-date";
 
 export class DataPlatformLiquidStakingService {
   constructor(
@@ -223,11 +225,6 @@ export class DataPlatformLiquidStakingService {
     return token;
   }
 
-  private toSubscanExtrinsixIndex(extrinsicIndex: string) {
-    const parts = extrinsicIndex.split("-");
-    return String(Number(parts[0])) + "-" + String(Number(parts[2]));
-  }
-
   private constructGenericTransferInfo(
     e: {
       eventId: string;
@@ -246,8 +243,8 @@ export class DataPlatformLiquidStakingService {
       asset_unique_id: vToken.unique_id,
       amount,
       block: Number(e.eventId.split("-")[0]),
-      timestamp: new Date(e.timestamp).getTime(),
-      extrinsic_index: this.toSubscanExtrinsixIndex(e.extrinsicId),
+      timestamp: parseCETDate(e.timestamp),
+      extrinsic_index: toSubscanExtrinsixIndex(e.extrinsicId),
       label: "Liquid staking token minted" as const,
     };
   }

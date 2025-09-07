@@ -84,10 +84,7 @@
     "wss://rpc.polimec.org"
   ],
   "crust": [
-    "wss://crust-parachain.crustapps.net",
-    "wss://crust-parachain.crustnetwork.app",
-    "wss://crust-parachain.crustnetwork.cc",
-    "wss://crust-parachain.crustnetwork.xyz"
+    "wss://crust.api.onfinality.io/public-ws"
   ],
   "polkadot_bridge_hub": [
     "wss://bridge-hub-polkadot-rpc.dwellir.com",
@@ -201,7 +198,7 @@
   ],
   "robonomics": ["wss://polkadot.rpc.robonomics.network/"],
   "robonomics-freemium": ["wss://kusama.rpc.robonomics.network/"],
-  "sora": ["wss://ws.parachain-collator-3.pc3.sora2.soramitsu.co.jp/"],
+  "sora": ["wss://crust.api.onfinality.io/public-ws"],
   "xcavate": ["wss://xcavate.ibp.network/", "wss://xcavate.dotters.network/"],
   "xode": ["wss://xcavate.dotters.network/"],
   "kintsugi": ["wss://kintsugi.api.onfinality.io/public-ws"],

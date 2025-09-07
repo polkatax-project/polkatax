@@ -1,17 +1,22 @@
-export interface StakingResults {
+export interface StakingResultsDetailed {
   chainType: string;
   stakingResults: [
     {
-      stakingResultType: string;
+      blockNumber: number;
       executionDate: string;
-      totalAmount: number;
+      amount: number;
+      blockTimestamp: string;
+      extrinsicId: string;
     },
   ];
   nominationPoolResults: [
     {
+      blockNumber: number;
       stakingResultType: string;
       executionDate: string;
-      totalAmount: number;
+      amount: number;
+      blockTimestamp: string;
+      extrinsicId: string;
     },
   ];
 }
