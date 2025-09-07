@@ -12,7 +12,7 @@ import { JobPostProcessor } from "./job.post-processor";
 import { createJobId } from "./helper/create-job-id";
 import { TaxableEvent } from "../data-aggregation/model/portfolio-movement";
 
-const PARALLEL_POST_PROCESSING_JOBS = 2;
+const PARALLEL_POST_PROCESSING_JOBS = 1;
 
 export class JobManager {
   private postProcessingQueue = new Subject<string>();
