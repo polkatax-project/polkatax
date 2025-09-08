@@ -157,6 +157,21 @@ export class PortfolioMovementCorrectionService {
         blocks.add(p.block);
         blocks.add(p.block - 1);
       }
+      if (!p.block) {
+        const block = await this.subscanApi.fetchBlock(
+          chainInfo.domain,
+          undefined,
+          Math.floor(p.timestamp / 1000),
+        );
+        if (block.block_num) {
+          blocks.add(block.block_num);
+          if (block.timestamp >= p.timestamp) {
+            blocks.add(block.block_num - 1);
+          } else {
+            blocks.add(block.block_num + 1);
+          }
+        }
+      }
     }
 
     const blocksOfInterest = Array.from(blocks).sort((a, b) => a - b);
