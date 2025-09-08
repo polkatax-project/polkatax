@@ -4,9 +4,7 @@ import { PortfolioMovement } from "../data-aggregation/model/portfolio-movement"
 import { SubscanEvent } from "../blockchain/substrate/model/subscan-event";
 import { PortfolioChangeValidationService } from "./portfolio-change-validation.service";
 import { logger } from "../logger/logger";
-import {
-  DeviationLimit,
-} from "./model/deviation-limit";
+import { DeviationLimit } from "./model/deviation-limit";
 import { Deviation } from "./model/deviation";
 
 const emptyDeviation = {
@@ -38,7 +36,7 @@ export class DeviationZoomer {
     tokenUniqueId?: string,
   ): Promise<number> {
     logger.info(
-      `enter splitIntervalAndFindDeviations on ${chain.domain} and ${address}`,
+      `Enter splitIntervalAndFindDeviations on ${chain.domain} and ${address}`,
     );
     const { interval, deviations, tokenDeviation } =
       await this.splitIntervalAndFindDeviations(
