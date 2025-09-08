@@ -2,14 +2,7 @@ import { JobsService } from "./jobs.service";
 import * as subscanChains from "../../../res/gen/subscan-chains.json";
 import * as substrateNodesWsEndpoints from "../../../res/substrate-nodes-ws-endpoints.json";
 import { Job } from "../../model/job";
-import {
-  concatMap,
-  filter,
-  firstValueFrom,
-  groupBy,
-  mergeMap,
-  Subject,
-} from "rxjs";
+import { filter, firstValueFrom, mergeMap, Subject } from "rxjs";
 import { determineNextJob } from "./determine-next-job";
 import { AwilixContainer } from "awilix";
 import { isEvmAddress } from "../data-aggregation/helper/is-evm-address";
@@ -22,7 +15,7 @@ import { TaxableEvent } from "../data-aggregation/model/portfolio-movement";
 const PARALLEL_POST_PROCESSING_JOBS = 1;
 
 export class JobManager {
-  private postProcessingQueue = new Subject<{ id: string; wallet: string }>();
+  private postProcessingQueue = new Subject<string>();
 
   constructor(
     private jobsService: JobsService,
@@ -123,7 +116,7 @@ export class JobManager {
         job = await jobProcessor.process(job);
 
         await this.jobsService.setToPostProcessing(job);
-        this.enqueueForPostProcessing(job.id, job.wallet);
+        this.enqueueForPostProcessing(job.id);
         const allPendingJobs = await this.jobsService.fetchAllPendingJobs();
         logger.info("Remaining pending jobs:" + allPendingJobs.length);
       } catch (error) {
@@ -133,29 +126,18 @@ export class JobManager {
     }
   }
 
-  private async enqueueForPostProcessing(jobId: string, wallet: string) {
-    this.postProcessingQueue.next({ id: jobId, wallet });
+  private async enqueueForPostProcessing(jobId: string) {
+    this.postProcessingQueue.next(jobId);
   }
 
-  /**
-   * Process one job per wallet in parallel only.
-   * Process two jobs in parallel at max if they refer to different wallets.
-   */
   private async startPostProcessing() {
     this.postProcessingQueue
       .pipe(
-        groupBy((job) => job.wallet),
-        mergeMap(
-          (userGroup$) =>
-            userGroup$.pipe(
-              concatMap(async (job) => {
-                logger.info("Postprocessing job: " + job.id);
-                await this.doPostProcessing(job.id);
-                logger.info("Finished postprocessing" + job.id);
-              }),
-            ),
-          PARALLEL_POST_PROCESSING_JOBS,
-        ),
+        mergeMap(async (jobId) => {
+          logger.info("Postprocessing job: " + jobId);
+          await this.doPostProcessing(jobId);
+          logger.info("Finished postprocessing" + jobId);
+        }, PARALLEL_POST_PROCESSING_JOBS),
       )
       .subscribe();
   }

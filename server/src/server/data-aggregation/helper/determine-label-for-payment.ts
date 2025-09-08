@@ -257,6 +257,10 @@ const callModuleClassifications: CallModuleClassification[] = [
             name: "add_liquidity_and_join_farms",
             label: "Liquidity added" as const,
           },
+          {
+            name: "add_liquidity",
+            label: "Liquidity added" as const,
+          },
         ],
       },
       {
