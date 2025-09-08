@@ -1,6 +1,5 @@
 import { SubscanApi } from "../blockchain/substrate/api/subscan.api";
 import { Block } from "../blockchain/substrate/model/block";
-import { Transfer } from "../blockchain/substrate/model/raw-transfer";
 import {
   PortfolioMovement,
   TaxableEvent,
@@ -10,117 +9,11 @@ import {
   PortfolioDifferenceService,
 } from "./portfolio-difference.service";
 import * as substrateNodesWsEndpoints from "../../../res/substrate-nodes-ws-endpoints.json";
-
-const DEFAULT_MAX_ALLOWED_DEVIATION = {
-  singlePayment: 1,
-  max: 3,
-};
-
-const ACCEPTED_DEVIATIONS = [
-  {
-    symbol: "DOT",
-    singlePayment: 0.5,
-    max: 2,
-  },
-  {
-    symbol: "TBTC",
-    singlePayment: 0.001,
-    max: 0.001,
-  },
-  {
-    symbol: "WBTC",
-    singlePayment: 0.001,
-    max: 0.001,
-  },
-  {
-    symbol: "WETH",
-    singlePayment: 0.01,
-    max: 0.01,
-  },
-  {
-    symbol: "ETH",
-    singlePayment: 0.01,
-    max: 0.01,
-  },
-  {
-    symbol: "KSM",
-    singlePayment: 0.1,
-    max: 1,
-  },
-  {
-    symbol: "USDT",
-    singlePayment: 0.5,
-    max: 2.5,
-  },
-  {
-    symbol: "USDC",
-    singlePayment: 0.5,
-    max: 2.5,
-  },
-  {
-    symbol: "DAI",
-    singlePayment: 0.5,
-    max: 2.5,
-  },
-  {
-    symbol: "ASTR",
-    singlePayment: 1,
-    max: 100,
-  },
-  {
-    symbol: "HDX",
-    singlePayment: 1,
-    max: 200,
-  },
-  {
-    symbol: "PHA",
-    singlePayment: 1,
-    max: 100,
-  },
-  {
-    symbol: "MYTH",
-    singlePayment: 1,
-    max: 10,
-  },
-  {
-    symbol: "EWT",
-    singlePayment: 1,
-    max: 2,
-  },
-  {
-    symbol: "BNC",
-    singlePayment: 1,
-    max: 10,
-  },
-  {
-    symbol: "INTR",
-    singlePayment: 1,
-    max: 100,
-  },
-  {
-    symbol: "GLMR",
-    singlePayment: 1,
-    max: 10,
-  },
-];
-
-export interface Deviation {
-  balanceBefore: number;
-  balanceAfter: number;
-  symbol: string;
-  unique_id: string;
-  decimals: number;
-  asset_id: number;
-  diff: number;
-  expectedDiff: number;
-  deviation: number;
-  signedDeviation: number;
-  absoluteDeviationTooLarge: boolean;
-  singlePaymentDeviationTooLarge: boolean;
-  numberTx: number;
-  maxAllowedDeviation: number;
-  maxDeviationSinglePayment: number;
-}
+import {
+  DEFAULT_DEVIATION_LIMIT,
+  DeviationLimit,
+} from "./model/deviation-limit";
+import { Deviation } from "./model/deviation";
 
 export class PortfolioChangeValidationService {
   constructor(
@@ -168,7 +61,7 @@ export class PortfolioChangeValidationService {
     chainInfo: { domain: string; token: string },
     address: string,
     portfolioMovements: TaxableEvent[],
-    acceptedDeviations = ACCEPTED_DEVIATIONS,
+    acceptedDeviations: DeviationLimit[],
     minBlockNum: number,
     maxBlockNum: number,
     feeToken?: string,
@@ -204,7 +97,7 @@ export class PortfolioChangeValidationService {
     chainInfo: { domain: string; token: string },
     address: string,
     portfolioMovements: TaxableEvent[],
-    acceptedDeviations = ACCEPTED_DEVIATIONS,
+    acceptedDeviations: DeviationLimit[],
     minBlockNum: number,
     maxBlockNum: number,
   ): Promise<string | undefined> {
@@ -293,7 +186,7 @@ export class PortfolioChangeValidationService {
   private evaluateDeviationAgainstThreshold(
     tokenInPortfolio: PortfolioDifference,
     expectedDiff: number,
-    acceptedDeviations: typeof ACCEPTED_DEVIATIONS,
+    acceptedDeviations: DeviationLimit[],
     numberTx: number,
   ): Deviation {
     const signedDeviation = tokenInPortfolio.diff - expectedDiff;
@@ -302,11 +195,7 @@ export class PortfolioChangeValidationService {
     const maxAllowedDeviation =
       acceptedDeviations.find(
         (a) => a.symbol.toUpperCase() === tokenInPortfolio.symbol.toUpperCase(),
-      ) ??
-      ACCEPTED_DEVIATIONS.find(
-        (a) => a.symbol.toUpperCase() === tokenInPortfolio.symbol.toUpperCase(),
-      ) ??
-      DEFAULT_MAX_ALLOWED_DEVIATION;
+      ) ?? DEFAULT_DEVIATION_LIMIT;
 
     return {
       balanceBefore: tokenInPortfolio.balanceBefore,
@@ -332,7 +221,7 @@ export class PortfolioChangeValidationService {
     chainInfo: { domain: string; token: string },
     portfolioMovements: TaxableEvent[],
     portfolioDifferences: PortfolioDifference[],
-    acceptedDeviations = ACCEPTED_DEVIATIONS,
+    acceptedDeviations: DeviationLimit[],
     minBlock: Block,
     maxBlock: Block,
     feeToken?: string,

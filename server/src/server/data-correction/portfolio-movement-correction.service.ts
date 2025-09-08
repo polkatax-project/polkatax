@@ -4,10 +4,7 @@ import {
   TaxableEvent,
 } from "../data-aggregation/model/portfolio-movement";
 import { logger } from "../logger/logger";
-import {
-  Deviation,
-  PortfolioChangeValidationService,
-} from "./portfolio-change-validation.service";
+import { PortfolioChangeValidationService } from "./portfolio-change-validation.service";
 import { FetchCurrentPrices } from "./fetch-crypto-prices";
 import { BlockTimeService } from "../blockchain/substrate/services/block-time.service";
 import { isEvmAddress } from "../data-aggregation/helper/is-evm-address";
@@ -17,6 +14,9 @@ import * as substraeteToCoingeckoIds from "../../../res/substrate-token-to-coing
 import { selectToken } from "./helper/select-token";
 import { TimeoutError } from "../../common/util/with-timeout";
 import * as fs from "fs";
+import { Deviation } from "./model/deviation";
+import { DEVIATION_LIMITS } from "./const/deviation-limits";
+import { DeviationLimit } from "./model/deviation-limit";
 
 export class PortfolioMovementCorrectionService {
   constructor(
@@ -28,7 +28,7 @@ export class PortfolioMovementCorrectionService {
     private deviationZoomer: DeviationZoomer,
   ) {}
 
-  async determineAdequateMaxDeviations() {
+  async determineAdequateMaxDeviations(): Promise<DeviationLimit[]> {
     const goingeckoIds = substraeteToCoingeckoIds.tokens.map(
       (t) => t.coingeckoId,
     );
@@ -36,7 +36,7 @@ export class PortfolioMovementCorrectionService {
       goingeckoIds,
       "usd",
     );
-    return substraeteToCoingeckoIds.tokens
+    const deviationLimits = await substraeteToCoingeckoIds.tokens
       .map((token) => {
         const value = values[token.coingeckoId]?.usd;
         if (!value) return null;
@@ -47,6 +47,13 @@ export class PortfolioMovementCorrectionService {
         };
       })
       .filter(Boolean);
+
+    DEVIATION_LIMITS.forEach((d) => {
+      if (!deviationLimits.find((l) => d.symbol === l.symbol)) {
+        deviationLimits.push(d);
+      }
+    });
+    return deviationLimits;
   }
 
   async determineMinMaxBlock(
@@ -254,7 +261,6 @@ export class PortfolioMovementCorrectionService {
           portfolioMovements as PortfolioMovement[],
           [],
           selectedToken,
-          deviations,
           startBlock,
           endBlock,
         );
@@ -396,7 +402,7 @@ export class PortfolioMovementCorrectionService {
     chainInfo: { domain: string; token: string },
     address: string,
     portfolioMovements: TaxableEvent[],
-    acceptedDeviations: any,
+    acceptedDeviations: DeviationLimit[],
     blockMin: number,
     blockMax: number,
     feeToken: string | undefined,
@@ -447,6 +453,7 @@ export class PortfolioMovementCorrectionService {
           address,
           portfolioMovements as PortfolioMovement[],
           [],
+          acceptedDeviations,
           minBlock,
           maxBlock,
           selectedToken.symbol,

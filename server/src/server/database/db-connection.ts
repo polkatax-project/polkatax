@@ -8,8 +8,9 @@ export const connectToDb = async (): Promise<Client> => {
   if (client) {
     return client;
   }
-  client = process.env["POSTGRES_DATABASE"]
-    ? await initPostgresDbClient()
-    : await initInMemoryDb();
+  client =
+    process.env["POSTGRES_DATABASE"] === "true"
+      ? await initPostgresDbClient()
+      : await initInMemoryDb();
   return client;
 };

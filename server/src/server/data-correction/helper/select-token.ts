@@ -1,4 +1,4 @@
-import { Deviation } from "../portfolio-change-validation.service";
+import { Deviation } from "../model/deviation";
 
 export const selectToken = (
   deviations: Deviation[],

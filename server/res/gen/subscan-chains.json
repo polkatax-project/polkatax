@@ -731,7 +731,7 @@
       "label": "Centrifuge",
       "token": "CFG",
       "stakingPallets": [],
-      "tokenPallet": true,
+      "tokenPallet": false,
       "evmPallet": true,
       "assetPallet": false,
       "foreignAssetsPallet": false,

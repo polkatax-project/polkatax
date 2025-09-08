@@ -2,11 +2,12 @@ import { SubscanApi } from "../blockchain/substrate/api/subscan.api";
 import { Block } from "../blockchain/substrate/model/block";
 import { PortfolioMovement } from "../data-aggregation/model/portfolio-movement";
 import { SubscanEvent } from "../blockchain/substrate/model/subscan-event";
-import {
-  Deviation,
-  PortfolioChangeValidationService,
-} from "./portfolio-change-validation.service";
+import { PortfolioChangeValidationService } from "./portfolio-change-validation.service";
 import { logger } from "../logger/logger";
+import {
+  DeviationLimit,
+} from "./model/deviation-limit";
+import { Deviation } from "./model/deviation";
 
 const emptyDeviation = {
   deviation: 0,
@@ -30,6 +31,7 @@ export class DeviationZoomer {
     address: string,
     portfolioMovements: PortfolioMovement[],
     unmatchedEvents: SubscanEvent[],
+    acceptedDeviations: DeviationLimit[],
     minBlock: Block,
     maxBlock: Block,
     tokenSymbol: string,
@@ -43,6 +45,7 @@ export class DeviationZoomer {
         chain,
         address,
         portfolioMovements,
+        acceptedDeviations,
         minBlock,
         maxBlock,
         tokenSymbol,
@@ -70,6 +73,7 @@ export class DeviationZoomer {
         address,
         portfolioMovements,
         unmatchedEvents,
+        acceptedDeviations,
         interval.startBlock,
         interval.endBlock,
         tokenSymbol,
@@ -77,18 +81,18 @@ export class DeviationZoomer {
       );
     } else {
       logger.info(
-        `enter compensateDeviation on ${chain.domain} and ${address}`,
+        `Enter compensateDeviation on ${chain.domain} and ${address}`,
       );
+
       this.compensateDeviation(
         address,
         portfolioMovements,
         unmatchedEvents,
         { ...tokenDeviation, symbol: tokenSymbol, unique_id: tokenUniqueId },
-        deviations,
         interval.startBlock,
         interval.endBlock,
       );
-      logger.info(`exit compensateDeviation on ${chain.domain} and ${address}`);
+      logger.info(`Exit compensateDeviation on ${chain.domain} and ${address}`);
       return tokenDeviation.deviation;
     }
   }
@@ -97,6 +101,7 @@ export class DeviationZoomer {
     chain: { domain: string; token: string },
     address: string,
     portfolioMovements: PortfolioMovement[],
+    acceptedDeviations: DeviationLimit[],
     minBlock: Block,
     maxBlock: Block,
     tokenSymbol: string,
@@ -127,7 +132,7 @@ export class DeviationZoomer {
         chain,
         address,
         firstHalf,
-        undefined,
+        acceptedDeviations,
         blocks[0].block_num,
         blocks[1].block_num,
       );
@@ -136,7 +141,7 @@ export class DeviationZoomer {
         chain,
         address,
         secondHalf,
-        undefined,
+        acceptedDeviations,
         blocks[1].block_num,
         blocks[2].block_num,
       );
@@ -183,12 +188,12 @@ export class DeviationZoomer {
 
     const otherToken = deviations.find(
       (d) =>
-        d.signedDeviation + tokenDeviation.signedDeviation <
-          0.05 * tokenDeviation.deviation &&
+        (d.signedDeviation + tokenDeviation.signedDeviation <
+          0.05 * tokenDeviation.deviation ||
+          tokenDeviation.deviation === undefined) &&
         d.symbol.toUpperCase() === tokenDeviation.symbol.toUpperCase() &&
         d.unique_id !== tokenDeviation.unique_id,
     );
-    if (!otherToken) return false;
 
     const movements = portfolioMovements.filter(
       (p) =>
@@ -210,7 +215,7 @@ export class DeviationZoomer {
           t.symbol.toUpperCase() === tokenDeviation.symbol.toUpperCase() &&
           t.module === "xcm",
       );
-      if (xcmTransfer) {
+      if (xcmTransfer && otherToken) {
         logger.info(
           `Fix: Adjusting assets in xcm transfer swapping ${tokenDeviation.symbol}. ${matchingXcms[0].extrinsic_index}, ${matchingXcms[0].timestamp}`,
         );
@@ -220,6 +225,24 @@ export class DeviationZoomer {
           xcmTransfer.asset_unique_id === tokenDeviation.unique_id
             ? otherToken.unique_id
             : tokenDeviation.unique_id;
+        return true;
+      }
+
+      const conflictingToken = deviations.find(
+        (d) =>
+          d.unique_id === xcmTransfer.asset_unique_id &&
+          d.symbol.toUpperCase() === tokenDeviation.symbol.toUpperCase() &&
+          d.unique_id !== tokenDeviation.unique_id,
+      );
+
+      if (
+        !conflictingToken &&
+        xcmTransfer.amount * tokenDeviation.signedDeviation > 0 &&
+        xcmTransfer.asset_unique_id !== tokenDeviation.unique_id
+      ) {
+        (xcmTransfer as any).asset_unique_id_before_correction =
+          xcmTransfer.asset_unique_id;
+        xcmTransfer.asset_unique_id = tokenDeviation.unique_id;
         return true;
       }
     }
@@ -236,92 +259,13 @@ export class DeviationZoomer {
       symbol: string;
       unique_id: string;
     },
-    deviations: Deviation[],
     startBlock: Block,
     endBlock: Block,
   ) {
-    const amountSuitable = (transferAmount: number) => {
-      if (tokenDeviation.signedDeviation > 0) {
-        return transferAmount <= 0;
-      } else {
-        return transferAmount >= 0;
-      }
-    };
     const matchingEvents = unmatchedEvents.filter(
       (e) =>
         e.timestamp <= endBlock.timestamp && e.timestamp > startBlock.timestamp,
     );
-    const matchingMovement = taxableEvents.find(
-      (p) =>
-        p.timestamp <= endBlock.timestamp &&
-        p.timestamp > startBlock.timestamp &&
-        p.transfers.some(
-          (t) =>
-            t.asset_unique_id === tokenDeviation.unique_id &&
-            amountSuitable(t.amount),
-        ),
-    );
-    const matchingTransfer = (matchingMovement?.transfers ?? []).find(
-      (t) =>
-        t.asset_unique_id === tokenDeviation.unique_id &&
-        amountSuitable(t.amount),
-    );
-
-    if (matchingTransfer) {
-      logger.info(
-        `Fix: Adjusting transfer by ${tokenDeviation.signedDeviation} ${tokenDeviation.symbol} in ${matchingMovement.extrinsic_index}. `,
-      );
-      if (matchingTransfer.amount === -tokenDeviation.signedDeviation) {
-        (matchingTransfer as any).amountBeforeCorrection =
-          matchingTransfer.amount;
-        matchingTransfer.amount = 0;
-      } else {
-        (matchingTransfer as any).amountBeforeCorrection =
-          matchingTransfer.amount;
-        matchingTransfer.amount += tokenDeviation.signedDeviation;
-      }
-      return;
-    }
-
-    const matchingXcm = taxableEvents.find(
-      (p) =>
-        p.timestamp <= endBlock.timestamp &&
-        p.timestamp > startBlock.timestamp &&
-        p.transfers.some(
-          (t) =>
-            t.module === "xcm" &&
-            t.symbol.toUpperCase() === tokenDeviation.symbol.toUpperCase() &&
-            amountSuitable(t.amount) &&
-            !t.asset_unique_id,
-        ),
-    );
-    const matchingXcmTransfer = (matchingXcm?.transfers ?? []).find(
-      (t) =>
-        t.symbol.toUpperCase() === tokenDeviation.symbol.toUpperCase() &&
-        amountSuitable(t.amount) &&
-        t.module === "xcm" &&
-        !t.asset_unique_id,
-    );
-
-    // remove or modify offending XCM
-    if (matchingXcmTransfer) {
-      const xcmMeantForThisToken = deviations.find(
-        (d) =>
-          d.symbol.toUpperCase() === tokenDeviation.symbol.toUpperCase() &&
-          !d.absoluteDeviationTooLarge,
-      );
-      logger.info(
-        `Fix: Adjusting xcm transfer by ${tokenDeviation.signedDeviation} ${tokenDeviation.symbol} ${matchingXcmTransfer.extrinsic_index}`,
-      );
-      if (xcmMeantForThisToken) {
-        matchingXcmTransfer.asset_unique_id = xcmMeantForThisToken.unique_id;
-      } else {
-        (matchingXcmTransfer as any).amountBeforeCorrection =
-          matchingXcmTransfer.amount;
-        matchingXcmTransfer.amount = 0;
-      }
-      return;
-    }
 
     const existingTx = taxableEvents.find(
       (p) =>
@@ -332,7 +276,7 @@ export class DeviationZoomer {
       asset_unique_id: tokenDeviation.unique_id,
       to: tokenDeviation.signedDeviation > 0 ? address : "",
       from: tokenDeviation.signedDeviation < 0 ? address : "",
-      amount: Math.abs(tokenDeviation.signedDeviation),
+      amount: tokenDeviation.signedDeviation,
       provenance: "deviationCompensation",
       events: matchingEvents.map((e) => ({
         moduleId: e.module_id,
