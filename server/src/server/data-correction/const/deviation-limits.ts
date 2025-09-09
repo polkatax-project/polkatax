@@ -8,32 +8,32 @@ export const DEVIATION_LIMITS: DeviationLimit[] = [
   },
   {
     symbol: "TBTC",
-    singlePayment: 0.001,
+    singlePayment: 0.0001,
     max: 0.001,
   },
   {
     symbol: "WBTC",
-    singlePayment: 0.001,
+    singlePayment: 0.0001,
     max: 0.001,
   },
   {
     symbol: "KBTC",
-    singlePayment: 0.001,
+    singlePayment: 0.0001,
     max: 0.001,
   },
   {
     symbol: "IBTC",
-    singlePayment: 0.001,
+    singlePayment: 0.0001,
     max: 0.001,
   },
   {
     symbol: "WETH",
-    singlePayment: 0.01,
+    singlePayment: 0.001,
     max: 0.01,
   },
   {
     symbol: "ETH",
-    singlePayment: 0.01,
+    singlePayment: 0.001,
     max: 0.01,
   },
   {

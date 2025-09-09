@@ -153,7 +153,7 @@ export class PortfolioMovementCorrectionService {
     feeToken: string | undefined,
   ) {
     logger.info(
-      `Enter fixErrorsValidateEachBlock for ${chainInfo.domain}, ${address}`,
+      `Enter fixErrorsValidateEachBlock for ${chainInfo.domain}, ${address}.}`,
     );
     const blocks = new Set<number>();
     for (const p of portfolioMovements as PortfolioMovement[]) {
@@ -185,14 +185,8 @@ export class PortfolioMovementCorrectionService {
 
     const blocksOfInterest = Array.from(blocks).sort((a, b) => a - b);
 
-    await this.calculateDeviationWithRetry(
-      chainInfo,
-      address,
-      portfolioMovements,
-      acceptedDeviations,
-      blockMin,
-      blockMax,
-      feeToken,
+    logger.info(
+      `fixErrorsValidateEachBlock iterating over ${blocksOfInterest.length} blocks for ${chainInfo.domain}, ${address}.}`,
     );
 
     for (let idx = 0; idx < blocksOfInterest.length - 1; idx++) {

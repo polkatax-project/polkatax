@@ -51,7 +51,7 @@ export class DeviationZoomer {
       );
 
     logger.info(
-      `zoomInAndFix on ${chain.domain} and ${address}. Deviation  ${tokenDeviation.signedDeviation}`,
+      `zoomInAndFix on ${chain.domain} and ${address}. Deviation  ${tokenDeviation.signedDeviation} ${tokenSymbol}`,
     );
 
     if (

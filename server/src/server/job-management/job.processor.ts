@@ -45,7 +45,7 @@ export class JobProcessor {
     );
     job.data = {
       values: result.portfolioMovements,
-      unmachtedEvents: result.unmatchedEvents,
+      unmatchedEvents: result.unmatchedEvents,
     };
 
     logger.info(
