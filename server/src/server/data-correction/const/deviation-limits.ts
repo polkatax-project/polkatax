@@ -21,7 +21,7 @@ export const DEVIATION_LIMITS: DeviationLimit[] = [
     singlePayment: 0.001,
     max: 0.001,
   },
-    {
+  {
     symbol: "IBTC",
     singlePayment: 0.001,
     max: 0.001,

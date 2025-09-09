@@ -2,7 +2,7 @@ import { JobsService } from "./jobs.service";
 import * as subscanChains from "../../../res/gen/subscan-chains.json";
 import * as substrateNodesWsEndpoints from "../../../res/substrate-nodes-ws-endpoints.json";
 import { Job } from "../../model/job";
-import { filter, firstValueFrom, mergeMap, Subject } from "rxjs";
+import { filter, firstValueFrom, Subject } from "rxjs";
 import { determineNextJob } from "./determine-next-job";
 import { AwilixContainer } from "awilix";
 import { isEvmAddress } from "../data-aggregation/helper/is-evm-address";
@@ -12,15 +12,27 @@ import { JobPostProcessor } from "./job.post-processor";
 import { createJobId } from "./helper/create-job-id";
 import { TaxableEvent } from "../data-aggregation/model/portfolio-movement";
 
-const PARALLEL_POST_PROCESSING_JOBS = 1;
+const PARALLEL_POST_PROCESSING_JOBS = 2;
+
+interface PostProcessingJob {
+  id: string;
+  wallet: string;
+}
 
 export class JobManager {
-  private postProcessingQueue = new Subject<string>();
+  private postProcessingStream = new Subject<PostProcessingJob>();
+  private postProcessingQueue: PostProcessingJob[] = [];
+  private postProcessingWallets = new Set<string>();
 
   constructor(
     private jobsService: JobsService,
     private DIContainer: AwilixContainer,
-  ) {}
+  ) {
+    this.postProcessingStream.subscribe((job) => {
+      this.postProcessingQueue.push(job);
+      this.schedulePostProcessing();
+    });
+  }
 
   getChains(wallet: string): string[] {
     const isEvm = isEvmAddress(wallet);
@@ -91,7 +103,6 @@ export class JobManager {
 
   async start() {
     this.startProcessing();
-    this.startPostProcessing();
   }
 
   private async startProcessing() {
@@ -116,7 +127,7 @@ export class JobManager {
         job = await jobProcessor.process(job);
 
         await this.jobsService.setToPostProcessing(job);
-        this.enqueueForPostProcessing(job.id);
+        this.postProcessingStream.next({ id: job.id, wallet: job.wallet });
         const allPendingJobs = await this.jobsService.fetchAllPendingJobs();
         logger.info("Remaining pending jobs:" + allPendingJobs.length);
       } catch (error) {
@@ -126,20 +137,30 @@ export class JobManager {
     }
   }
 
-  private async enqueueForPostProcessing(jobId: string) {
-    this.postProcessingQueue.next(jobId);
-  }
+  private async schedulePostProcessing() {
+    // Try to start jobs while respecting concurrency + per-user rule
+    for (let i = 0; i < this.postProcessingQueue.length; i++) {
+      const job = this.postProcessingQueue[i];
 
-  private async startPostProcessing() {
-    this.postProcessingQueue
-      .pipe(
-        mergeMap(async (jobId) => {
-          logger.info("Postprocessing job: " + jobId);
-          await this.doPostProcessing(jobId);
-          logger.info("Finished postprocessing" + jobId);
-        }, PARALLEL_POST_PROCESSING_JOBS),
-      )
-      .subscribe();
+      if (this.postProcessingWallets.has(job.wallet)) {
+        continue;
+      }
+
+      if (this.postProcessingWallets.size >= PARALLEL_POST_PROCESSING_JOBS) {
+        break;
+      }
+
+      this.postProcessingQueue.splice(i, 1);
+      i--;
+
+      this.postProcessingWallets.add(job.wallet);
+
+      logger.info("Postprocessing job: " + job.id);
+      await this.doPostProcessing(job.id);
+      logger.info("Finished postprocessing" + job.id);
+      this.postProcessingWallets.delete(job.wallet);
+      this.schedulePostProcessing();
+    }
   }
 
   private async doPostProcessing(jobId: string) {
