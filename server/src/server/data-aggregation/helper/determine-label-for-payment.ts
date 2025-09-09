@@ -358,11 +358,11 @@ const callModuleClassifications: CallModuleClassification[] = [
           },
           {
             name: "bond_extra",
-            label: "Liquidity added" as const,
+            label: "Stake" as const,
           },
           {
             name: "withdraw_unbonded",
-            label: "Liquidity removed" as const,
+            label: "Unstake" as const,
           },
         ],
       },
@@ -371,15 +371,15 @@ const callModuleClassifications: CallModuleClassification[] = [
         functions: [
           {
             name: "unlock_unstaked",
-            label: "Liquidity removed" as const,
+            label: "Unstake" as const,
           },
           {
             name: "join_delegators",
-            label: "Liquidity added" as const,
+            label: "Stake" as const,
           },
           {
             name: "withdraw_unbonded",
-            label: "Liquidity removed" as const,
+            label: "Unstake" as const,
           },
         ],
       },
@@ -406,9 +406,9 @@ const callModuleClassifications: CallModuleClassification[] = [
         module: "nominationpools",
         functions: [
           { name: "claim_payout", label: "Staking reward" as const },
-          { name: "withdraw_unbonded", label: "Liquidity removed" as const },
-          { name: "join", label: "Liquidity added" as const },
-          { name: "bond_extra", label: "Liquidity added" as const },
+          { name: "withdraw_unbonded", label: "Unstake" as const },
+          { name: "join", label: "Stake" as const },
+          { name: "bond_extra", label: "Stake" as const },
         ],
       },
     ],

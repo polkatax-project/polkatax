@@ -39,18 +39,6 @@ export class PolkadotApi {
       5000,
     );
 
-    provider.on("connected", () => {
-      logger.info("✅ Connected to node");
-    });
-
-    provider.on("disconnected", () => {
-      logger.info("⚠️ Disconnected from node");
-    });
-
-    provider.on("error", (err) => {
-      logger.info("❌ WS error:", err);
-    });
-
     this.api = await ApiPromise.create({ provider, noInitWarn: true });
   }
 

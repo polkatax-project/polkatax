@@ -102,6 +102,7 @@ const verifyPortfolioChanges = async (
     chainInfo,
     address,
     portfolioMovements,
+    [],
     minDate.getTime(),
     maxDate.getTime(),
   );

@@ -16,6 +16,8 @@ import {
   getBeginningLastYear,
   getEndOfLastYear,
 } from "../job-management/get-beginning-last-year";
+import { simplifyAssetMovements } from "../data-aggregation/helper/simplify-asset-movements";
+import { Job } from "../../model/job";
 
 interface Subscription {
   jobId: string;
@@ -56,7 +58,7 @@ export class WebSocketManager {
   private async handleFetchDataRequest(
     socket: WebSocket,
     msg: WebSocketIncomingMessage,
-  ): Promise<WebSocketOutgoingMessage[]> {
+  ): Promise<void> {
     const { wallet, currency, blockchains, syncFromDate, syncUntilDate } =
       msg.payload;
 
@@ -82,30 +84,14 @@ export class WebSocketManager {
 
     jobs.forEach((job) => {
       this.addSubscription(socket, { jobId: job.id, wallet: job.wallet });
-    });
-
-    return jobs.map((job) => {
-      return {
-        type: "data",
-        reqId: msg.reqId,
-        payload: [
-          job.status === "post_processing"
-            ? {
-                ...job,
-                data: undefined,
-                status: "in_progress",
-              }
-            : job,
-        ],
-        timestamp: Date.now(),
-      };
+      this.sentJobToClients(job);
     });
   }
 
   private async handleUnsubscribeRequest(
     socket: WebSocket,
     msg: WebSocketIncomingMessage,
-  ): Promise<WebSocketOutgoingMessage> {
+  ): Promise<void> {
     const { wallet, currency, syncFromDate, syncUntilDate } = msg.payload;
     subscanChains.chains.forEach((chain) => {
       this.removeSubscription(socket, {
@@ -120,18 +106,23 @@ export class WebSocketManager {
       });
     });
 
-    return {
-      type: "acknowledgeUnsubscribe",
-      reqId: msg.reqId,
-      payload: [],
-      timestamp: Date.now(),
-    };
+    logger.info(
+      `Confirming unsubscribe request with reqId: ${msg.reqId}, type: ${msg.type}`,
+    );
+    socket.send(
+      JSON.stringify({
+        type: "acknowledgeUnsubscribe",
+        reqId: msg.reqId,
+        payload: [],
+        timestamp: Date.now(),
+      }),
+    );
   }
 
   private async handleMessage(
     socket: WebSocket,
     msg: WebSocketIncomingMessage,
-  ): Promise<WebSocketOutgoingMessage[] | void> {
+  ): Promise<void> {
     if (msg.type === "fetchDataRequest" && this.isThrottled(socket, msg)) {
       return this.sendError(socket, {
         code: 429,
@@ -141,9 +132,10 @@ export class WebSocketManager {
 
     switch (msg.type) {
       case "fetchDataRequest":
-        return await this.handleFetchDataRequest(socket, msg);
+        await this.handleFetchDataRequest(socket, msg);
+        break;
       case "unsubscribeRequest":
-        return [await this.handleUnsubscribeRequest(socket, msg)];
+        await this.handleUnsubscribeRequest(socket, msg);
     }
   }
 
@@ -203,15 +195,7 @@ export class WebSocketManager {
       }
 
       try {
-        const responses = await this.handleMessage(socket, result.data);
-        if (responses && responses.length > 0) {
-          responses.forEach((r) => {
-            logger.info(
-              `Sending response reqId: ${r.reqId}, type: ${r.type}, payload.length: ${r.payload.length}`,
-            );
-            socket.send(JSON.stringify(r));
-          });
-        }
+        await this.handleMessage(socket, result.data);
       } catch (err) {
         logger.error("Message handling failed");
         logger.error(err);
@@ -230,29 +214,46 @@ export class WebSocketManager {
 
   async startJobNotificationChannel(): Promise<void> {
     this.jobRepository.jobChanged$.subscribe(async (jobId: string) => {
-      const matches = this.connections.filter((c) =>
-        this.match(c.subscription, { jobId }),
-      );
-
-      if (!matches.length) return;
-
       const job = await this.jobRepository.findJob(jobId);
-
       if (job.status === "post_processing") {
         return; // only pending - processing - done is relevant for the client.
       }
+      this.sentJobToClients(job);
+    });
+  }
 
-      const message: WebSocketOutgoingMessage = {
-        reqId: job.reqId,
-        payload: [job],
-        timestamp: Date.now(),
-        type: "data",
-      };
+  private sentJobToClients(job: Job) {
+    const matches = this.connections.filter((c) =>
+      this.match(c.subscription, { jobId: job.id }),
+    );
+    if (!matches.length) return;
 
-      matches.forEach((c) => {
-        logger.info(`Notifying wallet ${c.subscription.wallet}`);
-        c.socket.send(JSON.stringify(message));
-      });
+    const jobDataValues =
+      job?.data?.values && job.status !== "post_processing"
+        ? simplifyAssetMovements(job.wallet, job.data.values)
+        : undefined;
+
+    const message: WebSocketOutgoingMessage = {
+      reqId: job.reqId,
+      payload: [
+        {
+          ...job,
+          data:
+            job.data && job.status !== "post_processing"
+              ? {
+                  ...job.data,
+                  values: jobDataValues,
+                }
+              : undefined,
+        },
+      ],
+      timestamp: Date.now(),
+      type: "data",
+    };
+
+    matches.forEach((c) => {
+      logger.info(`Notifying wallet ${c.subscription.wallet}`);
+      c.socket.send(JSON.stringify(message));
     });
   }
 }

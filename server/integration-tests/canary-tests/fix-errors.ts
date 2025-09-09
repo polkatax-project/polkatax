@@ -21,6 +21,7 @@ export const fixErrors = async (
     chain,
     address,
     portfolioMovements,
+    [],
     portfolioMovements.reduce(
       (mindate, p) => Math.min(mindate, p.timestamp),
       Number.MAX_SAFE_INTEGER,

@@ -5,7 +5,7 @@
     </div>
     <div
       class="justify-around items-center column"
-      v-if="data && Object.keys(data.dailyValues).length > 20"
+      v-if="Object.keys(data?.dailyValues ?? {}).length > 20"
     >
       <rewards-chart :currency="false" chartType="ColumnChart" />
     </div>
