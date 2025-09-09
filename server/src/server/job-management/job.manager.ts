@@ -9,21 +9,18 @@ import { isEvmAddress } from "../data-aggregation/helper/is-evm-address";
 import { logger } from "../logger/logger";
 import { JobProcessor } from "./job.processor";
 import { JobPostProcessor } from "./job.post-processor";
-import { createJobId } from "./helper/create-job-id";
+import { createJobId, decomposeJobId } from "./helper/create-job-id";
 import { TaxableEvent } from "../data-aggregation/model/portfolio-movement";
 
 const PARALLEL_POST_PROCESSING_JOBS = 3;
 const PARALLEL_POST_PROCESSING_JOBS_PER_WALLET = 2;
-
-interface PostProcessingJob {
-  id: string;
-  wallet: string;
-}
+const PARALLEL_POST_PROCESSING_JOBS_PER_CHAIN = 1;
 
 export class JobManager {
-  private postProcessingStream = new Subject<PostProcessingJob>();
-  private postProcessingQueue: PostProcessingJob[] = [];
-  private postProcessingWalletsCount: Record<string, number> = {}
+  private postProcessingStream = new Subject<string>();
+  private postProcessingQueue: string[] = [];
+  private postProcessingWalletsCount: Record<string, number> = {};
+  private postProcessingChainsCount: Record<string, number> = {};
 
   constructor(
     private jobsService: JobsService,
@@ -128,7 +125,7 @@ export class JobManager {
         job = await jobProcessor.process(job);
 
         await this.jobsService.setToPostProcessing(job);
-        this.postProcessingStream.next({ id: job.id, wallet: job.wallet });
+        this.postProcessingStream.next(job.id);
         const allPendingJobs = await this.jobsService.fetchAllPendingJobs();
         logger.info("Remaining pending jobs:" + allPendingJobs.length);
       } catch (error) {
@@ -141,13 +138,26 @@ export class JobManager {
   private async schedulePostProcessing() {
     // Try to start jobs while respecting concurrency + per-user rule
     for (let i = 0; i < this.postProcessingQueue.length; i++) {
-      const job = this.postProcessingQueue[i];
+      const jobId = this.postProcessingQueue[i];
 
-      if ((this.postProcessingWalletsCount[job.wallet] ?? 0) >= PARALLEL_POST_PROCESSING_JOBS_PER_WALLET) {
+      const { wallet, blockchain } = decomposeJobId(jobId);
+      if (
+        (this.postProcessingChainsCount[blockchain] ?? 0) >=
+        PARALLEL_POST_PROCESSING_JOBS_PER_CHAIN
+      ) {
+        continue;
+      }
+      if (
+        (this.postProcessingWalletsCount[wallet] ?? 0) >=
+        PARALLEL_POST_PROCESSING_JOBS_PER_WALLET
+      ) {
         continue;
       }
 
-      const numberParallelJobsTotal = Object.values(this.postProcessingWalletsCount).reduce((current, next) => current + next, 0)
+      const numberParallelJobsTotal = Object.values(
+        this.postProcessingWalletsCount,
+      ).reduce((current, next) => current + next, 0);
+
       if (numberParallelJobsTotal >= PARALLEL_POST_PROCESSING_JOBS) {
         break;
       }
@@ -155,12 +165,35 @@ export class JobManager {
       this.postProcessingQueue.splice(i, 1);
       i--;
 
-      this.postProcessingWalletsCount[job.wallet] = this.postProcessingWalletsCount[job.wallet] ? this.postProcessingWalletsCount[job.wallet] + 1 : 1
+      this.postProcessingWalletsCount[wallet] = this.postProcessingWalletsCount[
+        wallet
+      ]
+        ? this.postProcessingWalletsCount[wallet] + 1
+        : 1;
+      this.postProcessingChainsCount[blockchain] = this
+        .postProcessingChainsCount[blockchain]
+        ? this.postProcessingChainsCount[blockchain] + 1
+        : 1;
 
-      logger.info("Postprocessing job: " + job.id);
-      await this.doPostProcessing(job.id);
-      logger.info("Finished postprocessing" + job.id);
-      this.postProcessingWalletsCount[job.wallet] -= 1;
+      logger.info("Postprocessing job: " + jobId);
+      logger.info(
+        this.postProcessingWalletsCount,
+        "Currently postprocessing wallets:",
+      );
+      logger.info(
+        this.postProcessingChainsCount,
+        "Currently postprocessing chains:",
+      );
+      await this.doPostProcessing(jobId);
+      logger.info("Finished postprocessing " + jobId);
+      this.postProcessingWalletsCount[wallet] -= 1;
+      if (this.postProcessingWalletsCount[wallet] === 0) {
+        delete this.postProcessingWalletsCount[wallet];
+      }
+      this.postProcessingChainsCount[blockchain] -= 1;
+      if (this.postProcessingChainsCount[blockchain] === 0) {
+        delete this.postProcessingChainsCount[blockchain];
+      }
       this.schedulePostProcessing();
     }
   }

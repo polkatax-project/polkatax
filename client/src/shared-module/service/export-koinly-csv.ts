@@ -26,10 +26,6 @@ export const exportKoinlyCsv = (taxdata: TaxData) => {
       t.label!
     );
 
-    if (t.transfers.some((t) => t.amount === 0)) {
-      debugger;
-    }
-
     if (combineTransfers) {
       const allSent = t.transfers.filter((t) => t.amount < 0);
       const allReceived = t.transfers.filter((t) => t.amount > 0);

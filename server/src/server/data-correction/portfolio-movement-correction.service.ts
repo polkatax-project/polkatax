@@ -273,7 +273,7 @@ export class PortfolioMovementCorrectionService {
     portfolioMovements: TaxableEvent[],
     unmatchedEvents: SubscanEvent[],
     minDate: number,
-    maxDate: number,
+    maxDate: number
   ): Promise<Deviation[]> {
     logger.info(
       `Enter fixErrorsAndMissingData for ${chainInfo.domain}, ${address}`,

@@ -35,7 +35,7 @@ export const simplifyAssetMovements = (
       .map((t) => ({
         ...t,
         events: undefined,
-        fiatValue: t.price ? Math.abs(t.price / t.amount) : undefined,
+        fiatValue: t.price ? Math.abs(t.price * t.amount) : undefined,
       }));
   });
   return taxableEvents.filter((t) => t.transfers.length > 0);
