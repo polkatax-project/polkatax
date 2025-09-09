@@ -1,3 +1,5 @@
+import { Label } from './label';
+
 export interface TaxableEvent {
   id?: number;
   hash?: string;
@@ -11,7 +13,7 @@ export interface TaxableEvent {
   feeUsedFiat?: number;
   tipFiat?: number;
   xcmFee?: number;
-  label?: string;
+  label?: Label;
   isoDate?: string;
   transfers: TaxableEventTransfer[];
 }

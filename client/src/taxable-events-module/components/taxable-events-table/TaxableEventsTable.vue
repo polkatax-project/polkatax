@@ -41,6 +41,12 @@
             target="_blank"
             >{{ props.row.extrinsic_index }}</a
           >
+          <a
+            v-if="!props.row.extrinsic_index && props.row.block"
+            :href="getSubScanBlockLink(props.row.block)"
+            target="_blank"
+            >{{ props.row.block }}</a
+          >
         </q-td>
       </template>
 
@@ -163,7 +169,7 @@ const columns = computed(() => [
   {
     name: 'extrinsic-index',
     align: 'right',
-    label: 'Transaction Idx',
+    label: 'Transaction/Block',
     field: 'extrinsic_index',
     sortable: true,
   },
@@ -230,10 +236,14 @@ const rows = computed(() => {
         .filter((t) => !!t)
         .join('-'),
       extrinsic_index: data.extrinsic_index,
-      addresses: [...new Set(data.transfers
-        .map((t) => [t.from, t.to])
-        .flat()
-        .filter((a) => !!a))],
+      addresses: [
+        ...new Set(
+          data.transfers
+            .map((t) => [t.from, t.to])
+            .flat()
+            .filter((a) => !!a)
+        ),
+      ],
       fiatSent: data.transfers
         .filter((t) => t.amount < 0)
         .map((t) =>
@@ -280,6 +290,13 @@ function getSubScanTxLink(extrinsic_index: string) {
     return undefined;
   }
   return `https://${taxData.value.chain}.subscan.io/extrinsic/${extrinsic_index}`;
+}
+
+function getSubScanBlockLink(block: string) {
+  if (!block || !taxData.value) {
+    return undefined;
+  }
+  return `https://${taxData.value.chain}.subscan.io/block/${block}`;
 }
 
 function getSubscanAddressLink(address: string) {

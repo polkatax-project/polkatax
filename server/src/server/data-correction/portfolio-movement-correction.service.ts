@@ -17,6 +17,7 @@ import * as fs from "fs";
 import { Deviation } from "./model/deviation";
 import { DEVIATION_LIMITS } from "./const/deviation-limits";
 import { DeviationLimit } from "./model/deviation-limit";
+import { SubscanEvent } from "../blockchain/substrate/model/subscan-event";
 
 export class PortfolioMovementCorrectionService {
   constructor(
@@ -145,7 +146,8 @@ export class PortfolioMovementCorrectionService {
     chainInfo: { domain: string; token: string },
     address: string,
     portfolioMovements: TaxableEvent[],
-    acceptedDeviations: any,
+    unmatchedEvents: SubscanEvent[],
+    acceptedDeviations: DeviationLimit[],
     blockMin: number,
     blockMax: number,
     feeToken: string | undefined,
@@ -259,7 +261,7 @@ export class PortfolioMovementCorrectionService {
         this.deviationZoomer.compensateDeviation(
           address,
           portfolioMovements as PortfolioMovement[],
-          [],
+          unmatchedEvents,
           selectedToken,
           startBlock,
           endBlock,
@@ -275,6 +277,7 @@ export class PortfolioMovementCorrectionService {
     chainInfo: { domain: string; token: string },
     address: string,
     portfolioMovements: TaxableEvent[],
+    unmatchedEvents: SubscanEvent[],
     minDate: number,
     maxDate: number,
   ): Promise<Deviation[]> {
@@ -355,6 +358,7 @@ export class PortfolioMovementCorrectionService {
         chainInfo,
         address,
         portfolioMovements,
+        unmatchedEvents,
         acceptedDeviations,
         blockMin,
         blockMax,
@@ -372,6 +376,7 @@ export class PortfolioMovementCorrectionService {
         chainInfo,
         address,
         portfolioMovements,
+        unmatchedEvents,
         acceptedDeviations,
         blockMin,
         blockMax,
@@ -402,6 +407,7 @@ export class PortfolioMovementCorrectionService {
     chainInfo: { domain: string; token: string },
     address: string,
     portfolioMovements: TaxableEvent[],
+    unmatchedEvents: SubscanEvent[],
     acceptedDeviations: DeviationLimit[],
     blockMin: number,
     blockMax: number,
@@ -452,7 +458,7 @@ export class PortfolioMovementCorrectionService {
           chainInfo,
           address,
           portfolioMovements as PortfolioMovement[],
-          [],
+          unmatchedEvents,
           acceptedDeviations,
           minBlock,
           maxBlock,
