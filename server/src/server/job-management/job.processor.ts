@@ -43,7 +43,10 @@ export class JobProcessor {
         maxDate: job.syncUntilDate,
       },
     );
-    job.data = { values: result.portfolioMovements };
+    job.data = {
+      values: result.portfolioMovements,
+      unmatchedEvents: result.unmatchedEvents,
+    };
 
     logger.info(
       {

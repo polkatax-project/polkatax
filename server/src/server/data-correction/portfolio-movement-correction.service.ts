@@ -17,6 +17,7 @@ import * as fs from "fs";
 import { Deviation } from "./model/deviation";
 import { DEVIATION_LIMITS } from "./const/deviation-limits";
 import { DeviationLimit } from "./model/deviation-limit";
+import { SubscanEvent } from "../blockchain/substrate/model/subscan-event";
 
 export class PortfolioMovementCorrectionService {
   constructor(
@@ -103,8 +104,8 @@ export class PortfolioMovementCorrectionService {
     blockMax: number,
     feeToken: string | undefined,
     maxRetry = 2,
+    attempt = 0
   ) {
-    let attempt = 0;
     try {
       const deviations =
         await this.portfolioChangeValidationService.calculateDeviationFromExpectation(
@@ -119,7 +120,6 @@ export class PortfolioMovementCorrectionService {
       return deviations;
     } catch (error) {
       if (error instanceof TimeoutError && attempt <= maxRetry) {
-        attempt++;
         logger.info(
           `Timeout when calculating deviation from expection. Will retry after 3 min.`,
         );
@@ -134,6 +134,7 @@ export class PortfolioMovementCorrectionService {
           blockMax,
           feeToken,
           maxRetry,
+          attempt + 1
         );
       } else {
         throw error;
@@ -145,13 +146,14 @@ export class PortfolioMovementCorrectionService {
     chainInfo: { domain: string; token: string },
     address: string,
     portfolioMovements: TaxableEvent[],
-    acceptedDeviations: any,
+    unmatchedEvents: SubscanEvent[],
+    acceptedDeviations: DeviationLimit[],
     blockMin: number,
     blockMax: number,
     feeToken: string | undefined,
   ) {
     logger.info(
-      `Enter fixErrorsValidateEachBlock for ${chainInfo.domain}, ${address}`,
+      `Enter fixErrorsValidateEachBlock for ${chainInfo.domain}, ${address}.}`,
     );
     const blocks = new Set<number>();
     for (const p of portfolioMovements as PortfolioMovement[]) {
@@ -183,14 +185,8 @@ export class PortfolioMovementCorrectionService {
 
     const blocksOfInterest = Array.from(blocks).sort((a, b) => a - b);
 
-    await this.calculateDeviationWithRetry(
-      chainInfo,
-      address,
-      portfolioMovements,
-      acceptedDeviations,
-      blockMin,
-      blockMax,
-      feeToken,
+    logger.info(
+      `fixErrorsValidateEachBlock iterating over ${blocksOfInterest.length} blocks for ${chainInfo.domain}, ${address}.}`,
     );
 
     for (let idx = 0; idx < blocksOfInterest.length - 1; idx++) {
@@ -259,7 +255,7 @@ export class PortfolioMovementCorrectionService {
         this.deviationZoomer.compensateDeviation(
           address,
           portfolioMovements as PortfolioMovement[],
-          [],
+          unmatchedEvents,
           selectedToken,
           startBlock,
           endBlock,
@@ -275,8 +271,9 @@ export class PortfolioMovementCorrectionService {
     chainInfo: { domain: string; token: string },
     address: string,
     portfolioMovements: TaxableEvent[],
+    unmatchedEvents: SubscanEvent[],
     minDate: number,
-    maxDate: number,
+    maxDate: number
   ): Promise<Deviation[]> {
     logger.info(
       `Enter fixErrorsAndMissingData for ${chainInfo.domain}, ${address}`,
@@ -355,6 +352,7 @@ export class PortfolioMovementCorrectionService {
         chainInfo,
         address,
         portfolioMovements,
+        unmatchedEvents,
         acceptedDeviations,
         blockMin,
         blockMax,
@@ -372,6 +370,7 @@ export class PortfolioMovementCorrectionService {
         chainInfo,
         address,
         portfolioMovements,
+        unmatchedEvents,
         acceptedDeviations,
         blockMin,
         blockMax,
@@ -402,6 +401,7 @@ export class PortfolioMovementCorrectionService {
     chainInfo: { domain: string; token: string },
     address: string,
     portfolioMovements: TaxableEvent[],
+    unmatchedEvents: SubscanEvent[],
     acceptedDeviations: DeviationLimit[],
     blockMin: number,
     blockMax: number,
@@ -452,7 +452,7 @@ export class PortfolioMovementCorrectionService {
           chainInfo,
           address,
           portfolioMovements as PortfolioMovement[],
-          [],
+          unmatchedEvents,
           acceptedDeviations,
           minBlock,
           maxBlock,

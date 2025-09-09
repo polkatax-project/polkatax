@@ -16,4 +16,6 @@ export type Label =
   | "Coretime purchase"
   | "Remove from Pool"
   | "Migrated delegation"
+  | "Stake"
+  | "Unstake"
   | "Reserve repatriated";

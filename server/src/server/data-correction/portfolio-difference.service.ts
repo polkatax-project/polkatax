@@ -1,6 +1,7 @@
 import { SubscanApi } from "../blockchain/substrate/api/subscan.api";
 import { PolkadotApi } from "../blockchain/substrate/api/polkadot-api";
 import * as subscanChains from "../../../res/gen/subscan-chains.json";
+import { logger } from "../logger/logger";
 
 const POLKADOT_API_TIMEOUT = 30_000;
 
@@ -96,12 +97,16 @@ export class PortfolioDifferenceService {
     );
 
     const fetchAssetsViaApi = async (block: number, key: string) => {
+      const start = new Date();
       this.polkadotApi = this.polkadotApi ?? new PolkadotApi(chain);
       await this.polkadotApi.setApiAtWithTimeout(block, POLKADOT_API_TIMEOUT);
       const portfolio = await this.polkadotApi.getAssetPortfolioWithTimeout(
         address,
         relevantTokens,
         POLKADOT_API_TIMEOUT,
+      );
+      logger.debug(
+        `Fetched Portfolio in ${(new Date().getTime() - start.getTime()) / 1000} seconds`,
       );
       this.assetsCache[key] = portfolio;
       return portfolio;
@@ -137,9 +142,13 @@ export class PortfolioDifferenceService {
     const key2 = generateKey([domain, address, maxBlock], tokens);
 
     const fetchViaApi = async (block: number, key: string) => {
+      const start = new Date();
       this.polkadotApi = this.polkadotApi ?? new PolkadotApi(domain);
       await this.polkadotApi.setApiAtWithTimeout(block, POLKADOT_API_TIMEOUT);
       const portfolio = await getPortfolioFn(this.polkadotApi, address, tokens);
+      logger.debug(
+        `Fetched Portfolio in ${(new Date().getTime() - start.getTime()) / 1000} seconds`,
+      );
       this.assetsCache[key] = portfolio;
       return portfolio;
     };

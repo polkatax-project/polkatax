@@ -1,4 +1,5 @@
 import {
+  PortfolioMovement,
   TaxableEvent,
   TaxableEventTransfer,
 } from "../model/portfolio-movement";
@@ -8,6 +9,7 @@ export const simplifyAssetMovements = (
   taxableEvents: TaxableEvent[],
 ) => {
   taxableEvents.forEach((t) => {
+    (t as PortfolioMovement).events = undefined;
     if (t.transfers.length > 1) {
       const transfers: Record<string, TaxableEventTransfer> = {};
       t.transfers
@@ -17,6 +19,8 @@ export const simplifyAssetMovements = (
             transfers[t.asset_unique_id ?? t.symbol] = t;
           } else {
             transfers[t.asset_unique_id ?? t.symbol].amount += t.amount;
+            transfers[t.asset_unique_id ?? t.symbol].price =
+              transfers[t.asset_unique_id ?? t.symbol].price ?? t.price;
           }
         });
       Object.entries(transfers).forEach(([_, t]) => {
@@ -26,6 +30,13 @@ export const simplifyAssetMovements = (
       });
       t.transfers = Object.entries(transfers).map(([_, t]) => t);
     }
+    t.transfers = t.transfers
+      .filter((t) => t.amount !== 0)
+      .map((t) => ({
+        ...t,
+        events: undefined,
+        fiatValue: t.price ? Math.abs(t.price * t.amount) : undefined,
+      }));
   });
   return taxableEvents.filter((t) => t.transfers.length > 0);
 };

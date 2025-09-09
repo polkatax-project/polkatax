@@ -3,10 +3,9 @@ import { formatDateUTC } from '../util/date-utils';
 import saveAs from 'file-saver';
 import { TaxData } from '../model/tax-data';
 import { TaxableEvent, TaxableEventTransfer } from '../model/taxable-event';
+import { mapLabelToKoinlyTag } from './map-label-to-koinly-tag';
 
-const extractCurrency = (
-  t: TaxableEventTransfer | undefined
-) => {
+const extractCurrency = (t: TaxableEventTransfer | undefined) => {
   return t ? `${t.symbol.toUpperCase()}` : '';
 };
 
@@ -22,26 +21,49 @@ export const exportKoinlyCsv = (taxdata: TaxData) => {
   const parser = new Parser();
   const values: any = [];
   (taxdata.values ?? []).forEach((t: TaxableEvent) => {
-    const allSent = t.transfers.filter((t) => t.amount < 0);
-    const allReceived = t.transfers.filter((t) => t.amount > 0);
-    for (
-      let idx = 0;
-      idx < Math.max(allSent.length, allReceived.length);
-      idx++
-    ) {
-      const sent = allSent?.[idx];
-      const received = allReceived?.[idx];
-      values.push({
-        Date: formatDateUTC(t.timestamp),
-        'Sent Amount': sent ? Math.abs(sent.amount) : '',
-        'Sent Currency': extractCurrency(sent),
-        'Received Amount': received?.amount ?? '',
-        'Received Currency': extractCurrency(received),
-        'Net Worth Amount': getNetWorth([received, sent]) || '',
-        'Net Worth Currency': taxdata.currency,
-        Label: '',
-        Description: t.label,
-        TxHash: t.extrinsic_index,
+    const koinlyTag = mapLabelToKoinlyTag(t.label);
+    const combineTransfers = !['Liquidity removed', 'Liquidity added'].includes(
+      t.label!
+    );
+
+    if (combineTransfers) {
+      const allSent = t.transfers.filter((t) => t.amount < 0);
+      const allReceived = t.transfers.filter((t) => t.amount > 0);
+      for (
+        let idx = 0;
+        idx < Math.max(allSent.length, allReceived.length);
+        idx++
+      ) {
+        const sent = allSent?.[idx];
+        const received = allReceived?.[idx];
+        values.push({
+          Date: formatDateUTC(t.timestamp),
+          'Sent Amount': sent ? Math.abs(sent.amount) : '',
+          'Sent Currency': extractCurrency(sent),
+          'Received Amount': received ? Math.abs(received.amount) : '',
+          'Received Currency': extractCurrency(received),
+          'Net Worth Amount': getNetWorth([received, sent]) || '',
+          'Net Worth Currency': taxdata.currency,
+          Label: koinlyTag,
+          Description: t.label,
+          TxHash: t.extrinsic_index,
+        });
+      }
+    } else {
+      t.transfers.forEach((transfer) => {
+        const received = transfer.amount > 0;
+        values.push({
+          Date: formatDateUTC(t.timestamp),
+          'Sent Amount': received ? '' : Math.abs(transfer.amount),
+          'Sent Currency': received ? '' : extractCurrency(transfer),
+          'Received Amount': received ? Math.abs(transfer.amount) : '',
+          'Received Currency': received ? extractCurrency(transfer) : '',
+          'Net Worth Amount': getNetWorth([transfer]) || '',
+          'Net Worth Currency': taxdata.currency,
+          Label: koinlyTag,
+          Description: t.label,
+          TxHash: t.extrinsic_index,
+        });
       });
     }
   });
