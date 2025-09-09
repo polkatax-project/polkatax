@@ -104,8 +104,8 @@ export class PortfolioMovementCorrectionService {
     blockMax: number,
     feeToken: string | undefined,
     maxRetry = 2,
+    attempt = 0
   ) {
-    let attempt = 0;
     try {
       const deviations =
         await this.portfolioChangeValidationService.calculateDeviationFromExpectation(
@@ -120,7 +120,6 @@ export class PortfolioMovementCorrectionService {
       return deviations;
     } catch (error) {
       if (error instanceof TimeoutError && attempt <= maxRetry) {
-        attempt++;
         logger.info(
           `Timeout when calculating deviation from expection. Will retry after 3 min.`,
         );
@@ -135,6 +134,7 @@ export class PortfolioMovementCorrectionService {
           blockMax,
           feeToken,
           maxRetry,
+          attempt + 1
         );
       } else {
         throw error;
