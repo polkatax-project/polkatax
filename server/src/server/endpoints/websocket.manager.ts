@@ -133,6 +133,7 @@ export class WebSocketManager {
     switch (msg.type) {
       case "fetchDataRequest":
         await this.handleFetchDataRequest(socket, msg);
+        break;
       case "unsubscribeRequest":
         await this.handleUnsubscribeRequest(socket, msg);
     }
@@ -237,12 +238,13 @@ export class WebSocketManager {
       payload: [
         {
           ...job,
-          data: job.data
-            ? {
-                ...job.data,
-                values: jobDataValues,
-              }
-            : undefined,
+          data:
+            job.data && job.status !== "post_processing"
+              ? {
+                  ...job.data,
+                  values: jobDataValues,
+                }
+              : undefined,
         },
       ],
       timestamp: Date.now(),
