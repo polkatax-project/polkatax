@@ -12,7 +12,8 @@ import { JobPostProcessor } from "./job.post-processor";
 import { createJobId } from "./helper/create-job-id";
 import { TaxableEvent } from "../data-aggregation/model/portfolio-movement";
 
-const PARALLEL_POST_PROCESSING_JOBS = 2;
+const PARALLEL_POST_PROCESSING_JOBS = 3;
+const PARALLEL_POST_PROCESSING_JOBS_PER_WALLET = 2;
 
 interface PostProcessingJob {
   id: string;
@@ -22,7 +23,7 @@ interface PostProcessingJob {
 export class JobManager {
   private postProcessingStream = new Subject<PostProcessingJob>();
   private postProcessingQueue: PostProcessingJob[] = [];
-  private postProcessingWallets = new Set<string>();
+  private postProcessingWalletsCount: Record<string, number> = {}
 
   constructor(
     private jobsService: JobsService,
@@ -142,23 +143,24 @@ export class JobManager {
     for (let i = 0; i < this.postProcessingQueue.length; i++) {
       const job = this.postProcessingQueue[i];
 
-      if (this.postProcessingWallets.has(job.wallet)) {
+      if ((this.postProcessingWalletsCount[job.wallet] ?? 0) >= PARALLEL_POST_PROCESSING_JOBS_PER_WALLET) {
         continue;
       }
 
-      if (this.postProcessingWallets.size >= PARALLEL_POST_PROCESSING_JOBS) {
+      const numberParallelJobsTotal = Object.values(this.postProcessingWalletsCount).reduce((current, next) => current + next, 0)
+      if (numberParallelJobsTotal >= PARALLEL_POST_PROCESSING_JOBS) {
         break;
       }
 
       this.postProcessingQueue.splice(i, 1);
       i--;
 
-      this.postProcessingWallets.add(job.wallet);
+      this.postProcessingWalletsCount[job.wallet] = this.postProcessingWalletsCount[job.wallet] ? this.postProcessingWalletsCount[job.wallet] + 1 : 1
 
       logger.info("Postprocessing job: " + job.id);
       await this.doPostProcessing(job.id);
       logger.info("Finished postprocessing" + job.id);
-      this.postProcessingWallets.delete(job.wallet);
+      this.postProcessingWalletsCount[job.wallet] -= 1;
       this.schedulePostProcessing();
     }
   }
