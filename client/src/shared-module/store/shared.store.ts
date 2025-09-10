@@ -27,6 +27,8 @@ import { getBeginningOfLastYear } from './helper/get-beginning-of-last-year';
 import { getEndOfLastYear } from './helper/get-end-of-last-year';
 import { SubstrateChains } from '../model/substrate-chain';
 
+const MAX_WALLETS_TO_SYNC = 4;
+
 const jobs$: BehaviorSubject<JobResult[]> = new BehaviorSubject<JobResult[]>(
   (JSON.parse(localStorage.getItem('wallets') || '[]') as string[]).map(
     (wallet: string) => ({
@@ -44,7 +46,7 @@ const jobs$: BehaviorSubject<JobResult[]> = new BehaviorSubject<JobResult[]>(
 const subscanChains$ = new ReplaySubject<SubstrateChains>(1);
 fetchSubscanChains().then((chains) => subscanChains$.next(chains));
 
-const walletsAddresses$ = new BehaviorSubject(
+const walletsAddresses$ = new BehaviorSubject<string[]>(
   JSON.parse(localStorage.getItem('wallets') || '[]')
 );
 
@@ -144,12 +146,34 @@ export const useSharedStore = defineStore('shared', {
       }
       walletsAddresses$.next(existingWallets);
     },
-    async syncWallets(addresses: string[]) {
+    async syncWallets(addresses: string[]): Promise<boolean> {
+      let tooManyWallets = false;
+      const existingWalletsToSync = await firstValueFrom(walletsAddresses$);
+      if (existingWalletsToSync.length >= MAX_WALLETS_TO_SYNC) {
+        return true;
+      }
+      let newWallets = addresses.filter(
+        (a) => !existingWalletsToSync.includes(a)
+      );
+      if (
+        existingWalletsToSync.length + newWallets.length >
+        MAX_WALLETS_TO_SYNC
+      ) {
+        tooManyWallets = true;
+        newWallets = newWallets.slice(
+          0,
+          MAX_WALLETS_TO_SYNC - existingWalletsToSync.length
+        );
+        if (newWallets.length === 0) {
+          return tooManyWallets;
+        }
+      }
+
       const canonicaAddresses = [];
       const currency = (await firstValueFrom(
         useSharedStore().currency$.pipe(filter((c) => c !== undefined))
       )) as string;
-      for (const address of addresses) {
+      for (const address of newWallets) {
         const canonicaAddress = isValidEvmAddress(address)
           ? getAddress(address)
           : convertToCanonicalAddress(address);
@@ -182,9 +206,10 @@ export const useSharedStore = defineStore('shared', {
       });
       jobs.push(...dummyJobs);
       jobs$.next(jobs);
+      return tooManyWallets;
     },
-    async sync() {
-      this.syncWallets([this.address.trim()]);
+    sync() {
+      return this.syncWallets([this.address.trim()]);
     },
     async removeWallet(job: {
       wallet: string;

@@ -119,6 +119,7 @@ import { isValidAddress } from '../../shared-module/util/is-valid-address';
 import WalletSelection from './wallet-selection/WalletSelection.vue';
 import { useQuasar } from 'quasar';
 import { JobResult } from '../../shared-module/model/job-result';
+import { showMaxWalletsReachedNotif } from '../../shared-module/store/helper/show-max-wallets-reached-notif';
 
 const $q = useQuasar();
 const store = useSharedStore();
@@ -185,9 +186,12 @@ onUnmounted(() => {
   walletAddressesSub.unsubscribe();
 });
 
-function startSyncing() {
+async function startSyncing() {
   if (!isDisabled.value) {
-    store.sync();
+    const tooManyWallets = await store.sync();
+    if (tooManyWallets) {
+      showMaxWalletsReachedNotif($q);
+    }
   }
 }
 

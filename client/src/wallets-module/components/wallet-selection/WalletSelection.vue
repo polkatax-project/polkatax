@@ -61,8 +61,11 @@
 import { ref, computed, Ref } from 'vue';
 import { SUBSTRATE_WALLETS } from './substrate-wallets';
 import { useSharedStore } from '../../../shared-module/store/shared.store';
+import { showMaxWalletsReachedNotif } from '../../../shared-module/store/helper/show-max-wallets-reached-notif';
+import { useQuasar } from 'quasar';
 
 const store = useSharedStore();
+const $q = useQuasar();
 
 const EVM_WALLETS = [
   {
@@ -144,7 +147,10 @@ async function closeDialog() {
   ].flat();
   selectedWallets.value = [];
   emit('update:showDialog', false);
-  store.syncWallets(accounts);
+  const tooManyWallets = await store.syncWallets(accounts);
+  if (tooManyWallets) {
+    showMaxWalletsReachedNotif($q);
+  }
 }
 
 async function connectMetaMask() {
