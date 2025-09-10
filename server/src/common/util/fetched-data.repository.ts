@@ -41,7 +41,7 @@ export class FetchedDataRepository {
       "INSERT INTO fetched_data (key, data, created_at, expires_at) VALUES ($1, $2, NOW(), NOW() + $3::interval) ON CONFLICT (key) DO UPDATE SET data = EXCLUDED.data, expires_at = NOW() + $3::interval;",
       [key, result, cacheDuration],
     );
-    logger.info(
+    logger.debug(
       "data stored for " +
         path +
         ", " +

@@ -104,7 +104,7 @@ export class PortfolioMovementCorrectionService {
     blockMax: number,
     feeToken: string | undefined,
     maxRetry = 2,
-    attempt = 0
+    attempt = 0,
   ) {
     try {
       const deviations =
@@ -134,7 +134,7 @@ export class PortfolioMovementCorrectionService {
           blockMax,
           feeToken,
           maxRetry,
-          attempt + 1
+          attempt + 1,
         );
       } else {
         throw error;
@@ -148,8 +148,6 @@ export class PortfolioMovementCorrectionService {
     portfolioMovements: TaxableEvent[],
     unmatchedEvents: SubscanEvent[],
     acceptedDeviations: DeviationLimit[],
-    blockMin: number,
-    blockMax: number,
     feeToken: string | undefined,
   ) {
     logger.info(
@@ -181,6 +179,11 @@ export class PortfolioMovementCorrectionService {
           }
         }
       }
+    }
+    for (const event of unmatchedEvents) {
+      const block = event.event_index.split("-")[0];
+      blocks.add(Number(block));
+      blocks.add(Number(block) - 1);
     }
 
     const blocksOfInterest = Array.from(blocks).sort((a, b) => a - b);
@@ -273,7 +276,7 @@ export class PortfolioMovementCorrectionService {
     portfolioMovements: TaxableEvent[],
     unmatchedEvents: SubscanEvent[],
     minDate: number,
-    maxDate: number
+    maxDate: number,
   ): Promise<Deviation[]> {
     logger.info(
       `Enter fixErrorsAndMissingData for ${chainInfo.domain}, ${address}`,
@@ -343,7 +346,7 @@ export class PortfolioMovementCorrectionService {
 
       if (process.env["WRITE_RESULTS_TO_DISK"] === "true") {
         fs.writeFileSync(
-          `./${chainInfo.domain}-${address}-deviations.json`,
+          `./logs/${chainInfo.domain}-${address}-deviations.json`,
           JSON.stringify(deviations, null, 2),
         );
       }
@@ -354,14 +357,12 @@ export class PortfolioMovementCorrectionService {
         portfolioMovements,
         unmatchedEvents,
         acceptedDeviations,
-        blockMin,
-        blockMax,
         feeToken,
       );
 
       if (process.env["WRITE_RESULTS_TO_DISK"] === "true") {
         fs.writeFileSync(
-          `./${chainInfo.domain}-${address}-linear-fix.json`,
+          `./logs/${chainInfo.domain}-${address}-linear-fix.json`,
           JSON.stringify(portfolioMovements, null, 2),
         );
       }
@@ -379,11 +380,11 @@ export class PortfolioMovementCorrectionService {
 
       if (process.env["WRITE_RESULTS_TO_DISK"] === "true") {
         fs.writeFileSync(
-          `./${chainInfo.domain}-${address}-recursive-fix.json`,
+          `./logs/${chainInfo.domain}-${address}-recursive-fix.json`,
           JSON.stringify(portfolioMovements, null, 2),
         );
         fs.writeFileSync(
-          `./${chainInfo.domain}-${address}-deviations-fixed.json`,
+          `./logs/${chainInfo.domain}-${address}-deviations-fixed.json`,
           JSON.stringify(deviationsAfterFix, null, 2),
         );
       }

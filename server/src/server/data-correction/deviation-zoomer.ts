@@ -35,7 +35,7 @@ export class DeviationZoomer {
     tokenSymbol: string,
     tokenUniqueId?: string,
   ): Promise<number> {
-    logger.info(
+    logger.debug(
       `Enter splitIntervalAndFindDeviations on ${chain.domain} and ${address}`,
     );
     const { interval, deviations, tokenDeviation } =
@@ -50,7 +50,7 @@ export class DeviationZoomer {
         tokenUniqueId,
       );
 
-    logger.info(
+    logger.debug(
       `zoomInAndFix on ${chain.domain} and ${address}. Deviation  ${tokenDeviation.signedDeviation} ${tokenSymbol}`,
     );
 
@@ -265,9 +265,21 @@ export class DeviationZoomer {
         e.timestamp <= endBlock.timestamp && e.timestamp > startBlock.timestamp,
     );
 
+    const extrinsicIndices = [
+      ...new Set(
+        matchingEvents
+          .filter((e) => !!e.extrinsic_index)
+          .map((e) => e.extrinsic_index),
+      ),
+    ];
+    const extrinsicIndex =
+      extrinsicIndices.length === 1 ? extrinsicIndices[0] : undefined;
     const existingTx = taxableEvents.find(
       (p) =>
-        p.timestamp <= endBlock.timestamp && p.timestamp > startBlock.timestamp,
+        (extrinsicIndex && extrinsicIndex === p.extrinsic_index) ||
+        (!extrinsicIndex &&
+          p.timestamp <= endBlock.timestamp &&
+          p.timestamp > startBlock.timestamp),
     );
     const transferData = {
       symbol: tokenDeviation.symbol,
@@ -297,7 +309,7 @@ export class DeviationZoomer {
           eventId: e.event_id,
           eventIndex: e.event_index,
         })),
-        extrinsic_index: "",
+        extrinsic_index: extrinsicIndex,
         block: endBlock.block_num,
         timestamp: endBlock.timestamp,
         provenance: "deviationCompensation",

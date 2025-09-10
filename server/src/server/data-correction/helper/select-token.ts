@@ -4,19 +4,8 @@ export const selectToken = (
   deviations: Deviation[],
   excludedTokens: string[] = [],
 ): Deviation => {
-  return deviations.reduce((curr, d) => {
-    if (excludedTokens.includes(d.unique_id)) {
-      return curr;
-    }
-    if (!d.absoluteDeviationTooLarge) {
-      return curr;
-    }
-    if (!curr) {
-      return d;
-    }
-    return d.deviation / (d.maxAllowedDeviation ?? 100) >
-      curr.deviation / (curr.maxAllowedDeviation ?? 100)
-      ? d
-      : curr;
-  }, undefined);
+  const relevantTokens = deviations.filter(
+    (d) => d.absoluteDeviationTooLarge && !excludedTokens.includes(d.unique_id),
+  );
+  return relevantTokens[Math.floor(Math.random() * relevantTokens.length)];
 };

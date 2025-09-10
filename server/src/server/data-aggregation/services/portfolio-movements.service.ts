@@ -270,7 +270,7 @@ export class PortfolioMovementsService {
 
     if (process.env["WRITE_RESULTS_TO_DISK"] === "true") {
       fs.writeFileSync(
-        `./${request.chain.domain}-${request.address}.json`,
+        `./logs/${request.chain.domain}-${request.address}.json`,
         JSON.stringify(sortedTaxableEvents, null, 2),
       );
     }
