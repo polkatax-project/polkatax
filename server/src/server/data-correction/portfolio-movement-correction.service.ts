@@ -153,7 +153,18 @@ export class PortfolioMovementCorrectionService {
     logger.info(
       `Enter fixErrorsValidateEachBlock for ${chainInfo.domain}, ${address}.}`,
     );
+
     const blocks = new Set<number>();
+    const timestampsAlreadyCovered = []
+    const timestamps = []
+
+    for (const event of unmatchedEvents) {
+      const block = event.event_index.split("-")[0];
+      blocks.add(Number(block));
+      blocks.add(Number(block) - 1);
+      timestampsAlreadyCovered.push(event.timestamp)
+    }
+
     for (const p of portfolioMovements as PortfolioMovement[]) {
       if (
         p.block !== undefined &&
@@ -163,28 +174,29 @@ export class PortfolioMovementCorrectionService {
       ) {
         blocks.add(p.block);
         blocks.add(p.block - 1);
+        timestampsAlreadyCovered.push(p.timestamp)
       }
-      if (!p.block) {
-        const block = await this.subscanApi.fetchBlock(
-          chainInfo.domain,
-          undefined,
-          Math.floor(p.timestamp / 1000),
-        );
-        if (block.block_num) {
+      if (!p.block && !timestampsAlreadyCovered.includes(p.timestamp)) {
+        timestamps.push(p.timestamp)
+      }
+    }
+
+    const blocksFromTimestamps = await Promise.all(timestamps.map(async t => ({ block: await this.subscanApi.fetchBlock(
+      chainInfo.domain,
+      undefined,
+      Math.floor(t / 1000),
+    ), timestamp: t })))
+    blocksFromTimestamps.forEach(({ timestamp, block }) => {
+      if (block.block_num) {
           blocks.add(block.block_num);
-          if (block.timestamp >= p.timestamp) {
+          if (block.timestamp >= timestamp) {
             blocks.add(block.block_num - 1);
           } else {
             blocks.add(block.block_num + 1);
           }
         }
-      }
-    }
-    for (const event of unmatchedEvents) {
-      const block = event.event_index.split("-")[0];
-      blocks.add(Number(block));
-      blocks.add(Number(block) - 1);
-    }
+    })
+
 
     const blocksOfInterest = Array.from(blocks).sort((a, b) => a - b);
 
@@ -223,7 +235,7 @@ export class PortfolioMovementCorrectionService {
       );
 
       if (deviations.find((d) => d.singlePaymentDeviationTooLarge)) {
-        logger.info(`Found deviations in block ${endBlock.block_num}`);
+        logger.info(`Found deviations in block ${endBlock.block_num} for ${chainInfo.domain} and ${address}`);
       }
       for (let j = 0; j < deviations.length; j++) {
         const selectedToken = deviations[j];
@@ -402,7 +414,7 @@ export class PortfolioMovementCorrectionService {
     chainInfo: { domain: string; token: string },
     address: string,
     portfolioMovements: TaxableEvent[],
-    unmatchedEvents: SubscanEvent[],
+    unmatchedEvents: SubscanEvent[] = [],
     acceptedDeviations: DeviationLimit[],
     blockMin: number,
     blockMax: number,

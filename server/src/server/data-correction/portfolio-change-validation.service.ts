@@ -117,7 +117,6 @@ export class PortfolioChangeValidationService {
     }
 
     let feeTokens = [chainInfo.token, undefined];
-    portfolioDifferences.forEach((p) => feeTokens.push(p.unique_id));
 
     let minDeviation = Number.MAX_SAFE_INTEGER;
     let minFeeToken = undefined;
