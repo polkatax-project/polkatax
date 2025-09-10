@@ -19,9 +19,9 @@
       </template>
 
       <template v-slot:top>
-        <div class="column">
+        <div class="column full-width">
           <div class="text-h6">Taxable events</div>
-          <div>
+          <div class="flex justify-between">
             <q-btn
               color="primary"
               class="q-mr-sm"
@@ -29,6 +29,11 @@
               @click="csvExport"
               >Export CSV
             </q-btn>
+            <div>
+              <EventTypeFilter class="q-mr-sm desktop-only" />
+              <TokenFilter class="q-mr-sm desktop-only" />
+              <AlwaysHideTokensFilter class="desktop-only" />
+            </div>
           </div>
         </div>
       </template>
@@ -104,6 +109,8 @@
   </div>
 </template>
 <script setup lang="ts">
+import TokenFilter from './token-filter/TokenFilter.vue';
+import EventTypeFilter from './event-type-filter/EventTypeFilter.vue';
 import { computed, onUnmounted, Ref, ref } from 'vue';
 import { useTaxableEventStore } from '../../store/taxable-events.store';
 import { TaxData } from '../../../shared-module/model/tax-data';
@@ -114,6 +121,7 @@ import {
 } from '../../../shared-module/util/number-formatters';
 import { useSharedStore } from '../../../shared-module/store/shared.store';
 import { exportKoinlyCsv } from '../../../shared-module/service/export-koinly-csv';
+import AlwaysHideTokensFilter from './always-hide-tokens-filter/AlwaysHideTokensFilter.vue';
 
 const store = useTaxableEventStore();
 const taxData: Ref<TaxData | undefined> = ref(undefined);
@@ -141,7 +149,7 @@ const walletSubscription = useSharedStore().walletsAddresses$.subscribe(
   }
 );
 
-const tokenFilterSubscription = store.visibleTokens$.subscribe(async (data) => {
+const tokenFilterSubscription = store.tokenFilter$.subscribe(async (data) => {
   tokenFilter.value = data;
 });
 

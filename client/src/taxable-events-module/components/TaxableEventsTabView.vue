@@ -41,10 +41,6 @@
     <q-separator />
     <q-tab-panels v-model="tab" animated>
       <q-tab-panel name="events">
-        <div class="content q-mx-auto">
-          <EventTypeFilter />
-          <TokenFilter />
-        </div>
         <TaxableEventsTable />
         <AssetMovementSummaryTable />
       </q-tab-panel>
@@ -61,8 +57,6 @@
 </template>
 <script setup lang="ts">
 import TaxableEventsTable from './taxable-events-table/TaxableEventsTable.vue';
-import TokenFilter from './token-filter/TokenFilter.vue';
-import EventTypeFilter from './event-type-filter/EventTypeFilter.vue';
 import { useRoute } from 'vue-router';
 import { useTaxableEventStore } from '../store/taxable-events.store';
 import { computed, onBeforeMount, onMounted, Ref, ref } from 'vue';

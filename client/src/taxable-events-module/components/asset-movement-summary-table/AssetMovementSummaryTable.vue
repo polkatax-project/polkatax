@@ -19,11 +19,9 @@ import {
   formatCryptoAmount,
   formatCurrency,
 } from '../../../shared-module/util/number-formatters';
-import { isTokenVisible } from '../../helper/is-token-visible';
 
 const store = useTaxableEventStore();
 const taxData: Ref<TaxData | undefined> = ref(undefined);
-const visibleTokens: Ref<{ name: string; value: boolean }[]> = ref([]);
 const excludedPaymentIds: Ref<number[]> = ref([]);
 
 const taxDataSubscription = store.visibleTaxData$.subscribe(async (data) => {
@@ -36,13 +34,8 @@ const excludedEntriesSubscription = store.excludedEntries$.subscribe(
   }
 );
 
-const visibleTokensSubscription = store.visibleTokens$.subscribe((data) => {
-  visibleTokens.value = data;
-});
-
 onUnmounted(() => {
   taxDataSubscription.unsubscribe();
-  visibleTokensSubscription.unsubscribe();
   excludedEntriesSubscription.unsubscribe();
 });
 
@@ -89,7 +82,6 @@ const rows = computed(() => {
     });
   return Object.entries(tokenSummary)
     .map(([symbol, value]) => ({ symbol, ...value }))
-    .filter((t) => isTokenVisible(visibleTokens.value, t.symbol))
     .sort((a, b) => (a.symbol > b.symbol ? 1 : -1));
 });
 

@@ -15,19 +15,25 @@ import { TaxableEvent } from '../../shared-module/model/taxable-event';
 import { TaxData } from '../../shared-module/model/tax-data';
 import { Rewards } from '../../shared-module/model/rewards';
 import { JobResult } from '../../shared-module/model/job-result';
-import { isTokenVisible } from '../helper/is-token-visible';
+import { isTaxableEventVisible } from '../helper/is-taxable-event-visible';
+import { allTokensHidden, isTokenHidden } from '../helper/is-token-hidden';
 const blockchain$ = new ReplaySubject<string>(1);
 const wallet$ = new ReplaySubject<string>(1);
 const currency$ = new ReplaySubject<string>(1);
 
-const visibleTokens$ = new ReplaySubject<{ name: string; value: boolean }[]>(1);
+const tokenFilter$ = new ReplaySubject<{ name: string; value: boolean }[]>(1);
+const hiddenTokens$ = new ReplaySubject<{ name: string; value: boolean }[]>(1);
 
 const eventTypeFilter$ = new BehaviorSubject<Record<string, boolean>>({
-  'Staking rewards': true,
+  'Staking rewards': false,
   'Incoming transfers': false,
-  'Outgoing transfers': true,
-  Swaps: true,
+  'Outgoing transfers': false,
+  Swaps: false,
 });
+
+const allFiltersInActive = (filters: Record<string, boolean>) => {
+  return Object.entries(filters).every(([, v]) => v === false);
+};
 
 const excludedEntries$: BehaviorSubject<TaxableEvent[]> = new BehaviorSubject<
   TaxableEvent[]
@@ -59,9 +65,14 @@ combineLatest([useSharedStore().jobs$, blockchain$, wallet$, currency$])
             }
           })
         );
-        visibleTokens$.next(
+        tokenFilter$.next(
           tokens
             .map((t) => ({ name: t, value: true }))
+            .sort((a, b) => (a.name > b.name ? 1 : -1))
+        );
+        hiddenTokens$.next(
+          tokens
+            .map((t) => ({ name: t, value: false }))
             .sort((a, b) => (a.name > b.name ? 1 : -1))
         );
       }
@@ -99,10 +110,12 @@ combineLatest([useSharedStore().jobs$, blockchain$, wallet$, currency$])
   .subscribe((data) => stakingRewards$.next(data));
 
 const visibleTaxData$ = new ReplaySubject<TaxData>(1);
-combineLatest([taxData$, eventTypeFilter$, visibleTokens$])
+combineLatest([taxData$, eventTypeFilter$, tokenFilter$, hiddenTokens$])
   .pipe(
-    map(([taxData, eventTypeFilter, visibleTokens]) => {
-      const visibleTaxableEvents = taxData?.values
+    map(([taxData, eventTypeFilter, tokenFilter, hiddenTokens]) => {
+      const tokenFilterActive = tokenFilter.some((t) => t.value);
+      const hiddenTokensActive = hiddenTokens.some((t) => t.value);
+      let visibleTaxableEvents = taxData?.values
         .filter((v) => {
           const isStakingReward = v.label === 'Staking reward';
           const incomingTransfer =
@@ -115,6 +128,7 @@ combineLatest([taxData$, eventTypeFilter$, visibleTokens$])
             v.transfers.some((t) => t.amount < 0) &&
             v.transfers.some((t) => t.amount > 0);
           return (
+            allFiltersInActive(eventTypeFilter) ||
             (isStakingReward && eventTypeFilter['Staking rewards']) ||
             (!isStakingReward &&
               incomingTransfer &&
@@ -125,11 +139,22 @@ combineLatest([taxData$, eventTypeFilter$, visibleTokens$])
             (swap && eventTypeFilter['Swaps'])
           );
         })
-        .filter((e) => {
-          return e.transfers.some((t) =>
-            isTokenVisible(visibleTokens, t.symbol)
+        .filter(
+          (e) =>
+            (!tokenFilterActive || isTaxableEventVisible(tokenFilter, e)) &&
+            (!hiddenTokensActive || !allTokensHidden(hiddenTokens, e))
+        );
+      if (hiddenTokensActive) {
+        visibleTaxableEvents = visibleTaxableEvents.map((e) => {
+          const transfers = e.transfers.filter(
+            (t) => !isTokenHidden(hiddenTokens, t.symbol)
           );
+          return {
+            ...e,
+            transfers,
+          };
         });
+      }
       return {
         ...taxData,
         values: visibleTaxableEvents,
@@ -143,7 +168,8 @@ export const useTaxableEventStore = defineStore('taxable-events', {
     taxData$: Observable<TaxData>;
     visibleTaxData$: Observable<TaxData>;
     excludedEntries$: Observable<TaxableEvent[]>;
-    visibleTokens$: Observable<{ name: string; value: boolean }[]>;
+    tokenFilter$: Observable<{ name: string; value: boolean }[]>;
+    hiddenTokens$: Observable<{ name: string; value: boolean }[]>;
     eventTypeFilter$: Observable<Record<string, boolean>>;
     stakingRewards$: Observable<Rewards>;
   } => {
@@ -151,7 +177,8 @@ export const useTaxableEventStore = defineStore('taxable-events', {
       taxData$,
       visibleTaxData$,
       excludedEntries$: excludedEntries$.asObservable(),
-      visibleTokens$: visibleTokens$.asObservable(),
+      tokenFilter$: tokenFilter$.asObservable(),
+      hiddenTokens$: hiddenTokens$.asObservable(),
       eventTypeFilter$: eventTypeFilter$.asObservable(),
       stakingRewards$,
     };
@@ -166,18 +193,29 @@ export const useTaxableEventStore = defineStore('taxable-events', {
     setCurrency(currency: string) {
       currency$.next(currency);
     },
-    async toggleAllVisibleTokens() {
-      const tokens = await firstValueFrom(visibleTokens$);
-      const allVisible = tokens.every((t) => t.value);
-      tokens.forEach((t) => (t.value = !allVisible));
-      visibleTokens$.next(tokens);
+    async clearTokenFilter() {
+      const tokens = await firstValueFrom(tokenFilter$);
+      tokens.forEach((t) => (t.value = false));
+      tokenFilter$.next(tokens);
     },
-    async toggleTokenVisibility(symbol: string) {
-      const tokens = await firstValueFrom(visibleTokens$);
+    async clearHiddenTokens() {
+      const hiddenTokens = await firstValueFrom(hiddenTokens$);
+      hiddenTokens.forEach((t) => (t.value = false));
+      hiddenTokens$.next(hiddenTokens);
+    },
+    async toggleHiddenToken(symbol: string) {
+      const hiddenTokens = await firstValueFrom(hiddenTokens$);
+      hiddenTokens
+        .filter((t) => t.name === symbol)
+        .forEach((t) => (t.value = !t.value));
+      hiddenTokens$.next(hiddenTokens);
+    },
+    async toggleTokenFilter(symbol: string) {
+      const tokens = await firstValueFrom(tokenFilter$);
       tokens
         .filter((t) => t.name === symbol)
         .forEach((t) => (t.value = !t.value));
-      visibleTokens$.next(tokens);
+      tokenFilter$.next(tokens);
     },
     async toggleEventFilter(filterName: string) {
       const filter = await firstValueFrom(eventTypeFilter$);
@@ -186,17 +224,20 @@ export const useTaxableEventStore = defineStore('taxable-events', {
     },
     async resetFilters() {
       const filter = await firstValueFrom(eventTypeFilter$);
-      Object.keys(filter).forEach((k) => (filter[k] = true));
+      Object.keys(filter).forEach((k) => (filter[k] = false));
       eventTypeFilter$.next(filter);
 
-      const tokens = await firstValueFrom(visibleTokens$);
-      tokens.forEach((t) => (t.value = true));
-      visibleTokens$.next(tokens);
+      const tokenFilter = await firstValueFrom(tokenFilter$);
+      tokenFilter.forEach((t) => (t.value = false));
+      tokenFilter$.next(tokenFilter);
+
+      const hiddenTokens = await firstValueFrom(hiddenTokens$);
+      hiddenTokens.forEach((t) => (t.value = false));
+      hiddenTokens$.next(hiddenTokens);
     },
-    async toggleAllEventTypeFilters() {
+    async removeAllEventTypeFilters() {
       const filters = await firstValueFrom(eventTypeFilter$);
-      const allActive = Object.keys(filters).every((key) => filters[key]);
-      Object.keys(filters).forEach((key) => (filters[key] = !allActive));
+      Object.keys(filters).forEach((key) => (filters[key] = false));
       eventTypeFilter$.next(filters);
     },
     async setExcludedEntries(entries: TaxableEvent[]) {
