@@ -916,7 +916,7 @@
       "label": "Altair",
       "token": "AIR",
       "stakingPallets": [],
-      "tokenPallet": true,
+      "tokenPallet": false,
       "evmPallet": true,
       "assetPallet": false,
       "foreignAssetsPallet": false,

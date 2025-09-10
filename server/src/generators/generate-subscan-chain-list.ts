@@ -30,6 +30,7 @@ const knownChainProperties = [
   { domain: "phala", excluded: true },
   { domain: "sora", tokenPallet: false },
   { domain: "centrifuge", tokenPallet: false },
+  { domain: "altair", tokenPallet: false },
 ];
 
 const fetchParaChainIds = async (): Promise<
