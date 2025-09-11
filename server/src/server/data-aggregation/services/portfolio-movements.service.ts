@@ -71,7 +71,6 @@ export class PortfolioMovementsService {
       chainName: request.chain.domain,
     };
     const results = await awaitPromisesAndLog([
-      this.subscanService.fetchAllTransfers(chainExtendedRequest),
       this.subscanService.fetchAllTx(chainExtendedRequest),
       this.subscanService.searchAllEvents(chainExtendedRequest),
       this.xcmService.fetchXcmTransfers(chainExtendedRequest),
@@ -89,9 +88,9 @@ export class PortfolioMovementsService {
     return results;
   }
 
+
   private async transform(
     request: FetchPortfolioMovementsRequest,
-    transfers: Transfer[],
     transactions: Transaction[],
     events: SubscanEvent[],
     xcmList: XcmTransfer[],
@@ -119,23 +118,26 @@ export class PortfolioMovementsService {
           request.address,
           request.chain.domain,
         );
+
     const isMyAccount = (addressToTest: string) =>
       addressToTest &&
       (request.address.toLowerCase() === addressToTest.toLowerCase() ||
         aliases.indexOf(addressToTest) > -1);
-    transfers.push(...dataPlatformTransfers);
-    transfers.push(...specialEventTransfers);
-    transfers.forEach(t => {
+
+    const specialTransfers = []
+    dataPlatformTransfers.forEach(t => specialTransfers.push(t))
+    specialEventTransfers.forEach(t => specialTransfers.push(t))
+    specialTransfers.forEach(t => {
       t.amount = isMyAccount(t.to) ? Math.abs(t.amount) : -Math.abs(t.amount) 
     })
 
-    const portfolioMovements = await this.balanceChangesService.fetchAllBalanceChanges(request.chain, request.address, events)
+    const portfolioMovements = await this.balanceChangesService.fetchAllBalanceChanges(request, events, isMyAccount)
 
     fs.writeFileSync(
     "./logs/" + request.chain.domain + "-" +  request.address + "-balances.json",
     JSON.stringify({portfolioMovements }, null, 2))
 
-    await this.reconciliationService.reconcile(request.chain, portfolioMovements, transactions, transfers as EventDerivedTransfer[], xcmList, events)
+    await this.reconciliationService.reconcile(request.chain, portfolioMovements, transactions, specialTransfers as EventDerivedTransfer[], xcmList, events)
 
     return { portfolioMovements };
   }
@@ -161,7 +163,6 @@ export class PortfolioMovementsService {
       `PortfolioMovmentService: Fetch all data for ${request.chain.domain} and wallet ${request.address}`,
     );
     let [
-      transfers,
       transactions,
       events,
       xcmList,
@@ -169,7 +170,6 @@ export class PortfolioMovementsService {
       dataPlatformTransfers,
     ] = await this.fetchData(request);
     if (request.maxDate) {
-      transfers = transfers.filter((t) => t.timestamp <= request.maxDate);
       transactions = transactions.filter((t) => t.timestamp <= request.maxDate);
       events = events.filter((e) => e.timestamp <= request.maxDate);
       xcmList = xcmList.filter((e) => e.timestamp <= request.maxDate);
@@ -191,7 +191,6 @@ export class PortfolioMovementsService {
     );
     let { portfolioMovements } = await this.transform(
       request,
-      transfers,
       transactions,
       events,
       xcmList,

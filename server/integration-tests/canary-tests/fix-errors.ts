@@ -14,14 +14,16 @@ export const fixErrors = async (
     container.resolve("portfolioMovementCorrectionService");
 
   const { portfolioMovements, unmatchedEvents } = JSON.parse(
-    fs.readFileSync("./" + address + "_" + chain.domain + ".json", "utf-8"),
+    fs.readFileSync("./logs/" + chain.domain + "-" + address + ".json", "utf-8"),
   );
+
+  console.log("unmatched events " + unmatchedEvents.length)
 
   await portfolioMovementCorrectionService.fixErrorsAndMissingData(
     chain,
     address,
     portfolioMovements,
-    [],
+    unmatchedEvents,
     portfolioMovements.reduce(
       (mindate, p) => Math.min(mindate, p.timestamp),
       Number.MAX_SAFE_INTEGER,
@@ -31,14 +33,9 @@ export const fixErrors = async (
       0,
     ),
   );
-
-  fs.writeFileSync(
-    "./fixed_fixed_" + address + "_" + chain.domain + ".json",
-    JSON.stringify({ portfolioMovements, unmatchedEvents }, null, 2),
-  );
 };
 
-fixErrors("1cCx8RqeaTJohgaGtPyJq8QFfc7Gi9tLU1bynC1TC9c9hNH", {
+fixErrors("13zGzFdxkfYzYZVBoKEtnbGWkqJNHBCm4SvkVLLB7qbEXfqc", {
   domain: "hydration",
-  token: "DOT",
+  token: "HDX",
 });
