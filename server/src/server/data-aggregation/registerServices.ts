@@ -10,12 +10,16 @@ import { XcmTokenResolutionService } from "./services/xcm-token-resolution.servi
 import { TokenFromMultiLocationService } from "./services/special-event-processing/token-from-multi-location.service";
 import { StakingRewardsAggregatorService } from "./services/staking-rewards-aggregator.service";
 import { PortfolioMovementsService } from "./services/portfolio-movements.service";
+import { BalancesChangesService } from "./services/balance-change.service";
+import { AssetMovementReconciliationService } from "./services/asset-movement-reconciliation.service";
 
 export const registerServices = (container: AwilixContainer) => {
   container.register({
     addFiatValuesToTaxableEventsService: asClass(
       AddFiatValuesToTaxableEventsService,
     ),
+    balancesChangesService: asClass(BalancesChangesService),
+    assetMovementReconciliationService: asClass(AssetMovementReconciliationService),
     specialEventsToTransfersService: asClass(SpecialEventsToTransfersService),
     stakingRewardsAggregatorService: asClass(StakingRewardsAggregatorService),
     cryptoCurrencyPricesService: asClass(CryptoCurrencyPricesService),

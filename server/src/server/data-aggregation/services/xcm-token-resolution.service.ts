@@ -118,7 +118,7 @@ export class XcmTokenResolutionService {
         .filter((t) => !t.asset_unique_id)
         .forEach((transfer) => {
           const symbol = transfer.symbol;
-          const depositsMatchingTimestamp = balancesdepositEvents.filter(
+          const depositsMatchingTimestamp = deposits.filter(
             (d) => d.timestamp,
           );
 

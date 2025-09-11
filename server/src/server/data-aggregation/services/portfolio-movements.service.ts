@@ -167,11 +167,6 @@ export class PortfolioMovementsService {
         stakingRewards.rawStakingRewards,
       );
 
-    portfolioMovements = new ChainAdjustments().handleAdjustments(
-      request.chain.domain,
-      portfolioMovements,
-    );
-
     return { portfolioMovements, unmatchedEvents };
   }
 

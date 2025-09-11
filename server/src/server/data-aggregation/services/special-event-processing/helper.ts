@@ -52,12 +52,22 @@ export const extractForeignAsset = (
   tokens: ForeignAsset[],
 ) => {
   const value = getPropertyValue(property, event);
-  return tokens.find(
+  let token = tokens.find(
     (t) =>
       value == t.asset_id ||
       isEqual(value, t.multi_location) ||
       isEqual(value, t.asset_id),
   );
+  if (!token && typeof value?.interior?.X1 === "object") {
+      const assetIdAlt = {
+          parents: value.parents,
+          interior: { X1: [value?.interior?.X1] }
+      } 
+      token = tokens.find((a) =>
+          isEqual(a.multi_location, assetIdAlt),
+      );
+  }
+  return token;
 };
 
 export const mapKeyToCanonicalAddress = (key: string) => {
