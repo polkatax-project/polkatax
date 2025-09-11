@@ -3,12 +3,11 @@ import { Asset } from "../../blockchain/substrate/model/asset";
 import { SubscanEvent } from "../../blockchain/substrate/model/subscan-event";
 import { logger } from "../../logger/logger";
 import { PortfolioMovement } from "../model/portfolio-movement";
-import { BalanceChange } from "./balance-change.service";
 
 export class AssetMovementReconciliationService {
     constructor(private subscanService: SubscanService) {}
     
-    async reconciliate(chain: { domain: string, token: string }, address: string, portfolioMovements: PortfolioMovement[], unmatchedEvents: SubscanEvent[], balancesChanges: BalanceChange[]) {
+    async reconciliate(chain: { domain: string, token: string }, address: string, portfolioMovements: PortfolioMovement[], unmatchedEvents: SubscanEvent[], balancesChanges: any[]) {
         const tokens = await this.subscanService.scanTokensAndAssets(chain.domain)
         if (!tokens.find(t => t.native)) {
             tokens.push({
@@ -37,7 +36,7 @@ export class AssetMovementReconciliationService {
         })
     }
 
-    private calculateDeviations(changes: BalanceChange[], movements: PortfolioMovement[], tokens: Asset[]): {
+    private calculateDeviations(changes: any[], movements: PortfolioMovement[], tokens: Asset[]): {
         symbol: string,
         asset_unique_id: string,
         decimals: number,

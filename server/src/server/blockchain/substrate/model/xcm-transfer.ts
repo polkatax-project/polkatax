@@ -50,8 +50,12 @@ export interface XcmTransfer {
   block: number;
   fee: number;
   extrinsic_index?: string;
-  transfers: {
+  transfers: XcmAssetMovement[];
+}
+
+export interface XcmAssetMovement {
     rawAmount?: string;
+    outgoing: boolean;
     symbol: string;
     amount: number;
     from: string;
@@ -63,5 +67,5 @@ export interface XcmTransfer {
     destChain?: string;
     asset_unique_id: string;
     asset_unique_id_as_given: string;
-  }[];
-}
+    module: string;
+  }

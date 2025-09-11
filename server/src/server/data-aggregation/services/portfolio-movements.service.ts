@@ -4,15 +4,11 @@ import * as subscanChains from "../../../../res/gen/subscan-chains.json";
 import { logger } from "../../logger/logger";
 import { XcmService } from "../../blockchain/substrate/services/xcm.service";
 import { SubscanService } from "../../blockchain/substrate/api/subscan.service";
-import { ChainAdjustments } from "../helper/chain-adjustments";
-import { ChainDataAccumulationService } from "./chain-data-accumulation.service";
 import { determineLabelForPayment } from "../helper/determine-label-for-payment";
 import { PortfolioMovementsResponse } from "../model/portfolio-movements.response";
 import { SpecialEventsToTransfersService } from "./special-event-processing/special-events-to-transfers.service";
-import { XcmTokenResolutionService } from "./xcm-token-resolution.service";
-import { EventEnrichedXcmTransfer } from "../model/event-enriched-xcm-transfer";
 import { XcmTransfer } from "../../blockchain/substrate/model/xcm-transfer";
-import { PortfolioMovement, TaxableEvent } from "../model/portfolio-movement";
+import { PortfolioMovement } from "../model/portfolio-movement";
 import { SubscanEvent } from "../../blockchain/substrate/model/subscan-event";
 import { Transfer } from "../../blockchain/substrate/model/raw-transfer";
 import { StakingReward } from "../../blockchain/substrate/model/staking-reward";
@@ -22,17 +18,10 @@ import { StakingRewardsAggregatorService } from "./staking-rewards-aggregator.se
 import { AddFiatValuesToTaxableEventsService } from "./add-fiat-values-to-taxable-events.service";
 import { DataPlatformLiquidStakingService } from "../../data-platform-api/data-platform-liquidstaking.service";
 import * as fs from "fs";
-
-const ignoreIncomingXcm = [
-  "assethub-polkadot",
-  "assethub-kusama",
-  "coretime-polkadot",
-  "coretime-kusama",
-  "people-polkadot",
-  "people-kusama",
-  "collectives-polkadot",
-  "collectives-kusama",
-];
+import { ReconciliationService } from "./reconciliation.service";
+import { EventDerivedTransfer } from "../model/event-derived-transfer";
+import { BalanceChangesService } from "./balance-changes.service";
+import { isEvmAddress } from "../helper/is-evm-address";
 
 export async function awaitPromisesAndLog<T>(
   promises: Promise<any>[],
@@ -62,37 +51,12 @@ export class PortfolioMovementsService {
     private subscanService: SubscanService,
     private xcmService: XcmService,
     private stakingRewardsAggregatorService: StakingRewardsAggregatorService,
-    private chainDataAccumulationService: ChainDataAccumulationService,
     private specialEventsToTransfersService: SpecialEventsToTransfersService,
     private addFiatValuesToTaxableEventsService: AddFiatValuesToTaxableEventsService,
-    private xcmTokenResolutionService: XcmTokenResolutionService,
     private dataPlatformLiquidStakingService: DataPlatformLiquidStakingService,
+    private balanceChangesService: BalanceChangesService,
+    private reconciliationService: ReconciliationService
   ) {}
-
-  private isForEventContextOnly(xcm: XcmTransfer, chain: string): boolean {
-    return (
-      xcm.transfers.length === 0 ||
-      (ignoreIncomingXcm.includes(chain) &&
-        xcm.transfers[0].destChain === chain)
-    );
-  }
-
-  private splitXcmTransfers(
-    xcmList: XcmTransfer[],
-    chain: string,
-  ): { xcmMapToTransfer: XcmTransfer[]; xcmForEventContext: XcmTransfer[] } {
-    const xcmMapToTransfer = [];
-    const xcmForEventContext = [];
-
-    xcmList.forEach((xcm) => {
-      if (this.isForEventContextOnly(xcm, chain)) {
-        xcmForEventContext.push(xcm);
-      } else {
-        xcmMapToTransfer.push(xcm);
-      }
-    });
-    return { xcmMapToTransfer, xcmForEventContext };
-  }
 
   private validate(request: FetchPortfolioMovementsRequest) {
     let { chain } = request;
@@ -137,37 +101,43 @@ export class PortfolioMovementsService {
     },
     dataPlatformTransfers: Transfer[],
   ) {
-    xcmList = await this.xcmTokenResolutionService.resolveTokens(
-      request.chain,
-      xcmList,
-      events,
-    );
-
-    const { xcmMapToTransfer } = this.splitXcmTransfers(
-      xcmList,
-      request.chain.domain,
-    );
-
     const specialEventTransfers =
       await this.specialEventsToTransfersService.handleEvents(
         request.chain,
         events,
         xcmList,
       );
+
+    const aliases = isEvmAddress(request.address)
+      ? [
+          await this.subscanService.mapToSubstrateAccount(
+            request.chain.domain,
+            request.address,
+          ),
+        ]
+      : await this.subscanService.fetchAccounts(
+          request.address,
+          request.chain.domain,
+        );
+    const isMyAccount = (addressToTest: string) =>
+      addressToTest &&
+      (request.address.toLowerCase() === addressToTest.toLowerCase() ||
+        aliases.indexOf(addressToTest) > -1);
     transfers.push(...dataPlatformTransfers);
     transfers.push(...specialEventTransfers);
+    transfers.forEach(t => {
+      t.amount = isMyAccount(t.to) ? Math.abs(t.amount) : -Math.abs(t.amount) 
+    })
 
-    let { portfolioMovements, unmatchedEvents } =
-      await this.chainDataAccumulationService.combine(
-        request,
-        transactions,
-        transfers,
-        xcmMapToTransfer as EventEnrichedXcmTransfer[],
-        events,
-        stakingRewards.rawStakingRewards,
-      );
+    const portfolioMovements = await this.balanceChangesService.fetchAllBalanceChanges(request.chain, request.address, events)
 
-    return { portfolioMovements, unmatchedEvents };
+    fs.writeFileSync(
+    "./logs/" + request.chain.domain + "-" +  request.address + "-balances.json",
+    JSON.stringify({portfolioMovements }, null, 2))
+
+    await this.reconciliationService.reconcile(request.chain, portfolioMovements, transactions, transfers as EventDerivedTransfer[], xcmList, events)
+
+    return { portfolioMovements };
   }
 
   private addLabels(
@@ -219,7 +189,7 @@ export class PortfolioMovementsService {
     logger.info(
       `PortfolioMovmentService: Transforming data for ${request.chain.domain} and wallet ${request.address}`,
     );
-    const { portfolioMovements, unmatchedEvents } = await this.transform(
+    let { portfolioMovements } = await this.transform(
       request,
       transfers,
       transactions,
@@ -234,20 +204,16 @@ export class PortfolioMovementsService {
     );
     this.addLabels(request, portfolioMovements);
 
-    let taxableEvents = (portfolioMovements as TaxableEvent[]).concat(
-      stakingRewards.aggregatedRewards,
-    );
-
     logger.info(
       `PortfolioMovmentService: Adding/converting fiat values for ${request.chain.domain} and wallet ${request.address}`,
     );
     await this.addFiatValuesToTaxableEventsService.addFiatValues(
       request,
-      taxableEvents,
+      portfolioMovements,
     );
 
     if (request.maxDate) {
-      taxableEvents = taxableEvents.filter(
+      portfolioMovements = portfolioMovements.filter(
         (t) => t.timestamp <= request.maxDate,
       );
     }
@@ -255,7 +221,7 @@ export class PortfolioMovementsService {
     logger.info(
       `PortfolioMovmentService: Sorting taxable events ${request.chain.domain} and wallet ${request.address}`,
     );
-    const sortedTaxableEvents = taxableEvents.sort(
+    const sortedTaxableEvents = portfolioMovements.sort(
       (a, b) => a.timestamp - b.timestamp,
     );
 
@@ -266,10 +232,10 @@ export class PortfolioMovementsService {
     if (process.env["WRITE_RESULTS_TO_DISK"] === "true") {
       fs.writeFileSync(
         `./logs/${request.chain.domain}-${request.address}.json`,
-        JSON.stringify({ portfolioMovements: sortedTaxableEvents, unmatchedEvents }, null, 2)
+        JSON.stringify({ portfolioMovements: sortedTaxableEvents }, null, 2)
       );
     }
 
-    return { portfolioMovements: sortedTaxableEvents, unmatchedEvents };
+    return { portfolioMovements: sortedTaxableEvents, unmatchedEvents: events };
   }
 }
