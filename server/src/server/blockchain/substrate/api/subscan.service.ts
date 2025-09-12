@@ -306,16 +306,14 @@ export class SubscanService {
     address,
     minDate,
     maxDate,
-    evm,
   }: {
     chainName: string;
     address: string;
     minDate: number;
     maxDate?: number;
-    evm?: boolean;
   }): Promise<Transfer[]> {
     logger.info(
-      `Enter fetchAllTransfers for ${chainName} and address ${address} starting from ${new Date(minDate).toISOString()}. Evm: ${evm}`,
+      `Enter fetchAllTransfers for ${chainName} and address ${address} starting from ${new Date(minDate).toISOString()}`,
     );
     const result = await this.iterateOverPagesParallel<
       RawSubstrateTransferDto & RawEvmTransferDto & { timestamp: number }
@@ -326,7 +324,6 @@ export class SubscanService {
         page,
         minDate,
         block_range,
-        evm,
       ),
     );
     const filtered = this.filterOnDate(result, minDate, maxDate);

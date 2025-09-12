@@ -1,9 +1,6 @@
 import { SubscanApi } from "../blockchain/substrate/api/subscan.api";
 import { Block } from "../blockchain/substrate/model/block";
-import {
-  PortfolioMovement,
-  TaxableEvent,
-} from "../data-aggregation/model/portfolio-movement";
+import { PortfolioMovement } from "../data-aggregation/model/portfolio-movement";
 import {
   PortfolioDifference,
   PortfolioDifferenceService,
@@ -60,7 +57,7 @@ export class PortfolioChangeValidationService {
   async calculateDeviationFromExpectation(
     chainInfo: { domain: string; token: string },
     address: string,
-    portfolioMovements: TaxableEvent[],
+    portfolioMovements: PortfolioMovement[],
     acceptedDeviations: DeviationLimit[],
     minBlockNum: number,
     maxBlockNum: number,
@@ -91,10 +88,10 @@ export class PortfolioChangeValidationService {
   }
 
   private filterMovementsWithinRange(
-    portfolioMovements: TaxableEvent[],
+    portfolioMovements: PortfolioMovement[],
     minBlock: Block,
     maxBlock: Block,
-  ): TaxableEvent[] {
+  ): PortfolioMovement[] {
     return portfolioMovements.filter(
       (p) =>
         p.timestamp > minBlock.timestamp && p.timestamp <= maxBlock.timestamp,
@@ -103,7 +100,7 @@ export class PortfolioChangeValidationService {
 
   private async calculateExpectedDiffForToken(
     tokenInPortfolio: PortfolioDifference,
-    matchingPortfolioMovements: TaxableEvent[],
+    matchingPortfolioMovements: PortfolioMovement[],
   ): Promise<{
     expectedDiff: number;
     transferCounter: number;
@@ -178,7 +175,7 @@ export class PortfolioChangeValidationService {
   }
 
   async calculateDeviation(
-    portfolioMovements: TaxableEvent[],
+    portfolioMovements: PortfolioMovement[],
     portfolioDifferences: PortfolioDifference[],
     acceptedDeviations: DeviationLimit[],
     minBlock: Block,

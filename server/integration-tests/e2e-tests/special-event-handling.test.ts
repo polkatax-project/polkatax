@@ -11,9 +11,7 @@ describe("Special event handling", () => {
   let subscanApi: SubscanApi = new SubscanApi();
   let subscanService: SubscanService = new SubscanService(subscanApi);
   let specialEventsToTransfersService: SpecialEventsToTransfersService =
-    new SpecialEventsToTransfersService(
-      subscanService
-    );
+    new SpecialEventsToTransfersService(subscanService);
 
   test("verify assetconversion SwapExecuted data extraction", async () => {
     const eventsOfInterest = await subscanApi.searchEvents(

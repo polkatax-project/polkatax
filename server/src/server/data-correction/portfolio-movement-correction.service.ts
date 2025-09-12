@@ -1,8 +1,5 @@
 import { SubscanApi } from "../blockchain/substrate/api/subscan.api";
-import {
-  PortfolioMovement,
-  TaxableEvent,
-} from "../data-aggregation/model/portfolio-movement";
+import { PortfolioMovement } from "../data-aggregation/model/portfolio-movement";
 import { logger } from "../logger/logger";
 import { PortfolioChangeValidationService } from "./portfolio-change-validation.service";
 import { FetchCurrentPrices } from "./fetch-crypto-prices";
@@ -59,7 +56,7 @@ export class PortfolioMovementCorrectionService {
 
   async determineMinMaxBlock(
     chainInfo: { domain: string; token: string },
-    portfolioMovements: TaxableEvent[],
+    portfolioMovements: PortfolioMovement[],
     minDate: number,
     maxDate: number,
   ): Promise<{ blockMin: number; blockMax: number }> {
@@ -98,7 +95,7 @@ export class PortfolioMovementCorrectionService {
   private async calculateDeviationWithRetry(
     chainInfo: { domain: string; token: string },
     address: string,
-    portfolioMovements: TaxableEvent[],
+    portfolioMovements: PortfolioMovement[],
     acceptedDeviations,
     blockMin: number,
     blockMax: number,
@@ -142,7 +139,7 @@ export class PortfolioMovementCorrectionService {
   async fixErrorsValidateEachBlock(
     chainInfo: { domain: string; token: string },
     address: string,
-    portfolioMovements: TaxableEvent[],
+    portfolioMovements: PortfolioMovement[],
     unmatchedEvents: SubscanEvent[],
     acceptedDeviations: DeviationLimit[],
   ) {
@@ -285,7 +282,7 @@ export class PortfolioMovementCorrectionService {
   async fixErrorsAndMissingData(
     chainInfo: { domain: string; token: string },
     address: string,
-    portfolioMovements: TaxableEvent[],
+    portfolioMovements: PortfolioMovement[],
     unmatchedEvents: SubscanEvent[],
     minDate: number,
     maxDate: number,
@@ -400,7 +397,7 @@ export class PortfolioMovementCorrectionService {
   async fixErrorsAndMissingDataRecursively(
     chainInfo: { domain: string; token: string },
     address: string,
-    portfolioMovements: TaxableEvent[],
+    portfolioMovements: PortfolioMovement[],
     unmatchedEvents: SubscanEvent[] = [],
     acceptedDeviations: DeviationLimit[],
     blockMin: number,

@@ -537,7 +537,7 @@ export class SubscanApi {
     account: string,
     page: number = 0,
     minDate: number,
-    block_range?: string
+    block_range?: string,
   ): Promise<{
     list: (RawSubstrateTransferDto &
       RawEvmTransferDto & { timestamp: number; id: number })[];

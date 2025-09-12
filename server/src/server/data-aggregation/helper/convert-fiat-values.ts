@@ -1,16 +1,16 @@
 import { formatDate } from "../../../common/util/date-utils";
-import { TaxableEvent } from "../model/portfolio-movement";
 import { logger } from "../../logger/logger";
 import { ExchangeRates } from "../../../model/fiat-exchange-rates/exchange-rates";
+import { PortfolioMovement } from "../model/portfolio-movement";
 
 /**
  * Converts fiat values in payment objects from USD to the target currency.
  */
 export const convertFiatValues = (
   targetCurrency: string,
-  taxableEvents: TaxableEvent[],
+  taxableEvents: PortfolioMovement[],
   exchangeRates: ExchangeRates,
-): TaxableEvent[] => {
+): PortfolioMovement[] => {
   for (let taxable of taxableEvents) {
     const isoDate = formatDate(new Date(taxable.timestamp));
     if (exchangeRates[isoDate]) {

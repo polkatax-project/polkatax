@@ -3,7 +3,7 @@ import { CurrencyQuotes } from "../../../model/crypto-currency-prices/crypto-cur
 import { logger } from "../../logger/logger";
 import { convertFiatValues } from "../helper/convert-fiat-values";
 import { findCoingeckoIdForNativeToken } from "../helper/find-coingecko-id-for-native-token";
-import { PortfolioMovement, TaxableEvent } from "../model/portfolio-movement";
+import { PortfolioMovement } from "../model/portfolio-movement";
 import { CryptoCurrencyPricesService } from "./crypto-currency-prices.service";
 import { FiatExchangeRateService } from "./fiat-exchange-rate.service";
 
@@ -14,9 +14,9 @@ export class AddFiatValuesToTaxableEventsService {
   ) {}
 
   addFiatValuesForTxFees(
-    taxableEvents: TaxableEvent[],
+    taxableEvents: PortfolioMovement[],
     quotes: CurrencyQuotes,
-  ): TaxableEvent[] {
+  ): PortfolioMovement[] {
     for (let taxable of taxableEvents as PortfolioMovement[]) {
       const isoDate = formatDate(new Date(taxable.timestamp));
       if (quotes.quotes?.[isoDate]) {
@@ -37,9 +37,9 @@ export class AddFiatValuesToTaxableEventsService {
 
   addFiatValuesForStakingRewards(
     nativeToken: string,
-    taxableEvents: TaxableEvent[],
+    taxableEvents: PortfolioMovement[],
     quotes: CurrencyQuotes,
-  ): TaxableEvent[] {
+  ): PortfolioMovement[] {
     const taxableStakingRewards = taxableEvents.filter(
       (t) => t.label === "Staking reward" || t.label === "Staking slashed",
     );
@@ -82,7 +82,7 @@ export class AddFiatValuesToTaxableEventsService {
       chain: { domain: string; token: string };
       currency: string;
     },
-    taxableEvents: TaxableEvent[],
+    taxableEvents: PortfolioMovement[],
   ): Promise<void> {
     const coingeckoId = findCoingeckoIdForNativeToken(context.chain.domain);
 

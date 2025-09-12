@@ -1,5 +1,4 @@
 import { Label } from "../../../common/model/label";
-import { AggregatedStakingReward } from "./aggregated-staking-reward";
 
 export type Provenance =
   | "xcm"
@@ -49,5 +48,3 @@ export interface TaxableEventTransfer {
   semanticGroupId?: string;
   label?: Label;
 }
-
-export type TaxableEvent = PortfolioMovement | AggregatedStakingReward;
