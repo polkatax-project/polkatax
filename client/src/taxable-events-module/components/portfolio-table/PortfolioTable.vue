@@ -8,8 +8,7 @@
       </p>
       <ul>
         <li>Some cross-chain (XCM) transfers may not be fully recognized.</li>
-        <li>Some events were not processed.</li>
-        <li>Transaction fees are not yet included.</li>
+        <li>XCM Transaction fees are not yet included.</li>
       </ul>
     </div>
 
@@ -104,10 +103,10 @@ const columns = computed(() => [
     align: 'right',
     label: 'Fees',
     field: (row: Deviation) =>
-      `${formatCryptoAmount(row.fees)} (${formatCurrency(
-        row.feesFiat,
-        taxData.value?.currency ?? 'USD'
-      )})`,
+      `${formatCryptoAmount(row.fees)}` +
+      (row.fees > 0
+        ? ` (${formatCurrency(row.feesFiat, taxData.value?.currency ?? 'USD')})`
+        : ''),
     sortable: false,
   },
   {

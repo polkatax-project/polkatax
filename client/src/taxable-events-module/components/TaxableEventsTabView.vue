@@ -6,18 +6,7 @@
       <div>Time frame: {{ taxData?.fromDate }} - {{ taxData?.toDate }}</div>
     </div>
     <q-tabs v-model="tab" active-color="primary" indicator-color="primary">
-      <q-tab
-        name="events"
-        icon="receipt_long"
-        label="All Taxable Events"
-        :disable="!taxData?.portfolioSupported"
-      >
-        <q-tooltip
-          v-if="!taxData?.portfolioSupported"
-          anchor="top middle"
-          self="bottom middle"
-          >For this chain only staking rewards are exported.</q-tooltip
-        >
+      <q-tab name="events" icon="receipt_long" label="All Taxable Events">
       </q-tab>
       <q-tab
         name="rewards"
@@ -34,7 +23,7 @@
           v-if="!taxData?.portfolioSupported"
           anchor="top middle"
           self="bottom middle"
-          >For this chain only staking rewards are exported.</q-tooltip
+          >Portfolio view is not supported for this chain.</q-tooltip
         >
       </q-tab>
     </q-tabs>
