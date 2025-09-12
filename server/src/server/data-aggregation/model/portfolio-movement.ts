@@ -47,7 +47,7 @@ export interface TaxableEventTransfer {
   asset_unique_id?: string;
   event_index?: string;
   semanticEventId?: string;
-  label?: Label
+  label?: Label;
 }
 
 export type TaxableEvent = PortfolioMovement | AggregatedStakingReward;

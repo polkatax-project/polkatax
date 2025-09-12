@@ -14,10 +14,13 @@ export const fixErrors = async (
     container.resolve("portfolioMovementCorrectionService");
 
   const { portfolioMovements, unmatchedEvents } = JSON.parse(
-    fs.readFileSync("./logs/" + chain.domain + "-" + address + ".json", "utf-8"),
+    fs.readFileSync(
+      "./logs/" + chain.domain + "-" + address + ".json",
+      "utf-8",
+    ),
   );
 
-  console.log("unmatched events " + unmatchedEvents.length)
+  console.log("unmatched events " + unmatchedEvents.length);
 
   await portfolioMovementCorrectionService.fixErrorsAndMissingData(
     chain,
@@ -36,6 +39,6 @@ export const fixErrors = async (
 };
 
 fixErrors("13zGzFdxkfYzYZVBoKEtnbGWkqJNHBCm4SvkVLLB7qbEXfqc", {
-  domain: "hydration",
-  token: "HDX",
+  domain: "assethub-polkadot",
+  token: "DOT",
 });

@@ -213,7 +213,7 @@ export class XcmService {
                   fiatValue: Number(a.history_currency_amount),
                   fromChain,
                   destChain,
-                  outgoing: fromChain === data.chainName
+                  outgoing: fromChain === data.chainName,
                 };
               }),
             )

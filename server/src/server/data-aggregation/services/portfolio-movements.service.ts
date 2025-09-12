@@ -12,7 +12,6 @@ import { PortfolioMovement } from "../model/portfolio-movement";
 import { SubscanEvent } from "../../blockchain/substrate/model/subscan-event";
 import { Transfer } from "../../blockchain/substrate/model/raw-transfer";
 import { StakingReward } from "../../blockchain/substrate/model/staking-reward";
-import { AggregatedStakingReward } from "../model/aggregated-staking-reward";
 import { Transaction } from "../../blockchain/substrate/model/transaction";
 import { StakingRewardsAggregatorService } from "./staking-rewards-aggregator.service";
 import { AddFiatValuesToTaxableEventsService } from "./add-fiat-values-to-taxable-events.service";
@@ -55,7 +54,7 @@ export class PortfolioMovementsService {
     private addFiatValuesToTaxableEventsService: AddFiatValuesToTaxableEventsService,
     private dataPlatformLiquidStakingService: DataPlatformLiquidStakingService,
     private balanceChangesService: BalanceChangesService,
-    private reconciliationService: ReconciliationService
+    private reconciliationService: ReconciliationService,
   ) {}
 
   private validate(request: FetchPortfolioMovementsRequest) {
@@ -88,16 +87,12 @@ export class PortfolioMovementsService {
     return results;
   }
 
-
   private async transform(
     request: FetchPortfolioMovementsRequest,
     transactions: Transaction[],
     events: SubscanEvent[],
     xcmList: XcmTransfer[],
-    stakingRewards: {
-      rawStakingRewards: StakingReward[];
-      aggregatedRewards: AggregatedStakingReward[];
-    },
+    stakingRewards: StakingReward[],
     dataPlatformTransfers: Transfer[],
   ) {
     const specialEventTransfers =
@@ -124,20 +119,29 @@ export class PortfolioMovementsService {
       (request.address.toLowerCase() === addressToTest.toLowerCase() ||
         aliases.indexOf(addressToTest) > -1);
 
-    const specialTransfers = []
-    dataPlatformTransfers.forEach(t => specialTransfers.push(t))
-    specialEventTransfers.forEach(t => specialTransfers.push(t))
-    specialTransfers.forEach(t => {
-      t.amount = isMyAccount(t.to) ? Math.abs(t.amount) : -Math.abs(t.amount) 
-    })
+    const specialTransfers = [];
+    dataPlatformTransfers.forEach((t) => specialTransfers.push(t));
+    specialEventTransfers.forEach((t) => specialTransfers.push(t));
+    specialTransfers.forEach((t) => {
+      t.amount = isMyAccount(t.to) ? Math.abs(t.amount) : -Math.abs(t.amount);
+    });
 
-    const portfolioMovements = await this.balanceChangesService.fetchAllBalanceChanges(request, events, isMyAccount)
+    const portfolioMovements =
+      await this.balanceChangesService.fetchAllBalanceChanges(
+        request,
+        events,
+        isMyAccount,
+      );
 
-    fs.writeFileSync(
-    "./logs/" + request.chain.domain + "-" +  request.address + "-balances.json",
-    JSON.stringify({portfolioMovements }, null, 2))
-
-    await this.reconciliationService.reconcile(request.chain, portfolioMovements, transactions, specialTransfers as EventDerivedTransfer[], xcmList, events)
+    await this.reconciliationService.reconcile(
+      request.chain,
+      portfolioMovements,
+      transactions,
+      specialTransfers as EventDerivedTransfer[],
+      xcmList,
+      stakingRewards,
+      events,
+    );
 
     return { portfolioMovements };
   }
@@ -162,25 +166,15 @@ export class PortfolioMovementsService {
     logger.info(
       `PortfolioMovmentService: Fetch all data for ${request.chain.domain} and wallet ${request.address}`,
     );
-    let [
-      transactions,
-      events,
-      xcmList,
-      stakingRewards,
-      dataPlatformTransfers,
-    ] = await this.fetchData(request);
+    let [transactions, events, xcmList, stakingRewards, dataPlatformTransfers] =
+      await this.fetchData(request);
     if (request.maxDate) {
       transactions = transactions.filter((t) => t.timestamp <= request.maxDate);
       events = events.filter((e) => e.timestamp <= request.maxDate);
       xcmList = xcmList.filter((e) => e.timestamp <= request.maxDate);
-      stakingRewards.rawStakingRewards =
-        stakingRewards.rawStakingRewards.filter(
-          (e) => e.timestamp <= request.maxDate,
-        );
-      stakingRewards.aggregatedRewards =
-        stakingRewards.aggregatedRewards.filter(
-          (e) => e.timestamp <= request.maxDate,
-        );
+      stakingRewards = stakingRewards.filter(
+        (e) => e.timestamp <= request.maxDate,
+      );
       dataPlatformTransfers = dataPlatformTransfers.filter(
         (e) => e.timestamp <= request.maxDate,
       );
@@ -231,7 +225,7 @@ export class PortfolioMovementsService {
     if (process.env["WRITE_RESULTS_TO_DISK"] === "true") {
       fs.writeFileSync(
         `./logs/${request.chain.domain}-${request.address}.json`,
-        JSON.stringify({ portfolioMovements: sortedTaxableEvents }, null, 2)
+        JSON.stringify({ portfolioMovements: sortedTaxableEvents }, null, 2),
       );
     }
 

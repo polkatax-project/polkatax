@@ -9,9 +9,7 @@ import { toTransfer } from "./to-transfer";
 import { EventDerivedAssetMovement } from "./event-derived-asset-movement";
 
 export class SpecialEventsToTransfersService {
-  constructor(
-    private subscanService: SubscanService,
-  ) {}
+  constructor(private subscanService: SubscanService) {}
 
   private findMatchingConfig(
     chain: string,
@@ -31,17 +29,19 @@ export class SpecialEventsToTransfersService {
     if (!Array.isArray(assetMovments)) {
       assetMovments = [assetMovments];
     }
-    return assetMovments.filter(a => !!a.token).map((a) =>
-      toTransfer(
-        a.event,
-        a.from,
-        a.to,
-        Number(a.rawAmount) / Math.pow(10, a?.token?.decimals),
-        a?.token,
-        a.xcm,
-        a.label,
-      ),
-    );
+    return assetMovments
+      .filter((a) => !!a.token)
+      .map((a) =>
+        toTransfer(
+          a.event,
+          a.from,
+          a.to,
+          Number(a.rawAmount) / Math.pow(10, a?.token?.decimals),
+          a?.token,
+          a.xcm,
+          a.label,
+        ),
+      );
   }
 
   async handleEvents(

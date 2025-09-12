@@ -519,6 +519,7 @@ export class SubscanApi {
         callModuleFunction: entry.call_module_function,
         amount: entry.value ? Number(entry.value) : 0,
         extrinsic_index: entry.extrinsic_index,
+        fee: entry.fee ? Number(entry.fee) : undefined,
         feeUsed: entry.fee_used ? Number(entry.fee_used) : undefined,
         tip: entry.fee_used ? Number(entry.tip) : undefined,
       };

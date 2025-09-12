@@ -9,7 +9,7 @@ export class StakingRewardsService {
 
   private async mapRawRewards(
     nativeToken: string,
-    rewards: StakingReward[],
+    rewards: Partial<StakingReward>[],
   ): Promise<StakingReward[]> {
     return rewards.map((reward) => ({
       block: reward.block,
@@ -19,6 +19,7 @@ export class StakingRewardsService {
       event_index: reward.event_index,
       extrinsic_index: reward.extrinsic_index,
       asset_unique_id: nativeToken,
+      symbol: nativeToken,
     }));
   }
 
@@ -47,7 +48,7 @@ export class StakingRewardsService {
         case "robonomics-freemium":
         case "peaq":
         case "hydration":
-          return []; // staking rewards are return as transfers for these chains.
+          return []; // staking rewards are returned as transfers for these chains.
         default:
           const token = await this.subscanService.fetchNativeToken(chainName);
           const rawRewards = await this.subscanService.fetchAllStakingRewards({
@@ -67,7 +68,7 @@ export class StakingRewardsService {
     })();
     const filtered = await this.mapRawRewards(
       getNativeToken(chainName),
-      rewardsSlashes as StakingReward[],
+      rewardsSlashes,
     );
     return filtered;
   }

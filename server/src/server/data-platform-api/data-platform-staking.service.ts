@@ -3,12 +3,12 @@ import { logger } from "../logger/logger";
 import { DataPlatformApi } from "./data-platform.api";
 import { dataPlatformChains } from "./model/data-platform-chains";
 import { SubscanService } from "../blockchain/substrate/api/subscan.service";
-import { AggregatedStakingReward } from "../data-aggregation/model/aggregated-staking-reward";
 import * as subscanChains from "../../../res/gen/subscan-chains.json";
 import { ChainSlashes } from "./model/chain-slashes";
 import { StakingResultsDetailed } from "./model/staking-results";
 import { toSubscanExtrinsixIndex } from "./helper/to-subscan-extrinsic-id";
 import { parseCETDate } from "./helper/parse-cet-date";
+import { StakingReward } from "../blockchain/substrate/model/staking-reward";
 
 function endOfDayUTC(dateStr: string): number {
   const dateTimeStr = `${dateStr}T23:59:59.999Z`;
@@ -21,12 +21,12 @@ export class DataPlatformStakingService {
     private subscanService: SubscanService,
   ) {}
 
-  async fetchAggregatedStakingRewardsForChain(
+  async fetchStakingRewardsForChain(
     address: string,
     chain: string,
     minDate: string = `${new Date().getUTCFullYear() - 1}-01-01`,
     maxDate: string = `${new Date().getUTCFullYear() - 1}-12-31`,
-  ): Promise<AggregatedStakingReward[]> {
+  ): Promise<StakingReward[]> {
     logger.info(`Entry fetchStakingRewards for ${address} and chain ${chain}`);
     const { stakingResults, chainSlashes } = await this.fetchRewards(
       address,
@@ -49,7 +49,7 @@ export class DataPlatformStakingService {
     domain: string,
     stakingResults: StakingResultsDetailed,
     chainSlashes: ChainSlashes,
-  ): Promise<AggregatedStakingReward[]> {
+  ): Promise<StakingReward[]> {
     const token = await this.subscanService.fetchNativeToken(domain);
     const symbol = subscanChains.chains.find((c) => c.domain === domain)?.token;
     const rewardToTransfer = (reward: {
@@ -57,57 +57,53 @@ export class DataPlatformStakingService {
       blockTimestamp;
       blockNumber;
       extrinsicId;
-    }): any => ({
-      label: "Staking reward" as const,
+    }): StakingReward => ({
       provenance: "dataPlatformApi" as const,
-      transfers: [
-        {
-          symbol,
-          amount: BigNumber(reward.amount)
-            .multipliedBy(Math.pow(10, -token.token_decimals))
-            .toNumber(),
-          to: address,
-          asset_unique_id: symbol,
-        },
-      ],
       timestamp: parseCETDate(reward.blockTimestamp),
       block: reward.blockNumber,
       extrinsic_index: toSubscanExtrinsixIndex(reward.extrinsicId),
+      symbol,
+      amount: BigNumber(reward.amount)
+        .multipliedBy(Math.pow(10, -token.token_decimals))
+        .toNumber(),
+      asset_unique_id: symbol,
+      hash: undefined,
+      event_index: undefined,
     });
 
-    const aggregatedRewards: AggregatedStakingReward[] = (
-      stakingResults?.stakingResults || []
-    ).map((reward) => rewardToTransfer(reward));
+    const rewards: StakingReward[] = (stakingResults?.stakingResults || []).map(
+      (reward) => rewardToTransfer(reward),
+    );
     (stakingResults?.nominationPoolResults || []).forEach((reward) =>
       rewardToTransfer(reward),
     );
 
-    const slashToTransfer = (slash: { totalAmount; executionDate }) => {
+    const slashToTransfer = (slash: {
+      totalAmount;
+      executionDate;
+    }): StakingReward => {
       return {
-        label: "Staking slashed" as const,
-        provenance: "aggregatedData" as const,
-        transfers: [
-          {
-            symbol,
-            amount: -BigNumber(slash.totalAmount)
-              .multipliedBy(Math.pow(10, -token.token_decimals))
-              .toNumber(),
-            to: address,
-            asset_unique_id: symbol,
-            nominationPool: true,
-          },
-        ],
+        provenance: "dataPlatformApi" as const,
         timestamp: endOfDayUTC(slash.executionDate),
+        block: undefined, // TODO: set block and extrinsic index if available
+        extrinsic_index: undefined,
+        symbol,
+        amount: -BigNumber(slash.totalAmount)
+          .multipliedBy(Math.pow(10, -token.token_decimals))
+          .toNumber(),
+        asset_unique_id: symbol,
+        hash: undefined,
+        event_index: undefined,
       };
     };
     (chainSlashes?.balanceSlashingResults || []).forEach((slash) => {
-      aggregatedRewards.push(slashToTransfer(slash));
+      rewards.push(slashToTransfer(slash));
     });
     (chainSlashes?.stakingSlashingResults || []).forEach((slash) => {
-      aggregatedRewards.push(slashToTransfer(slash));
+      rewards.push(slashToTransfer(slash));
     });
-    aggregatedRewards.sort((a, b) => a.timestamp - b.timestamp);
-    return aggregatedRewards;
+    rewards.sort((a, b) => a.timestamp - b.timestamp);
+    return rewards;
   }
 
   private async fetchRewards(

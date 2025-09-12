@@ -52,7 +52,10 @@
 import { computed, onUnmounted, Ref, ref } from 'vue';
 import { useTaxableEventStore } from '../../store/taxable-events.store';
 import { TaxData } from '../../../shared-module/model/tax-data';
-import { formatCryptoAmount } from '../../../shared-module/util/number-formatters';
+import {
+  formatCryptoAmount,
+  formatCurrency,
+} from '../../../shared-module/util/number-formatters';
 import { Deviation } from '../../../shared-module/model/deviation';
 
 const store = useTaxableEventStore();
@@ -95,6 +98,17 @@ const columns = computed(() => [
     label: `Balance on ${taxData.value?.toDate}`,
     field: (row: Deviation) => formatCryptoAmount(row.balanceAfter ?? 0),
     sortable: true,
+  },
+  {
+    name: 'fees',
+    align: 'right',
+    label: 'Fees',
+    field: (row: Deviation) =>
+      `${formatCryptoAmount(row.fees)} (${formatCurrency(
+        row.feesFiat,
+        taxData.value?.currency ?? 'USD'
+      )})`,
+    sortable: false,
   },
   {
     name: 'balance-change',

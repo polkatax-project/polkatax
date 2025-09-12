@@ -59,13 +59,11 @@ export const extractForeignAsset = (
       isEqual(value, t.asset_id),
   );
   if (!token && typeof value?.interior?.X1 === "object") {
-      const assetIdAlt = {
-          parents: value.parents,
-          interior: { X1: [value?.interior?.X1] }
-      } 
-      token = tokens.find((a) =>
-          isEqual(a.multi_location, assetIdAlt),
-      );
+    const assetIdAlt = {
+      parents: value.parents,
+      interior: { X1: [value?.interior?.X1] },
+    };
+    token = tokens.find((a) => isEqual(a.multi_location, assetIdAlt));
   }
   return token;
 };
