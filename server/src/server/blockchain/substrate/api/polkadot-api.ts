@@ -88,8 +88,7 @@ export class PolkadotApi {
     )) as any;
     return {
       balance:
-        Number(balanceInfo.toJSON()?.balance ?? 0) /
-        Math.pow(10, token.decimals),
+        Number(balanceInfo.toJSON()?.balance ?? 0) / 10 ** token.decimals,
       asset_unique_id: token.unique_id,
       symbol: token.symbol,
     };
@@ -144,7 +143,7 @@ export class PolkadotApi {
     values.push({
       asset_unique_id: nativeToken.unique_id,
       symbol: nativeToken.symbol,
-      balance: nativeBalance / Math.pow(10, nativeToken.decimals),
+      balance: nativeBalance / 10 ** nativeToken.decimals,
       native: true,
     });
     return values;
@@ -195,7 +194,7 @@ export class PolkadotApi {
         const values = val.toJSON();
         const balance =
           (Number(values.free) + Number(values.reserved)) /
-          Math.pow(10, token?.decimals || 1);
+          10 ** (token?.decimals || 1);
         tokenBalances.push({
           symbol: token?.symbol ?? JSON.stringify(tokenDescr),
           balance,
@@ -212,7 +211,7 @@ export class PolkadotApi {
     const nativeToken = assets.find((a) => a.native);
 
     if (nativeToken) {
-      const decMul = Math.pow(10, nativeToken.decimals);
+      const decMul = 10 ** nativeToken.decimals;
       values.push({
         asset_unique_id: nativeToken.unique_id,
         symbol: nativeToken.symbol,

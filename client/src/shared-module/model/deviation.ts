@@ -9,4 +9,6 @@ export interface Deviation {
   numberTx: number;
   balanceBefore: number;
   balanceAfter: number;
+  fees: number;
+  feesFiat: number;
 }

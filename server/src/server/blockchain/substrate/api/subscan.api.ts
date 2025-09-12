@@ -519,6 +519,7 @@ export class SubscanApi {
         callModuleFunction: entry.call_module_function,
         amount: entry.value ? Number(entry.value) : 0,
         extrinsic_index: entry.extrinsic_index,
+        fee: entry.fee ? Number(entry.fee) : undefined,
         feeUsed: entry.fee_used ? Number(entry.fee_used) : undefined,
         tip: entry.fee_used ? Number(entry.tip) : undefined,
       };
@@ -537,17 +538,13 @@ export class SubscanApi {
     page: number = 0,
     minDate: number,
     block_range?: string,
-    evm = false,
   ): Promise<{
     list: (RawSubstrateTransferDto &
       RawEvmTransferDto & { timestamp: number; id: number })[];
     hasNext: boolean;
   }> {
-    const endpoint = evm
-      ? "api/scan/evm/token/transfer"
-      : "api/v2/scan/transfers";
     const responseBody = await this.request(
-      `https://${chainName}.api.subscan.io/${endpoint}`,
+      `https://${chainName}.api.subscan.io/api/v2/scan/transfers`,
       `post`,
       {
         row: 100,

@@ -8,8 +8,7 @@
       </p>
       <ul>
         <li>Some cross-chain (XCM) transfers may not be fully recognized.</li>
-        <li>Some events were not processed.</li>
-        <li>Transaction fees are not yet included.</li>
+        <li>XCM Transaction fees are not yet included.</li>
       </ul>
     </div>
 
@@ -52,7 +51,10 @@
 import { computed, onUnmounted, Ref, ref } from 'vue';
 import { useTaxableEventStore } from '../../store/taxable-events.store';
 import { TaxData } from '../../../shared-module/model/tax-data';
-import { formatCryptoAmount } from '../../../shared-module/util/number-formatters';
+import {
+  formatCryptoAmount,
+  formatCurrency,
+} from '../../../shared-module/util/number-formatters';
 import { Deviation } from '../../../shared-module/model/deviation';
 
 const store = useTaxableEventStore();
@@ -95,6 +97,17 @@ const columns = computed(() => [
     label: `Balance on ${taxData.value?.toDate}`,
     field: (row: Deviation) => formatCryptoAmount(row.balanceAfter ?? 0),
     sortable: true,
+  },
+  {
+    name: 'fees',
+    align: 'right',
+    label: 'Fees',
+    field: (row: Deviation) =>
+      `${formatCryptoAmount(row.fees)}` +
+      (row.fees > 0
+        ? ` (${formatCurrency(row.feesFiat, taxData.value?.currency ?? 'USD')})`
+        : ''),
+    sortable: false,
   },
   {
     name: 'balance-change',

@@ -50,18 +50,22 @@ export interface XcmTransfer {
   block: number;
   fee: number;
   extrinsic_index?: string;
-  transfers: {
-    rawAmount?: string;
-    symbol: string;
-    amount: number;
-    from: string;
-    to: string;
-    extrinsic_index?: string;
-    price?: number;
-    fiatValue?: number;
-    fromChain?: string;
-    destChain?: string;
-    asset_unique_id: string;
-    asset_unique_id_as_given: string;
-  }[];
+  transfers: XcmAssetMovement[];
+}
+
+export interface XcmAssetMovement {
+  rawAmount?: string;
+  outgoing: boolean;
+  symbol: string;
+  amount: number;
+  from: string;
+  to: string;
+  extrinsic_index?: string;
+  price?: number;
+  fiatValue?: number;
+  fromChain?: string;
+  destChain?: string;
+  asset_unique_id: string;
+  asset_unique_id_as_given: string;
+  module: string;
 }

@@ -1,8 +1,5 @@
 import { SubscanApi } from "../blockchain/substrate/api/subscan.api";
-import {
-  PortfolioMovement,
-  TaxableEvent,
-} from "../data-aggregation/model/portfolio-movement";
+import { PortfolioMovement } from "../data-aggregation/model/portfolio-movement";
 import { logger } from "../logger/logger";
 import { PortfolioChangeValidationService } from "./portfolio-change-validation.service";
 import { FetchCurrentPrices } from "./fetch-crypto-prices";
@@ -59,7 +56,7 @@ export class PortfolioMovementCorrectionService {
 
   async determineMinMaxBlock(
     chainInfo: { domain: string; token: string },
-    portfolioMovements: TaxableEvent[],
+    portfolioMovements: PortfolioMovement[],
     minDate: number,
     maxDate: number,
   ): Promise<{ blockMin: number; blockMax: number }> {
@@ -98,11 +95,10 @@ export class PortfolioMovementCorrectionService {
   private async calculateDeviationWithRetry(
     chainInfo: { domain: string; token: string },
     address: string,
-    portfolioMovements: TaxableEvent[],
+    portfolioMovements: PortfolioMovement[],
     acceptedDeviations,
     blockMin: number,
     blockMax: number,
-    feeToken: string | undefined,
     maxRetry = 2,
     attempt = 0,
   ) {
@@ -115,7 +111,6 @@ export class PortfolioMovementCorrectionService {
           acceptedDeviations,
           blockMin,
           blockMax,
-          feeToken,
         );
       return deviations;
     } catch (error) {
@@ -132,7 +127,6 @@ export class PortfolioMovementCorrectionService {
           acceptedDeviations,
           blockMin,
           blockMax,
-          feeToken,
           maxRetry,
           attempt + 1,
         );
@@ -145,24 +139,23 @@ export class PortfolioMovementCorrectionService {
   async fixErrorsValidateEachBlock(
     chainInfo: { domain: string; token: string },
     address: string,
-    portfolioMovements: TaxableEvent[],
+    portfolioMovements: PortfolioMovement[],
     unmatchedEvents: SubscanEvent[],
     acceptedDeviations: DeviationLimit[],
-    feeToken: string | undefined,
   ) {
     logger.info(
       `Enter fixErrorsValidateEachBlock for ${chainInfo.domain}, ${address}.}`,
     );
 
     const blocks = new Set<number>();
-    const timestampsAlreadyCovered = []
-    const timestamps = []
+    const timestampsAlreadyCovered = [];
+    const timestamps = [];
 
     for (const event of unmatchedEvents) {
       const block = event.event_index.split("-")[0];
       blocks.add(Number(block));
       blocks.add(Number(block) - 1);
-      timestampsAlreadyCovered.push(event.timestamp)
+      timestampsAlreadyCovered.push(event.timestamp);
     }
 
     for (const p of portfolioMovements as PortfolioMovement[]) {
@@ -174,29 +167,33 @@ export class PortfolioMovementCorrectionService {
       ) {
         blocks.add(p.block);
         blocks.add(p.block - 1);
-        timestampsAlreadyCovered.push(p.timestamp)
+        timestampsAlreadyCovered.push(p.timestamp);
       }
       if (!p.block && !timestampsAlreadyCovered.includes(p.timestamp)) {
-        timestamps.push(p.timestamp)
+        timestamps.push(p.timestamp);
       }
     }
 
-    const blocksFromTimestamps = await Promise.all(timestamps.map(async t => ({ block: await this.subscanApi.fetchBlock(
-      chainInfo.domain,
-      undefined,
-      Math.floor(t / 1000),
-    ), timestamp: t })))
+    const blocksFromTimestamps = await Promise.all(
+      timestamps.map(async (t) => ({
+        block: await this.subscanApi.fetchBlock(
+          chainInfo.domain,
+          undefined,
+          Math.floor(t / 1000),
+        ),
+        timestamp: t,
+      })),
+    );
     blocksFromTimestamps.forEach(({ timestamp, block }) => {
       if (block.block_num) {
-          blocks.add(block.block_num);
-          if (block.timestamp >= timestamp) {
-            blocks.add(block.block_num - 1);
-          } else {
-            blocks.add(block.block_num + 1);
-          }
+        blocks.add(block.block_num);
+        if (block.timestamp >= timestamp) {
+          blocks.add(block.block_num - 1);
+        } else {
+          blocks.add(block.block_num + 1);
         }
-    })
-
+      }
+    });
 
     const blocksOfInterest = Array.from(blocks).sort((a, b) => a - b);
 
@@ -231,11 +228,12 @@ export class PortfolioMovementCorrectionService {
         acceptedDeviations,
         blockMin,
         blockMax,
-        feeToken,
       );
 
       if (deviations.find((d) => d.singlePaymentDeviationTooLarge)) {
-        logger.info(`Found deviations in block ${endBlock.block_num} for ${chainInfo.domain} and ${address}`);
+        logger.info(
+          `Found deviations in block ${endBlock.block_num} for ${chainInfo.domain} and ${address}`,
+        );
       }
       for (let j = 0; j < deviations.length; j++) {
         const selectedToken = deviations[j];
@@ -261,7 +259,6 @@ export class PortfolioMovementCorrectionService {
             acceptedDeviations,
             blockMin,
             blockMax,
-            feeToken,
           );
           j = 0;
           continue;
@@ -285,7 +282,7 @@ export class PortfolioMovementCorrectionService {
   async fixErrorsAndMissingData(
     chainInfo: { domain: string; token: string },
     address: string,
-    portfolioMovements: TaxableEvent[],
+    portfolioMovements: PortfolioMovement[],
     unmatchedEvents: SubscanEvent[],
     minDate: number,
     maxDate: number,
@@ -294,38 +291,28 @@ export class PortfolioMovementCorrectionService {
       `Enter fixErrorsAndMissingData for ${chainInfo.domain}, ${address}`,
     );
 
-    if (portfolioMovements.length === 0) {
-      logger.info(`Exit fixErrorsAndMissingData. No portfolio movements`);
-      return [];
-    }
-
-    if (isEvmAddress(address)) {
-      address =
-        (await this.subscanService.mapToSubstrateAccount(
-          chainInfo.domain,
-          address,
-        )) || address;
-    }
-
-    const { blockMin, blockMax } = await this.determineMinMaxBlock(
-      chainInfo,
-      portfolioMovements,
-      minDate,
-      maxDate,
-    );
-
-    const acceptedDeviations = await this.determineAdequateMaxDeviations();
-
     try {
-      const feeToken =
-        await this.portfolioChangeValidationService.findBestFeeToken(
-          chainInfo,
-          address,
-          portfolioMovements,
-          acceptedDeviations,
-          blockMin,
-          blockMax,
-        );
+      if (portfolioMovements.length === 0) {
+        logger.info(`Exit fixErrorsAndMissingData. No portfolio movements`);
+        return [];
+      }
+
+      if (isEvmAddress(address)) {
+        address =
+          (await this.subscanService.mapToSubstrateAccount(
+            chainInfo.domain,
+            address,
+          )) || address;
+      }
+
+      const { blockMin, blockMax } = await this.determineMinMaxBlock(
+        chainInfo,
+        portfolioMovements,
+        minDate,
+        maxDate,
+      );
+
+      const acceptedDeviations = await this.determineAdequateMaxDeviations();
 
       const deviations = await this.calculateDeviationWithRetry(
         chainInfo,
@@ -334,7 +321,6 @@ export class PortfolioMovementCorrectionService {
         acceptedDeviations,
         blockMin,
         blockMax,
-        feeToken,
       );
 
       if (
@@ -369,7 +355,6 @@ export class PortfolioMovementCorrectionService {
         portfolioMovements,
         unmatchedEvents,
         acceptedDeviations,
-        feeToken,
       );
 
       if (process.env["WRITE_RESULTS_TO_DISK"] === "true") {
@@ -387,7 +372,6 @@ export class PortfolioMovementCorrectionService {
         acceptedDeviations,
         blockMin,
         blockMax,
-        feeToken,
       );
 
       if (process.env["WRITE_RESULTS_TO_DISK"] === "true") {
@@ -413,12 +397,11 @@ export class PortfolioMovementCorrectionService {
   async fixErrorsAndMissingDataRecursively(
     chainInfo: { domain: string; token: string },
     address: string,
-    portfolioMovements: TaxableEvent[],
+    portfolioMovements: PortfolioMovement[],
     unmatchedEvents: SubscanEvent[] = [],
     acceptedDeviations: DeviationLimit[],
     blockMin: number,
     blockMax: number,
-    feeToken: string | undefined,
   ): Promise<Deviation[]> {
     logger.info(
       `Enter fixErrorsAndMissingDataRecursively for ${chainInfo.domain}, ${address}`,
@@ -431,7 +414,6 @@ export class PortfolioMovementCorrectionService {
         acceptedDeviations,
         blockMin,
         blockMax,
-        feeToken,
       );
 
     const minBlock = await this.subscanApi.fetchBlock(
@@ -488,7 +470,6 @@ export class PortfolioMovementCorrectionService {
             acceptedDeviations,
             blockMin,
             blockMax,
-            feeToken,
           );
 
         selectedToken = selectToken(deviations, excludeTokens);

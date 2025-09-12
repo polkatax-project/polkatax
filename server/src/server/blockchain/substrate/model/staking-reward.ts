@@ -1,4 +1,5 @@
 import { BigNumber } from "bignumber.js";
+import { Provenance } from "../../../data-aggregation/model/portfolio-movement";
 
 export interface RawStakingReward {
   id: string;
@@ -14,11 +15,13 @@ export interface RawStakingReward {
 export interface StakingReward {
   amount: number;
   timestamp: number;
-  block: number;
+  block?: number;
   hash: string;
-  event_index: string;
+  event_index?: string;
   extrinsic_index: string;
   price?: number;
   fiatValue?: number;
   asset_unique_id?: string;
+  provenance?: Provenance;
+  symbol: string;
 }

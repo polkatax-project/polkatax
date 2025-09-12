@@ -91,7 +91,7 @@ export const eventConfigs: {
       ),
   },
   {
-    chains: ["hydration", "bifrsot"],
+    chains: ["hydration", "basilisk"],
     event: "stableswapLiquidityAdded",
     handler: (e, context) => onHydrationStableSwapLiquidityAdded(e, context),
   },

@@ -1,7 +1,7 @@
 export interface StakingRewardsRequest {
   chain: {
     domain: string;
-    label: string;
+    label?: string;
     token: string;
   };
   address: string;

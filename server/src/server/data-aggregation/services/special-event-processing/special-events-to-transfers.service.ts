@@ -7,14 +7,9 @@ import { fetchTokens } from "./fetch-tokens";
 import { eventConfigs } from "./event-configs";
 import { toTransfer } from "./to-transfer";
 import { EventDerivedAssetMovement } from "./event-derived-asset-movement";
-import { TokenFromMultiLocationService } from "./token-from-multi-location.service";
-import { isMultiLocation } from "../../../blockchain/substrate/util/identify-token-from-multi-location";
 
 export class SpecialEventsToTransfersService {
-  constructor(
-    private subscanService: SubscanService,
-    private tokenFromMultiLocationService: TokenFromMultiLocationService,
-  ) {}
+  constructor(private subscanService: SubscanService) {}
 
   private findMatchingConfig(
     chain: string,
@@ -34,34 +29,19 @@ export class SpecialEventsToTransfersService {
     if (!Array.isArray(assetMovments)) {
       assetMovments = [assetMovments];
     }
-    await Promise.all(
-      assetMovments.map(async (a) => {
-        if (
-          !a.token?.symbol &&
-          a.tokenMultiLocation &&
-          isMultiLocation(a.tokenMultiLocation)
-        ) {
-          const unique_id = a?.token?.unique_id;
-          a.token =
-            await this.tokenFromMultiLocationService.extractTokenInfoFromMultiLocation(
-              chainInfo,
-              a.tokenMultiLocation,
-            );
-          a.token.unique_id = a.token.unique_id ?? unique_id;
-        }
-      }),
-    );
-    return assetMovments.map((a) =>
-      toTransfer(
-        a.event,
-        a.from,
-        a.to,
-        Number(a.rawAmount) / Math.pow(10, a?.token?.decimals),
-        a?.token,
-        a.xcm,
-        a.label,
-      ),
-    );
+    return assetMovments
+      .filter((a) => !!a.token)
+      .map((a) =>
+        toTransfer(
+          a.event,
+          a.from,
+          a.to,
+          Number(a.rawAmount) / 10 ** a?.token?.decimals,
+          a?.token,
+          a.xcm,
+          a.label,
+        ),
+      );
   }
 
   async handleEvents(

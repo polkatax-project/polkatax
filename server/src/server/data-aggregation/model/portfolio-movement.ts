@@ -1,5 +1,4 @@
 import { Label } from "../../../common/model/label";
-import { AggregatedStakingReward } from "./aggregated-staking-reward";
 
 export type Provenance =
   | "xcm"
@@ -20,6 +19,8 @@ export interface PortfolioMovement {
   extrinsic_index: string;
   tip?: number;
   feeUsed?: number;
+  feeTokenSymbol?: string;
+  feeTokenUniqueId?: string;
   feeUsedFiat?: number;
   tipFiat?: number;
   xcmFee?: number;
@@ -43,6 +44,7 @@ export interface TaxableEventTransfer {
   toChain?: string;
   asset_type?: string;
   asset_unique_id?: string;
+  event_index?: string;
+  semanticGroupId?: string;
+  label?: Label;
 }
-
-export type TaxableEvent = PortfolioMovement | AggregatedStakingReward;

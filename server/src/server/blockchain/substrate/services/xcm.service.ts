@@ -155,7 +155,7 @@ export class XcmService {
           block: chain.isRelay && xcm.block_num > 0 ? xcm.block_num : undefined,
           fee:
             xcm.used_fee && fromChain === data.chainName
-              ? Number(xcm.used_fee) / Math.pow(10, token.token_decimals)
+              ? Number(xcm.used_fee) / 10 ** token.token_decimals
               : 0,
           extrinsic_index,
           transfers: (
@@ -192,7 +192,7 @@ export class XcmService {
                 }
 
                 const amount = new BigNumber(a.amount)
-                  .multipliedBy(new BigNumber(Math.pow(10, -a.decimals)))
+                  .multipliedBy(new BigNumber(10 ** -a.decimals))
                   .toNumber();
 
                 return {
@@ -213,6 +213,7 @@ export class XcmService {
                   fiatValue: Number(a.history_currency_amount),
                   fromChain,
                   destChain,
+                  outgoing: fromChain === data.chainName,
                 };
               }),
             )

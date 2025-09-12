@@ -9,6 +9,7 @@ export interface Transaction {
   callModuleFunction?: string;
   amount: number;
   feeUsed?: number;
+  fee?: number;
   tip?: number;
   extrinsic_index: string;
 }

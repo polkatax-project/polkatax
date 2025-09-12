@@ -1,9 +1,6 @@
 import { SubscanApi } from "../blockchain/substrate/api/subscan.api";
 import { Block } from "../blockchain/substrate/model/block";
-import {
-  PortfolioMovement,
-  TaxableEvent,
-} from "../data-aggregation/model/portfolio-movement";
+import { PortfolioMovement } from "../data-aggregation/model/portfolio-movement";
 import {
   PortfolioDifference,
   PortfolioDifferenceService,
@@ -60,11 +57,10 @@ export class PortfolioChangeValidationService {
   async calculateDeviationFromExpectation(
     chainInfo: { domain: string; token: string },
     address: string,
-    portfolioMovements: TaxableEvent[],
+    portfolioMovements: PortfolioMovement[],
     acceptedDeviations: DeviationLimit[],
     minBlockNum: number,
     maxBlockNum: number,
-    feeToken?: string,
   ): Promise<Deviation[]> {
     if (!Object.keys(substrateNodesWsEndpoints).includes(chainInfo.domain)) {
       return [];
@@ -83,67 +79,19 @@ export class PortfolioChangeValidationService {
     }
 
     return this.calculateDeviation(
-      chainInfo,
       portfolioMovements,
       portfolioDifferences,
       acceptedDeviations,
       minBlock,
       maxBlock,
-      feeToken,
     );
   }
 
-  async findBestFeeToken(
-    chainInfo: { domain: string; token: string },
-    address: string,
-    portfolioMovements: TaxableEvent[],
-    acceptedDeviations: DeviationLimit[],
-    minBlockNum: number,
-    maxBlockNum: number,
-  ): Promise<string | undefined> {
-    if (!Object.keys(substrateNodesWsEndpoints).includes(chainInfo.domain)) {
-      return;
-    }
-    const { portfolioDifferences, minBlock, maxBlock } =
-      await this.fetchPortfolioDifferences(
-        chainInfo,
-        address,
-        minBlockNum,
-        maxBlockNum,
-      );
-
-    if (portfolioDifferences.length === 0) {
-      return;
-    }
-
-    let feeTokens = [chainInfo.token, undefined];
-
-    let minDeviation = Number.MAX_SAFE_INTEGER;
-    let minFeeToken = undefined;
-    for (let feeToken of feeTokens) {
-      const deviations = await this.calculateDeviation(
-        chainInfo,
-        portfolioMovements,
-        portfolioDifferences,
-        acceptedDeviations,
-        minBlock,
-        maxBlock,
-        feeToken,
-      );
-      const total = deviations.reduce((curr, d) => curr + d.deviation, 0);
-      if (total < minDeviation) {
-        minFeeToken = feeToken;
-        minDeviation = total;
-      }
-    }
-    return minFeeToken;
-  }
-
   private filterMovementsWithinRange(
-    portfolioMovements: TaxableEvent[],
+    portfolioMovements: PortfolioMovement[],
     minBlock: Block,
     maxBlock: Block,
-  ): TaxableEvent[] {
+  ): PortfolioMovement[] {
     return portfolioMovements.filter(
       (p) =>
         p.timestamp > minBlock.timestamp && p.timestamp <= maxBlock.timestamp,
@@ -151,24 +99,34 @@ export class PortfolioChangeValidationService {
   }
 
   private async calculateExpectedDiffForToken(
-    chainInfo: { domain: string; token: string },
     tokenInPortfolio: PortfolioDifference,
-    matchingPortfolioMovements: TaxableEvent[],
-    feeToken?: string,
-  ): Promise<{ expectedDiff: number; transferCounter: number }> {
+    matchingPortfolioMovements: PortfolioMovement[],
+  ): Promise<{
+    expectedDiff: number;
+    transferCounter: number;
+    fees: number;
+    feesFiat: number;
+  }> {
     let transferCounter = 0;
     let expectedDiff = 0;
 
-    if (feeToken === tokenInPortfolio.unique_id) {
-      const totalFees = matchingPortfolioMovements.reduce(
+    const fees = matchingPortfolioMovements
+      .filter((p) => p.feeTokenUniqueId === tokenInPortfolio.unique_id)
+      .reduce(
         (curr, p) =>
           curr +
           ((p as PortfolioMovement)?.feeUsed ?? 0) +
-          ((p as PortfolioMovement)?.tip ?? 0), // - (p?.xcmFee ?? 0);
+          ((p as PortfolioMovement)?.tip ?? 0),
         0,
       );
-      expectedDiff -= totalFees / 10 ** tokenInPortfolio.decimals;
-    }
+    expectedDiff -= fees;
+
+    const feesFiat = matchingPortfolioMovements
+      .filter((p) => p.feeTokenUniqueId === tokenInPortfolio.unique_id)
+      .reduce(
+        (curr, p) => curr + ((p as PortfolioMovement)?.feeUsedFiat ?? 0),
+        0,
+      );
 
     matchingPortfolioMovements.forEach((p) => {
       p.transfers.forEach((t) => {
@@ -179,7 +137,7 @@ export class PortfolioChangeValidationService {
       });
     });
 
-    return { expectedDiff, transferCounter };
+    return { expectedDiff, transferCounter, fees, feesFiat };
   }
 
   private evaluateDeviationAgainstThreshold(
@@ -217,13 +175,11 @@ export class PortfolioChangeValidationService {
   }
 
   async calculateDeviation(
-    chainInfo: { domain: string; token: string },
-    portfolioMovements: TaxableEvent[],
+    portfolioMovements: PortfolioMovement[],
     portfolioDifferences: PortfolioDifference[],
     acceptedDeviations: DeviationLimit[],
     minBlock: Block,
     maxBlock: Block,
-    feeToken?: string,
   ): Promise<Deviation[]> {
     const deviations: Deviation[] = [];
 
@@ -235,22 +191,22 @@ export class PortfolioChangeValidationService {
 
     // compute deviations per token
     for (const tokenInPortfolio of portfolioDifferences) {
-      const { expectedDiff, transferCounter } =
+      const { expectedDiff, transferCounter, fees, feesFiat } =
         await this.calculateExpectedDiffForToken(
-          chainInfo,
           tokenInPortfolio,
           matchingPortfolioMovements,
-          feeToken,
         );
 
-      deviations.push(
-        this.evaluateDeviationAgainstThreshold(
+      deviations.push({
+        ...this.evaluateDeviationAgainstThreshold(
           tokenInPortfolio,
           expectedDiff,
           acceptedDeviations,
           transferCounter,
         ),
-      );
+        fees,
+        feesFiat,
+      });
     }
 
     return deviations;

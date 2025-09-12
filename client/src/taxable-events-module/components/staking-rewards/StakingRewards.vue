@@ -1,15 +1,15 @@
 <template>
   <q-page class="q-px-sm q-mx-auto content">
-    <div class="text-center q-pa-md">
+    <div class="text-center q-pt-md">
       <reward-summary />
     </div>
     <div
-      class="justify-around items-center column"
+      class="justify-around items-center column q-my-md"
       v-if="Object.keys(data?.dailyValues ?? {}).length > 20"
     >
       <rewards-chart :currency="false" chartType="ColumnChart" />
     </div>
-    <div class="q-my-md" v-if="data">
+    <div v-if="data">
       <staking-rewards-table />
     </div>
     <div v-if="!data" class="q-my-xl">

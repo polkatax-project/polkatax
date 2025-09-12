@@ -14,4 +14,6 @@ export interface Deviation {
   numberTx: number;
   maxAllowedDeviation: number;
   maxDeviationSinglePayment: number;
+  fees?: number;
+  feesFiat?: number;
 }
