@@ -208,9 +208,6 @@ export class BalanceChangesService {
     }
     const assets = await this.subscanService.scanAssets(chain.domain);
     for (const event of assetEventDetails) {
-      if (event.original_event_index === "7465599-3") {
-        console.log("TODO!_");
-      }
       const assetId = getPropertyValue("asset_id", event);
       const asset = assets.find((a) => a.asset_id == assetId);
       let amount = 0;
