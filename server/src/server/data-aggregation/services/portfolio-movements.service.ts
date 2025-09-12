@@ -21,6 +21,7 @@ import { ReconciliationService } from "./reconciliation.service";
 import { EventDerivedTransfer } from "../model/event-derived-transfer";
 import { BalanceChangesService } from "./balance-changes.service";
 import { isEvmAddress } from "../helper/is-evm-address";
+import { simplifyAssetMovementsSemanticId } from "../helper/simplify-asset-movements";
 
 export async function awaitPromisesAndLog<T>(
   promises: Promise<any>[],
@@ -126,7 +127,7 @@ export class PortfolioMovementsService {
       t.amount = isMyAccount(t.to) ? Math.abs(t.amount) : -Math.abs(t.amount);
     });
 
-    const portfolioMovements =
+    let portfolioMovements =
       await this.balanceChangesService.fetchAllBalanceChanges(
         request,
         events,
@@ -141,6 +142,11 @@ export class PortfolioMovementsService {
       xcmList,
       stakingRewards,
       events,
+    );
+
+    portfolioMovements = simplifyAssetMovementsSemanticId(
+      request.address,
+      portfolioMovements,
     );
 
     return { portfolioMovements };

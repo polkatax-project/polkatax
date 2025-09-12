@@ -16,7 +16,6 @@ import {
   getBeginningLastYear,
   getEndOfLastYear,
 } from "../job-management/get-beginning-last-year";
-import { simplifyAssetMovements } from "../data-aggregation/helper/simplify-asset-movements";
 import { Job } from "../../model/job";
 
 interface Subscription {
@@ -230,7 +229,7 @@ export class WebSocketManager {
 
     const jobDataValues =
       job?.data?.values && job.status !== "post_processing"
-        ? simplifyAssetMovements(job.wallet, job.data.values)
+        ? job.data.values
         : undefined;
 
     const message: WebSocketOutgoingMessage = {

@@ -60,6 +60,9 @@ wsMsgReceived$
     const list: JobResult[] = Array.isArray(payload) ? payload : [payload];
     for (const newJobResult of list) {
       if (newJobResult.data) {
+        newJobResult.data.values = newJobResult.data.values.filter(
+          (v) => v.transfers.length > 0
+        );
         newJobResult.data.values = addIsoDate(newJobResult.data.values);
         newJobResult.data = addMetaData(newJobResult, newJobResult.data.values);
         newJobResult.stakingRewards = extractStakingRewards(newJobResult.data);

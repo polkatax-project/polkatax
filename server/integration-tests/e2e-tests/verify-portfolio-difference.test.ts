@@ -9,7 +9,6 @@ import { createDIContainer } from "../../src/server/di-container";
 import * as fs from "fs";
 import { PortfolioMovementsService } from "../../src/server/data-aggregation/services/portfolio-movements.service";
 import { PortfolioChangeValidationService } from "../../src/server/data-correction/portfolio-change-validation.service";
-import { PortfolioMovementCorrectionService } from "../../src/server/data-correction/portfolio-movement-correction.service";
 
 const acceptedDeviations = [
   {
@@ -94,18 +93,6 @@ const verifyPortfolioChanges = async (
   if (portfolioMovements.length === 0) {
     return;
   }
-
-  const portfolioMovementCorrectionService: PortfolioMovementCorrectionService =
-    container.resolve("portfolioMovementCorrectionService");
-
-  await portfolioMovementCorrectionService.fixErrorsAndMissingData(
-    chainInfo,
-    address,
-    portfolioMovements,
-    [],
-    minDate.getTime(),
-    maxDate.getTime(),
-  );
 
   const minBlock = portfolioMovements.reduce(
     (curr, next) => Math.min(curr, next.block ?? Number.MAX_SAFE_INTEGER),

@@ -159,6 +159,7 @@ export class ReconciliationService {
         transfer.from = transfer.from ?? matchingTransfer.from;
         transfer.fromChain = matchingTransfer.fromChain;
         transfer.toChain = matchingTransfer.destChain;
+        transfer.semanticGroupId = "xcm";
         transfer.label = "XCM transfer";
       }
     }
@@ -210,7 +211,7 @@ export class ReconciliationService {
         transfer.from = transfer.from ?? matchingSemanticTransfer.from;
         transfer.fromChain = matchingSemanticTransfer.fromChain;
         transfer.toChain = matchingSemanticTransfer.destChain;
-        transfer.semanticEventId = (
+        transfer.semanticGroupId = (
           matchingSemanticTransfer as EventDerivedTransfer
         ).original_event_id;
         transfer.label =
@@ -246,6 +247,7 @@ export class ReconciliationService {
           transfer.fiatValue = matchingReward.fiatValue;
           transfer.label =
             transfer.amount > 0 ? "Staking reward" : "Staking slashed";
+          transfer.semanticGroupId = transfer.label;
           portfolioMovement.label = transfer.label;
         }
       }

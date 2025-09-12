@@ -368,11 +368,14 @@ export class BalanceChangesService {
     const tokens = await this.subscanService.scanTokens(chain.domain);
     for (const event of tokenEventDetails) {
       const token_id = getPropertyValue("currency_id", event);
-      let token = tokens.find((t) => t.token_id === token_id);
+      let token = tokens.find(
+        (t) => t.token_id === token_id || isEqual(t.token_id, token_id),
+      );
       let amount = 0;
       let to = "";
       let from = "";
       if (!token) {
+        logger.warn(`No token found for ${token_id} on ${chain.domain}`);
         continue;
       }
       switch (event.event_id) {
@@ -381,7 +384,6 @@ export class BalanceChangesService {
           amount -=
             getPropertyValue(["amount", "balance"], event) *
             10 ** -token.decimals;
-          break;
           break;
         case "Deposited":
           to = address;

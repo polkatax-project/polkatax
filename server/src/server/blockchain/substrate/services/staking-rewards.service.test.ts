@@ -77,6 +77,7 @@ describe("StakingRewardsService", () => {
         event_index: "1-1",
         extrinsic_index: "1-1",
         asset_unique_id: "DOT",
+        symbol: "DOT",
       },
       {
         amount: -0.5,
@@ -86,6 +87,7 @@ describe("StakingRewardsService", () => {
         event_index: "1-2",
         extrinsic_index: "1-2",
         asset_unique_id: "DOT",
+        symbol: "DOT",
       },
     ]);
   });

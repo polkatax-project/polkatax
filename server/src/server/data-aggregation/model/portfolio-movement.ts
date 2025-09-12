@@ -46,7 +46,7 @@ export interface TaxableEventTransfer {
   asset_type?: string;
   asset_unique_id?: string;
   event_index?: string;
-  semanticEventId?: string;
+  semanticGroupId?: string;
   label?: Label;
 }
 

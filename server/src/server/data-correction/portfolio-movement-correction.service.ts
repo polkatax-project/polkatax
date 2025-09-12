@@ -294,29 +294,29 @@ export class PortfolioMovementCorrectionService {
       `Enter fixErrorsAndMissingData for ${chainInfo.domain}, ${address}`,
     );
 
-    if (portfolioMovements.length === 0) {
-      logger.info(`Exit fixErrorsAndMissingData. No portfolio movements`);
-      return [];
-    }
-
-    if (isEvmAddress(address)) {
-      address =
-        (await this.subscanService.mapToSubstrateAccount(
-          chainInfo.domain,
-          address,
-        )) || address;
-    }
-
-    const { blockMin, blockMax } = await this.determineMinMaxBlock(
-      chainInfo,
-      portfolioMovements,
-      minDate,
-      maxDate,
-    );
-
-    const acceptedDeviations = await this.determineAdequateMaxDeviations();
-
     try {
+      if (portfolioMovements.length === 0) {
+        logger.info(`Exit fixErrorsAndMissingData. No portfolio movements`);
+        return [];
+      }
+
+      if (isEvmAddress(address)) {
+        address =
+          (await this.subscanService.mapToSubstrateAccount(
+            chainInfo.domain,
+            address,
+          )) || address;
+      }
+
+      const { blockMin, blockMax } = await this.determineMinMaxBlock(
+        chainInfo,
+        portfolioMovements,
+        minDate,
+        maxDate,
+      );
+
+      const acceptedDeviations = await this.determineAdequateMaxDeviations();
+
       const deviations = await this.calculateDeviationWithRetry(
         chainInfo,
         address,
