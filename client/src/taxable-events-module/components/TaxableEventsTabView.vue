@@ -75,9 +75,6 @@ onMounted(() => {
 
   taxDataSubscription = store.visibleTaxData$.subscribe((data) => {
     taxData.value = data;
-    if (!data.portfolioSupported) {
-      tab.value = 'rewards';
-    }
   });
 });
 
