@@ -64,7 +64,7 @@ export class DataPlatformStakingService {
       extrinsic_index: toSubscanExtrinsixIndex(reward.extrinsicId),
       symbol,
       amount: BigNumber(reward.amount)
-        .multipliedBy(Math.pow(10, -token.token_decimals))
+        .multipliedBy(10 ** -token.token_decimals)
         .toNumber(),
       asset_unique_id: symbol,
       hash: undefined,
@@ -89,7 +89,7 @@ export class DataPlatformStakingService {
         extrinsic_index: undefined,
         symbol,
         amount: -BigNumber(slash.totalAmount)
-          .multipliedBy(Math.pow(10, -token.token_decimals))
+          .multipliedBy(10 ** -token.token_decimals)
           .toNumber(),
         asset_unique_id: symbol,
         hash: undefined,

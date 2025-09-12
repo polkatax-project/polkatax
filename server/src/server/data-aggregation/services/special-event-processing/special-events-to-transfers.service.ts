@@ -36,7 +36,7 @@ export class SpecialEventsToTransfersService {
           a.event,
           a.from,
           a.to,
-          Number(a.rawAmount) / Math.pow(10, a?.token?.decimals),
+          Number(a.rawAmount) / 10 ** a?.token?.decimals,
           a?.token,
           a.xcm,
           a.label,

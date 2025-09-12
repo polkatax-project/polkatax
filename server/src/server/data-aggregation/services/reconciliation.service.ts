@@ -268,7 +268,7 @@ export class ReconciliationService {
           (t) =>
             !t["reconciled"] &&
             isCloseTo(
-              -t.amount * Math.pow(10, getDecimals(t.asset_unique_id, tokens)),
+              -t.amount * 10 ** getDecimals(t.asset_unique_id, tokens),
               matchingTx?.fee,
             ),
         )
@@ -289,7 +289,7 @@ export class ReconciliationService {
           (t) =>
             !t["reconciled"] &&
             isCloseTo(
-              t.amount * Math.pow(10, getDecimals(t.asset_unique_id, tokens)),
+              t.amount * 10 ** getDecimals(t.asset_unique_id, tokens),
               matchingTx?.fee - matchingTx?.feeUsed,
             ),
         )

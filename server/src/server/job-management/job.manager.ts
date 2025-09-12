@@ -10,7 +10,6 @@ import { logger } from "../logger/logger";
 import { JobProcessor } from "./job.processor";
 import { JobPostProcessor } from "./job.post-processor";
 import { createJobId, decomposeJobId } from "./helper/create-job-id";
-import { TaxableEvent } from "../data-aggregation/model/portfolio-movement";
 
 const PARALLEL_POST_PROCESSING_JOBS = 3;
 const PARALLEL_POST_PROCESSING_JOBS_PER_WALLET = 2;
@@ -212,10 +211,6 @@ export class JobManager {
           this.DIContainer.resolve("jobPostProcessor");
         job = await jobPostProcessor.postProcess(job);
       } else {
-        job.data.values = job.data.values.filter(
-          (v: TaxableEvent) =>
-            v.label === "Staking reward" || v.label === "Staking slashed",
-        );
         job.data.deviations = undefined;
       }
       job.status = "done";

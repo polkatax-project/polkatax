@@ -98,7 +98,7 @@ export const verifyNativeBalanceHistory = async (
     .map((b) => {
       return {
         ...b,
-        balance: Number(b.balance) / Math.pow(10, token.token_decimals),
+        balance: Number(b.balance) / 10 ** token.token_decimals,
       };
     });
   const { diffSheet, unexplainedChanges } = createDiffSheet(

@@ -47,7 +47,7 @@ export class Wallet {
           symbol: nativeToken,
           balance:
             (await getNativeTokenBalance(apiAt, address)).nativeBalance /
-            Math.pow(10, nativeTokenInfo.token_decimals),
+            10 ** nativeTokenInfo.token_decimals,
         });
       } else {
         const balanceInfo: any = await apiAt.query.assets.account(
@@ -58,8 +58,7 @@ export class Wallet {
           asset_unique_id: token.asset_unique_id ?? String(token.asset_id),
           symbol: token.symbol,
           balance:
-            Number(balanceInfo.toJSON()?.balance ?? 0) /
-            Math.pow(10, token.decimals),
+            Number(balanceInfo.toJSON()?.balance ?? 0) / 10 ** token.decimals,
         });
       }
     }
@@ -85,7 +84,7 @@ export class Wallet {
             symbol: nativeToken,
             balance:
               (await getNativeTokenBalance(apiAt, address)).nativeBalance /
-              Math.pow(10, nativeTokenInfo.token_decimals),
+              10 ** nativeTokenInfo.token_decimals,
           },
         ],
       };
@@ -147,14 +146,13 @@ export class Wallet {
           const values = val.toJSON();
           const balance =
             (Number(values.free) + Number(values.reserved)) /
-            Math.pow(10, token?.decimals || 1);
+            (10 ** token?.decimals || 1);
           tokenBalances.push({
             symbol: token?.symbol ?? JSON.stringify(tokenDescr),
             balance,
-            free: Number(values.free) / Math.pow(10, token?.decimals || 1),
-            frozen: Number(values.frozen) / Math.pow(10, token?.decimals || 1),
-            reserved:
-              Number(values.reserved) / Math.pow(10, token?.decimals || 1),
+            free: Number(values.free) / (10 ** token?.decimals || 1),
+            frozen: Number(values.frozen) / (10 ** token?.decimals || 1),
+            reserved: Number(values.reserved) / (10 ** token?.decimals || 1),
             asset_unique_id: token?.unique_id,
           });
         });
@@ -169,7 +167,7 @@ export class Wallet {
         };
         const { nativeBalance, free, frozen, reserved } =
           await getNativeTokenBalance(apiAt, address);
-        const decMul = Math.pow(10, nativeTokenInfo.token_decimals);
+        const decMul = 10 ** nativeTokenInfo.token_decimals;
         portfolio.values.push({
           asset_unique_id: nativeToken,
           symbol: nativeToken,

@@ -61,7 +61,7 @@ export class StakingRewardsService {
             ...reward,
             amount:
               BigNumber(reward.amount)
-                .dividedBy(Math.pow(10, token.token_decimals))
+                .dividedBy(10 ** token.token_decimals)
                 .toNumber() * (reward.event_id === "Slash" ? -1 : 1),
           }));
       }

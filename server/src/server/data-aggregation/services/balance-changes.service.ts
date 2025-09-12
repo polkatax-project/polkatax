@@ -160,13 +160,13 @@ export class BalanceChangesService {
       switch (event.event_id) {
         case "Withdraw":
         case "Burned":
-          amount -= getPropertyValue("amount", event) * Math.pow(10, -decimals);
+          amount -= getPropertyValue("amount", event) * 10 ** -decimals;
           from = address;
           break;
         case "Deposit":
         case "Minted":
           to = address;
-          amount += getPropertyValue("amount", event) * Math.pow(10, -decimals);
+          amount += getPropertyValue("amount", event) * 10 ** -decimals;
           break;
         default:
           continue;
@@ -207,6 +207,10 @@ export class BalanceChangesService {
       return;
     }
     const assets = await this.subscanService.scanAssets(chain.domain);
+    if (!assets || assets.length === 0) {
+      logger.warn(`fetchAssetMovements: No assets found for ${chain.domain}.`);
+      return; // Moonbeam has assets events but no assets endpoint.
+    }
     for (const event of assetEventDetails) {
       const assetId = getPropertyValue("asset_id", event);
       const asset = assets.find((a) => a.asset_id == assetId);
@@ -217,25 +221,25 @@ export class BalanceChangesService {
         case "Withdrawn":
           amount -=
             getPropertyValue(["amount", "balance"], event) *
-            Math.pow(10, -asset.decimals);
+            10 ** -asset.decimals;
           from = address;
           break;
         case "Burned":
           amount -=
             getPropertyValue(["amount", "balance"], event) *
-            Math.pow(10, -asset.decimals);
+            10 ** -asset.decimals;
           from = address;
           break;
         case "Deposited":
           amount +=
             getPropertyValue(["amount", "balance"], event) *
-            Math.pow(10, -asset.decimals);
+            10 ** -asset.decimals;
           to = address;
           break;
         case "Issued":
           amount +=
             getPropertyValue(["amount", "balance"], event) *
-            Math.pow(10, -asset.decimals);
+            10 ** -asset.decimals;
           to = address;
           break;
         default:
@@ -302,26 +306,26 @@ export class BalanceChangesService {
         case "Withdrawn":
           amount -=
             getPropertyValue(["amount", "balance"], event) *
-            Math.pow(10, -foreignAsset.decimals);
+            10 ** -foreignAsset.decimals;
           from = address;
           break;
         case "Burned":
           amount -=
             getPropertyValue(["amount", "balance"], event) *
-            Math.pow(10, -foreignAsset.decimals);
+            10 ** -foreignAsset.decimals;
           from = address;
           break;
         case "Deposited":
           to = address;
           amount +=
             getPropertyValue(["amount", "balance"], event) *
-            Math.pow(10, -foreignAsset.decimals);
+            (10 * -foreignAsset.decimals);
           break;
         case "Issued":
           to = address;
           amount +=
             getPropertyValue(["amount", "balance"], event) *
-            Math.pow(10, -foreignAsset.decimals);
+            10 ** -foreignAsset.decimals;
           break;
         default:
           continue;
@@ -376,14 +380,14 @@ export class BalanceChangesService {
           from = address;
           amount -=
             getPropertyValue(["amount", "balance"], event) *
-            Math.pow(10, -token.decimals);
+            10 ** -token.decimals;
           break;
           break;
         case "Deposited":
           to = address;
           amount +=
             getPropertyValue(["amount", "balance"], event) *
-            Math.pow(10, -token.decimals);
+            10 ** -token.decimals;
           break;
         default:
           continue;

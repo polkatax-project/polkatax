@@ -236,8 +236,7 @@ export class DataPlatformLiquidStakingService {
     vToken: Asset,
   ) {
     const amount =
-      Number(e.vestedAmount ?? e.vestedCurrencyAmount) *
-      Math.pow(10, -vToken.decimals);
+      Number(e.vestedAmount ?? e.vestedCurrencyAmount) * 10 ** -vToken.decimals;
     return {
       symbol: vToken.symbol,
       asset_unique_id: vToken.unique_id,
