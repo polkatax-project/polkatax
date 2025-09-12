@@ -537,18 +537,14 @@ export class SubscanApi {
     account: string,
     page: number = 0,
     minDate: number,
-    block_range?: string,
-    evm = false,
+    block_range?: string
   ): Promise<{
     list: (RawSubstrateTransferDto &
       RawEvmTransferDto & { timestamp: number; id: number })[];
     hasNext: boolean;
   }> {
-    const endpoint = evm
-      ? "api/scan/evm/token/transfer"
-      : "api/v2/scan/transfers";
     const responseBody = await this.request(
-      `https://${chainName}.api.subscan.io/${endpoint}`,
+      `https://${chainName}.api.subscan.io/api/v2/scan/transfers`,
       `post`,
       {
         row: 100,
