@@ -43,9 +43,6 @@ export const simplifyAssetMovementsSemanticId = (
           /**
            * semantic grouping is needed exclusively for batch transactions
            */
-          if (taxEvent.extrinsic_index === "6272700-2") {
-            console.log("TODO:!");
-          }
           const semanticGroup =
             taxEvent.callModule === "utility" &&
             taxEvent.callModuleFunction === "batch_all"
