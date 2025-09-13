@@ -42,7 +42,7 @@ describe("Special event handling", () => {
       0,
     );
     const transfers = await specialEventsToTransfersService.handleEvents(
-      { token: "DOT", domain: "assethub-kusama" },
+      { token: "KSM", domain: "assethub-kusama" },
       eventsOfInterest.list,
       [],
       true,

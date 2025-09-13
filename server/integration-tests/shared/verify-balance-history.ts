@@ -10,7 +10,6 @@ const createDiffSheet = (
   balances: { block?: number; balance: number; diff?: number }[],
   portfolioMovements: PortfolioMovement[],
   tolerance = 0.01,
-  tolerance_xcm = 0.05,
 ) => {
   for (let idx = 1; idx < balances.length; idx++) {
     balances[idx].diff = balances[idx].balance - balances[idx - 1].balance;
@@ -46,9 +45,7 @@ const createDiffSheet = (
   const unexplainedChanges = diffSheet.filter(
     (s) =>
       diffSheet.indexOf(s) > 0 &&
-      ((Math.abs(s.deviationFromExpectation) > tolerance &&
-        s.label !== "XCM transfer") ||
-        Math.abs(s.deviationFromExpectation) > tolerance_xcm),
+      (Math.abs(s.deviationFromExpectation) > tolerance)
   );
 
   return { diffSheet, unexplainedChanges };
@@ -104,8 +101,7 @@ export const verifyNativeBalanceHistory = async (
   const { diffSheet, unexplainedChanges } = createDiffSheet(
     balanceChangesFiltered,
     portfolioMovements,
-    0.01,
-    0.05,
+    0.01
   );
   if (unexplainedChanges.length > 0) {
     console.log("NOK!");

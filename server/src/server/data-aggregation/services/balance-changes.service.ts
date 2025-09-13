@@ -89,8 +89,10 @@ export class BalanceChangesService {
       }
       movement.transfers.push({
         ...transfer,
-        to: transfer.to ? convertToCanonicalAddress(transfer.to) : "",
-        from: transfer.from ? convertToCanonicalAddress(transfer.from) : "",
+        to: transfer.to ? convertToCanonicalAddress(transfer.to) : undefined,
+        from: transfer.from
+          ? convertToCanonicalAddress(transfer.from)
+          : undefined,
         amount: isMyAccount(transfer.to)
           ? Math.abs(transfer.amount)
           : -Math.abs(transfer.amount),
@@ -155,8 +157,8 @@ export class BalanceChangesService {
     const decimals = nativeToken.token_decimals;
     for (const event of eventDetails) {
       let amount = 0;
-      let to = "";
-      let from = "";
+      let to = undefined;
+      let from = undefined;
       switch (event.event_id) {
         case "Withdraw":
         case "Burned":
@@ -215,8 +217,8 @@ export class BalanceChangesService {
       const assetId = getPropertyValue("asset_id", event);
       const asset = assets.find((a) => a.asset_id == assetId);
       let amount = 0;
-      let to = "";
-      let from = "";
+      let to = undefined;
+      let from = undefined;
       switch (event.event_id) {
         case "Withdrawn":
           amount -=
@@ -300,8 +302,8 @@ export class BalanceChangesService {
         );
       }
       let amount = 0;
-      let to = "";
-      let from = "";
+      let to = undefined;
+      let from = undefined;
       switch (event.event_id) {
         case "Withdrawn":
           amount -=
@@ -372,8 +374,8 @@ export class BalanceChangesService {
         (t) => t.token_id === token_id || isEqual(t.token_id, token_id),
       );
       let amount = 0;
-      let to = "";
-      let from = "";
+      let to = undefined;
+      let from = undefined;
       if (!token) {
         logger.warn(`No token found for ${token_id} on ${chain.domain}`);
         continue;

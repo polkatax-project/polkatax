@@ -3,10 +3,34 @@ import {
   TaxableEventTransfer,
 } from "../model/portfolio-movement";
 
+const isAlmostZero = (value: number) => {
+  return Math.abs(value) < 1e-1;
+};
+
+const splitPortfolioMovement = (
+  portfolioMovement: PortfolioMovement,
+  semanticGroupTransfers: Record<string, Record<string, TaxableEventTransfer>>,
+) => {
+  const movements = Object.values(semanticGroupTransfers).map((transfers) => {
+    return {
+      ...portfolioMovement,
+      transfers: Object.values(transfers),
+      label: Object.values(transfers)[0].label,
+      feeUsed: 0,
+      feeUsedFiat: 0,
+      feeTokenUniqueId: undefined,
+    };
+  });
+  portfolioMovement.transfers = movements[0].transfers;
+  portfolioMovement.label = movements[0].label;
+  return movements.slice(1);
+};
+
 export const simplifyAssetMovementsSemanticId = (
   address: string,
   taxableEvents: PortfolioMovement[],
 ) => {
+  const newPortfolioMovements: PortfolioMovement[] = [];
   taxableEvents.forEach((taxEvent) => {
     if (taxEvent.transfers.length > 1) {
       const transfers: Record<
@@ -16,7 +40,17 @@ export const simplifyAssetMovementsSemanticId = (
       taxEvent.transfers
         .filter((t) => t.amount !== 0)
         .forEach((t: TaxableEventTransfer) => {
-          const semanticGroup = t.semanticGroupId ?? "unknown";
+          /**
+           * semantic grouping is needed exclusively for batch transactions
+           */
+          if (taxEvent.extrinsic_index === "6272700-2") {
+            console.log("TODO:!");
+          }
+          const semanticGroup =
+            taxEvent.callModule === "utility" &&
+            taxEvent.callModuleFunction === "batch_all"
+              ? (t.semanticGroupId ?? "none")
+              : "none";
           transfers[semanticGroup] = transfers[semanticGroup] ?? {};
           if (!transfers[semanticGroup][t.asset_unique_id]) {
             transfers[semanticGroup][t.asset_unique_id] = { ...t };
@@ -33,12 +67,22 @@ export const simplifyAssetMovementsSemanticId = (
           t.to = t.amount > 0 ? address : otherAddress;
         }),
       );
-      taxEvent.transfers = Object.values(transfers)
-        .map((semanticGroup) => Object.values(semanticGroup))
-        .flat();
+      if (Object.values(transfers).length > 1) {
+        const additionalPortfolioMovements = splitPortfolioMovement(
+          taxEvent,
+          transfers,
+        );
+        additionalPortfolioMovements.forEach((p) =>
+          newPortfolioMovements.push(p),
+        );
+      } else {
+        taxEvent.transfers = Object.values(transfers)
+          .map((semanticGroup) => Object.values(semanticGroup))
+          .flat();
+      }
     }
     taxEvent.transfers = taxEvent.transfers
-      .filter((transfer) => transfer.amount !== 0)
+      .filter((transfer) => !isAlmostZero(transfer.amount))
       .map((transfer) => ({
         ...transfer,
         events: undefined,
@@ -47,5 +91,6 @@ export const simplifyAssetMovementsSemanticId = (
           : undefined,
       }));
   });
+  newPortfolioMovements.forEach((p) => taxableEvents.push(p));
   return taxableEvents;
 };

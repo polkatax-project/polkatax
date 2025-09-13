@@ -247,7 +247,9 @@ const columns = ref([
 ]);
 
 function getTimeFrame(row: JobResult) {
-  return `${row?.data?.fromDate} - ${row?.data?.toDate}`;
+  return row?.data?.fromDate
+    ? `${row?.data?.fromDate} - ${row?.data?.toDate}`
+    : '';
 }
 
 function getLabelForBlockchain(domain: string) {

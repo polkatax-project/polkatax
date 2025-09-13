@@ -159,8 +159,9 @@ export class ReconciliationService {
         transfer.from = transfer.from ?? matchingTransfer.from;
         transfer.fromChain = matchingTransfer.fromChain;
         transfer.toChain = matchingTransfer.destChain;
-        transfer.semanticGroupId = "xcm";
+        transfer.semanticGroupId = matchingTransfer.messageHash;
         transfer.label = "XCM transfer";
+        portfolioMovement.label = portfolioMovement.label ?? transfer.label;
       }
     }
   }
@@ -211,15 +212,17 @@ export class ReconciliationService {
         transfer.from = transfer.from ?? matchingSemanticTransfer.from;
         transfer.fromChain = matchingSemanticTransfer.fromChain;
         transfer.toChain = matchingSemanticTransfer.destChain;
-        transfer.semanticGroupId = (
-          matchingSemanticTransfer as EventDerivedTransfer
-        ).original_event_id;
+        transfer.semanticGroupId =
+          (matchingSemanticTransfer as EventDerivedTransfer)
+            .original_event_id ??
+          (matchingSemanticTransfer as XcmAssetMovement).messageHash;
         transfer.label =
-          ((matchingSemanticTransfer as EventDerivedTransfer)?.label ??
-          matchingSemanticTransfer.module === "xcm")
+          (matchingSemanticTransfer as EventDerivedTransfer)?.label ??
+          (matchingSemanticTransfer.module === "xcm"
             ? "XCM transfer"
-            : undefined;
+            : undefined);
         transfer["reconciled"] = true;
+        portfolioMovement.label = portfolioMovement.label ?? transfer.label;
         matchingSemanticTransfer["tainted"] = true;
       }
     }

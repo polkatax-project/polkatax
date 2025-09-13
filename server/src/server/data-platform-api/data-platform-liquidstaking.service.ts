@@ -95,7 +95,7 @@ export class DataPlatformLiquidStakingService {
       }
       return {
         ...this.constructGenericTransferInfo(e, vToken),
-        from: "",
+        from: undefined,
         to: address,
         label: "Liquid staking token minted" as const,
       };
@@ -141,7 +141,7 @@ export class DataPlatformLiquidStakingService {
       return {
         ...this.constructGenericTransferInfo(e, vToken),
         from: address,
-        to: "",
+        to: undefined,
         label: "Liquid staking token redeemed" as const,
       };
     });
@@ -186,7 +186,7 @@ export class DataPlatformLiquidStakingService {
       }
       return {
         ...this.constructGenericTransferInfo(e, vToken),
-        from: "",
+        from: undefined,
         to: address,
         label: "Liquid staking token minted" as const,
       };

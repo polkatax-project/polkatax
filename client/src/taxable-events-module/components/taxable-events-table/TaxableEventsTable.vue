@@ -57,10 +57,19 @@
 
       <template v-slot:body-cell-label="props">
         <q-td :props="props">
-          <div>
-            {{ props.row.label ?? 'Unknown' }}
+          <div v-if="props.row.label">
+            {{ props.row.label
+            }}<span
+              v-if="
+                props.row.isTransferToSelf && props.row.label === 'XCM transfer'
+              "
+            >
+              to self</span
+            >
           </div>
-          <div v-if="props.row.isTransferToSelf">(Transfer to self)</div>
+          <div v-if="props.row.xcmDescription">
+            ({{ props.row.xcmDescription }})
+          </div>
         </q-td>
       </template>
 
@@ -127,6 +136,8 @@ const store = useTaxableEventStore();
 const taxData: Ref<TaxData | undefined> = ref(undefined);
 const tokenFilter: Ref<{ name: string; value: boolean }[]> = ref([]);
 const excludedEntries: Ref<TaxableEvent[]> = ref([]);
+const chains: Ref<{ domain: string; label: string }[] | undefined> =
+  ref(undefined);
 
 function setExcludedEntries(value: TaxableEvent[]) {
   excludedEntries.value = value;
@@ -153,10 +164,17 @@ const tokenFilterSubscription = store.tokenFilter$.subscribe(async (data) => {
   tokenFilter.value = data;
 });
 
+const blockchainsSubscription = useSharedStore().subscanChains$.subscribe(
+  (subscanChains) => {
+    chains.value = subscanChains.chains;
+  }
+);
+
 onUnmounted(() => {
   taxDataSubscription.unsubscribe();
   tokenFilterSubscription.unsubscribe();
   walletSubscription.unsubscribe();
+  blockchainsSubscription.unsubscribe();
 });
 
 const columns = computed(() => [
@@ -237,6 +255,7 @@ const rows = computed(() => {
         .filter((t) => t.amount > 0)
         .map((t) => `${formatCryptoAmount(t.amount)} ${t.symbol}`),
       label: data.label,
+      xcmDescription: xcmChainDescription(data),
       callModuleDescription: [
         data.callModule ?? '',
         data.callModuleFunction ?? '',
@@ -275,6 +294,26 @@ const rows = computed(() => {
   });
   return flattened;
 });
+
+const xcmChainDescription = (data: TaxableEvent) => {
+  if (data.label !== 'XCM transfer' || data.transfers.length === 0) {
+    return undefined;
+  }
+  if (data.transfers[0].fromChain === taxData.value?.chain) {
+    return '↑' + getLabelForBlockchain(data.transfers[0].toChain);
+  } else {
+    return '↓' + getLabelForBlockchain(data.transfers[0].fromChain);
+  }
+};
+
+function getLabelForBlockchain(domain?: string) {
+  if (!domain) {
+    return domain;
+  }
+  return !chains.value
+    ? domain
+    : chains.value.find((c) => c.domain === domain)?.label ?? domain;
+}
 
 const isTransferToSelf = (data: TaxableEvent) => {
   return data.transfers.every(

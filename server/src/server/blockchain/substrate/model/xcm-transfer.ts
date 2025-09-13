@@ -68,4 +68,5 @@ export interface XcmAssetMovement {
   asset_unique_id: string;
   asset_unique_id_as_given: string;
   module: string;
+  messageHash: string;
 }

@@ -75,7 +75,7 @@ describe("DataPlatformLiquidStakingService", () => {
       symbol: "vBNC",
       asset_unique_id: "123",
       amount: 1,
-      from: "",
+      from: undefined,
       to: "0xabc",
       label: "Liquid staking token minted",
     });
@@ -113,7 +113,7 @@ describe("DataPlatformLiquidStakingService", () => {
       asset_unique_id: "123",
       amount: 0.5,
       from: "0xabc",
-      to: "",
+      to: undefined,
       label: "Liquid staking token redeemed",
     });
   });
@@ -149,7 +149,7 @@ describe("DataPlatformLiquidStakingService", () => {
       symbol: "vBNC",
       asset_unique_id: "123",
       amount: 2,
-      from: "",
+      from: undefined,
       to: "0xabc",
       label: "Liquid staking token minted", // note: rebonded reuses "minted"
     });

@@ -284,8 +284,8 @@ export class DeviationZoomer {
     const transferData = {
       symbol: tokenDeviation.symbol,
       asset_unique_id: tokenDeviation.unique_id,
-      to: tokenDeviation.signedDeviation > 0 ? address : "",
-      from: tokenDeviation.signedDeviation < 0 ? address : "",
+      to: tokenDeviation.signedDeviation > 0 ? address : undefined,
+      from: tokenDeviation.signedDeviation < 0 ? address : undefined,
       amount: tokenDeviation.signedDeviation,
       provenance: "deviationCompensation",
       events: matchingEvents.map((e) => ({

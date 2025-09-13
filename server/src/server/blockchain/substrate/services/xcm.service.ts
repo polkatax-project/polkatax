@@ -51,7 +51,7 @@ export class XcmService {
    */
   private mapAccountIdToAddress(id: string) {
     if (!id) {
-      return "";
+      return undefined;
     }
     if (isEvmAddress(id)) {
       /**
@@ -214,6 +214,7 @@ export class XcmService {
                   fromChain,
                   destChain,
                   outgoing: fromChain === data.chainName,
+                  messageHash: xcm.message_hash,
                 };
               }),
             )
