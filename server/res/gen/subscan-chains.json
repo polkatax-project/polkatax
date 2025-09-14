@@ -226,8 +226,7 @@
       "parachainStaking": false,
       "delegatedStaking": false,
       "relay": "polkadot",
-      "paraId": 2035,
-      "excluded": true
+      "paraId": 2035
     },
     {
       "domain": "people-polkadot",
@@ -393,22 +392,6 @@
       "relay": "kusama",
       "isRelay": true,
       "paraId": 0
-    },
-    {
-      "domain": "kintsugi",
-      "label": "Kintsugi",
-      "token": "KINT",
-      "stakingPallets": ["VaultStaking"],
-      "tokenPallet": true,
-      "evmPallet": true,
-      "assetPallet": false,
-      "foreignAssetsPallet": false,
-      "standardStaking": false,
-      "parachainStaking": false,
-      "delegatedStaking": false,
-      "relay": "kusama",
-      "paraId": 2092,
-      "pseudoStaking": true
     },
     {
       "domain": "khala",

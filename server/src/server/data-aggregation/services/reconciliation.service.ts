@@ -350,7 +350,8 @@ export class ReconciliationService {
     if (transferMatchingFee && (matchingTx?.tip ?? 0) > 0) {
       const matchingTip = matchingTx
         ? portfolioMovement.transfers.find(
-            (t) => !t["reconciled"] && isVeryCloseTo(-t.amount, matchingTx?.tip),
+            (t) =>
+              !t["reconciled"] && isVeryCloseTo(-t.amount, matchingTx?.tip),
           )
         : undefined;
       if (matchingTip) {
