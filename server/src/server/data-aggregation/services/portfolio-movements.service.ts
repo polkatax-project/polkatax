@@ -12,7 +12,7 @@ import { PortfolioMovement } from "../model/portfolio-movement";
 import { SubscanEvent } from "../../blockchain/substrate/model/subscan-event";
 import { Transfer } from "../../blockchain/substrate/model/raw-transfer";
 import { StakingReward } from "../../blockchain/substrate/model/staking-reward";
-import { Transaction } from "../../blockchain/substrate/model/transaction";
+import { Transaction, TransactionDetails } from "../../blockchain/substrate/model/transaction";
 import { StakingRewardsAggregatorService } from "./staking-rewards-aggregator.service";
 import { AddFiatValuesToTaxableEventsService } from "./add-fiat-values-to-taxable-events.service";
 import { DataPlatformLiquidStakingService } from "../../data-platform-api/data-platform-liquidstaking.service";
@@ -99,8 +99,10 @@ export class PortfolioMovementsService {
       );
     }
 
+    const transactionDetails = await this.subscanService.fetchExtrinsicDetails(request.chain.domain, transactions)
+
     return [
-      transactions,
+      transactionDetails,
       events,
       xcmList,
       stakingRewards,
@@ -110,7 +112,7 @@ export class PortfolioMovementsService {
 
   private async transform(
     request: FetchPortfolioMovementsRequest,
-    transactions: Transaction[],
+    transactions: TransactionDetails[],
     events: SubscanEvent[],
     xcmList: XcmTransfer[],
     stakingRewards: StakingReward[],
@@ -151,6 +153,7 @@ export class PortfolioMovementsService {
       await this.balanceChangesService.fetchAllBalanceChanges(
         request,
         events,
+        transactions,
         isMyAccount,
       );
 
@@ -240,7 +243,7 @@ export class PortfolioMovementsService {
     if (process.env["WRITE_RESULTS_TO_DISK"] === "true") {
       fs.writeFileSync(
         `./logs/${request.chain.domain}-${request.address}.json`,
-        JSON.stringify({ portfolioMovements: sortedTaxableEvents }, null, 2),
+        JSON.stringify(sortedTaxableEvents, null, 2),
       );
     }
 

@@ -6,6 +6,7 @@ import {
   EventDetails,
   SubscanEvent,
 } from "../../blockchain/substrate/model/subscan-event";
+import { TransactionDetails } from "../../blockchain/substrate/model/transaction";
 import { logger } from "../../logger/logger";
 import { FetchPortfolioMovementsRequest } from "../model/fetch-portfolio-movements.request";
 import { PortfolioMovement } from "../model/portfolio-movement";
@@ -18,6 +19,7 @@ export class BalanceChangesService {
   async fetchAllBalanceChanges(
     request: FetchPortfolioMovementsRequest,
     subscanEvents: SubscanEvent[],
+    transactions: TransactionDetails[],
     isMyAccount: (address: string) => boolean,
   ): Promise<PortfolioMovement[]> {
     logger.info(
@@ -28,12 +30,14 @@ export class BalanceChangesService {
       request.chain,
       request.address,
       subscanEvents,
+      transactions,
       portfolioMovements,
     );
     await this.fetchAssetMovements(
       request.chain,
       request.address,
       subscanEvents,
+      transactions,
       portfolioMovements,
     );
     await this.fetchForeignAssetMovements(
@@ -134,23 +138,33 @@ export class BalanceChangesService {
     });
   }
 
+  private async fetchMissingEventDetails(chain: string, events: SubscanEvent[], transactions: TransactionDetails[], moduleId: string, eventIds: string[]): Promise<EventDetails[]> {
+    const eventDetailsFromTx = transactions
+      .map(t => t.events.filter(e => e.module_id === moduleId && eventIds.includes(e.event_id))).flat()
+    const eventIdxAlreadyAvailable = eventDetailsFromTx.map(e => e.event_index)
+    const eventsToFetch = events.filter(
+          (e) => e.module_id === moduleId && eventIds.includes(e.event_id) && !eventIdxAlreadyAvailable.includes(e.event_index)
+        )
+    const eventDetails: EventDetails[] =
+      await this.subscanService.fetchEventDetails(
+        chain,
+        eventsToFetch
+      );
+    eventDetails.forEach(e => eventDetailsFromTx.push(e))
+    return eventDetailsFromTx
+  } 
+
   async fetchBalanceMovements(
     chain: { domain: string; token: string },
     address: string,
     events: SubscanEvent[],
+    transactions: TransactionDetails[],
     portfolioMovements: PortfolioMovement[],
   ): Promise<void> {
     logger.info(
       `Entry BalancesChangesService.fetchBalanceMovements for ${chain.domain} and ${address}. SubscanEvents: ${events.length}`,
     );
-    const eventIds = ["Withdraw", "Burned", "Deposit", "Minted"];
-    const eventDetails: EventDetails[] =
-      await this.subscanService.fetchEventDetails(
-        chain.domain,
-        events.filter(
-          (e) => e.module_id === "balances" && eventIds.includes(e.event_id),
-        ),
-      );
+    const eventDetails = await this.fetchMissingEventDetails(chain.domain, events, transactions, "balances", ["Withdraw", "Burned", "Deposit", "Minted"])
     const nativeToken = await this.subscanService.fetchNativeToken(
       chain.domain,
     );
@@ -192,20 +206,14 @@ export class BalanceChangesService {
     chain: { domain: string; token: string },
     address: string,
     events: SubscanEvent[],
+    transactions: TransactionDetails[],
     portfolioMovements: PortfolioMovement[],
   ): Promise<void> {
     logger.info(
       `Entry BalancesChangesService.fetchAssetMovements for ${chain.domain} and ${address}. SubscanEvents: ${events.length}`,
     );
-    const eventIds = ["Withdrawn", "Burned", "Deposited", "Issued"];
-    const assetEventDetails: EventDetails[] =
-      await this.subscanService.fetchEventDetails(
-        chain.domain,
-        events.filter(
-          (e) => e.module_id === "assets" && eventIds.includes(e.event_id),
-        ),
-      );
-    if (assetEventDetails.length === 0) {
+    const eventDetails = await this.fetchMissingEventDetails(chain.domain, events, transactions, "assets", ["Withdrawn", "Burned", "Deposited", "Issued"])
+    if (eventDetails.length === 0) {
       return;
     }
     const assets = await this.subscanService.scanAssets(chain.domain);
@@ -213,7 +221,7 @@ export class BalanceChangesService {
       logger.warn(`fetchAssetMovements: No assets found for ${chain.domain}.`);
       return; // Moonbeam has assets events but no assets endpoint.
     }
-    for (const event of assetEventDetails) {
+    for (const event of eventDetails) {
       const assetId = getPropertyValue("asset_id", event);
       const asset = assets.find((a) => a.asset_id == assetId);
       let amount = 0;
@@ -258,7 +266,7 @@ export class BalanceChangesService {
       );
     }
     logger.info(
-      `Exit BalancesChangesService.fetchAssetMovements for ${chain.domain} and ${address} with ${assetEventDetails.length} entries`,
+      `Exit BalancesChangesService.fetchAssetMovements for ${chain.domain} and ${address} with ${eventDetails.length} entries`,
     );
   }
 
