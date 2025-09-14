@@ -474,6 +474,13 @@ export const determineLabelForPayment = (
     ),
   );
 
+  if (
+    portfolioMovement.transfers.some((t) => t.amount > 0) &&
+    portfolioMovement.transfers.some((t) => t.amount < 0)
+  ) {
+    return "Swap";
+  }
+
   if (eventMatch) {
     return eventMatch.label;
   }

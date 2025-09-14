@@ -300,9 +300,13 @@ const xcmChainDescription = (data: TaxableEvent) => {
     return undefined;
   }
   if (data.transfers[0].fromChain === taxData.value?.chain) {
-    return '↑' + getLabelForBlockchain(data.transfers[0].toChain);
+    return data.transfers[0].toChain
+      ? '↑' + getLabelForBlockchain(data.transfers[0].toChain)
+      : undefined;
   } else {
-    return '↓' + getLabelForBlockchain(data.transfers[0].fromChain);
+    return data.transfers[0].fromChain
+      ? '↓' + getLabelForBlockchain(data.transfers[0].fromChain)
+      : undefined;
   }
 };
 

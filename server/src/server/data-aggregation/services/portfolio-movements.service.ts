@@ -4,6 +4,7 @@ import * as subscanChains from "../../../../res/gen/subscan-chains.json";
 import { logger } from "../../logger/logger";
 import { XcmService } from "../../blockchain/substrate/services/xcm.service";
 import { SubscanService } from "../../blockchain/substrate/api/subscan.service";
+import { determineLabelForPayment } from "../helper/determine-label-for-payment";
 import { PortfolioMovementsResponse } from "../model/portfolio-movements.response";
 import { SpecialEventsToTransfersService } from "./special-event-processing/special-events-to-transfers.service";
 import { XcmTransfer } from "../../blockchain/substrate/model/xcm-transfer";
@@ -171,6 +172,15 @@ export class PortfolioMovementsService {
     return { portfolioMovements };
   }
 
+  private addLabels(
+    request: FetchPortfolioMovementsRequest,
+    portfolioMovements: PortfolioMovement[],
+  ) {
+    portfolioMovements.forEach(
+      (p) => (p.label = determineLabelForPayment(request.chain.domain, p)),
+    );
+  }
+
   async fetchPortfolioMovements(
     request: FetchPortfolioMovementsRequest,
   ): Promise<PortfolioMovementsResponse> {
@@ -196,6 +206,11 @@ export class PortfolioMovementsService {
       stakingRewards,
       dataPlatformTransfers,
     );
+
+    logger.info(
+      `PortfolioMovmentService: Adding labels for ${request.chain.domain} and wallet ${request.address}`,
+    );
+    this.addLabels(request, portfolioMovements);
 
     logger.info(
       `PortfolioMovmentService: Adding/converting fiat values for ${request.chain.domain} and wallet ${request.address}`,
