@@ -62,6 +62,7 @@ export const cryptoCurrencyPricesServer = {
         }
       },
     );
+    await fastify.ready();
     return fastify;
   },
 };

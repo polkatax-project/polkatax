@@ -9,7 +9,7 @@ export class CryptoCurrencyPricesService {
     return process.env["CRYPTO_CURRENCY_PRICES_PORT"] || 3003;
   }
 
-  fetchHistoricalPrices(
+  async fetchHistoricalPrices(
     tokenId: string,
     currency: string,
   ): Promise<CurrencyQuotes> {
@@ -21,17 +21,17 @@ export class CryptoCurrencyPricesService {
     this.pendingRequests[key] = new ReplaySubject<any>(1);
 
     try {
-      const result = new RequestHelper().req(
+      const result = await new RequestHelper().req(
         `http://localhost:${this.port}/crypto-historic-prices/${tokenId}?currency=${currency}`,
         "GET",
       );
       this.pendingRequests[key].next(result);
-      delete this.pendingRequests[key];
       return result;
     } catch (error) {
       this.pendingRequests[key].error(error);
-      delete this.pendingRequests[key];
       throw error;
+    } finally {
+      delete this.pendingRequests[key];
     }
   }
 }
