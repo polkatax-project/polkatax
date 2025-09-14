@@ -5,8 +5,6 @@ import {
 import { XcmTransfer } from "../../../blockchain/substrate/model/xcm-transfer";
 import { EventDerivedAssetMovement } from "./event-derived-asset-movement";
 import { EventHandlerContext } from "./event-handler-context";
-import { onAssethubAssetsIssued } from "./on-assethub-asset-issued";
-import { onAssethubForeignAssetsIssued } from "./on-assethub-foreign-asset-issued";
 import { onAssethubSwapExecuted } from "./on-assethub-swap-executed";
 import { onBalancesDeposit } from "./on-balances-deposit";
 import { onBalancesWithdraw } from "./on-balances-withdraw";
@@ -14,7 +12,6 @@ import { onCoretimePurchased } from "./on-coretime-purchased";
 import { onHydrationLiquidityRemoved } from "./on-hydration-liquidity-removed";
 import { onHydrationStableSwapLiquidityAdded } from "./on-hydration-stable-swap-liquidity-added";
 import { onMigratedDelegation } from "./on-migrated-delegation";
-import { onPhalaAssetBurned } from "./on-phala-asset-burned";
 import { onReserveRepatriated } from "./on-reserve-repatriated";
 import {
   onZenlinkProtcolAssetSwap,
@@ -82,71 +79,14 @@ export const eventConfigs: {
     handler: (e, context) => onHydrationLiquidityRemoved(e, context),
   },
   {
-    chains: ["polkadot", "kusama"],
-    event: "balancesBurned",
-    handler: (e, context) => onBalancesWithdraw(e, context),
-    condition: (event, events) =>
-      !!events.find(
-        (e) => e.module_id + e.event_id === "identitymigratorIdentityReaped",
-      ),
-  },
-  {
     chains: ["hydration", "basilisk"],
     event: "stableswapLiquidityAdded",
     handler: (e, context) => onHydrationStableSwapLiquidityAdded(e, context),
   },
   {
     chains: ["assethub-polkadot", "assethub-kusama"],
-    event: "foreignassetsIssued",
-    handler: (e, context) => onAssethubForeignAssetsIssued(e, context),
-  },
-  {
-    chains: ["assethub-polkadot", "assethub-kusama"],
     event: "assetconversionSwapExecuted",
     handler: (e, context) => onAssethubSwapExecuted(e, context),
-  },
-  {
-    chains: [
-      "assethub-polkadot",
-      "assethub-kusama",
-      "coretime-polkadot",
-      "coretime-kusama",
-    ],
-    event: "assetsIssued",
-    handler: (e, context) => onAssethubAssetsIssued(e, context),
-  },
-  {
-    chains: ["*"],
-    event: "balancesDeposit",
-    handler: (e, context) => onBalancesDeposit(e, context),
-    condition: (event, events, xcmList) =>
-      !!events.find((e) => e.module_id + e.event_id === "systemNewAccount") &&
-      !xcmList.find((xcm) => xcm.extrinsic_index === event.extrinsic_index),
-  },
-  {
-    chains: ["*"],
-    event: "balancesWithdraw",
-    handler: (e, context) => onBalancesWithdraw(e, context),
-    condition: (event, events, xcmList) =>
-      !!events.find(
-        (e) =>
-          e.module_id + e.event_id === "systemKilledAccount" &&
-          !xcmList.find((xcm) => xcm.extrinsic_index === event.extrinsic_index),
-      ),
-  },
-  {
-    chains: [
-      "assethub-polkadot",
-      "assethub-kusama",
-      "coretime-polkadot",
-      "coretime-kusama",
-      "people-polkadot",
-      "people-kusama",
-      "collectives-polkadot",
-      "collectives-kusama",
-    ],
-    event: "balancesMinted",
-    handler: (e, context) => onBalancesDeposit(e, context),
   },
   {
     chains: ["polkadot", "kusama"],
@@ -167,10 +107,5 @@ export const eventConfigs: {
     chains: ["manta"],
     event: "zenlinkprotocolLiquidityAdded",
     handler: (e, context) => onZenlinkProtcolLiquidityAdded(e, context),
-  },
-  {
-    chains: ["phala"],
-    event: "assetsBurned",
-    handler: (e, context) => onPhalaAssetBurned(e, context),
   },
 ];

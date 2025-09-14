@@ -10,6 +10,9 @@ import { Asset } from "../../blockchain/substrate/model/asset";
 import { SubscanEvent } from "../../blockchain/substrate/model/subscan-event";
 import { StakingReward } from "../../blockchain/substrate/model/staking-reward";
 import { logger } from "../../logger/logger";
+import { CryptoCurrencyPricesService } from "./crypto-currency-prices.service";
+import { lookupCoingeckoId } from "../helper/lookup-coingecko-id";
+import { formatDate } from "../../../common/util/date-utils";
 
 const getDecimals = (assetUniqueId: string, tokens: Asset[]) => {
   return tokens.find((t) => t.unique_id === assetUniqueId)?.decimals;
@@ -30,7 +33,10 @@ const isVeryCloseTo = (a: number, b: number) => {
 };
 
 export class ReconciliationService {
-  constructor(private subscanService: SubscanService) {}
+  constructor(
+    private subscanService: SubscanService,
+    private cryptoCurrencyPricesService: CryptoCurrencyPricesService,
+  ) {}
 
   async reconcile(
     chain: { domain: string; token: string },
@@ -83,16 +89,26 @@ export class ReconciliationService {
         indexedEvents[event.extrinsic_index].push(event);
       });
 
+    const indexedOutgoingXcmTransfers: Record<number, XcmTransfer[]> = {};
+    xcmTransfers
+      .filter((x) => x.transfers[0].outgoing)
+      .forEach((x) => {
+        indexedOutgoingXcmTransfers[x.timestamp] =
+          indexedOutgoingXcmTransfers[x.timestamp] ?? [];
+        indexedOutgoingXcmTransfers[x.timestamp].push(x);
+      });
+
     for (let portfolioMovement of portfolioMovements) {
       this.matchTransactionFee(portfolioMovement, tokens, indexedTx);
       this.matchStakingRewards(portfolioMovement, indexedStakingRewards, chain);
       this.matchSemanticTransfers(
         portfolioMovement,
         indexedTransfers,
-        xcmTransfers,
+        indexedOutgoingXcmTransfers,
       );
       this.matchIncomingXcmTransfers(portfolioMovement, xcmTransfers);
       this.attachEvents(portfolioMovement, indexedEvents);
+      this.handlePossibleXcmFees(portfolioMovement);
     }
 
     /**
@@ -103,6 +119,39 @@ export class ReconciliationService {
         logger.warn(s, `Unused staking reward for ${chain.domain}`);
       }
     });
+  }
+
+  async handlePossibleXcmFees(portfolioMovement: PortfolioMovement) {
+    /**
+     * TODO: find a way to obtain the actual fees!
+     * e.g. https://assethub-polkadot.subscan.io/event?module=polkadotxcm&event_id=FeesPaid
+     */
+    if (portfolioMovement.label === "XCM transfer") {
+      const unlabelledTransfers = portfolioMovement.transfers.filter(
+        (t) => !t.label && t.amount < 0,
+      );
+      if (unlabelledTransfers.length === 1) {
+        const coingeckoId = lookupCoingeckoId(unlabelledTransfers[0].symbol);
+        const prices =
+          await this.cryptoCurrencyPricesService.fetchHistoricalPrices(
+            coingeckoId,
+            "USD",
+          );
+        const priceOnDay =
+          prices.quotes[formatDate(new Date(portfolioMovement.timestamp))];
+        if (priceOnDay && priceOnDay * -unlabelledTransfers[0].amount < 2) {
+          // 2 USD max fee assumed.
+          portfolioMovement.xcmFee = Math.abs(unlabelledTransfers[0].amount);
+          portfolioMovement.xcmFeeTokenSymbol = unlabelledTransfers[0].symbol;
+          portfolioMovement.xcmFeeFiat = portfolioMovement.xcmFee * priceOnDay;
+          portfolioMovement.xcmFeeTokenUniqueId =
+            unlabelledTransfers[0].asset_unique_id;
+          portfolioMovement.transfers = portfolioMovement.transfers.filter(
+            (t) => t !== unlabelledTransfers[0],
+          );
+        }
+      }
+    }
   }
 
   attachEvents(
@@ -169,7 +218,7 @@ export class ReconciliationService {
   matchSemanticTransfers(
     portfolioMovement: PortfolioMovement,
     indexedTransfers: Record<string, EventDerivedTransfer[]>,
-    xcmTransfers: XcmTransfer[],
+    indexedXcmTransfers: Record<number, XcmTransfer[]>,
   ) {
     const remainingTransfers = portfolioMovement.transfers.filter(
       (t) => !t["reconciled"],
@@ -189,12 +238,12 @@ export class ReconciliationService {
             t.symbol.toUpperCase() === transfer.symbol.toUpperCase(),
         );
       if (!matchingSemanticTransfer) {
-        const matchingXcm = xcmTransfers.find(
-          (t) =>
-            t.timestamp === portfolioMovement.timestamp &&
-            t.transfers.some(
-              (t) => !t["tainted"] && isVeryCloseTo(t.amount, transfer.amount),
-            ),
+        const matchingXcm = (
+          indexedXcmTransfers[portfolioMovement.timestamp] ?? []
+        ).find((t) =>
+          t.transfers.some(
+            (t) => !t["tainted"] && isVeryCloseTo(t.amount, transfer.amount),
+          ),
         );
         matchingSemanticTransfer = (matchingXcm?.transfers ?? []).find(
           (t) =>

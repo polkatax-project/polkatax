@@ -4,7 +4,7 @@ import {
 } from "../model/portfolio-movement";
 
 const isAlmostZero = (value: number) => {
-  return Math.abs(value) < 1e-1;
+  return Math.abs(value) < 1e-10;
 };
 
 const splitPortfolioMovement = (
@@ -78,6 +78,7 @@ export const simplifyAssetMovementsSemanticId = (
           .flat();
       }
     }
+
     taxEvent.transfers = taxEvent.transfers
       .filter((transfer) => !isAlmostZero(transfer.amount))
       .map((transfer) => ({

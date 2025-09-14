@@ -153,10 +153,7 @@ export class XcmService {
           timestamp,
           // xcm.block_num > 0 is indeed needed because occasionally the value is indeed zero.
           block: chain.isRelay && xcm.block_num > 0 ? xcm.block_num : undefined,
-          fee:
-            xcm.used_fee && fromChain === data.chainName
-              ? Number(xcm.used_fee) / 10 ** token.token_decimals
-              : 0,
+          fee: Number(xcm.used_fee),
           extrinsic_index,
           transfers: (
             await Promise.all(

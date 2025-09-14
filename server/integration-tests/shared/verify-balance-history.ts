@@ -45,7 +45,7 @@ const createDiffSheet = (
   const unexplainedChanges = diffSheet.filter(
     (s) =>
       diffSheet.indexOf(s) > 0 &&
-      (Math.abs(s.deviationFromExpectation) > tolerance)
+      Math.abs(s.deviationFromExpectation) > tolerance,
   );
 
   return { diffSheet, unexplainedChanges };
@@ -101,7 +101,7 @@ export const verifyNativeBalanceHistory = async (
   const { diffSheet, unexplainedChanges } = createDiffSheet(
     balanceChangesFiltered,
     portfolioMovements,
-    0.01
+    0.01,
   );
   if (unexplainedChanges.length > 0) {
     console.log("NOK!");

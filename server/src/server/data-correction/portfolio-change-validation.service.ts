@@ -119,12 +119,24 @@ export class PortfolioChangeValidationService {
           ((p as PortfolioMovement)?.tip ?? 0),
         0,
       );
-    expectedDiff -= fees;
+
+    const xcmFees = matchingPortfolioMovements
+      .filter((p) => p.xcmFeeTokenUniqueId === tokenInPortfolio.unique_id)
+      .reduce((curr, p) => curr + ((p as PortfolioMovement)?.xcmFee ?? 0), 0);
+
+    expectedDiff = expectedDiff - xcmFees - fees;
 
     const feesFiat = matchingPortfolioMovements
       .filter((p) => p.feeTokenUniqueId === tokenInPortfolio.unique_id)
       .reduce(
         (curr, p) => curr + ((p as PortfolioMovement)?.feeUsedFiat ?? 0),
+        0,
+      );
+
+    const xcmFeesFiat = matchingPortfolioMovements
+      .filter((p) => p.xcmFeeTokenUniqueId === tokenInPortfolio.unique_id)
+      .reduce(
+        (curr, p) => curr + ((p as PortfolioMovement)?.xcmFeeFiat ?? 0),
         0,
       );
 
@@ -137,7 +149,12 @@ export class PortfolioChangeValidationService {
       });
     });
 
-    return { expectedDiff, transferCounter, fees, feesFiat };
+    return {
+      expectedDiff,
+      transferCounter,
+      fees: fees + xcmFees,
+      feesFiat: feesFiat + xcmFeesFiat,
+    };
   }
 
   private evaluateDeviationAgainstThreshold(

@@ -51,44 +51,6 @@ describe("Special event handling", () => {
     verifyEventTransfersAreValid(transfers);
   }, 120_000);
 
-  test("verify foreignassets Issued data extraction", async () => {
-    const eventsOfInterest = await subscanApi.searchEvents(
-      "assethub-polkadot",
-      undefined,
-      "foreignassets",
-      "Issued",
-      0,
-      0,
-    );
-    const transfers = await specialEventsToTransfersService.handleEvents(
-      { token: "DOT", domain: "assethub-polkadot" },
-      eventsOfInterest.list,
-      [],
-      true,
-    );
-    expect(transfers.length).toBe(100);
-    verifyEventTransfersAreValid(transfers);
-  }, 120_000);
-
-  test("verify assets Issued data extraction", async () => {
-    const eventsOfInterest = await subscanApi.searchEvents(
-      "assethub-polkadot",
-      undefined,
-      "assets",
-      "Issued",
-      0,
-      0,
-    );
-    const transfers = await specialEventsToTransfersService.handleEvents(
-      { token: "DOT", domain: "assethub-polkadot" },
-      eventsOfInterest.list,
-      [],
-      true,
-    );
-    expect(transfers.length).toBe(100);
-    verifyEventTransfersAreValid(transfers);
-  }, 120_000);
-
   test("verify hydration stableswap LiquidityRemoved data extraction", async () => {
     const eventsOfInterest = await subscanApi.searchEvents(
       "hydration",

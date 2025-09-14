@@ -452,24 +452,6 @@ export const determineLabelForPayment = (
     return portfolioMovement.label;
   }
 
-  if (
-    portfolioMovement.provenance == "stakingRewards" &&
-    portfolioMovement.transfers.some((t) => t.amount > 0)
-  ) {
-    return "Staking reward";
-  }
-
-  if (
-    portfolioMovement.provenance == "stakingRewards" &&
-    portfolioMovement.transfers.some((t) => t.amount < 0)
-  ) {
-    return "Staking slashed";
-  }
-
-  if (portfolioMovement.provenance == "xcm") {
-    return "XCM transfer";
-  }
-
   if (portfolioMovement.callModule && portfolioMovement.callModuleFunction) {
     const moduleMatch = getCallModuleClassificationRules(chain).find(
       (c) => c.module === portfolioMovement.callModule,
@@ -491,13 +473,6 @@ export const determineLabelForPayment = (
       (e) => e.eventId === c.eventId && e.moduleId === c.moduleId,
     ),
   );
-
-  if (
-    portfolioMovement.transfers.some((t) => t.amount > 0) &&
-    portfolioMovement.transfers.some((t) => t.amount < 0)
-  ) {
-    return "Swap";
-  }
 
   if (eventMatch) {
     return eventMatch.label;

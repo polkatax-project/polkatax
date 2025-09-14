@@ -4,7 +4,6 @@ import * as subscanChains from "../../../../res/gen/subscan-chains.json";
 import { logger } from "../../logger/logger";
 import { XcmService } from "../../blockchain/substrate/services/xcm.service";
 import { SubscanService } from "../../blockchain/substrate/api/subscan.service";
-import { determineLabelForPayment } from "../helper/determine-label-for-payment";
 import { PortfolioMovementsResponse } from "../model/portfolio-movements.response";
 import { SpecialEventsToTransfersService } from "./special-event-processing/special-events-to-transfers.service";
 import { XcmTransfer } from "../../blockchain/substrate/model/xcm-transfer";
@@ -70,22 +69,42 @@ export class PortfolioMovementsService {
       ...request,
       chainName: request.chain.domain,
     };
-    const results = await awaitPromisesAndLog([
-      this.subscanService.fetchAllTx(chainExtendedRequest),
-      this.subscanService.searchAllEvents(chainExtendedRequest),
-      this.xcmService.fetchXcmTransfers(chainExtendedRequest),
-      this.stakingRewardsAggregatorService.fetchStakingRewards(
-        chainExtendedRequest,
-      ),
-      process.env["USE_DATA_PLATFORM_API"] === "true"
-        ? this.dataPlatformLiquidStakingService.fetchallVtokenEvents(
-            request.address,
-            request.chain.domain,
-            request.minDate,
-          )
-        : Promise.resolve([]),
-    ]);
-    return results;
+    let [transactions, events, xcmList, stakingRewards, dataPlatformTransfers] =
+      await awaitPromisesAndLog([
+        this.subscanService.fetchAllTx(chainExtendedRequest),
+        this.subscanService.searchAllEvents(chainExtendedRequest),
+        this.xcmService.fetchXcmTransfers(chainExtendedRequest),
+        this.stakingRewardsAggregatorService.fetchStakingRewards(
+          chainExtendedRequest,
+        ),
+        process.env["USE_DATA_PLATFORM_API"] === "true"
+          ? this.dataPlatformLiquidStakingService.fetchallVtokenEvents(
+              request.address,
+              request.chain.domain,
+              request.minDate,
+            )
+          : Promise.resolve([]),
+      ]);
+
+    if (request.maxDate) {
+      transactions = transactions.filter((t) => t.timestamp <= request.maxDate);
+      events = events.filter((e) => e.timestamp <= request.maxDate);
+      xcmList = xcmList.filter((e) => e.timestamp <= request.maxDate);
+      stakingRewards = stakingRewards.filter(
+        (e) => e.timestamp <= request.maxDate,
+      );
+      dataPlatformTransfers = dataPlatformTransfers.filter(
+        (e) => e.timestamp <= request.maxDate,
+      );
+    }
+
+    return [
+      transactions,
+      events,
+      xcmList,
+      stakingRewards,
+      dataPlatformTransfers,
+    ];
   }
 
   private async transform(
@@ -152,15 +171,6 @@ export class PortfolioMovementsService {
     return { portfolioMovements };
   }
 
-  private addLabels(
-    request: FetchPortfolioMovementsRequest,
-    portfolioMovements: PortfolioMovement[],
-  ) {
-    portfolioMovements.forEach(
-      (p) => (p.label = determineLabelForPayment(request.chain.domain, p)),
-    );
-  }
-
   async fetchPortfolioMovements(
     request: FetchPortfolioMovementsRequest,
   ): Promise<PortfolioMovementsResponse> {
@@ -174,17 +184,6 @@ export class PortfolioMovementsService {
     );
     let [transactions, events, xcmList, stakingRewards, dataPlatformTransfers] =
       await this.fetchData(request);
-    if (request.maxDate) {
-      transactions = transactions.filter((t) => t.timestamp <= request.maxDate);
-      events = events.filter((e) => e.timestamp <= request.maxDate);
-      xcmList = xcmList.filter((e) => e.timestamp <= request.maxDate);
-      stakingRewards = stakingRewards.filter(
-        (e) => e.timestamp <= request.maxDate,
-      );
-      dataPlatformTransfers = dataPlatformTransfers.filter(
-        (e) => e.timestamp <= request.maxDate,
-      );
-    }
 
     logger.info(
       `PortfolioMovmentService: Transforming data for ${request.chain.domain} and wallet ${request.address}`,
@@ -197,11 +196,6 @@ export class PortfolioMovementsService {
       stakingRewards,
       dataPlatformTransfers,
     );
-
-    logger.info(
-      `PortfolioMovmentService: Adding labels for ${request.chain.domain} and wallet ${request.address}`,
-    );
-    this.addLabels(request, portfolioMovements);
 
     logger.info(
       `PortfolioMovmentService: Adding/converting fiat values for ${request.chain.domain} and wallet ${request.address}`,

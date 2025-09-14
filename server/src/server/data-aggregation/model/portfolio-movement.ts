@@ -24,6 +24,9 @@ export interface PortfolioMovement {
   feeUsedFiat?: number;
   tipFiat?: number;
   xcmFee?: number;
+  xcmFeeTokenSymbol?: string;
+  xcmFeeFiat?: number;
+  xcmFeeTokenUniqueId?: string;
   events: { moduleId: string; eventId: string; eventIndex: string }[];
   label?: Label;
   provenance?: Provenance;

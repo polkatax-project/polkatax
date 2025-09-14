@@ -6,7 +6,7 @@ import { mapPublicKeyToAddress } from "../../../blockchain/substrate/util/map-pu
 import { isEvmAddress } from "../../helper/is-evm-address";
 import isEqual from "lodash.isequal";
 import { getAddress } from "ethers";
-import { determineForeignAsset } from "../../helper/determe-foreign-asset";
+import { determineForeignAsset } from "../../helper/determine-foreign-asset";
 
 export const getPropertyValue = (
   property: string | string[],
@@ -53,7 +53,7 @@ export const extractForeignAsset = (
   tokens: ForeignAsset[],
 ) => {
   const value = getPropertyValue(property, event);
-  return determineForeignAsset(value, tokens)
+  return determineForeignAsset(value, tokens);
 };
 
 export const mapKeyToCanonicalAddress = (key: string) => {
