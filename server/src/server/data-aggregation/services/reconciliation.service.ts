@@ -18,18 +18,11 @@ const getDecimals = (assetUniqueId: string, tokens: Asset[]) => {
   return tokens.find((t) => t.unique_id === assetUniqueId)?.decimals;
 };
 
-const isCloseTo = (a: number, b: number) => {
-  if (a === b) {
-    return true;
-  }
-  return Math.abs(a - b) / (Math.abs(a) + Math.abs(b)) < 0.01;
-};
-
 const isVeryCloseTo = (a: number, b: number) => {
   if (a === b) return true;
   const diff = Math.abs(a - b);
   const norm = Math.abs(a) + Math.abs(b);
-  return norm === 0 ? diff < 1e-4 : diff / norm < 1e-4;
+  return norm === 0 ? diff < 1e-6 : diff / norm < 1e-6;
 };
 
 export class ReconciliationService {
@@ -321,7 +314,7 @@ export class ReconciliationService {
       ? portfolioMovement.transfers.find(
           (t) =>
             !t["reconciled"] &&
-            isCloseTo(
+            isVeryCloseTo(
               -t.amount * 10 ** getDecimals(t.asset_unique_id, tokens),
               matchingTx?.fee,
             ),
@@ -342,7 +335,7 @@ export class ReconciliationService {
       ? portfolioMovement.transfers.find(
           (t) =>
             !t["reconciled"] &&
-            isCloseTo(
+            isVeryCloseTo(
               t.amount * 10 ** getDecimals(t.asset_unique_id, tokens),
               matchingTx?.fee - matchingTx?.feeUsed,
             ),
@@ -357,7 +350,7 @@ export class ReconciliationService {
     if (transferMatchingFee && (matchingTx?.tip ?? 0) > 0) {
       const matchingTip = matchingTx
         ? portfolioMovement.transfers.find(
-            (t) => !t["reconciled"] && isCloseTo(-t.amount, matchingTx?.tip),
+            (t) => !t["reconciled"] && isVeryCloseTo(-t.amount, matchingTx?.tip),
           )
         : undefined;
       if (matchingTip) {
