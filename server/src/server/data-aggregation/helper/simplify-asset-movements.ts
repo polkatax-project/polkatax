@@ -74,8 +74,7 @@ export const simplifyAssetMovementsSemanticId = (
         );
       } else {
         taxEvent.transfers = Object.values(transfers)
-          .map((semanticGroup) => Object.values(semanticGroup))
-          .flat();
+          .flatMap((semanticGroup) => Object.values(semanticGroup));
       }
     }
 

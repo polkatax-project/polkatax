@@ -2,7 +2,7 @@ import { Token } from "../model/token";
 import { Block } from "../model/block";
 import { RawStakingReward } from "../model/staking-reward";
 import { BigNumber } from "bignumber.js";
-import { Transaction } from "../model/transaction";
+import { Transaction, TransactionDetails } from "../model/transaction";
 import { RequestHelper } from "../../../../common/util/request.helper";
 import { RuntimeMetaData } from "../model/runtime-meta-data";
 import { EventDetails, SubscanEvent } from "../model/subscan-event";
@@ -276,7 +276,7 @@ export class SubscanApi {
   async fetchExtrinsicDetails(
     chainName: string,
     extrinsic_index: string,
-  ): Promise<Transaction> {
+  ): Promise<TransactionDetails> {
     const response = await this.request(
       `https://${chainName}.api.subscan.io/api/scan/extrinsic`,
       `post`,
@@ -284,11 +284,20 @@ export class SubscanApi {
         extrinsic_index,
       },
     );
+    const timestamp = response.data.block_timestamp * 1000;
     return response.data
       ? {
           ...response.data,
           timestamp: response.data.block_timestamp * 1000,
           block: response.data.block_num,
+          event: response.data.event.map((e) => ({
+            ...e,
+            extrinsic_index: `${e.event_index.split('-')[0]}-${e.extrinsic_idx}`,
+            timestamp,
+            params: e.params ? JSON.parse(e.params) : undefined,
+            original_event_index: `${e.event_index.split('-')[0]}-${e.event_idx}`,
+            event_index: `${e.event_index.split('-')[0]}-${e.event_idx}`
+          })),
         }
       : response.data;
   }

@@ -266,8 +266,7 @@ const rows = computed(() => {
       addresses: [
         ...new Set(
           data.transfers
-            .map((t) => [t.from, t.to])
-            .flat()
+            .flatMap((t) => [t.from, t.to])
             .filter((a) => !!a)
         ),
       ],

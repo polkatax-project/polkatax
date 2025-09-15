@@ -99,7 +99,7 @@ export class PortfolioMovementsService {
       );
     }
 
-    const transactionDetails = await this.subscanService.fetchExtrinsicDetails(request.chain.domain, transactions)
+    const transactionDetails = await this.subscanService.fetchExtrinsicDetails(request.chain.domain, transactions.map(t => t.extrinsic_index))
 
     return [
       transactionDetails,

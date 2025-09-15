@@ -8,7 +8,7 @@ export const lookupCoingeckoId = (symbol: string): string => {
   if (coingeckoIdFromNativeToken) {
     return coingeckoIdFromNativeToken.coingeckoId;
   } else {
-    return coingeckoTokens.find(
+    return coingeckoTokens.tokens.find(
       (t) => t.symbol.toLowerCase() === symbol.toLowerCase(),
     )?.id;
   }
