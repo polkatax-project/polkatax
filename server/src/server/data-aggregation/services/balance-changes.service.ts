@@ -93,14 +93,12 @@ export class BalanceChangesService {
         };
         portfolioMovements.push(movement);
       }
-      const canonicalToAddress = convertToCanonicalAddress(transfer.to)
-      const canonicalFromAddress = convertToCanonicalAddress(transfer.from)
+      const canonicalToAddress = convertToCanonicalAddress(transfer.to);
+      const canonicalFromAddress = convertToCanonicalAddress(transfer.from);
       movement.transfers.push({
         ...transfer,
         to: transfer.to ? canonicalToAddress : undefined,
-        from: transfer.from
-          ? canonicalFromAddress
-          : undefined,
+        from: transfer.from ? canonicalFromAddress : undefined,
         amount: isMyAccount(canonicalToAddress)
           ? Math.abs(transfer.amount)
           : -Math.abs(transfer.amount),
@@ -142,32 +140,40 @@ export class BalanceChangesService {
     });
   }
 
-  private async fetchMissingEventDetails(chain: string, events: SubscanEvent[], transactions: TransactionDetails[], moduleId: string, eventIds: string[]): Promise<EventDetails[]> {
+  private async fetchMissingEventDetails(
+    chain: string,
+    events: SubscanEvent[],
+    transactions: TransactionDetails[],
+    moduleId: string,
+    eventIds: string[],
+  ): Promise<EventDetails[]> {
     const relevantEventIdxs = new Set(
       events
-        .filter(e => e.module_id === moduleId && eventIds.includes(e.event_id))
-        .map(e => e.event_index)
+        .filter(
+          (e) => e.module_id === moduleId && eventIds.includes(e.event_id),
+        )
+        .map((e) => e.event_index),
     );
 
-    const eventDetailsFromTx = transactions
-      .flatMap(t => t.event.filter(e => relevantEventIdxs.has(e.event_index)));
+    const eventDetailsFromTx = transactions.flatMap((t) =>
+      t.event.filter((e) => relevantEventIdxs.has(e.event_index)),
+    );
 
     const eventIdxAlreadyAvailable = new Set(
-      eventDetailsFromTx.map(e => e.event_index)
+      eventDetailsFromTx.map((e) => e.event_index),
     );
 
     const eventsToFetch = events.filter(
-      e => relevantEventIdxs.has(e.event_index) && !eventIdxAlreadyAvailable.has(e.event_index)
+      (e) =>
+        relevantEventIdxs.has(e.event_index) &&
+        !eventIdxAlreadyAvailable.has(e.event_index),
     );
 
     const eventDetails: EventDetails[] =
-      await this.subscanService.fetchEventDetails(
-        chain,
-        eventsToFetch
-      );
-    eventDetails.forEach(e => eventDetailsFromTx.push(e))
-    return eventDetailsFromTx
-  } 
+      await this.subscanService.fetchEventDetails(chain, eventsToFetch);
+    eventDetails.forEach((e) => eventDetailsFromTx.push(e));
+    return eventDetailsFromTx;
+  }
 
   async fetchBalanceMovements(
     chain: { domain: string; token: string },
@@ -179,7 +185,13 @@ export class BalanceChangesService {
     logger.info(
       `Entry BalancesChangesService.fetchBalanceMovements for ${chain.domain} and ${address}. SubscanEvents: ${events.length}`,
     );
-    const eventDetails = await this.fetchMissingEventDetails(chain.domain, events, transactions, "balances", ["Withdraw", "Burned", "Deposit", "Minted"])
+    const eventDetails = await this.fetchMissingEventDetails(
+      chain.domain,
+      events,
+      transactions,
+      "balances",
+      ["Withdraw", "Burned", "Deposit", "Minted"],
+    );
     const nativeToken = await this.subscanService.fetchNativeToken(
       chain.domain,
     );
@@ -227,7 +239,13 @@ export class BalanceChangesService {
     logger.info(
       `Entry BalancesChangesService.fetchAssetMovements for ${chain.domain} and ${address}. SubscanEvents: ${events.length}`,
     );
-    const eventDetails = await this.fetchMissingEventDetails(chain.domain, events, transactions, "assets", ["Withdrawn", "Burned", "Deposited", "Issued"])
+    const eventDetails = await this.fetchMissingEventDetails(
+      chain.domain,
+      events,
+      transactions,
+      "assets",
+      ["Withdrawn", "Burned", "Deposited", "Issued"],
+    );
     if (eventDetails.length === 0) {
       return;
     }
@@ -295,7 +313,13 @@ export class BalanceChangesService {
     logger.info(
       `Entry BalancesChangesService.fetchForeignAssetMovements for ${chain.domain} and ${address}. SubscanEvents: ${events.length}`,
     );
-    const eventDetails = await this.fetchMissingEventDetails(chain.domain, events, transactions, "foreignassets", ["Withdrawn", "Burned", "Deposited", "Issued"])
+    const eventDetails = await this.fetchMissingEventDetails(
+      chain.domain,
+      events,
+      transactions,
+      "foreignassets",
+      ["Withdrawn", "Burned", "Deposited", "Issued"],
+    );
     if (eventDetails.length === 0) {
       return;
     }
@@ -373,7 +397,13 @@ export class BalanceChangesService {
     logger.info(
       `Entry BalancesChangesService.fetchTokenMovements for ${chain.domain} and ${address}. SubscanEvents: ${events.length}`,
     );
-    const eventDetails = await this.fetchMissingEventDetails(chain.domain, events, transactions, "tokens", ["Withdrawn", "Deposited"])
+    const eventDetails = await this.fetchMissingEventDetails(
+      chain.domain,
+      events,
+      transactions,
+      "tokens",
+      ["Withdrawn", "Deposited"],
+    );
     if (eventDetails.length === 0) {
       return;
     }

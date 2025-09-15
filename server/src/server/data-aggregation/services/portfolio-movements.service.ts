@@ -12,7 +12,9 @@ import { PortfolioMovement } from "../model/portfolio-movement";
 import { SubscanEvent } from "../../blockchain/substrate/model/subscan-event";
 import { Transfer } from "../../blockchain/substrate/model/raw-transfer";
 import { StakingReward } from "../../blockchain/substrate/model/staking-reward";
-import { Transaction, TransactionDetails } from "../../blockchain/substrate/model/transaction";
+import {
+  TransactionDetails,
+} from "../../blockchain/substrate/model/transaction";
 import { StakingRewardsAggregatorService } from "./staking-rewards-aggregator.service";
 import { AddFiatValuesToTaxableEventsService } from "./add-fiat-values-to-taxable-events.service";
 import { DataPlatformLiquidStakingService } from "../../data-platform-api/data-platform-liquidstaking.service";
@@ -99,7 +101,10 @@ export class PortfolioMovementsService {
       );
     }
 
-    const transactionDetails = await this.subscanService.fetchExtrinsicDetails(request.chain.domain, transactions.map(t => t.extrinsic_index))
+    const transactionDetails = await this.subscanService.fetchExtrinsicDetails(
+      request.chain.domain,
+      transactions.map((t) => t.extrinsic_index),
+    );
 
     return [
       transactionDetails,
@@ -159,6 +164,7 @@ export class PortfolioMovementsService {
 
     await this.reconciliationService.reconcile(
       request.chain,
+      request.address,
       portfolioMovements,
       transactions,
       specialTransfers as EventDerivedTransfer[],

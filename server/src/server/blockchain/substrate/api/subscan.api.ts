@@ -293,8 +293,8 @@ export class SubscanApi {
             extrinsic_index: response.data.extrinsic_index,
             timestamp,
             params: e.params ? JSON.parse(e.params) : undefined,
-            original_event_index: `${e.event_index.split('-')[0]}-${e.event_idx}`,
-            event_index: `${e.event_index.split('-')[0]}-${e.event_idx}`
+            original_event_index: `${e.event_index.split("-")[0]}-${e.event_idx}`,
+            event_index: `${e.event_index.split("-")[0]}-${e.event_idx}`,
           })),
         }
       : response.data;
@@ -479,20 +479,20 @@ export class SubscanApi {
 
   private mapExtrinsicData(entry: any): Transaction {
     return {
-        id: entry.id,
-        hash: entry.extrinsic_hash,
-        from: entry.account_display.address,
-        to: entry.to,
-        timestamp: entry.block_timestamp * 1000, // sec -> ms
-        block: entry.block_num,
-        callModule: entry.call_module,
-        callModuleFunction: entry.call_module_function,
-        amount: entry.value ? Number(entry.value) : 0,
-        extrinsic_index: entry.extrinsic_index,
-        fee: entry.fee ? Number(entry.fee) : undefined,
-        feeUsed: entry.fee_used ? Number(entry.fee_used) : undefined,
-        tip: entry.fee_used ? Number(entry.tip) : undefined,
-      }
+      id: entry.id,
+      hash: entry.extrinsic_hash,
+      from: entry.account_display.address,
+      to: entry.to,
+      timestamp: entry.block_timestamp * 1000, // sec -> ms
+      block: entry.block_num,
+      callModule: entry.call_module,
+      callModuleFunction: entry.call_module_function,
+      amount: entry.value ? Number(entry.value) : 0,
+      extrinsic_index: entry.extrinsic_index,
+      fee: entry.fee ? Number(entry.fee) : undefined,
+      feeUsed: entry.fee_used ? Number(entry.fee_used) : undefined,
+      tip: entry.fee_used ? Number(entry.tip) : undefined,
+    };
   }
 
   async fetchExtrinsics(
@@ -518,7 +518,7 @@ export class SubscanApi {
       responseBody.data?.list ||
       []
     ).map((entry) => {
-      return this.mapExtrinsicData(entry)
+      return this.mapExtrinsicData(entry);
     });
     return {
       list: resultList,
