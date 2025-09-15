@@ -173,10 +173,6 @@
     "wss://kusama.api.integritee.network",
     "wss://integritee-kusama.api.onfinality.io/public-ws"
   ],
-  "karura": [
-    "wss://karura-rpc.dwellir.com",
-    "wss://karura.api.onfinality.io/public-ws"
-  ],
   "quartz": [
     "wss://quartz-rpc.dwellir.com",
     "wss://ws-quartz.unique.network",

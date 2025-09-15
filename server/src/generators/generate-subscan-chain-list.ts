@@ -27,7 +27,6 @@ const knownChainProperties = [
   { domain: "polkadot", isRelay: true, paraId: 0 },
   { domain: "kusama", isRelay: true, paraId: 0 },
   { domain: "enjin", isRelay: true, paraId: 0 },
-  { domain: "phala", excluded: true },
   { domain: "sora", tokenPallet: false },
   { domain: "centrifuge", tokenPallet: false },
   { domain: "altair", tokenPallet: false },
