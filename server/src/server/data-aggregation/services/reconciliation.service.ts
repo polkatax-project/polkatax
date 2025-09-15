@@ -101,7 +101,7 @@ export class ReconciliationService {
       );
       this.matchIncomingXcmTransfers(portfolioMovement, xcmTransfers);
       this.attachEvents(portfolioMovement, indexedEvents);
-      this.handlePossibleXcmFees(portfolioMovement);
+      // this.handlePossibleXcmFees(portfolioMovement);
     }
 
     /**
@@ -139,9 +139,11 @@ export class ReconciliationService {
           portfolioMovement.xcmFeeFiat = portfolioMovement.xcmFee * priceOnDay;
           portfolioMovement.xcmFeeTokenUniqueId =
             unlabelledTransfers[0].asset_unique_id;
+          console.log(portfolioMovement.transfers.length)
           portfolioMovement.transfers = portfolioMovement.transfers.filter(
             (t) => t !== unlabelledTransfers[0],
           );
+          console.log(portfolioMovement.transfers.length)
         }
       }
     }

@@ -287,12 +287,10 @@ export class SubscanApi {
     const timestamp = response.data.block_timestamp * 1000;
     return response.data
       ? {
-          ...response.data,
-          timestamp: response.data.block_timestamp * 1000,
-          block: response.data.block_num,
+          ...this.mapExtrinsicData(response.data),
           event: response.data.event.map((e) => ({
             ...e,
-            extrinsic_index: `${e.event_index.split('-')[0]}-${e.extrinsic_idx}`,
+            extrinsic_index: response.data.extrinsic_index,
             timestamp,
             params: e.params ? JSON.parse(e.params) : undefined,
             original_event_index: `${e.event_index.split('-')[0]}-${e.event_idx}`,
@@ -479,45 +477,8 @@ export class SubscanApi {
     };
   }
 
-  async fetchExtrinsics(
-    chainName: string,
-    address: string,
-    page: number = 0,
-    minDate: number,
-    block_range?: string,
-    evm = false,
-  ): Promise<{ list: Transaction[]; hasNext: boolean }> {
-    const endpoint = evm
-      ? "api/scan/evm/v2/transactions"
-      : "api/v2/scan/extrinsics";
-    const responseBody = await this.request(
-      `https://${chainName}.api.subscan.io/${endpoint}`,
-      `post`,
-      {
-        row: 100,
-        page,
-        address,
-        block_range,
-      },
-    );
-    const resultList = (
-      responseBody.data?.extrinsics ||
-      responseBody.data?.list ||
-      []
-    ).map((entry) => {
-      if (evm) {
-        entry = {
-          ...entry,
-          account_display: {
-            address: entry.from,
-          },
-          callModule: entry.contract || entry.contract_name,
-          callModuleFunction: entry.method,
-          extrinsic_hash: entry.hash,
-          value: entry.value,
-        };
-      }
-      return {
+  private mapExtrinsicData(entry: any): Transaction {
+    return {
         id: entry.id,
         hash: entry.extrinsic_hash,
         from: entry.account_display.address,
@@ -531,7 +492,33 @@ export class SubscanApi {
         fee: entry.fee ? Number(entry.fee) : undefined,
         feeUsed: entry.fee_used ? Number(entry.fee_used) : undefined,
         tip: entry.fee_used ? Number(entry.tip) : undefined,
-      };
+      }
+  }
+
+  async fetchExtrinsics(
+    chainName: string,
+    address: string,
+    page: number = 0,
+    minDate: number,
+    block_range?: string,
+    evm = false,
+  ): Promise<{ list: Transaction[]; hasNext: boolean }> {
+    const responseBody = await this.request(
+      `https://${chainName}.api.subscan.io/api/v2/scan/extrinsics`,
+      `post`,
+      {
+        row: 100,
+        page,
+        address,
+        block_range,
+      },
+    );
+    const resultList = (
+      responseBody.data?.extrinsics ||
+      responseBody.data?.list ||
+      []
+    ).map((entry) => {
+      return this.mapExtrinsicData(entry)
     });
     return {
       list: resultList,
