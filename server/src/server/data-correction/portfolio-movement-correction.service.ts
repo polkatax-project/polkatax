@@ -293,7 +293,9 @@ export class PortfolioMovementCorrectionService {
 
     try {
       if (portfolioMovements.length === 0) {
-        logger.info(`Exit fixErrorsAndMissingData. No portfolio movements`);
+        logger.info(
+          `Exit fixErrorsAndMissingData. No portfolio movements for ${chainInfo.domain}, ${address}`,
+        );
         return [];
       }
 

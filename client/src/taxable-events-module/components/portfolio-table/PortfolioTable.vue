@@ -104,7 +104,7 @@ const columns = computed(() => [
     label: 'Fees',
     field: (row: Deviation) =>
       `${formatCryptoAmount(row.fees)}` +
-      (row.fees > 0
+      (row.feesFiat > 0
         ? ` (${formatCurrency(row.feesFiat, taxData.value?.currency ?? 'USD')})`
         : ''),
     sortable: false,

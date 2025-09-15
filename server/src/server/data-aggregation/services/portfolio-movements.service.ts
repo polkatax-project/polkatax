@@ -12,9 +12,7 @@ import { PortfolioMovement } from "../model/portfolio-movement";
 import { SubscanEvent } from "../../blockchain/substrate/model/subscan-event";
 import { Transfer } from "../../blockchain/substrate/model/raw-transfer";
 import { StakingReward } from "../../blockchain/substrate/model/staking-reward";
-import {
-  TransactionDetails,
-} from "../../blockchain/substrate/model/transaction";
+import { TransactionDetails } from "../../blockchain/substrate/model/transaction";
 import { StakingRewardsAggregatorService } from "./staking-rewards-aggregator.service";
 import { AddFiatValuesToTaxableEventsService } from "./add-fiat-values-to-taxable-events.service";
 import { DataPlatformLiquidStakingService } from "../../data-platform-api/data-platform-liquidstaking.service";

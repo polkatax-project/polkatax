@@ -305,58 +305,90 @@ export class ReconciliationService {
   matchTransactionFee(
     portfolioMovement: PortfolioMovement,
     tokens: Asset[],
-    indexedTx: Record<string, Transaction>,
+    indexedTx: Record<string, TransactionDetails>,
   ) {
     /**
      * Using transaction fee information
      */
     const matchingTx = indexedTx[portfolioMovement.extrinsic_index];
-    portfolioMovement.callModule = matchingTx?.callModule;
-    portfolioMovement.callModuleFunction = matchingTx?.callModuleFunction;
+    if (!matchingTx) {
+      return;
+    }
+    portfolioMovement.callModule = matchingTx.callModule;
+    portfolioMovement.callModuleFunction = matchingTx.callModuleFunction;
     const transferMatchingFee = matchingTx
       ? portfolioMovement.transfers.find(
           (t) =>
             !t["reconciled"] &&
             isVeryCloseTo(
               -t.amount * 10 ** getDecimals(t.asset_unique_id, tokens),
-              matchingTx?.fee,
+              matchingTx.fee,
             ),
         )
       : undefined;
     if (transferMatchingFee) {
       const decimals = getDecimals(transferMatchingFee.asset_unique_id, tokens);
-      portfolioMovement.feeUsed = matchingTx?.feeUsed / 10 ** decimals;
-      portfolioMovement.tip = matchingTx?.tip / 10 ** decimals;
+      portfolioMovement.feeUsed = matchingTx.feeUsed / 10 ** decimals;
+      portfolioMovement.tip = matchingTx.tip / 10 ** decimals;
       portfolioMovement.feeTokenSymbol = transferMatchingFee.symbol;
       portfolioMovement.feeTokenUniqueId = transferMatchingFee.asset_unique_id;
       portfolioMovement.transfers = portfolioMovement.transfers.filter(
         (t) => t !== transferMatchingFee,
       );
+    } else {
+      /**
+       * Fee event is event with lowest idx.
+       */
+      let feePaymentEvent = matchingTx.event[0];
+      matchingTx.event.forEach((e) => {
+        if (e.event_idx < feePaymentEvent.event_idx) {
+          feePaymentEvent = e;
+        }
+      });
+      if (
+        (feePaymentEvent.module_id === "balances" &&
+          feePaymentEvent.event_id === "Withdraw") ||
+        (feePaymentEvent.module_id === "tokens" &&
+          feePaymentEvent.event_id === "Withdrawn") ||
+        (feePaymentEvent.module_id === "assets" &&
+          feePaymentEvent.event_id === "Withdrawn") ||
+        (feePaymentEvent.module_id === "foreignassets" &&
+          feePaymentEvent.event_id === "Withdrawn")
+      ) {
+        const feePayment = portfolioMovement.transfers.find(
+          (t) => t.event_index === feePaymentEvent.event_index,
+        );
+        portfolioMovement.feeUsed = -feePayment.amount;
+        portfolioMovement.feeTokenSymbol = feePayment.symbol;
+        portfolioMovement.feeTokenUniqueId = feePayment.asset_unique_id;
+        portfolioMovement.transfers = portfolioMovement.transfers.filter(
+          (t) => t !== feePayment,
+        );
+      } else {
+        logger.warn(
+          `First event of tx is not withdraw event! ${portfolioMovement.extrinsic_index}`,
+        );
+      }
     }
 
-    const transferMatchingFeeRepayment = matchingTx
-      ? portfolioMovement.transfers.find(
-          (t) =>
-            !t["reconciled"] &&
-            isVeryCloseTo(
-              t.amount * 10 ** getDecimals(t.asset_unique_id, tokens),
-              matchingTx?.fee - matchingTx?.feeUsed,
-            ),
-        )
-      : undefined;
+    const transferMatchingFeeRepayment = portfolioMovement.transfers.find(
+      (t) =>
+        !t["reconciled"] &&
+        isVeryCloseTo(
+          t.amount * 10 ** getDecimals(t.asset_unique_id, tokens),
+          matchingTx?.fee - matchingTx?.feeUsed,
+        ),
+    );
     if (transferMatchingFeeRepayment) {
       portfolioMovement.transfers = portfolioMovement.transfers.filter(
         (t) => t !== transferMatchingFeeRepayment,
       );
     }
 
-    if (transferMatchingFee && (matchingTx?.tip ?? 0) > 0) {
-      const matchingTip = matchingTx
-        ? portfolioMovement.transfers.find(
-            (t) =>
-              !t["reconciled"] && isVeryCloseTo(-t.amount, matchingTx?.tip),
-          )
-        : undefined;
+    if (transferMatchingFee && (matchingTx.tip ?? 0) > 0) {
+      const matchingTip = portfolioMovement.transfers.find(
+        (t) => !t["reconciled"] && isVeryCloseTo(-t.amount, matchingTx.tip),
+      );
       if (matchingTip) {
         portfolioMovement.transfers = portfolioMovement.transfers.filter(
           (t) => t !== matchingTip,

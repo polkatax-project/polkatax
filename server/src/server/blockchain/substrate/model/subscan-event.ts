@@ -13,6 +13,7 @@ export interface SubscanEvent {
 export interface EventDetails {
   id: number;
   extrinsic_idx: number;
+  event_idx: number;
   event_index: string;
   block_num: number;
   module_id: string;
