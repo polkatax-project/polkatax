@@ -79,6 +79,19 @@ export class SubscanService {
     return result;
   }
 
+  async fetchExtrinsicDetails(chainName: string, extrinsic_indices: string[]) {
+    logger.info(
+      `Enter fetchExtrinsicDetails for ${chainName} and ${extrinsic_indices.length} extrinsics`,
+    );
+    const results = await Promise.all(
+      extrinsic_indices.map((id) =>
+        this.subscanApi.fetchExtrinsicDetails(chainName, id),
+      ),
+    );
+    logger.info(`Exit fetchExtrinsicDetails`);
+    return results;
+  }
+
   private async iterateOverPagesParallel<T extends { id: any }>(
     dataType: string,
     domain: string,

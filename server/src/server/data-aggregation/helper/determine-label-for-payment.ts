@@ -440,8 +440,7 @@ const getEventClassificationRules = (
 const getCallModuleClassificationRules = (chain: string): CallModule[] => {
   return callModuleClassifications
     .filter((e) => e.chains.includes(chain) || e.chains.includes("*"))
-    .map((e) => e.callModules)
-    .flat();
+    .flatMap((e) => e.callModules);
 };
 
 export const determineLabelForPayment = (

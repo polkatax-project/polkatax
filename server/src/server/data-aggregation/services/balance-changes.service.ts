@@ -6,6 +6,7 @@ import {
   EventDetails,
   SubscanEvent,
 } from "../../blockchain/substrate/model/subscan-event";
+import { TransactionDetails } from "../../blockchain/substrate/model/transaction";
 import { logger } from "../../logger/logger";
 import { FetchPortfolioMovementsRequest } from "../model/fetch-portfolio-movements.request";
 import { PortfolioMovement } from "../model/portfolio-movement";
@@ -18,6 +19,7 @@ export class BalanceChangesService {
   async fetchAllBalanceChanges(
     request: FetchPortfolioMovementsRequest,
     subscanEvents: SubscanEvent[],
+    transactions: TransactionDetails[],
     isMyAccount: (address: string) => boolean,
   ): Promise<PortfolioMovement[]> {
     logger.info(
@@ -28,24 +30,28 @@ export class BalanceChangesService {
       request.chain,
       request.address,
       subscanEvents,
+      transactions,
       portfolioMovements,
     );
     await this.fetchAssetMovements(
       request.chain,
       request.address,
       subscanEvents,
+      transactions,
       portfolioMovements,
     );
     await this.fetchForeignAssetMovements(
       request.chain,
       request.address,
       subscanEvents,
+      transactions,
       portfolioMovements,
     );
     await this.fetchTokenMovements(
       request.chain,
       request.address,
       subscanEvents,
+      transactions,
       portfolioMovements,
     );
 
@@ -87,13 +93,13 @@ export class BalanceChangesService {
         };
         portfolioMovements.push(movement);
       }
+      const canonicalToAddress = convertToCanonicalAddress(transfer.to);
+      const canonicalFromAddress = convertToCanonicalAddress(transfer.from);
       movement.transfers.push({
         ...transfer,
-        to: transfer.to ? convertToCanonicalAddress(transfer.to) : undefined,
-        from: transfer.from
-          ? convertToCanonicalAddress(transfer.from)
-          : undefined,
-        amount: isMyAccount(transfer.to)
+        to: transfer.to ? canonicalToAddress : undefined,
+        from: transfer.from ? canonicalFromAddress : undefined,
+        amount: isMyAccount(canonicalToAddress)
           ? Math.abs(transfer.amount)
           : -Math.abs(transfer.amount),
       });
@@ -134,23 +140,58 @@ export class BalanceChangesService {
     });
   }
 
+  private async fetchMissingEventDetails(
+    chain: string,
+    events: SubscanEvent[],
+    transactions: TransactionDetails[],
+    moduleId: string,
+    eventIds: string[],
+  ): Promise<EventDetails[]> {
+    const relevantEventIdxs = new Set(
+      events
+        .filter(
+          (e) => e.module_id === moduleId && eventIds.includes(e.event_id),
+        )
+        .map((e) => e.event_index),
+    );
+
+    const eventDetailsFromTx = transactions.flatMap((t) =>
+      t.event.filter((e) => relevantEventIdxs.has(e.event_index)),
+    );
+
+    const eventIdxAlreadyAvailable = new Set(
+      eventDetailsFromTx.map((e) => e.event_index),
+    );
+
+    const eventsToFetch = events.filter(
+      (e) =>
+        relevantEventIdxs.has(e.event_index) &&
+        !eventIdxAlreadyAvailable.has(e.event_index),
+    );
+
+    const eventDetails: EventDetails[] =
+      await this.subscanService.fetchEventDetails(chain, eventsToFetch);
+    eventDetails.forEach((e) => eventDetailsFromTx.push(e));
+    return eventDetailsFromTx;
+  }
+
   async fetchBalanceMovements(
     chain: { domain: string; token: string },
     address: string,
     events: SubscanEvent[],
+    transactions: TransactionDetails[],
     portfolioMovements: PortfolioMovement[],
   ): Promise<void> {
     logger.info(
       `Entry BalancesChangesService.fetchBalanceMovements for ${chain.domain} and ${address}. SubscanEvents: ${events.length}`,
     );
-    const eventIds = ["Withdraw", "Burned", "Deposit", "Minted"];
-    const eventDetails: EventDetails[] =
-      await this.subscanService.fetchEventDetails(
-        chain.domain,
-        events.filter(
-          (e) => e.module_id === "balances" && eventIds.includes(e.event_id),
-        ),
-      );
+    const eventDetails = await this.fetchMissingEventDetails(
+      chain.domain,
+      events,
+      transactions,
+      "balances",
+      ["Withdraw", "Burned", "Deposit", "Minted"],
+    );
     const nativeToken = await this.subscanService.fetchNativeToken(
       chain.domain,
     );
@@ -192,20 +233,20 @@ export class BalanceChangesService {
     chain: { domain: string; token: string },
     address: string,
     events: SubscanEvent[],
+    transactions: TransactionDetails[],
     portfolioMovements: PortfolioMovement[],
   ): Promise<void> {
     logger.info(
       `Entry BalancesChangesService.fetchAssetMovements for ${chain.domain} and ${address}. SubscanEvents: ${events.length}`,
     );
-    const eventIds = ["Withdrawn", "Burned", "Deposited", "Issued"];
-    const assetEventDetails: EventDetails[] =
-      await this.subscanService.fetchEventDetails(
-        chain.domain,
-        events.filter(
-          (e) => e.module_id === "assets" && eventIds.includes(e.event_id),
-        ),
-      );
-    if (assetEventDetails.length === 0) {
+    const eventDetails = await this.fetchMissingEventDetails(
+      chain.domain,
+      events,
+      transactions,
+      "assets",
+      ["Withdrawn", "Burned", "Deposited", "Issued"],
+    );
+    if (eventDetails.length === 0) {
       return;
     }
     const assets = await this.subscanService.scanAssets(chain.domain);
@@ -213,7 +254,7 @@ export class BalanceChangesService {
       logger.warn(`fetchAssetMovements: No assets found for ${chain.domain}.`);
       return; // Moonbeam has assets events but no assets endpoint.
     }
-    for (const event of assetEventDetails) {
+    for (const event of eventDetails) {
       const assetId = getPropertyValue("asset_id", event);
       const asset = assets.find((a) => a.asset_id == assetId);
       let amount = 0;
@@ -258,7 +299,7 @@ export class BalanceChangesService {
       );
     }
     logger.info(
-      `Exit BalancesChangesService.fetchAssetMovements for ${chain.domain} and ${address} with ${assetEventDetails.length} entries`,
+      `Exit BalancesChangesService.fetchAssetMovements for ${chain.domain} and ${address} with ${eventDetails.length} entries`,
     );
   }
 
@@ -266,28 +307,27 @@ export class BalanceChangesService {
     chain: { domain: string; token: string },
     address: string,
     events: SubscanEvent[],
+    transactions: TransactionDetails[],
     portfolioMovements: PortfolioMovement[],
   ): Promise<void> {
     logger.info(
       `Entry BalancesChangesService.fetchForeignAssetMovements for ${chain.domain} and ${address}. SubscanEvents: ${events.length}`,
     );
-    const eventIds = ["Withdrawn", "Burned", "Deposited", "Issued"];
-    const foreignAssetEventDetails: EventDetails[] =
-      await this.subscanService.fetchEventDetails(
-        chain.domain,
-        events.filter(
-          (e) =>
-            e.module_id === "foreignassets" && eventIds.includes(e.event_id),
-        ),
-      );
-    if (foreignAssetEventDetails.length === 0) {
+    const eventDetails = await this.fetchMissingEventDetails(
+      chain.domain,
+      events,
+      transactions,
+      "foreignassets",
+      ["Withdrawn", "Burned", "Deposited", "Issued"],
+    );
+    if (eventDetails.length === 0) {
       return;
     }
     const foreignAssets = await this.subscanService.fetchForeignAssets(
       chain.domain,
     );
 
-    for (const event of foreignAssetEventDetails) {
+    for (const event of eventDetails) {
       const assetId: MultiLocation = getPropertyValue("asset_id", event);
       let foreignAsset = foreignAssets.find((a) =>
         isEqual(a.multi_location, assetId),
@@ -343,7 +383,7 @@ export class BalanceChangesService {
       );
     }
     logger.info(
-      `Exit BalancesChangesService.fetchForeignAssetMovements for ${chain.domain} and ${address} with ${foreignAssetEventDetails.length} entries`,
+      `Exit BalancesChangesService.fetchForeignAssetMovements for ${chain.domain} and ${address} with ${eventDetails.length} entries`,
     );
   }
 
@@ -351,24 +391,24 @@ export class BalanceChangesService {
     chain: { domain: string; token: string },
     address: string,
     events: SubscanEvent[],
+    transactions: TransactionDetails[],
     portfolioMovements: PortfolioMovement[],
   ): Promise<void> {
     logger.info(
       `Entry BalancesChangesService.fetchTokenMovements for ${chain.domain} and ${address}. SubscanEvents: ${events.length}`,
     );
-    const eventIds = ["Withdrawn", "Deposited"];
-    const tokenEventDetails: EventDetails[] =
-      await this.subscanService.fetchEventDetails(
-        chain.domain,
-        events.filter(
-          (e) => e.module_id === "tokens" && eventIds.includes(e.event_id),
-        ),
-      );
-    if (tokenEventDetails.length === 0) {
+    const eventDetails = await this.fetchMissingEventDetails(
+      chain.domain,
+      events,
+      transactions,
+      "tokens",
+      ["Withdrawn", "Deposited"],
+    );
+    if (eventDetails.length === 0) {
       return;
     }
     const tokens = await this.subscanService.scanTokens(chain.domain);
-    for (const event of tokenEventDetails) {
+    for (const event of eventDetails) {
       const token_id = getPropertyValue("currency_id", event);
       let token = tokens.find(
         (t) => t.token_id === token_id || isEqual(t.token_id, token_id),
@@ -407,7 +447,7 @@ export class BalanceChangesService {
       );
     }
     logger.info(
-      `Exit BalancesChangesService.fetchTokenMovements for ${chain.domain} and ${address} with ${tokenEventDetails.length} entries`,
+      `Exit BalancesChangesService.fetchTokenMovements for ${chain.domain} and ${address} with ${eventDetails.length} entries`,
     );
   }
 }

@@ -1,6 +1,9 @@
 import { SubscanService } from "../../blockchain/substrate/api/subscan.service";
 import { PortfolioMovement } from "../model/portfolio-movement";
-import { Transaction } from "../../blockchain/substrate/model/transaction";
+import {
+  Transaction,
+  TransactionDetails,
+} from "../../blockchain/substrate/model/transaction";
 import { EventDerivedTransfer } from "../model/event-derived-transfer";
 import {
   XcmAssetMovement,
@@ -10,9 +13,7 @@ import { Asset } from "../../blockchain/substrate/model/asset";
 import { SubscanEvent } from "../../blockchain/substrate/model/subscan-event";
 import { StakingReward } from "../../blockchain/substrate/model/staking-reward";
 import { logger } from "../../logger/logger";
-import { CryptoCurrencyPricesService } from "./crypto-currency-prices.service";
-import { lookupCoingeckoId } from "../helper/lookup-coingecko-id";
-import { formatDate } from "../../../common/util/date-utils";
+import { extractXcmFees } from "./special-event-processing/extract-xcm-fees";
 
 const getDecimals = (assetUniqueId: string, tokens: Asset[]) => {
   return tokens.find((t) => t.unique_id === assetUniqueId)?.decimals;
@@ -26,15 +27,13 @@ const isVeryCloseTo = (a: number, b: number) => {
 };
 
 export class ReconciliationService {
-  constructor(
-    private subscanService: SubscanService,
-    private cryptoCurrencyPricesService: CryptoCurrencyPricesService,
-  ) {}
+  constructor(private subscanService: SubscanService) {}
 
   async reconcile(
     chain: { domain: string; token: string },
+    address: string,
     portfolioMovements: PortfolioMovement[],
-    transactions: Transaction[],
+    transactions: TransactionDetails[],
     transfers: EventDerivedTransfer[],
     xcmTransfers: XcmTransfer[],
     stakingRewards: StakingReward[],
@@ -52,7 +51,7 @@ export class ReconciliationService {
       });
     }
 
-    const indexedTx: Record<string, Transaction> = {};
+    const indexedTx: Record<string, TransactionDetails> = {};
     transactions.forEach((tx) => {
       indexedTx[tx.extrinsic_index] = tx;
     });
@@ -101,7 +100,7 @@ export class ReconciliationService {
       );
       this.matchIncomingXcmTransfers(portfolioMovement, xcmTransfers);
       this.attachEvents(portfolioMovement, indexedEvents);
-      this.handlePossibleXcmFees(portfolioMovement);
+      this.handleXcmFees(portfolioMovement, address, indexedTx, tokens);
     }
 
     /**
@@ -114,35 +113,39 @@ export class ReconciliationService {
     });
   }
 
-  async handlePossibleXcmFees(portfolioMovement: PortfolioMovement) {
-    /**
-     * TODO: find a way to obtain the actual fees!
-     * e.g. https://assethub-polkadot.subscan.io/event?module=polkadotxcm&event_id=FeesPaid
-     */
-    if (portfolioMovement.label === "XCM transfer") {
-      const unlabelledTransfers = portfolioMovement.transfers.filter(
-        (t) => !t.label && t.amount < 0,
+  async handleXcmFees(
+    portfolioMovement: PortfolioMovement,
+    address: string,
+    indexedTx: Record<string, TransactionDetails>,
+    tokens: Asset[],
+  ) {
+    const tx = indexedTx[portfolioMovement.extrinsic_index];
+    if (!tx) {
+      return;
+    }
+    const fees = extractXcmFees(
+      address,
+      indexedTx[portfolioMovement.extrinsic_index],
+    );
+    if (fees > 0) {
+      if (portfolioMovement.label !== "XCM transfer") {
+        logger.warn(
+          `${portfolioMovement.extrinsic_index} has XCM fee but is not labelled as XCM transfer`,
+        );
+      }
+      const xcmFeeTransfer = portfolioMovement.transfers.find((t) =>
+        isVeryCloseTo(
+          -t.amount * 10 ** getDecimals(t.asset_unique_id, tokens),
+          fees,
+        ),
       );
-      if (unlabelledTransfers.length === 1) {
-        const coingeckoId = lookupCoingeckoId(unlabelledTransfers[0].symbol);
-        const prices =
-          await this.cryptoCurrencyPricesService.fetchHistoricalPrices(
-            coingeckoId,
-            "USD",
-          );
-        const priceOnDay =
-          prices.quotes[formatDate(new Date(portfolioMovement.timestamp))];
-        if (priceOnDay && priceOnDay * -unlabelledTransfers[0].amount < 2) {
-          // 2 USD max fee assumed.
-          portfolioMovement.xcmFee = Math.abs(unlabelledTransfers[0].amount);
-          portfolioMovement.xcmFeeTokenSymbol = unlabelledTransfers[0].symbol;
-          portfolioMovement.xcmFeeFiat = portfolioMovement.xcmFee * priceOnDay;
-          portfolioMovement.xcmFeeTokenUniqueId =
-            unlabelledTransfers[0].asset_unique_id;
-          portfolioMovement.transfers = portfolioMovement.transfers.filter(
-            (t) => t !== unlabelledTransfers[0],
-          );
-        }
+      if (xcmFeeTransfer) {
+        portfolioMovement.xcmFee = Math.abs(xcmFeeTransfer.amount);
+        portfolioMovement.xcmFeeTokenSymbol = xcmFeeTransfer.symbol;
+        portfolioMovement.xcmFeeTokenUniqueId = xcmFeeTransfer.asset_unique_id;
+        portfolioMovement.transfers = portfolioMovement.transfers.filter(
+          (t) => t !== xcmFeeTransfer,
+        );
       }
     }
   }

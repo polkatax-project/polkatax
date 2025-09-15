@@ -1,3 +1,5 @@
+import { EventDetails } from "./subscan-event";
+
 export interface Transaction {
   id: string;
   hash: string;
@@ -12,4 +14,8 @@ export interface Transaction {
   fee?: number;
   tip?: number;
   extrinsic_index: string;
+}
+
+export interface TransactionDetails extends Transaction {
+  event: EventDetails[];
 }

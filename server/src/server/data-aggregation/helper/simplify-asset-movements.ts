@@ -73,9 +73,9 @@ export const simplifyAssetMovementsSemanticId = (
           newPortfolioMovements.push(p),
         );
       } else {
-        taxEvent.transfers = Object.values(transfers)
-          .map((semanticGroup) => Object.values(semanticGroup))
-          .flat();
+        taxEvent.transfers = Object.values(transfers).flatMap((semanticGroup) =>
+          Object.values(semanticGroup),
+        );
       }
     }
 

@@ -2,7 +2,7 @@ import { Token } from "../model/token";
 import { Block } from "../model/block";
 import { RawStakingReward } from "../model/staking-reward";
 import { BigNumber } from "bignumber.js";
-import { Transaction } from "../model/transaction";
+import { Transaction, TransactionDetails } from "../model/transaction";
 import { RequestHelper } from "../../../../common/util/request.helper";
 import { RuntimeMetaData } from "../model/runtime-meta-data";
 import { EventDetails, SubscanEvent } from "../model/subscan-event";
@@ -276,7 +276,7 @@ export class SubscanApi {
   async fetchExtrinsicDetails(
     chainName: string,
     extrinsic_index: string,
-  ): Promise<Transaction> {
+  ): Promise<TransactionDetails> {
     const response = await this.request(
       `https://${chainName}.api.subscan.io/api/scan/extrinsic`,
       `post`,
@@ -284,11 +284,18 @@ export class SubscanApi {
         extrinsic_index,
       },
     );
+    const timestamp = response.data.block_timestamp * 1000;
     return response.data
       ? {
-          ...response.data,
-          timestamp: response.data.block_timestamp * 1000,
-          block: response.data.block_num,
+          ...this.mapExtrinsicData(response.data),
+          event: response.data.event.map((e) => ({
+            ...e,
+            extrinsic_index: response.data.extrinsic_index,
+            timestamp,
+            params: e.params ? JSON.parse(e.params) : undefined,
+            original_event_index: `${e.event_index.split("-")[0]}-${e.event_idx}`,
+            event_index: `${e.event_index.split("-")[0]}-${e.event_idx}`,
+          })),
         }
       : response.data;
   }
@@ -470,6 +477,24 @@ export class SubscanApi {
     };
   }
 
+  private mapExtrinsicData(entry: any): Transaction {
+    return {
+      id: entry.id,
+      hash: entry.extrinsic_hash,
+      from: entry.account_display.address,
+      to: entry.to,
+      timestamp: entry.block_timestamp * 1000, // sec -> ms
+      block: entry.block_num,
+      callModule: entry.call_module,
+      callModuleFunction: entry.call_module_function,
+      amount: entry.value ? Number(entry.value) : 0,
+      extrinsic_index: entry.extrinsic_index,
+      fee: entry.fee ? Number(entry.fee) : undefined,
+      feeUsed: entry.fee_used ? Number(entry.fee_used) : undefined,
+      tip: entry.fee_used ? Number(entry.tip) : undefined,
+    };
+  }
+
   async fetchExtrinsics(
     chainName: string,
     address: string,
@@ -478,11 +503,8 @@ export class SubscanApi {
     block_range?: string,
     evm = false,
   ): Promise<{ list: Transaction[]; hasNext: boolean }> {
-    const endpoint = evm
-      ? "api/scan/evm/v2/transactions"
-      : "api/v2/scan/extrinsics";
     const responseBody = await this.request(
-      `https://${chainName}.api.subscan.io/${endpoint}`,
+      `https://${chainName}.api.subscan.io/api/v2/scan/extrinsics`,
       `post`,
       {
         row: 100,
@@ -496,33 +518,7 @@ export class SubscanApi {
       responseBody.data?.list ||
       []
     ).map((entry) => {
-      if (evm) {
-        entry = {
-          ...entry,
-          account_display: {
-            address: entry.from,
-          },
-          callModule: entry.contract || entry.contract_name,
-          callModuleFunction: entry.method,
-          extrinsic_hash: entry.hash,
-          value: entry.value,
-        };
-      }
-      return {
-        id: entry.id,
-        hash: entry.extrinsic_hash,
-        from: entry.account_display.address,
-        to: entry.to,
-        timestamp: entry.block_timestamp * 1000, // sec -> ms
-        block: entry.block_num,
-        callModule: entry.call_module,
-        callModuleFunction: entry.call_module_function,
-        amount: entry.value ? Number(entry.value) : 0,
-        extrinsic_index: entry.extrinsic_index,
-        fee: entry.fee ? Number(entry.fee) : undefined,
-        feeUsed: entry.fee_used ? Number(entry.fee_used) : undefined,
-        tip: entry.fee_used ? Number(entry.tip) : undefined,
-      };
+      return this.mapExtrinsicData(entry);
     });
     return {
       list: resultList,
