@@ -328,7 +328,7 @@ export class ReconciliationService {
       : undefined;
     if (transferMatchingFee) {
       const decimals = getDecimals(transferMatchingFee.asset_unique_id, tokens);
-      portfolioMovement.feeUsed = matchingTx.feeUsed / 10 ** decimals;
+      portfolioMovement.feeUsed = -transferMatchingFee.amount;
       portfolioMovement.tip = matchingTx.tip / 10 ** decimals;
       portfolioMovement.feeTokenSymbol = transferMatchingFee.symbol;
       portfolioMovement.feeTokenUniqueId = transferMatchingFee.asset_unique_id;
