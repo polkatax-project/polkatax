@@ -257,7 +257,9 @@ const rows = computed(() => {
           ? `${formatCryptoAmount(data.feeUsed ?? 0)} ${data.feeTokenSymbol}`
           : undefined,
         data.xcmFeeTokenSymbol
-          ? `${formatCryptoAmount(data.xcmFee ?? 0)} ${data.xcmFeeTokenSymbol}`
+          ? `(XCM) ${formatCryptoAmount(data.xcmFee ?? 0)} ${
+              data.xcmFeeTokenSymbol
+            }`
           : undefined,
       ].filter((value) => !!value),
       /*fiatSent: data.transfers
