@@ -31,7 +31,7 @@
         </div>
 
         <!-- SUPPORTED CHAINS -->
-        <div class="content-wrapper text-center q-my-lg">
+        <div class="content-wrapper text-center q-my-lg desktop-only">
           <div class="section-title">Supported Chains</div>
           <div class="row justify-center q-col-gutter-md q-mt-lg">
             <q-intersection
@@ -56,6 +56,31 @@
           </div>
           <div>...and many more</div>
         </div>
+        <div class="content-wrapper text-center q-my-lg mobile-only">
+          <div class="section-title">Supported Chains</div>
+          <div class="row justify-center q-mt-lg q-mx-sm">
+            <q-intersection
+              v-for="name in chains"
+              :key="name"
+              once
+              class="col-6 col-sm-4 col-md-2 text-center q-pa-xs"
+            >
+              <q-card
+                flat
+                bordered
+                class="hover-card q-pa-sm q-mb-md bg-white"
+                style="border-radius: 16px"
+              >
+                <q-img :src="`/img/chain-logos/${name.toLowerCase()}.png`" />
+                <div class="text-caption text-weight-medium q-mt-sm">
+                  {{ name }}
+                </div>
+              </q-card>
+            </q-intersection>
+          </div>
+          <div>...and many more</div>
+        </div>
+
 
         <!-- FEATURES -->
         <div class="features-section content-wrapper">
