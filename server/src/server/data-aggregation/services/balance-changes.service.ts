@@ -341,6 +341,10 @@ export class BalanceChangesService {
           isEqual(a.multi_location, assetIdAlt),
         );
       }
+      if (!foreignAsset) {
+        logger.warn(`Foreign asset ${JSON.stringify(assetId)} not found.`)
+        continue
+      }
       let amount = 0;
       let to = undefined;
       let from = undefined;

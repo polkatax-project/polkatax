@@ -123,15 +123,32 @@
                   flat
                   dense
                   round
-                  icon="receipt"
-                  @click.stop="exportData(props.row)"
-                  aria-label="Export as Koinly CSV"
+                  icon="receipt_long"
+                  @click.stop="csvExport(props.row)"
+                  aria-label="Export as CSV"
                 >
                   <q-tooltip
                     anchor="top middle"
                     self="bottom middle"
                     aria-label="Export as CSV"
                     >CSV export</q-tooltip
+                  >
+                </q-btn>
+                <q-btn
+                  ref="btnRef"
+                  size="12px"
+                  flat
+                  dense
+                  round
+                  icon="receipt"
+                  @click.stop="koinlyExport(props.row)"
+                  aria-label="Export as Koinly CSV"
+                >
+                  <q-tooltip
+                    anchor="top middle"
+                    self="bottom middle"
+                    aria-label="Export as Koinly CSV"
+                    >Koinly export</q-tooltip
                   >
                 </q-btn>
               </div>
@@ -179,12 +196,20 @@ import {
 import { useConnectedBlockchainsStore } from '../store/connected-blockchains.store';
 import { exportKoinlyCsv } from '../../shared-module/service/export-koinly-csv';
 import { Subscription } from 'rxjs';
+import { exportDefaultCsv } from '../../shared-module/service/default-csv-export';
 
 const store = useConnectedBlockchainsStore();
 const route = useRoute();
 const router = useRouter();
 
-async function exportData(jobResult: JobResult) {
+async function csvExport(jobResult: JobResult) {
+  if (!jobResult.data) {
+    return;
+  }
+  return exportDefaultCsv(jobResult.data!);
+}
+
+async function koinlyExport(jobResult: JobResult) {
   if (!jobResult.data) {
     return;
   }

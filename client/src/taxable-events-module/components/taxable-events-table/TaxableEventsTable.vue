@@ -22,13 +22,22 @@
         <div class="column full-width">
           <div class="text-h6">Taxable events</div>
           <div class="flex justify-between">
-            <q-btn
-              color="primary"
-              class="q-mr-sm"
-              data-testid="csvExport"
-              @click="csvExport"
-              >Export CSV
-            </q-btn>
+            <div>
+              <q-btn
+                color="primary"
+                class="q-mr-sm"
+                data-testid="csvExport"
+                @click="csvExport"
+                >Export CSV
+              </q-btn>
+              <q-btn
+                color="primary"
+                class="q-mr-sm"
+                data-testid="koinlyExport"
+                @click="koinlyExport"
+                >Koinly export
+              </q-btn>
+            </div>
             <div>
               <EventTypeFilter class="q-mr-sm desktop-only" />
               <TokenFilter class="q-mr-sm desktop-only" />
@@ -121,6 +130,7 @@ import { useSharedStore } from '../../../shared-module/store/shared.store';
 import { exportKoinlyCsv } from '../../../shared-module/service/export-koinly-csv';
 import AlwaysHideTokensFilter from './always-hide-tokens-filter/AlwaysHideTokensFilter.vue';
 import { Subscription } from 'rxjs';
+import { exportDefaultCsv } from '../../../shared-module/service/default-csv-export';
 
 const store = useTaxableEventStore();
 const taxData: Ref<TaxData | undefined> = ref(undefined);
@@ -134,8 +144,12 @@ function setExcludedEntries(value: TaxableEvent[]) {
   store.setExcludedEntries(value);
 }
 
-function csvExport() {
+function koinlyExport() {
   exportKoinlyCsv(taxData.value!);
+}
+
+function csvExport() {
+  exportDefaultCsv(taxData.value!);
 }
 
 const userWallets: Ref<string[]> = ref([]);

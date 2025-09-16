@@ -4,9 +4,14 @@ import saveAs from 'file-saver';
 import { TaxData } from '../model/tax-data';
 import { TaxableEvent, TaxableEventTransfer } from '../model/taxable-event';
 import { mapLabelToKoinlyTag } from './map-label-to-koinly-tag';
+import { koilyTokenMapping } from '../const/koinly-token-mapping';
 
 const extractCurrency = (t: TaxableEventTransfer | undefined) => {
-  return t ? `${t.symbol.toUpperCase()}` : '';
+  return t
+    ? koilyTokenMapping[t.symbol.toUpperCase()]
+      ? `ID:${koilyTokenMapping[t.symbol.toUpperCase()]}`
+      : `${t.symbol.toUpperCase()}`
+    : '';
 };
 
 const getNetWorth = (t: (TaxableEventTransfer | undefined)[]) => {
@@ -46,7 +51,7 @@ export const exportKoinlyCsv = (taxdata: TaxData) => {
           'Net Worth Currency': taxdata.currency,
           Label: koinlyTag,
           Description: t.label,
-          TxHash: t.extrinsic_index,
+          TxHash: t.extrinsic_index ?? t.block,
         });
       }
     } else {
@@ -62,7 +67,7 @@ export const exportKoinlyCsv = (taxdata: TaxData) => {
           'Net Worth Currency': taxdata.currency,
           Label: koinlyTag,
           Description: t.label,
-          TxHash: t.extrinsic_index,
+          TxHash: t.extrinsic_index ?? t.block,
         });
       });
     }

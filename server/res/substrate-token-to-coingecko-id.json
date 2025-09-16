@@ -141,14 +141,6 @@
       "coingeckoId": "astar"
     },
     {
-      "token": "ASTR",
-      "coingeckoId": "astar"
-    },
-    {
-      "token": "PHA",
-      "coingeckoId": "pha"
-    },
-    {
       "token": "CRU",
       "coingeckoId": "crust-network"
     },
@@ -211,10 +203,6 @@
     {
       "token": "INTR",
       "coingeckoId": "interlay"
-    },
-    {
-      "token": "PHA",
-      "coingeckoId": "pha"
     },
     {
       "token": "MOVR",
