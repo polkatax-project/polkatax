@@ -29,7 +29,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import { computed, onUnmounted, Ref, ref } from 'vue';
+import { computed, onMounted, onUnmounted, Ref, ref } from 'vue';
 import {
   formatCurrencyWithoutSymbol,
   formatCryptoAmount,
@@ -37,16 +37,23 @@ import {
 import { useTaxableEventStore } from '../../../store/taxable-events.store';
 import { RewardDto, Rewards } from '../../../../shared-module/model/rewards';
 import { stakingExportKoinlyCsv } from '../../../../shared-module/service/staking-export-koinly-csv';
+import { Subscription } from 'rxjs';
 
 const rewardsStore = useTaxableEventStore();
 const rewards: Ref<Rewards | undefined> = ref(undefined);
 
-const subscription = rewardsStore.stakingRewards$.subscribe(async (r) => {
-  rewards.value = r;
+let subscription: Subscription;
+
+onMounted(() => {
+  subscription = rewardsStore.stakingRewards$.subscribe(async (r) => {
+    rewards.value = r;
+  });
 });
 
 onUnmounted(() => {
-  subscription.unsubscribe();
+  if (subscription) {
+    subscription.unsubscribe();
+  }
 });
 
 const noRewards = computed(() => {

@@ -112,16 +112,15 @@
 <script setup lang="ts">
 import TokenFilter from './token-filter/TokenFilter.vue';
 import EventTypeFilter from './event-type-filter/EventTypeFilter.vue';
-import { computed, onUnmounted, Ref, ref } from 'vue';
+import { computed, onMounted, onUnmounted, Ref, ref } from 'vue';
 import { useTaxableEventStore } from '../../store/taxable-events.store';
 import { TaxData } from '../../../shared-module/model/tax-data';
 import { TaxableEvent } from '../../../shared-module/model/taxable-event';
-import {
-  formatCryptoAmount,
-} from '../../../shared-module/util/number-formatters';
+import { formatCryptoAmount } from '../../../shared-module/util/number-formatters';
 import { useSharedStore } from '../../../shared-module/store/shared.store';
 import { exportKoinlyCsv } from '../../../shared-module/service/export-koinly-csv';
 import AlwaysHideTokensFilter from './always-hide-tokens-filter/AlwaysHideTokensFilter.vue';
+import { Subscription } from 'rxjs';
 
 const store = useTaxableEventStore();
 const taxData: Ref<TaxData | undefined> = ref(undefined);
@@ -140,26 +139,32 @@ function csvExport() {
 }
 
 const userWallets: Ref<string[]> = ref([]);
+let taxDataSubscription: Subscription;
+let walletSubscription: Subscription;
+let tokenFilterSubscription: Subscription;
+let blockchainsSubscription: Subscription;
 
-const taxDataSubscription = store.visibleTaxData$.subscribe(async (data) => {
-  taxData.value = data;
+onMounted(() => {
+  taxDataSubscription = store.visibleTaxData$.subscribe(async (data) => {
+    taxData.value = data;
+  });
+
+  walletSubscription = useSharedStore().walletsAddresses$.subscribe(
+    async (wallets) => {
+      userWallets.value = wallets;
+    }
+  );
+
+  tokenFilterSubscription = store.tokenFilter$.subscribe(async (data) => {
+    tokenFilter.value = data;
+  });
+
+  blockchainsSubscription = useSharedStore().subscanChains$.subscribe(
+    (subscanChains) => {
+      chains.value = subscanChains.chains;
+    }
+  );
 });
-
-const walletSubscription = useSharedStore().walletsAddresses$.subscribe(
-  async (wallets) => {
-    userWallets.value = wallets;
-  }
-);
-
-const tokenFilterSubscription = store.tokenFilter$.subscribe(async (data) => {
-  tokenFilter.value = data;
-});
-
-const blockchainsSubscription = useSharedStore().subscanChains$.subscribe(
-  (subscanChains) => {
-    chains.value = subscanChains.chains;
-  }
-);
 
 onUnmounted(() => {
   taxDataSubscription.unsubscribe();

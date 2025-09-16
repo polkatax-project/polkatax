@@ -112,7 +112,7 @@
 <script setup lang="ts">
 import { matSync, matOfflinePin } from '@quasar/extras/material-icons';
 import AddressInput from '../../shared-module/components/address-input/AddressInput.vue';
-import { computed, onUnmounted, Ref, ref } from 'vue';
+import { computed, onMounted, onUnmounted, Ref, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useSharedStore } from '../../shared-module/store/shared.store';
 import { isValidAddress } from '../../shared-module/util/is-valid-address';
@@ -120,6 +120,7 @@ import WalletSelection from './wallet-selection/WalletSelection.vue';
 import { useQuasar } from 'quasar';
 import { JobResult } from '../../shared-module/model/job-result';
 import { showMaxWalletsReachedNotif } from '../../shared-module/store/helper/show-max-wallets-reached-notif';
+import { Subscription } from 'rxjs';
 
 const $q = useQuasar();
 const store = useSharedStore();
@@ -130,11 +131,54 @@ const wallets: Ref<WalletRow[] | undefined> = ref(undefined);
 const walletAddresses: Ref<string[]> = ref([]);
 const showWalletSelectionDialog = ref(false);
 
-const walletAddressesSub = store.walletsAddresses$.subscribe(
-  (addresses: string[]) => {
-    walletAddresses.value = addresses;
-  }
-);
+let walletAddressesSub: Subscription;
+let jobsSubscription: Subscription;
+
+onMounted(() => {
+  walletAddressesSub = store.walletsAddresses$.subscribe(
+    (addresses: string[]) => {
+      walletAddresses.value = addresses;
+    }
+  );
+  jobsSubscription = store.jobs$.subscribe((jobs: JobResult[]) => {
+    const r: any[] = [];
+    jobs.forEach((j) => {
+      const existing = r.find(
+        (r) => r.wallet === j.wallet && r.currency === j.currency
+      );
+      if (!existing) {
+        r.push({
+          wallet: j.wallet,
+          currency: j.currency,
+          done: j.status === 'done' || j.status === 'error',
+          walletsWithTxFound: j.data?.values?.length ?? 0 > 0 ? 1 : 0,
+          blockchainsEvaluated:
+            j.status === 'done' || j.status === 'error' ? 1 : 0,
+          chainsTotal: jobs.filter((job) => job.wallet === j.wallet).length,
+          syncFromDate: j.syncFromDate,
+          syncUntilDate: j.syncUntilDate,
+          hasErrors: j.error ?? false,
+        });
+      } else {
+        existing.done =
+          existing.done && (j.status === 'done' || j.status === 'error');
+        if (j.status === 'done' || j.status === 'error') {
+          existing.blockchainsEvaluated += 1;
+        }
+        existing.hasErrors = existing.hasErrors || (j.error ?? false);
+        existing.walletsWithTxFound =
+          existing.walletsWithTxFound +
+          (j.data?.values?.length ?? 0 > 0 ? 1 : 0);
+      }
+    });
+    wallets.value = r;
+  });
+});
+
+onUnmounted(() => {
+  jobsSubscription.unsubscribe();
+  walletAddressesSub.unsubscribe();
+});
 
 interface WalletRow {
   wallet: string;
@@ -147,44 +191,6 @@ interface WalletRow {
   syncUntilDate: number;
   hasErrors: boolean;
 }
-
-const jobsSubscription = store.jobs$.subscribe((jobs: JobResult[]) => {
-  const r: any[] = [];
-  jobs.forEach((j) => {
-    const existing = r.find(
-      (r) => r.wallet === j.wallet && r.currency === j.currency
-    );
-    if (!existing) {
-      r.push({
-        wallet: j.wallet,
-        currency: j.currency,
-        done: j.status === 'done' || j.status === 'error',
-        walletsWithTxFound: j.data?.values?.length ?? 0 > 0 ? 1 : 0,
-        blockchainsEvaluated:
-          j.status === 'done' || j.status === 'error' ? 1 : 0,
-        chainsTotal: jobs.filter((job) => job.wallet === j.wallet).length,
-        syncFromDate: j.syncFromDate,
-        syncUntilDate: j.syncUntilDate,
-        hasErrors: j.error ?? false,
-      });
-    } else {
-      existing.done =
-        existing.done && (j.status === 'done' || j.status === 'error');
-      if (j.status === 'done' || j.status === 'error') {
-        existing.blockchainsEvaluated += 1;
-      }
-      existing.hasErrors = existing.hasErrors || (j.error ?? false);
-      existing.walletsWithTxFound =
-        existing.walletsWithTxFound + (j.data?.values?.length ?? 0 > 0 ? 1 : 0);
-    }
-  });
-  wallets.value = r;
-});
-
-onUnmounted(() => {
-  jobsSubscription.unsubscribe();
-  walletAddressesSub.unsubscribe();
-});
 
 async function startSyncing() {
   if (!isDisabled.value) {

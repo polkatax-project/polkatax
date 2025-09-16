@@ -81,7 +81,6 @@
           <div>...and many more</div>
         </div>
 
-
         <!-- FEATURES -->
         <div class="features-section content-wrapper">
           <div class="section-title text-center">

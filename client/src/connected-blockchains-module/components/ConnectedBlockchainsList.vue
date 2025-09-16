@@ -165,7 +165,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import { onUnmounted, Ref, ref } from 'vue';
+import { onMounted, onUnmounted, Ref, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { JobResult } from '../../shared-module/model/job-result';
 import { useSharedStore } from '../../shared-module/store/shared.store';
@@ -178,6 +178,7 @@ import {
 } from '@quasar/extras/material-icons';
 import { useConnectedBlockchainsStore } from '../store/connected-blockchains.store';
 import { exportKoinlyCsv } from '../../shared-module/service/export-koinly-csv';
+import { Subscription } from 'rxjs';
 
 const store = useConnectedBlockchainsStore();
 const route = useRoute();
@@ -198,24 +199,36 @@ const isSynchronizing: Ref<boolean> = ref(true);
 store.setCurrency(route.params.currency as string);
 store.setWallet(route.params.wallet as string);
 
-const jobsSubscription = store.syncedChains$.subscribe((jobResults) => {
-  jobs.value = jobResults;
-});
+let jobsSubscription: Subscription;
+let syncSubscription: Subscription;
+let blockchainsSubscription: Subscription;
 
-const syncSubscription = store.isSynchronizing$.subscribe((synchronizing) => {
-  isSynchronizing.value = synchronizing;
-});
+onMounted(() => {
+  jobsSubscription = store.syncedChains$.subscribe((jobResults) => {
+    jobs.value = jobResults;
+  });
 
-const blockchainsSubscription = useSharedStore().subscanChains$.subscribe(
-  (subscanChains) => {
-    chains.value = subscanChains.chains;
-  }
-);
+  syncSubscription = store.isSynchronizing$.subscribe((synchronizing) => {
+    isSynchronizing.value = synchronizing;
+  });
+
+  blockchainsSubscription = useSharedStore().subscanChains$.subscribe(
+    (subscanChains) => {
+      chains.value = subscanChains.chains;
+    }
+  );
+});
 
 onUnmounted(() => {
-  jobsSubscription.unsubscribe();
-  blockchainsSubscription.unsubscribe();
-  syncSubscription.unsubscribe();
+  if (jobsSubscription) {
+    jobsSubscription.unsubscribe();
+  }
+  if (blockchainsSubscription) {
+    blockchainsSubscription.unsubscribe();
+  }
+  if (syncSubscription) {
+    syncSubscription.unsubscribe();
+  }
 });
 
 const columns = ref([

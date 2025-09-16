@@ -27,17 +27,22 @@
   </div>
 </template>
 <script setup lang="ts">
-import { onBeforeUnmount, Ref, ref } from 'vue';
+import { onBeforeUnmount, onMounted, Ref, ref } from 'vue';
 import { Currency } from '../../../../shared-module/model/currency';
 import { currencyList } from '../../../../shared-module/const/currencyList';
 import { useSharedStore } from '../../../store/shared.store';
+import { Subscription } from 'rxjs';
 
 const currencies = ref(currencyList);
 
 const currency: Ref<Currency | undefined> = ref(undefined);
 const store = useSharedStore();
-const currencySubscription = store.currency$.subscribe((c) => {
-  currency.value = currencies.value.find((temp) => temp.name === c);
+let currencySubscription: Subscription;
+
+onMounted(() => {
+  currencySubscription = store.currency$.subscribe((c) => {
+    currency.value = currencies.value.find((temp) => temp.name === c);
+  });
 });
 
 onBeforeUnmount(() => {

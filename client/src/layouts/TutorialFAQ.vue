@@ -112,19 +112,24 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, Ref, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, Ref, ref } from 'vue';
 import AppFooter from '../shared-module/components/app-footer/AppFooter.vue';
 import AppHeader from '../shared-module/components/app-header/AppHeader.vue';
 import { useSharedStore } from '../shared-module/store/shared.store';
+import { Subscription } from 'rxjs';
 
 const supportedChains: Ref<string[]> = ref([]);
 
 const store = useSharedStore();
 
-const chainsSubscription = store.subscanChains$.subscribe((c) => {
-  supportedChains.value = c.chains
-    .map((x) => x.label)
-    .sort((a, b) => (a.toUpperCase() > b.toUpperCase() ? 1 : -1));
+let chainsSubscription: Subscription;
+
+onMounted(() => {
+  chainsSubscription = store.subscanChains$.subscribe((c) => {
+    supportedChains.value = c.chains
+      .map((x) => x.label)
+      .sort((a, b) => (a.toUpperCase() > b.toUpperCase() ? 1 : -1));
+  });
 });
 
 onBeforeUnmount(() => {

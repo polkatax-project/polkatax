@@ -23,7 +23,7 @@
 </template>
 
 <script setup lang="ts">
-import { onBeforeUnmount, ref } from 'vue';
+import { onBeforeUnmount, onMounted, ref } from 'vue';
 import { useSharedStore } from '../shared-module/store/shared.store';
 import { Subscription } from 'rxjs';
 import AppFooter from '../shared-module/components/app-footer/AppFooter.vue';
@@ -32,8 +32,12 @@ import AppHeader from '../shared-module/components/app-header/AppHeader.vue';
 const showErrorDialog = ref(false);
 const errorMsg = ref('');
 
-const subscription: Subscription =
-  useSharedStore().webSocketResponseError$.subscribe(handleError);
+let subscription: Subscription;
+
+onMounted(() => {
+  subscription =
+    useSharedStore().webSocketResponseError$.subscribe(handleError);
+});
 
 function handleError(err: any) {
   console.error(JSON.stringify(err));

@@ -14,11 +14,12 @@
   </div>
 </template>
 <script setup lang="ts">
-import { computed, onUnmounted, ref, Ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref, Ref } from 'vue';
 import { GChart } from 'vue-google-charts';
 import { formatDate } from '../../../../shared-module/util/date-utils';
 import { useTaxableEventStore } from '../../../store/taxable-events.store';
 import { Rewards } from '../../../../shared-module/model/rewards';
+import { Subscription } from 'rxjs';
 
 const rewardsStore = useTaxableEventStore();
 const loading = ref(true);
@@ -30,8 +31,12 @@ const props = defineProps({
 
 const rewards: Ref<Rewards | undefined> = ref(undefined);
 
-const subscription = rewardsStore.stakingRewards$.subscribe((r) => {
-  rewards.value = r;
+let subscription: Subscription;
+
+onMounted(() => {
+  subscription = rewardsStore.stakingRewards$.subscribe((r) => {
+    rewards.value = r;
+  });
 });
 
 const hasData = computed(() => {
@@ -39,7 +44,9 @@ const hasData = computed(() => {
 });
 
 onUnmounted(() => {
-  subscription.unsubscribe();
+  if (subscription) {
+    subscription.unsubscribe();
+  }
 });
 
 function onChartReady() {

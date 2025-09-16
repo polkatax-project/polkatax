@@ -12,15 +12,20 @@
   </q-btn-dropdown>
 </template>
 <script setup lang="ts">
-import { onBeforeUnmount, ref, Ref } from 'vue';
+import { onBeforeUnmount, onMounted, ref, Ref } from 'vue';
 import { useTaxableEventStore } from '../../../store/taxable-events.store';
+import { Subscription } from 'rxjs';
 
 const store = useTaxableEventStore();
 
 const tokenFilter: Ref<{ name: string; value: boolean }[]> = ref([]);
 
-const subscription = store.tokenFilter$.subscribe((t) => {
-  tokenFilter.value = [...t];
+let subscription: Subscription;
+
+onMounted(() => {
+  subscription = store.tokenFilter$.subscribe((t) => {
+    tokenFilter.value = [...t];
+  });
 });
 
 onBeforeUnmount(() => {

@@ -48,7 +48,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import { computed, onUnmounted, Ref, ref } from 'vue';
+import { computed, onMounted, onUnmounted, Ref, ref } from 'vue';
 import { useTaxableEventStore } from '../../store/taxable-events.store';
 import { TaxData } from '../../../shared-module/model/tax-data';
 import {
@@ -56,17 +56,23 @@ import {
   formatCurrency,
 } from '../../../shared-module/util/number-formatters';
 import { Deviation } from '../../../shared-module/model/deviation';
+import { Subscription } from 'rxjs';
 
 const store = useTaxableEventStore();
 const taxData: Ref<TaxData | undefined> = ref(undefined);
+let taxDataSubscription: Subscription;
 
-const taxDataSubscription = store.taxData$.subscribe(async (data) => {
-  taxData.value = data;
-  taxData.value.deviations.sort((a, b) => (a.symbol > b.symbol ? 1 : -1));
+onMounted(() => {
+  taxDataSubscription = store.taxData$.subscribe(async (data) => {
+    taxData.value = data;
+    taxData.value.deviations.sort((a, b) => (a.symbol > b.symbol ? 1 : -1));
+  });
 });
 
 onUnmounted(() => {
-  taxDataSubscription.unsubscribe();
+  if (taxDataSubscription) {
+    taxDataSubscription.unsubscribe();
+  }
 });
 
 const columns = computed(() => [

@@ -22,21 +22,28 @@
 import RewardsChart from './rewards-chart/RewardsChart.vue';
 import StakingRewardsTable from './staking-rewards-table/StakingRewardsTable.vue';
 import RewardSummary from './reward-summary/RewardSummary.vue';
-import { onUnmounted, Ref, ref } from 'vue';
+import { onMounted, onUnmounted, Ref, ref } from 'vue';
 import { useTaxableEventStore } from '../../store/taxable-events.store';
 import { Rewards } from '../../../shared-module/model/rewards';
+import { Subscription } from 'rxjs';
 
 const rewardsStore = useTaxableEventStore();
 
 const data: Ref<Rewards | undefined> = ref(undefined);
 
-const rewardsSubscription = rewardsStore.stakingRewards$.subscribe(
-  async (rewards) => {
-    data.value = rewards;
-  }
-);
+let rewardsSubscription: Subscription;
+
+onMounted(() => {
+  rewardsSubscription = rewardsStore.stakingRewards$.subscribe(
+    async (rewards) => {
+      data.value = rewards;
+    }
+  );
+});
 
 onUnmounted(() => {
-  rewardsSubscription.unsubscribe();
+  if (rewardsSubscription) {
+    rewardsSubscription.unsubscribe();
+  }
 });
 </script>

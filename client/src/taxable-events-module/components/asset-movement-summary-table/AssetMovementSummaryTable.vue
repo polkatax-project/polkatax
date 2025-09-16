@@ -12,30 +12,37 @@
   </div>
 </template>
 <script setup lang="ts">
-import { computed, onUnmounted, Ref, ref } from 'vue';
+import { computed, onMounted, onUnmounted, Ref, ref } from 'vue';
 import { useTaxableEventStore } from '../../store/taxable-events.store';
 import { TaxData } from '../../../shared-module/model/tax-data';
-import {
-  formatCryptoAmount,
-} from '../../../shared-module/util/number-formatters';
+import { formatCryptoAmount } from '../../../shared-module/util/number-formatters';
+import { Subscription } from 'rxjs';
 
 const store = useTaxableEventStore();
 const taxData: Ref<TaxData | undefined> = ref(undefined);
 const excludedPaymentIds: Ref<number[]> = ref([]);
 
-const taxDataSubscription = store.visibleTaxData$.subscribe(async (data) => {
-  taxData.value = data;
+let taxDataSubscription: Subscription;
+let excludedEntriesSubscription: Subscription;
+
+onMounted(() => {
+  taxDataSubscription = store.visibleTaxData$.subscribe(async (data) => {
+    taxData.value = data;
+  });
+  excludedEntriesSubscription = store.excludedEntries$.subscribe(
+    async (data) => {
+      excludedPaymentIds.value = data.map((d) => d.id!);
+    }
+  );
 });
 
-const excludedEntriesSubscription = store.excludedEntries$.subscribe(
-  async (data) => {
-    excludedPaymentIds.value = data.map((d) => d.id!);
-  }
-);
-
 onUnmounted(() => {
-  taxDataSubscription.unsubscribe();
-  excludedEntriesSubscription.unsubscribe();
+  if (taxDataSubscription) {
+    taxDataSubscription.unsubscribe();
+  }
+  if (excludedEntriesSubscription) {
+    excludedEntriesSubscription.unsubscribe();
+  }
 });
 
 interface SummaryItem {
@@ -104,6 +111,6 @@ const columns = computed(() => [
     field: (row: SummaryItem) =>
       formatCryptoAmount(Math.abs(row.sentAmount ?? 0)),
     sortable: true,
-  }
+  },
 ]);
 </script>

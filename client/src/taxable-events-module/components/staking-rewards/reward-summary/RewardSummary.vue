@@ -25,19 +25,24 @@
 </template>
 
 <script setup lang="ts">
-import { onBeforeUnmount, ref, Ref } from 'vue';
+import { onBeforeUnmount, onMounted, ref, Ref } from 'vue';
 import {
   formatCurrency,
   formatCryptoAmount,
 } from '../../../../shared-module/util/number-formatters';
 import { useTaxableEventStore } from '../../../store/taxable-events.store';
 import { Rewards } from '../../../../shared-module/model/rewards';
+import { Subscription } from 'rxjs';
 
 const store = useTaxableEventStore();
 const rewards: Ref<Rewards | undefined> = ref(undefined);
 
-const subscription = store.stakingRewards$.subscribe((data) => {
-  rewards.value = data;
+let subscription: Subscription;
+
+onMounted(() => {
+  subscription = store.stakingRewards$.subscribe((data) => {
+    rewards.value = data;
+  });
 });
 
 onBeforeUnmount(() => {
