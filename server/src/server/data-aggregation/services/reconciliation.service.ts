@@ -19,6 +19,13 @@ const getDecimals = (assetUniqueId: string, tokens: Asset[]) => {
   return tokens.find((t) => t.unique_id === assetUniqueId)?.decimals;
 };
 
+const isCloseTo = (a: number, b: number) => {
+  if (a === b) return true;
+  const diff = Math.abs(a - b);
+  const norm = Math.abs(a) + Math.abs(b);
+  return norm === 0 ? diff < 1e-2 : diff / norm < 1e-2;
+};
+
 const isVeryCloseTo = (a: number, b: number) => {
   if (a === b) return true;
   const diff = Math.abs(a - b);
@@ -179,15 +186,17 @@ export class ReconciliationService {
         xcm.transfers.some(
           (t) =>
             !t["tainted"] &&
-            isVeryCloseTo(t.amount, transfer.amount) &&
-            t.symbol.toUpperCase() === transfer.symbol.toUpperCase(),
+            isCloseTo(t.amount, transfer.amount) &&
+            t.symbol.toUpperCase().replace(/^XC/, "") ===
+              transfer.symbol.toUpperCase().replace(/^XC/, ""),
         ),
       );
       const matchingTransfer = (matchingXcm?.transfers ?? []).find(
         (t) =>
           !t["tainted"] &&
-          isVeryCloseTo(t.amount, transfer.amount) &&
-          t.symbol.toUpperCase() === transfer.symbol.toUpperCase(),
+          isCloseTo(t.amount, transfer.amount) &&
+          t.symbol.toUpperCase().replace(/^XC/, "") ===
+            transfer.symbol.toUpperCase().replace(/^XC/, ""),
       );
       if (matchingTransfer) {
         matchingTransfer["tainted"] = true;
