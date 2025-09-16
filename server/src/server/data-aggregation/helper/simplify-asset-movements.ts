@@ -40,14 +40,7 @@ export const simplifyAssetMovementsSemanticId = (
       taxEvent.transfers
         .filter((t) => t.amount !== 0)
         .forEach((t: TaxableEventTransfer) => {
-          /**
-           * semantic grouping is needed exclusively for batch transactions
-           */
-          const semanticGroup =
-            taxEvent.callModule === "utility" &&
-            taxEvent.callModuleFunction === "batch_all"
-              ? (t.semanticGroupId ?? "none")
-              : "none";
+          const semanticGroup = t.semanticGroupId ?? "none"
           transfers[semanticGroup] = transfers[semanticGroup] ?? {};
           if (!transfers[semanticGroup][t.asset_unique_id]) {
             transfers[semanticGroup][t.asset_unique_id] = { ...t };

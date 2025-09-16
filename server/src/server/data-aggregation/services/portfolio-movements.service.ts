@@ -124,7 +124,9 @@ export class PortfolioMovementsService {
     const specialEventTransfers =
       await this.specialEventsToTransfersService.handleEvents(
         request.chain,
+        request.address,
         events,
+        transactions,
         xcmList,
       );
 
@@ -251,6 +253,6 @@ export class PortfolioMovementsService {
       );
     }
 
-    return { portfolioMovements: sortedTaxableEvents, unmatchedEvents: events };
+    return { portfolioMovements: sortedTaxableEvents };
   }
 }

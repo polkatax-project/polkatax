@@ -81,14 +81,6 @@
         </q-td>
       </template>
 
-      <template v-slot:body-cell-fiat-received="props">
-        <q-td :props="props">
-          <div v-for="(item, idx) in props.row.fiatReceived" v-bind:key="idx">
-            {{ item }}
-          </div>
-        </q-td>
-      </template>
-
       <template v-slot:body-cell-tokens-sent="props">
         <q-td :props="props">
           <div v-for="(item, idx) in props.row.tokensSent" v-bind:key="idx">
@@ -97,9 +89,9 @@
         </q-td>
       </template>
 
-      <template v-slot:body-cell-fiat-sent="props">
+      <template v-slot:body-cell-fees="props">
         <q-td :props="props">
-          <div v-for="(item, idx) in props.row.fiatSent" v-bind:key="idx">
+          <div v-for="(item, idx) in props.row.fees" v-bind:key="idx">
             {{ item }}
           </div>
         </q-td>
@@ -206,23 +198,15 @@ const columns = computed(() => [
     sortable: false,
   },
   {
-    name: 'fiat-received',
-    align: 'right',
-    label: 'Fiat value received',
-    field: 'fiatReceived',
-    sortable: false,
-  },
-  {
     name: 'tokens-sent',
     align: 'right',
     label: 'Sent tokens',
     sortable: false,
   },
   {
-    name: 'fiat-sent',
+    name: 'fees',
     align: 'right',
-    label: 'Fiat value sent',
-    field: 'fiatSent',
+    label: 'Fees',
     sortable: false,
   },
   {
@@ -265,12 +249,18 @@ const rows = computed(() => {
       extrinsic_index: data.extrinsic_index,
       addresses: [
         ...new Set(
-          data.transfers
-            .flatMap((t) => [t.from, t.to])
-            .filter((a) => !!a)
+          data.transfers.flatMap((t) => [t.from, t.to]).filter((a) => !!a)
         ),
       ],
-      fiatSent: data.transfers
+      fees: [
+        data.feeUsed ?? 0 > 0
+          ? `${formatCryptoAmount(data.feeUsed ?? 0)} ${data.feeTokenSymbol}`
+          : undefined,
+        data.xcmFeeTokenSymbol
+          ? `${formatCryptoAmount(data.xcmFee ?? 0)} ${data.xcmFeeTokenSymbol}`
+          : undefined,
+      ].filter((value) => !!value),
+      /*fiatSent: data.transfers
         .filter((t) => t.amount < 0)
         .map((t) =>
           formatCurrency(
@@ -285,7 +275,7 @@ const rows = computed(() => {
             Math.abs(t.fiatValue ?? NaN),
             taxData.value?.currency || '-'
           )
-        ),
+        ),*/
       id: data.id,
       taxCategory: 'Income',
       isTransferToSelf: isTransferToSelf(data),

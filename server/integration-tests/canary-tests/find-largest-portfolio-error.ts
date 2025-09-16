@@ -15,13 +15,13 @@ const fetchAndStorePortfolioMovements = async (
   address: string,
   chain: { domain: string; label: string; token: string },
 ) => {
-  const { portfolioMovements, minBlock, maxBlock, unmatchedEvents } =
+  const { portfolioMovements, minBlock, maxBlock } =
     await fetchPortfolioMovements(address, chain);
   fs.writeFileSync(
     "./integration-tests/out-temp/portfolio-movements.json",
     JSON.stringify(portfolioMovements, null, 2),
   );
-  return { portfolioMovements, minBlock, maxBlock, unmatchedEvents };
+  return { portfolioMovements, minBlock, maxBlock };
 };
 
 const zoomIntoErrorTokensChange = async (
@@ -32,7 +32,7 @@ const zoomIntoErrorTokensChange = async (
   interval?: { startBlock: number; endBlock: number },
   cachedData?: any,
 ) => {
-  const { portfolioMovements, minBlock, maxBlock, unmatchedEvents } =
+  const { portfolioMovements, minBlock, maxBlock } =
     cachedData?.portfolioMovements ??
     (await fetchAndStorePortfolioMovements(address, chain));
   const container = createDIContainer();
@@ -111,8 +111,7 @@ const zoomIntoErrorTokensChange = async (
         portfolioMovements: {
           portfolioMovements,
           minBlock,
-          maxBlock,
-          unmatchedEvents,
+          maxBlock
         },
       },
     );

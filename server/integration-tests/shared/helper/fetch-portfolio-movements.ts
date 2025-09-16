@@ -26,7 +26,6 @@ export const fetchPortfolioMovements = async (
   maxDate?: number,
 ): Promise<{
   portfolioMovements: PortfolioMovement[];
-  unmatchedEvents?: SubscanEvent[];
   minBlock?: number;
   maxBlock?: number;
 }> => {
@@ -35,7 +34,7 @@ export const fetchPortfolioMovements = async (
     const currency = "usd";
     const portfolioMovementsService: PortfolioMovementsService =
       container.resolve("portfolioMovementsService");
-    let { portfolioMovements, unmatchedEvents } =
+    let { portfolioMovements } =
       (await portfolioMovementsService.fetchPortfolioMovements({
         chain,
         address,
@@ -44,7 +43,6 @@ export const fetchPortfolioMovements = async (
         maxDate,
       })) as {
         portfolioMovements: PortfolioMovement[];
-        unmatchedEvents: SubscanEvent[];
       };
     if (portfolioMovements.length === 0) {
       return { portfolioMovements: [] };
@@ -57,7 +55,7 @@ export const fetchPortfolioMovements = async (
       (curr, next) => Math.max(curr, next.block ?? 0),
       0,
     );
-    return { portfolioMovements, unmatchedEvents, minBlock, maxBlock };
+    return { portfolioMovements, minBlock, maxBlock };
   } catch (error) {
     console.log(error);
   }

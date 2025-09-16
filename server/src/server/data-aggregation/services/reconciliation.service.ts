@@ -104,7 +104,7 @@ export class ReconciliationService {
     }
 
     /**
-     * Verify all staking rewards where machted
+     * Verify all staking rewards where matched
      */
     stakingRewards.forEach((s) => {
       if (!s["tainted"]) {
@@ -358,12 +358,14 @@ export class ReconciliationService {
         const feePayment = portfolioMovement.transfers.find(
           (t) => t.event_index === feePaymentEvent.event_index,
         );
-        portfolioMovement.feeUsed = -feePayment.amount;
-        portfolioMovement.feeTokenSymbol = feePayment.symbol;
-        portfolioMovement.feeTokenUniqueId = feePayment.asset_unique_id;
-        portfolioMovement.transfers = portfolioMovement.transfers.filter(
-          (t) => t !== feePayment,
-        );
+        if (feePayment) {
+          portfolioMovement.feeUsed = -feePayment.amount;
+          portfolioMovement.feeTokenSymbol = feePayment.symbol;
+          portfolioMovement.feeTokenUniqueId = feePayment.asset_unique_id;
+          portfolioMovement.transfers = portfolioMovement.transfers.filter(
+            (t) => t !== feePayment,
+          );
+        }
       } else {
         logger.warn(
           `First event of tx is not withdraw event! ${portfolioMovement.extrinsic_index}`,

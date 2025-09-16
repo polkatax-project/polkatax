@@ -7,4 +7,5 @@ export type EventHandlerContext = AssetInfos & { events: SubscanEvent[] } & {
   xcmList: XcmTransfer[];
   label?: Label;
   chainInfo: { domain: string; token: string };
+  address: string;
 };

@@ -11,8 +11,10 @@ export interface TaxableEvent {
   tip?: number;
   feeUsed?: number;
   feeUsedFiat?: number;
+  feeTokenSymbol?: string;
   tipFiat?: number;
   xcmFee?: number;
+  xcmFeeTokenSymbol?: string;
   label?: Label;
   isoDate?: string;
   transfers: TaxableEventTransfer[];

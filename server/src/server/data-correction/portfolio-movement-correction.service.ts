@@ -140,7 +140,6 @@ export class PortfolioMovementCorrectionService {
     chainInfo: { domain: string; token: string },
     address: string,
     portfolioMovements: PortfolioMovement[],
-    unmatchedEvents: SubscanEvent[],
     acceptedDeviations: DeviationLimit[],
   ) {
     logger.info(
@@ -150,13 +149,6 @@ export class PortfolioMovementCorrectionService {
     const blocks = new Set<number>();
     const timestampsAlreadyCovered = [];
     const timestamps = [];
-
-    for (const event of unmatchedEvents) {
-      const block = event.event_index.split("-")[0];
-      blocks.add(Number(block));
-      blocks.add(Number(block) - 1);
-      timestampsAlreadyCovered.push(event.timestamp);
-    }
 
     for (const p of portfolioMovements as PortfolioMovement[]) {
       if (
@@ -267,7 +259,6 @@ export class PortfolioMovementCorrectionService {
         this.deviationZoomer.compensateDeviation(
           address,
           portfolioMovements as PortfolioMovement[],
-          unmatchedEvents,
           selectedToken,
           startBlock,
           endBlock,
@@ -283,7 +274,6 @@ export class PortfolioMovementCorrectionService {
     chainInfo: { domain: string; token: string },
     address: string,
     portfolioMovements: PortfolioMovement[],
-    unmatchedEvents: SubscanEvent[],
     minDate: number,
     maxDate: number,
   ): Promise<Deviation[]> {
@@ -355,7 +345,6 @@ export class PortfolioMovementCorrectionService {
         chainInfo,
         address,
         portfolioMovements,
-        unmatchedEvents,
         acceptedDeviations,
       );
 
@@ -370,7 +359,6 @@ export class PortfolioMovementCorrectionService {
         chainInfo,
         address,
         portfolioMovements,
-        unmatchedEvents,
         acceptedDeviations,
         blockMin,
         blockMax,
@@ -400,7 +388,6 @@ export class PortfolioMovementCorrectionService {
     chainInfo: { domain: string; token: string },
     address: string,
     portfolioMovements: PortfolioMovement[],
-    unmatchedEvents: SubscanEvent[] = [],
     acceptedDeviations: DeviationLimit[],
     blockMin: number,
     blockMax: number,
@@ -449,7 +436,6 @@ export class PortfolioMovementCorrectionService {
           chainInfo,
           address,
           portfolioMovements as PortfolioMovement[],
-          unmatchedEvents,
           acceptedDeviations,
           minBlock,
           maxBlock,

@@ -17,7 +17,6 @@ export class JobPostProcessor {
         chain,
         job.wallet,
         job.data.values,
-        job.data.unmatchedEvents ?? [],
         job.syncFromDate,
         job.syncUntilDate,
       );

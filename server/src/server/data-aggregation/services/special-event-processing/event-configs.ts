@@ -10,7 +10,7 @@ import { onBalancesDeposit } from "./on-balances-deposit";
 import { onBalancesWithdraw } from "./on-balances-withdraw";
 import { onCoretimePurchased } from "./on-coretime-purchased";
 import { onHydrationLiquidityRemoved } from "./on-hydration-liquidity-removed";
-import { onHydrationStableSwapLiquidityAdded } from "./on-hydration-stable-swap-liquidity-added";
+import { onHydrationRouterExecuted } from "./on-hydration-router-executed";
 import { onMigratedDelegation } from "./on-migrated-delegation";
 import { onReserveRepatriated } from "./on-reserve-repatriated";
 import {
@@ -23,7 +23,7 @@ export const eventConfigs: {
   chains;
   event: string | string[];
   condition?: (
-    event: SubscanEvent,
+    event: SubscanEvent | EventDetails,
     peerEvents: SubscanEvent[],
     xcmList: XcmTransfer[],
   ) => boolean;
@@ -73,15 +73,23 @@ export const eventConfigs: {
     handler: (e, context) =>
       onBalancesDeposit(e, { ...context, label: "Reward" }),
   },
+  /*{
+    chains: ["hydration", "basilisk"],
+    event: "stableswapLiquidityAdded",
+    handler: (e, context) => onHydrationStableSwapLiquidityAdded(e, context),
+  },*/
+  {
+    chains: ["hydration", "basilisk"],
+    event: "routerExecuted",
+    handler: (e, context) => onHydrationRouterExecuted(e, context),
+  },
+  // router (Executed)
+  // omnipoolliquiditymining (RewardClaimed)
+  // omnipool (LiquidityRemoved)
   {
     chains: ["hydration", "basilisk"],
     event: "stableswapLiquidityRemoved",
     handler: (e, context) => onHydrationLiquidityRemoved(e, context),
-  },
-  {
-    chains: ["hydration", "basilisk"],
-    event: "stableswapLiquidityAdded",
-    handler: (e, context) => onHydrationStableSwapLiquidityAdded(e, context),
   },
   {
     chains: ["assethub-polkadot", "assethub-kusama"],

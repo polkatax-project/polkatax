@@ -41,7 +41,10 @@ export const extractXcmFees = (
   if (polkadotxcmFeesPaidEv.length > 0) {
     return polkadotxcmFeesPaidEv.reduce((curr, e) => getFees(e) + curr, 0);
   }
-  const xtokensTransferredAssetsEv = tx.event.filter(
+  /**
+   * xtokens are identical to the asset amount transferred on hydration
+   */
+  /*const xtokensTransferredAssetsEv = tx.event.filter(
     (e) =>
       e.module_id === "xtokens" &&
       e.event_id === "TransferredAssets" &&
@@ -52,6 +55,6 @@ export const extractXcmFees = (
       (curr, e) => Number(getPropertyValue("fee", e)?.fun?.Fungible) + curr,
       0,
     );
-  }
+  }*/
   return 0;
 };

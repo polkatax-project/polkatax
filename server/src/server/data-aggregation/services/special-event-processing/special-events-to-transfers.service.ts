@@ -1,5 +1,5 @@
 import { SubscanService } from "../../../blockchain/substrate/api/subscan.service";
-import { SubscanEvent } from "../../../blockchain/substrate/model/subscan-event";
+import { EventDetails, SubscanEvent } from "../../../blockchain/substrate/model/subscan-event";
 import { logger } from "../../../logger/logger";
 import { XcmTransfer } from "../../../blockchain/substrate/model/xcm-transfer";
 import { EventDerivedTransfer } from "../../model/event-derived-transfer";
@@ -7,6 +7,7 @@ import { fetchTokens } from "./fetch-tokens";
 import { eventConfigs } from "./event-configs";
 import { toTransfer } from "./to-transfer";
 import { EventDerivedAssetMovement } from "./event-derived-asset-movement";
+import { TransactionDetails } from "../../../blockchain/substrate/model/transaction";
 
 export class SpecialEventsToTransfersService {
   constructor(private subscanService: SubscanService) {}
@@ -46,7 +47,9 @@ export class SpecialEventsToTransfersService {
 
   async handleEvents(
     chainInfo: { token: string; domain: string },
+    address: string,
     events: SubscanEvent[],
+    transactions: TransactionDetails[],
     xcmList: XcmTransfer[],
     throwOnError = false,
   ): Promise<EventDerivedTransfer[]> {
@@ -58,43 +61,49 @@ export class SpecialEventsToTransfersService {
       groupedEvents[e.extrinsic_index ?? e.timestamp].push(e);
     });
 
-    const eventsOfInterest = events.filter((e) => {
+    const isEventRelevant = (e: SubscanEvent | EventDetails) => {
       const config = this.findMatchingConfig(chainInfo.domain, e);
       if (!config) {
         return false;
       }
-      if (!config.condition) {
-        return true;
-      }
-      return config.condition(
+      return !config.condition || config.condition(
         e,
         groupedEvents[e.extrinsic_index ?? e.timestamp],
         xcmList,
       );
-    });
+    }
+
+    const existingEventDetails: Record<string, EventDetails> = {}
+    transactions.forEach(t => t.event.forEach(e => {
+      if (isEventRelevant(e)) {
+        existingEventDetails[e.event_index] = e
+      }
+    }))
+
+    const eventsOfInterest = events.filter((e) => isEventRelevant(e) && !existingEventDetails[e.event_index]);
 
     const eventDetails = await this.subscanService.fetchEventDetails(
       chainInfo.domain,
       eventsOfInterest,
     );
+    Object.values(existingEventDetails).forEach(e => eventDetails.push(e))
+
     const extras = await fetchTokens(chainInfo, this.subscanService);
 
     const transfersFromEvents = (
       await Promise.all(
         eventDetails.map(async (details) => {
           try {
-            const originalEvent = events.find(
-              (e) => e.event_index === details.original_event_index,
-            );
             const eventsInTx =
               groupedEvents[
-                originalEvent.extrinsic_index ?? originalEvent.timestamp
-              ];
+                details.extrinsic_index ?? details.timestamp
+              ] ?? [];
             const eventDerivedAssetMovements = await this.findMatchingConfig(
               chainInfo.domain,
               details,
             ).handler(details, {
               ...extras,
+              address,
               chainInfo,
               events: eventsInTx,
               xcmList,

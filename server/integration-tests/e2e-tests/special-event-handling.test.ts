@@ -24,7 +24,9 @@ describe("Special event handling", () => {
     );
     const transfers = await specialEventsToTransfersService.handleEvents(
       { token: "DOT", domain: "assethub-polkadot" },
+      '',
       eventsOfInterest.list,
+      [],
       [],
       true,
     );
@@ -43,7 +45,9 @@ describe("Special event handling", () => {
     );
     const transfers = await specialEventsToTransfersService.handleEvents(
       { token: "KSM", domain: "assethub-kusama" },
+      '',
       eventsOfInterest.list,
+      [],
       [],
       true,
     );
@@ -62,7 +66,9 @@ describe("Special event handling", () => {
     );
     const transfers = await specialEventsToTransfersService.handleEvents(
       { token: "HDX", domain: "hydration" },
+      '',
       eventsOfInterest.list,
+      [],
       [],
       true,
     );
@@ -81,7 +87,9 @@ describe("Special event handling", () => {
     );
     const transfers = await specialEventsToTransfersService.handleEvents(
       { token: "DOT", domain: "coretime-polkadot" },
+      '',
       eventsOfInterest.list,
+      [],
       [],
       true,
     );
@@ -100,7 +108,9 @@ describe("Special event handling", () => {
     );
     const transfers = await specialEventsToTransfersService.handleEvents(
       { token: "DOT", domain: "coretime-polkadot" },
+      '',
       eventsOfInterest.list,
+      [],
       [],
       true,
     );
@@ -119,7 +129,9 @@ describe("Special event handling", () => {
     );
     const transfers = await specialEventsToTransfersService.handleEvents(
       { token: "ACA", domain: "acala" },
+      '',
       eventsOfInterest.list,
+      [],
       [],
       true,
     );
@@ -138,7 +150,9 @@ describe("Special event handling", () => {
     );
     const transfers = await specialEventsToTransfersService.handleEvents(
       { token: "MANTA", domain: "manta" },
+      '',
       eventsOfInterest.list,
+      [],
       [],
       true,
     );
@@ -157,7 +171,9 @@ describe("Special event handling", () => {
     );
     const transfers = await specialEventsToTransfersService.handleEvents(
       { token: "MANTA", domain: "manta" },
+      '',
       eventsOfInterest.list,
+      [],
       [],
       true,
     );
@@ -176,7 +192,9 @@ describe("Special event handling", () => {
     );
     const transfers = await specialEventsToTransfersService.handleEvents(
       { token: "MANTA", domain: "manta" },
+      '',
       eventsOfInterest.list,
+      [],
       [],
       true,
     );

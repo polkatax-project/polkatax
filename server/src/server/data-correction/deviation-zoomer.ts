@@ -28,7 +28,6 @@ export class DeviationZoomer {
     chain: { domain: string; token: string },
     address: string,
     portfolioMovements: PortfolioMovement[],
-    unmatchedEvents: SubscanEvent[],
     acceptedDeviations: DeviationLimit[],
     minBlock: Block,
     maxBlock: Block,
@@ -70,7 +69,6 @@ export class DeviationZoomer {
         chain,
         address,
         portfolioMovements,
-        unmatchedEvents,
         acceptedDeviations,
         interval.startBlock,
         interval.endBlock,
@@ -85,7 +83,6 @@ export class DeviationZoomer {
       this.compensateDeviation(
         address,
         portfolioMovements,
-        unmatchedEvents,
         { ...tokenDeviation, symbol: tokenSymbol, unique_id: tokenUniqueId },
         interval.startBlock,
         interval.endBlock,
@@ -250,7 +247,6 @@ export class DeviationZoomer {
   compensateDeviation(
     address: string,
     taxableEvents: PortfolioMovement[],
-    unmatchedEvents: SubscanEvent[],
     tokenDeviation: {
       deviation: number;
       signedDeviation: number;
@@ -260,25 +256,9 @@ export class DeviationZoomer {
     startBlock: Block,
     endBlock: Block,
   ) {
-    const matchingEvents = unmatchedEvents.filter(
-      (e) =>
-        e.timestamp <= endBlock.timestamp && e.timestamp > startBlock.timestamp,
-    );
-
-    const extrinsicIndices = [
-      ...new Set(
-        matchingEvents
-          .filter((e) => !!e.extrinsic_index)
-          .map((e) => e.extrinsic_index),
-      ),
-    ];
-    const extrinsicIndex =
-      extrinsicIndices.length === 1 ? extrinsicIndices[0] : undefined;
     const existingTx = taxableEvents.find(
       (p) =>
-        (extrinsicIndex && extrinsicIndex === p.extrinsic_index) ||
-        (!extrinsicIndex &&
-          p.timestamp <= endBlock.timestamp &&
+        (p.timestamp <= endBlock.timestamp &&
           p.timestamp > startBlock.timestamp),
     );
     const transferData = {
@@ -288,11 +268,7 @@ export class DeviationZoomer {
       from: tokenDeviation.signedDeviation < 0 ? address : undefined,
       amount: tokenDeviation.signedDeviation,
       provenance: "deviationCompensation",
-      events: matchingEvents.map((e) => ({
-        moduleId: e.module_id,
-        eventId: e.event_id,
-        eventIndex: e.event_index,
-      })),
+      events: [],
     };
     if (existingTx) {
       logger.info(
@@ -304,12 +280,8 @@ export class DeviationZoomer {
         `Fix: Creating new tx with ${tokenDeviation.signedDeviation} ${tokenDeviation.symbol}`,
       );
       taxableEvents.push({
-        events: matchingEvents.map((e) => ({
-          moduleId: e.module_id,
-          eventId: e.event_id,
-          eventIndex: e.event_index,
-        })),
-        extrinsic_index: extrinsicIndex,
+        events: [],
+        extrinsic_index: undefined,
         block: endBlock.block_num,
         timestamp: endBlock.timestamp,
         provenance: "deviationCompensation",
