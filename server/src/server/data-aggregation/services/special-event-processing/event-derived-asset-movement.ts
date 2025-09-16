@@ -12,4 +12,5 @@ export type EventDerivedAssetMovement = {
   tokenMultiLocation?: MultiLocation;
   xcm?: XcmTransfer;
   label?: Label;
+  semanticGroupId?: string;
 };

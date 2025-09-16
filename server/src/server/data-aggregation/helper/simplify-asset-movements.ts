@@ -11,19 +11,36 @@ const splitPortfolioMovement = (
   portfolioMovement: PortfolioMovement,
   semanticGroupTransfers: Record<string, Record<string, TaxableEventTransfer>>,
 ) => {
-  const movements = Object.values(semanticGroupTransfers).map((transfers) => {
-    return {
-      ...portfolioMovement,
-      transfers: Object.values(transfers),
-      label: Object.values(transfers)[0].label,
-      feeUsed: 0,
-      feeUsedFiat: 0,
-      feeTokenUniqueId: undefined,
-    };
-  });
-  portfolioMovement.transfers = movements[0].transfers;
-  portfolioMovement.label = movements[0].label;
-  return movements.slice(1);
+  const movements = Object.values(semanticGroupTransfers)
+    .filter((transfers) =>
+      Object.values(transfers).some((t) => !isAlmostZero(t.amount)),
+    )
+    .map((transfersRecord, idx) => {
+      const transfers = Object.values(transfersRecord);
+      const isXcm = transfers.some(
+        (t) => t.label === "XCM transfer" || t.module === "xcm",
+      );
+      return {
+        ...portfolioMovement,
+        transfers: transfers,
+        feeUsed: idx === 0 ? portfolioMovement.feeUsed : 0,
+        feeUsedFiat: idx === 0 ? portfolioMovement.feeUsedFiat : 0,
+        feeTokenSymbol:
+          idx === 0 ? portfolioMovement.feeTokenSymbol : undefined,
+        feeTokenUniqueId:
+          idx === 0 ? portfolioMovement.feeTokenUniqueId : undefined,
+        xcmFee: isXcm ? portfolioMovement.xcmFee : 0,
+        xcmFeeFiat: isXcm ? portfolioMovement.xcmFeeFiat : 0,
+        xcmFeeTokenSymbol: isXcm
+          ? portfolioMovement.xcmFeeTokenSymbol
+          : undefined,
+        xcmFeeTokenUniqueId: isXcm
+          ? portfolioMovement.xcmFeeTokenUniqueId
+          : undefined,
+      };
+    })
+    .filter((p) => !!p);
+  return movements;
 };
 
 export const simplifyAssetMovementsSemanticId = (
@@ -40,7 +57,7 @@ export const simplifyAssetMovementsSemanticId = (
       taxEvent.transfers
         .filter((t) => t.amount !== 0)
         .forEach((t: TaxableEventTransfer) => {
-          const semanticGroup = t.semanticGroupId ?? "none"
+          const semanticGroup = t.semanticGroupId ?? "none";
           transfers[semanticGroup] = transfers[semanticGroup] ?? {};
           if (!transfers[semanticGroup][t.asset_unique_id]) {
             transfers[semanticGroup][t.asset_unique_id] = { ...t };
@@ -65,13 +82,18 @@ export const simplifyAssetMovementsSemanticId = (
         additionalPortfolioMovements.forEach((p) =>
           newPortfolioMovements.push(p),
         );
+        taxEvent["to_delete"] = true;
       } else {
         taxEvent.transfers = Object.values(transfers).flatMap((semanticGroup) =>
           Object.values(semanticGroup),
         );
       }
     }
+  });
 
+  taxableEvents = taxableEvents.filter((t) => !t["to_delete"]);
+  newPortfolioMovements.forEach((p) => taxableEvents.push(p));
+  taxableEvents.forEach((taxEvent) => {
     taxEvent.transfers = taxEvent.transfers
       .filter((transfer) => !isAlmostZero(transfer.amount))
       .map((transfer) => ({
@@ -82,6 +104,6 @@ export const simplifyAssetMovementsSemanticId = (
           : undefined,
       }));
   });
-  newPortfolioMovements.forEach((p) => taxableEvents.push(p));
+
   return taxableEvents;
 };

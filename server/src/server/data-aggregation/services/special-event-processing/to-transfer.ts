@@ -11,6 +11,7 @@ export const toTransfer = (
   token: { symbol: string; decimals: number; unique_id?: string },
   xcm?: XcmTransfer,
   label?: Label,
+  semanticGroupId?: string,
 ): EventDerivedTransfer => {
   if (
     (to === undefined && from === undefined) ||
@@ -38,5 +39,6 @@ export const toTransfer = (
     messageHash: xcm?.messageHash,
     label,
     module: xcm ? "xcm" : undefined,
+    semanticGroupId,
   };
 };

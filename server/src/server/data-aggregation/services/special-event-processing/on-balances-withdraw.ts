@@ -5,7 +5,7 @@ import { extractAddress, findMatchingXcm, getPropertyValue } from "./helper";
 
 export const onBalancesWithdraw = async (
   event: EventDetails,
-  { tokens, xcmList, label }: EventHandlerContext,
+  { tokens, xcmList, label, semanticGroupId }: EventHandlerContext,
 ): Promise<EventDerivedAssetMovement> => {
   const from = extractAddress("who", event);
   const token = tokens.find((t) => t.native);
@@ -17,5 +17,6 @@ export const onBalancesWithdraw = async (
     token,
     xcm,
     label: (label ?? xcm) ? "XCM transfer" : undefined,
+    semanticGroupId,
   };
 };

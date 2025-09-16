@@ -111,7 +111,7 @@ const zoomIntoErrorTokensChange = async (
         portfolioMovements: {
           portfolioMovements,
           minBlock,
-          maxBlock
+          maxBlock,
         },
       },
     );

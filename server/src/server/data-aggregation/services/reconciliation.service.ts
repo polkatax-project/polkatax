@@ -128,11 +128,6 @@ export class ReconciliationService {
       indexedTx[portfolioMovement.extrinsic_index],
     );
     if (fees > 0) {
-      if (portfolioMovement.label !== "XCM transfer") {
-        logger.warn(
-          `${portfolioMovement.extrinsic_index} has XCM fee but is not labelled as XCM transfer`,
-        );
-      }
       const xcmFeeTransfer = portfolioMovement.transfers.find((t) =>
         isVeryCloseTo(
           -t.amount * 10 ** getDecimals(t.asset_unique_id, tokens),
@@ -206,7 +201,6 @@ export class ReconciliationService {
         transfer.toChain = matchingTransfer.destChain;
         transfer.semanticGroupId = matchingTransfer.messageHash;
         transfer.label = "XCM transfer";
-        portfolioMovement.label = portfolioMovement.label ?? transfer.label;
       }
     }
   }
@@ -258,8 +252,7 @@ export class ReconciliationService {
         transfer.fromChain = matchingSemanticTransfer.fromChain;
         transfer.toChain = matchingSemanticTransfer.destChain;
         transfer.semanticGroupId =
-          (matchingSemanticTransfer as EventDerivedTransfer)
-            .original_event_id ??
+          (matchingSemanticTransfer as EventDerivedTransfer).semanticGroupId ??
           (matchingSemanticTransfer as XcmAssetMovement).messageHash;
         transfer.label =
           (matchingSemanticTransfer as EventDerivedTransfer)?.label ??
@@ -267,7 +260,6 @@ export class ReconciliationService {
             ? "XCM transfer"
             : undefined);
         transfer["reconciled"] = true;
-        portfolioMovement.label = portfolioMovement.label ?? transfer.label;
         matchingSemanticTransfer["tainted"] = true;
       }
     }
@@ -296,7 +288,6 @@ export class ReconciliationService {
           transfer.label =
             transfer.amount > 0 ? "Staking reward" : "Staking slashed";
           transfer.semanticGroupId = transfer.label;
-          portfolioMovement.label = transfer.label;
         }
       }
     }
@@ -310,6 +301,9 @@ export class ReconciliationService {
     /**
      * Using transaction fee information
      */
+    if (portfolioMovement.extrinsic_index === "5960836-2") {
+      console.log("TODO:!");
+    }
     const matchingTx = indexedTx[portfolioMovement.extrinsic_index];
     if (!matchingTx) {
       return;

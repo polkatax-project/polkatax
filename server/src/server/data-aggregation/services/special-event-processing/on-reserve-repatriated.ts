@@ -16,5 +16,6 @@ export const onReserveRepatriated = async (
     from,
     rawAmount: getPropertyValue("amount", event),
     token,
+    semanticGroupId: event.event_index,
   };
 };

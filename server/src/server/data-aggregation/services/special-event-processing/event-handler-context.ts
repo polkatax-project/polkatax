@@ -8,4 +8,5 @@ export type EventHandlerContext = AssetInfos & { events: SubscanEvent[] } & {
   label?: Label;
   chainInfo: { domain: string; token: string };
   address: string;
+  semanticGroupId?: string;
 };

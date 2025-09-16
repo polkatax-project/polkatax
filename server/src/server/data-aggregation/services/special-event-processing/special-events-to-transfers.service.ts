@@ -1,5 +1,8 @@
 import { SubscanService } from "../../../blockchain/substrate/api/subscan.service";
-import { EventDetails, SubscanEvent } from "../../../blockchain/substrate/model/subscan-event";
+import {
+  EventDetails,
+  SubscanEvent,
+} from "../../../blockchain/substrate/model/subscan-event";
 import { logger } from "../../../logger/logger";
 import { XcmTransfer } from "../../../blockchain/substrate/model/xcm-transfer";
 import { EventDerivedTransfer } from "../../model/event-derived-transfer";
@@ -41,6 +44,7 @@ export class SpecialEventsToTransfersService {
           a?.token,
           a.xcm,
           a.label,
+          a.semanticGroupId,
         ),
       );
   }
@@ -66,27 +70,34 @@ export class SpecialEventsToTransfersService {
       if (!config) {
         return false;
       }
-      return !config.condition || config.condition(
-        e,
-        groupedEvents[e.extrinsic_index ?? e.timestamp],
-        xcmList,
+      return (
+        !config.condition ||
+        config.condition(
+          e,
+          groupedEvents[e.extrinsic_index ?? e.timestamp],
+          xcmList,
+        )
       );
-    }
+    };
 
-    const existingEventDetails: Record<string, EventDetails> = {}
-    transactions.forEach(t => t.event.forEach(e => {
-      if (isEventRelevant(e)) {
-        existingEventDetails[e.event_index] = e
-      }
-    }))
+    const existingEventDetails: Record<string, EventDetails> = {};
+    transactions.forEach((t) =>
+      t.event.forEach((e) => {
+        if (isEventRelevant(e)) {
+          existingEventDetails[e.event_index] = e;
+        }
+      }),
+    );
 
-    const eventsOfInterest = events.filter((e) => isEventRelevant(e) && !existingEventDetails[e.event_index]);
+    const eventsOfInterest = events.filter(
+      (e) => isEventRelevant(e) && !existingEventDetails[e.event_index],
+    );
 
     const eventDetails = await this.subscanService.fetchEventDetails(
       chainInfo.domain,
       eventsOfInterest,
     );
-    Object.values(existingEventDetails).forEach(e => eventDetails.push(e))
+    Object.values(existingEventDetails).forEach((e) => eventDetails.push(e));
 
     const extras = await fetchTokens(chainInfo, this.subscanService);
 
@@ -95,9 +106,7 @@ export class SpecialEventsToTransfersService {
         eventDetails.map(async (details) => {
           try {
             const eventsInTx =
-              groupedEvents[
-                details.extrinsic_index ?? details.timestamp
-              ] ?? [];
+              groupedEvents[details.extrinsic_index ?? details.timestamp] ?? [];
             const eventDerivedAssetMovements = await this.findMatchingConfig(
               chainInfo.domain,
               details,

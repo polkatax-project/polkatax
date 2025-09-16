@@ -15,5 +15,6 @@ export const onCoretimePurchased = async (
     rawAmount: getPropertyValue("price", event),
     token,
     label: "Coretime purchase",
+    semanticGroupId: event.event_index,
   };
 };

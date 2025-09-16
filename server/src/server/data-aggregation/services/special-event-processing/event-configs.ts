@@ -11,6 +11,7 @@ import { onBalancesWithdraw } from "./on-balances-withdraw";
 import { onCoretimePurchased } from "./on-coretime-purchased";
 import { onHydrationLiquidityRemoved } from "./on-hydration-liquidity-removed";
 import { onHydrationRouterExecuted } from "./on-hydration-router-executed";
+import { onHydrationStableSwapLiquidityAdded } from "./on-hydration-stable-swap-liquidity-added";
 import { onMigratedDelegation } from "./on-migrated-delegation";
 import { onReserveRepatriated } from "./on-reserve-repatriated";
 import {
@@ -51,7 +52,11 @@ export const eventConfigs: {
     chains: ["energywebx"],
     event: "balancesDeposit",
     handler: (e, context) =>
-      onBalancesDeposit(e, { ...context, label: "XCM transfer" }),
+      onBalancesDeposit(e, {
+        ...context,
+        label: "XCM transfer",
+        semanticGroupId: e.event_index,
+      }),
     condition: (event, events) =>
       !!events.find(
         (e) => e.module_id + e.event_id === "tokenmanagerAVTLifted",
@@ -61,7 +66,11 @@ export const eventConfigs: {
     chains: ["energywebx"],
     event: "balancesWithdraw",
     handler: (e, context) =>
-      onBalancesWithdraw(e, { ...context, label: "XCM transfer" }),
+      onBalancesWithdraw(e, {
+        ...context,
+        label: "XCM transfer",
+        semanticGroupId: e.event_index,
+      }),
     condition: (event, events) =>
       !!events.find(
         (e) => e.module_id + e.event_id === "tokenmanagerAvtLowered",
@@ -71,19 +80,22 @@ export const eventConfigs: {
     chains: ["acala"],
     event: "earningBonded",
     handler: (e, context) =>
-      onBalancesDeposit(e, { ...context, label: "Reward" }),
+      onBalancesDeposit(e, {
+        ...context,
+        label: "Reward",
+        semanticGroupId: e.event_index,
+      }),
   },
-  /*{
+  {
     chains: ["hydration", "basilisk"],
     event: "stableswapLiquidityAdded",
     handler: (e, context) => onHydrationStableSwapLiquidityAdded(e, context),
-  },*/
+  },
   {
     chains: ["hydration", "basilisk"],
     event: "routerExecuted",
     handler: (e, context) => onHydrationRouterExecuted(e, context),
   },
-  // router (Executed)
   // omnipoolliquiditymining (RewardClaimed)
   // omnipool (LiquidityRemoved)
   {

@@ -9,4 +9,5 @@ export interface EventDerivedTransfer extends Transfer {
   destChain?: string;
   messageHash?: string;
   label?: Label;
+  semanticGroupId?: string;
 }

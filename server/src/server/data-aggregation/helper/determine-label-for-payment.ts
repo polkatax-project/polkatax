@@ -451,6 +451,13 @@ export const determineLabelForPayment = (
     return portfolioMovement.label;
   }
 
+  const labelFromTransfers = portfolioMovement.transfers
+    .map((t) => t.label)
+    .filter((l) => !!l);
+  if (labelFromTransfers.length === 1) {
+    return labelFromTransfers[0];
+  }
+
   if (portfolioMovement.callModule && portfolioMovement.callModuleFunction) {
     const moduleMatch = getCallModuleClassificationRules(chain).find(
       (c) => c.module === portfolioMovement.callModule,

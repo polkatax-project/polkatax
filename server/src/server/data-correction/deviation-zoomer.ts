@@ -258,8 +258,7 @@ export class DeviationZoomer {
   ) {
     const existingTx = taxableEvents.find(
       (p) =>
-        (p.timestamp <= endBlock.timestamp &&
-          p.timestamp > startBlock.timestamp),
+        p.timestamp <= endBlock.timestamp && p.timestamp > startBlock.timestamp,
     );
     const transferData = {
       symbol: tokenDeviation.symbol,
