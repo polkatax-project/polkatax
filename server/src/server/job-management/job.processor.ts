@@ -44,7 +44,7 @@ export class JobProcessor {
       },
     );
     job.data = {
-      values: result.portfolioMovements
+      values: result.portfolioMovements,
     };
 
     logger.info(

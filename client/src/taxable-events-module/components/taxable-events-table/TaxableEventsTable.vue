@@ -118,7 +118,6 @@ import { TaxData } from '../../../shared-module/model/tax-data';
 import { TaxableEvent } from '../../../shared-module/model/taxable-event';
 import {
   formatCryptoAmount,
-  formatCurrency,
 } from '../../../shared-module/util/number-formatters';
 import { useSharedStore } from '../../../shared-module/store/shared.store';
 import { exportKoinlyCsv } from '../../../shared-module/service/export-koinly-csv';
@@ -262,22 +261,6 @@ const rows = computed(() => {
             }`
           : undefined,
       ].filter((value) => !!value),
-      /*fiatSent: data.transfers
-        .filter((t) => t.amount < 0)
-        .map((t) =>
-          formatCurrency(
-            Math.abs(t.fiatValue ?? NaN),
-            taxData.value?.currency || '-'
-          )
-        ),
-      fiatReceived: data.transfers
-        .filter((t) => t.amount > 0)
-        .map((t) =>
-          formatCurrency(
-            Math.abs(t.fiatValue ?? NaN),
-            taxData.value?.currency || '-'
-          )
-        ),*/
       id: data.id,
       taxCategory: 'Income',
       isTransferToSelf: isTransferToSelf(data),

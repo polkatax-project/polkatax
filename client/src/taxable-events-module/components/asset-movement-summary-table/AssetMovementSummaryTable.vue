@@ -1,5 +1,5 @@
 <template>
-  <div class="q-pa-md">
+  <div class="q-pa-md q-mx-auto content">
     <q-table
       title="Asset transfers summary"
       :rows="rows"
@@ -17,7 +17,6 @@ import { useTaxableEventStore } from '../../store/taxable-events.store';
 import { TaxData } from '../../../shared-module/model/tax-data';
 import {
   formatCryptoAmount,
-  formatCurrency,
 } from '../../../shared-module/util/number-formatters';
 
 const store = useTaxableEventStore();
@@ -72,11 +71,9 @@ const rows = computed(() => {
         }
         if (t.amount < 0) {
           tokenSummary[symbol].sentAmount += t.amount;
-          tokenSummary[symbol].fiatValueSent += t.fiatValue ?? NaN;
         }
         if (t.amount > 0) {
           tokenSummary[symbol].receivedAmount += t.amount;
-          tokenSummary[symbol].fiatValueReceived += t.fiatValue ?? NaN;
         }
       });
     });
@@ -101,34 +98,12 @@ const columns = computed(() => [
     sortable: true,
   },
   {
-    name: 'fiatValueReceived',
-    align: 'right',
-    label: 'Value received',
-    field: (row: SummaryItem) =>
-      formatCurrency(
-        Math.abs(row.fiatValueReceived),
-        taxData.value?.currency || '-'
-      ),
-    sortable: true,
-  },
-  {
     name: 'sentAmount',
     align: 'right',
     label: 'Amount sent',
     field: (row: SummaryItem) =>
       formatCryptoAmount(Math.abs(row.sentAmount ?? 0)),
     sortable: true,
-  },
-  {
-    name: 'fiatValueSent',
-    align: 'right',
-    label: 'Value sent',
-    field: (row: SummaryItem) =>
-      formatCurrency(
-        Math.abs(row.fiatValueSent),
-        taxData.value?.currency || '-'
-      ),
-    sortable: true,
-  },
+  }
 ]);
 </script>

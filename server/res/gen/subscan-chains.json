@@ -226,7 +226,8 @@
       "parachainStaking": false,
       "delegatedStaking": false,
       "relay": "polkadot",
-      "paraId": 2035
+      "paraId": 2035,
+      "excluded": true
     },
     {
       "domain": "people-polkadot",
@@ -309,7 +310,7 @@
       "tokenPallet": false,
       "evmPallet": true,
       "assetPallet": true,
-      "foreignAssetsPallet": false,
+      "foreignAssetsPallet": true,
       "standardStaking": false,
       "parachainStaking": false,
       "delegatedStaking": false,

@@ -12,6 +12,7 @@ import { onCoretimePurchased } from "./on-coretime-purchased";
 import { onHydrationLiquidityRemoved } from "./on-hydration-liquidity-removed";
 import { onHydrationRouterExecuted } from "./on-hydration-router-executed";
 import { onHydrationStableSwapLiquidityAdded } from "./on-hydration-stable-swap-liquidity-added";
+import { onHydrationXykRewardClaimed } from "./on-hydration-xyk-reward-claimed";
 import { onMigratedDelegation } from "./on-migrated-delegation";
 import { onReserveRepatriated } from "./on-reserve-repatriated";
 import {
@@ -102,6 +103,11 @@ export const eventConfigs: {
     chains: ["hydration", "basilisk"],
     event: "stableswapLiquidityRemoved",
     handler: (e, context) => onHydrationLiquidityRemoved(e, context),
+  },
+  {
+    chains: ["hydration", "basilisk"],
+    event: "xykliquidityminingRewardClaimed",
+    handler: (e, context) => onHydrationXykRewardClaimed(e, context),
   },
   {
     chains: ["assethub-polkadot", "assethub-kusama"],

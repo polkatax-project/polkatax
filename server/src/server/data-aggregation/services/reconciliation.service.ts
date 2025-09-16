@@ -301,9 +301,6 @@ export class ReconciliationService {
     /**
      * Using transaction fee information
      */
-    if (portfolioMovement.extrinsic_index === "5960836-2") {
-      console.log("TODO:!");
-    }
     const matchingTx = indexedTx[portfolioMovement.extrinsic_index];
     if (!matchingTx) {
       return;

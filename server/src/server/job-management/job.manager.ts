@@ -34,6 +34,7 @@ export class JobManager {
   getChains(wallet: string): string[] {
     const isEvm = isEvmAddress(wallet);
     return subscanChains.chains
+      .filter((c) => !c.excluded)
       .filter(
         (c) =>
           Object.keys(substrateNodesWsEndpoints).includes(c.domain) ||
