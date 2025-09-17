@@ -55,10 +55,6 @@ export const simplifyAssetMovementsSemanticId = (
         string,
         Record<string, TaxableEventTransfer>
       > = {};
-      if (taxEvent.extrinsic_index === "6511958-2") {
-        console.log("TODO:!");
-      }
-
       taxEvent.transfers
         .filter((t) => t.amount !== 0)
         .forEach((t: TaxableEventTransfer) => {
