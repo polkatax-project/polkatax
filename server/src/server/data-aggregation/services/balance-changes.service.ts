@@ -1,5 +1,6 @@
 import { convertToCanonicalAddress } from "../../../common/util/convert-to-canonical-address";
 import { SubscanService } from "../../blockchain/substrate/api/subscan.service";
+import { Asset } from "../../blockchain/substrate/model/asset";
 import { MultiLocation } from "../../blockchain/substrate/model/multi-location";
 import { Transfer } from "../../blockchain/substrate/model/raw-transfer";
 import {
@@ -8,9 +9,13 @@ import {
 } from "../../blockchain/substrate/model/subscan-event";
 import { TransactionDetails } from "../../blockchain/substrate/model/transaction";
 import { logger } from "../../logger/logger";
+import { extractAssethubAsset } from "../helper/extract-assethub-asset";
 import { FetchPortfolioMovementsRequest } from "../model/fetch-portfolio-movements.request";
 import { PortfolioMovement } from "../model/portfolio-movement";
-import { getPropertyValue } from "./special-event-processing/helper";
+import {
+  extractAddress,
+  getPropertyValue,
+} from "./special-event-processing/helper";
 import isEqual from "lodash.isequal";
 
 export class BalanceChangesService {
@@ -55,6 +60,19 @@ export class BalanceChangesService {
       portfolioMovements,
     );
 
+    const tokens = await this.subscanService.scanTokensAndAssets(
+      request.chain.domain,
+    );
+    
+    await this.fetchAssetconversionAssethub(
+      request.chain.domain,
+      request.address,
+      subscanEvents,
+      transactions,
+      tokens,
+      portfolioMovements,
+    );
+
     let transfers = await this.subscanService.fetchAllTransfers({
       chainName: request.chain.domain,
       ...request,
@@ -71,6 +89,54 @@ export class BalanceChangesService {
       `Exit fetchAllBalanceChanges for ${request.chain.domain} and ${request.address} with ${portfolioMovements.length} entries`,
     );
     return portfolioMovements;
+  }
+
+  private async fetchAssetconversionAssethub(
+    chain: string,
+    address: string,
+    subscanEvents: SubscanEvent[],
+    transactions: TransactionDetails[],
+    tokens: Asset[],
+    portfolioMovements: PortfolioMovement[],
+  ) {
+    const assetConversionEvents = await this.fetchMissingEventDetails(
+      chain,
+      subscanEvents,
+      transactions,
+      "assetconversion",
+      ["SwapExecuted"],
+    );
+    assetConversionEvents.forEach((event) => {
+      const sender = extractAddress("who", event);
+      if (sender === address) {
+        const amountIn = getPropertyValue("amount_in", event);
+        const route: { col1: any; col2: string }[] = getPropertyValue(
+          "path",
+          event,
+        );
+        route
+          .filter((r) => r.col2 === amountIn) // r.col2 === amountOut is delibarately ignored because there's a matching deposit...
+          .forEach((entry) => {
+            const token = extractAssethubAsset(entry.col1, tokens);
+            if (!token) {
+              logger.warn(
+                `Could not extract token in assetconversion with id ${entry.col1}`,
+              );
+            } else {
+              const amount = -Number(entry.col2) / 10 ** token.decimals;
+              this.update(
+                portfolioMovements,
+                event,
+                token.symbol,
+                token.unique_id,
+                sender,
+                undefined,
+                amount,
+              );
+            }
+          });
+      }
+    });
   }
 
   private addToPortFolioMovements(
@@ -342,8 +408,8 @@ export class BalanceChangesService {
         );
       }
       if (!foreignAsset) {
-        logger.warn(`Foreign asset ${JSON.stringify(assetId)} not found.`)
-        continue
+        logger.warn(`Foreign asset ${JSON.stringify(assetId)} not found.`);
+        continue;
       }
       let amount = 0;
       let to = undefined;
