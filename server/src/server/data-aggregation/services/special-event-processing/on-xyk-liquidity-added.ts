@@ -20,7 +20,7 @@ export const onXykLiquidityAdded = async (
       rawAmount: amountA,
       token: assetA,
       label: "Liquidity added",
-      semanticGroupId: event.event_index,
+      semanticGroupId: event.original_event_index,
     },
     {
       event,
@@ -28,7 +28,7 @@ export const onXykLiquidityAdded = async (
       rawAmount: amountB,
       token: assetB,
       label: "Liquidity added",
-      semanticGroupId: event.event_index,
+      semanticGroupId: event.original_event_index,
     },
   ];
 };

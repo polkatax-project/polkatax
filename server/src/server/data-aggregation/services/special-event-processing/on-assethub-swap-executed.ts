@@ -28,7 +28,7 @@ export const onAssethubSwapExecuted = async (
         token,
         tokenMultiLocation: entry.col1,
         label: "Swap" as const,
-        semanticGroupId: event.event_index,
+        semanticGroupId: event.original_event_index,
       };
     });
   return movements;

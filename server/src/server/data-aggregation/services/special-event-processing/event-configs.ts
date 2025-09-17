@@ -11,9 +11,9 @@ import { onBalancesDeposit } from "./on-balances-deposit";
 import { onBalancesWithdraw } from "./on-balances-withdraw";
 import { onCoretimePurchased } from "./on-coretime-purchased";
 import { onHydrationLiquidityRemoved } from "./on-hydration-liquidity-removed";
+import { onHydrationOmnipoolLiquidityAdded } from "./on-hydration-omnipool-liquidity-added";
 import { onHydrationRouterExecuted } from "./on-hydration-router-executed";
-import { onHydrationStableSwapLiquidityAdded } from "./on-hydration-stable-swap-liquidity-added";
-import { onHydrationXykRewardClaimed } from "./on-hydration-xyk-reward-claimed";
+import { onHydrationRewardClaimed } from "./on-hydration-reward-claimed";
 import { onMigratedDelegation } from "./on-migrated-delegation";
 import { onReserveRepatriated } from "./on-reserve-repatriated";
 import { onXykLiquidityAdded } from "./on-xyk-liquidity-added";
@@ -89,18 +89,22 @@ export const eventConfigs: {
         semanticGroupId: e.event_index,
       }),
   },
-  {
+  /*{
     chains: ["hydration", "basilisk"],
     event: "stableswapLiquidityAdded",
     handler: (e, context) => onHydrationStableSwapLiquidityAdded(e, context),
+  },*/
+  {
+    chains: ["hydration", "basilisk"],
+    event: "omnipoolLiquidityAdded",
+    handler: (e, context) => onHydrationOmnipoolLiquidityAdded(e, context),
   },
   {
     chains: ["hydration", "basilisk"],
     event: "routerExecuted",
     handler: (e, context) => onHydrationRouterExecuted(e, context),
   },
-  // omnipoolliquiditymining (RewardClaimed)
-  // omnipool (LiquidityRemoved)
+
   {
     chains: ["hydration", "basilisk"],
     event: "stableswapLiquidityRemoved",
@@ -109,7 +113,22 @@ export const eventConfigs: {
   {
     chains: ["hydration", "basilisk"],
     event: "xykliquidityminingRewardClaimed",
-    handler: (e, context) => onHydrationXykRewardClaimed(e, context),
+    handler: (e, context) => onHydrationRewardClaimed(e, context),
+  },
+  {
+    chains: ["hydration", "basilisk"],
+    event: "omnipoolliquidityminingRewardClaimed",
+    handler: (e, context) => onHydrationRewardClaimed(e, context),
+  },
+  {
+    chains: ["hydration", "basilisk"],
+    event: "xykLiquidityAdded",
+    handler: (e, context) => onXykLiquidityAdded(e, context),
+  },
+  {
+    chains: ["hydration", "basilisk"],
+    event: "assetregistryExistentialDepositPaid",
+    handler: (e, context) => onAssetRegistryExistentialDepositPaid(e, context),
   },
   {
     chains: ["assethub-polkadot", "assethub-kusama"],
@@ -135,15 +154,5 @@ export const eventConfigs: {
     chains: ["manta"],
     event: "zenlinkprotocolLiquidityAdded",
     handler: (e, context) => onZenlinkProtcolLiquidityAdded(e, context),
-  },
-  {
-    chains: ["hydration", "basilisk"],
-    event: "xykLiquidityAdded",
-    handler: (e, context) => onXykLiquidityAdded(e, context),
-  },
-  {
-    chains: ["hydration", "basilisk"],
-    event: "assetregistryExistentialDepositPaid",
-    handler: (e, context) => onAssetRegistryExistentialDepositPaid(e, context),
   },
 ];

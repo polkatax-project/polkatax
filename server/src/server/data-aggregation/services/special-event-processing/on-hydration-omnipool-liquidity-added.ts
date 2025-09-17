@@ -1,20 +1,20 @@
 import { EventDetails } from "../../../blockchain/substrate/model/subscan-event";
 import { EventDerivedAssetMovement } from "./event-derived-asset-movement";
 import { EventHandlerContext } from "./event-handler-context";
-import { extractAddress, getPropertyValue } from "./helper";
+import { extractAddress, extractToken, getPropertyValue } from "./helper";
 
-export const onCoretimePurchased = async (
+export const onHydrationOmnipoolLiquidityAdded = async (
   event: EventDetails,
   { tokens }: EventHandlerContext,
 ): Promise<EventDerivedAssetMovement> => {
   const from = extractAddress("who", event);
-  const token = tokens.find((t) => t.native);
+  const token = extractToken("asset_id", event, tokens);
   return {
     event,
     from,
-    rawAmount: getPropertyValue("price", event),
+    rawAmount: getPropertyValue("amount", event),
     token,
-    label: "Coretime purchase",
+    label: "Liquidity added",
     semanticGroupId: event.original_event_index,
   };
 };

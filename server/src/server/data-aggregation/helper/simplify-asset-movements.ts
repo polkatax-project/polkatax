@@ -4,7 +4,7 @@ import {
 } from "../model/portfolio-movement";
 
 const isAlmostZero = (value: number) => {
-  return Math.abs(value) < 1e-10;
+  return Math.abs(value) < 1e-8;
 };
 
 const splitPortfolioMovement = (

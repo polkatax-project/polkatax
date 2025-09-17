@@ -76,6 +76,28 @@ describe("Special event handling", () => {
     verifyEventTransfersAreValid(transfers);
   }, 120_000);
 
+  /*test("verify hydration stableswap LiquidityAdded", async () => {
+    const eventsOfInterest = await subscanApi.searchEvents(
+      "hydration",
+      undefined,
+      "stableswap",
+      "LiquidityAdded",
+      0,
+      0,
+    );
+
+    const transfers = await specialEventsToTransfersService.handleEvents(
+      { token: "HDX", domain: "hydration" },
+      "",
+      eventsOfInterest.list,
+      [],
+      [],
+      true,
+    );
+    expect(transfers.length).toBe(100);
+    verifyEventTransfersAreValid(transfers);
+  }, 120_000);*/
+
   test("verify coretime broker Purchased data extraction", async () => {
     const eventsOfInterest = await subscanApi.searchEvents(
       "coretime-polkadot",
@@ -229,6 +251,48 @@ describe("Special event handling", () => {
       undefined,
       "assetregistry",
       "ExistentialDepositPaid",
+      0,
+      0,
+    );
+    const transfers = await specialEventsToTransfersService.handleEvents(
+      { token: "HDX", domain: "hydration" },
+      "",
+      eventsOfInterest.list,
+      [],
+      [],
+      true,
+    );
+    expect(transfers.length).toBe(100);
+    verifyEventTransfersAreValid(transfers);
+  }, 120_000);
+
+  test("verify hydration omnipoolliquiditymining RewardClaimed", async () => {
+    const eventsOfInterest = await subscanApi.searchEvents(
+      "hydration",
+      undefined,
+      "omnipoolliquiditymining",
+      "RewardClaimed",
+      0,
+      0,
+    );
+    const transfers = await specialEventsToTransfersService.handleEvents(
+      { token: "HDX", domain: "hydration" },
+      "",
+      eventsOfInterest.list,
+      [],
+      [],
+      true,
+    );
+    expect(transfers.length).toBe(100);
+    verifyEventTransfersAreValid(transfers);
+  }, 120_000);
+
+  test("verify hydration omnipool LiquidityAdded", async () => {
+    const eventsOfInterest = await subscanApi.searchEvents(
+      "hydration",
+      undefined,
+      "omnipool",
+      "LiquidityAdded",
       0,
       0,
     );
