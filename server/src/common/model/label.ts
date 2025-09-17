@@ -5,6 +5,7 @@ export type Label =
   | "Liquidity removed"
   | "Liquidity added"
   | "Swap"
+  | "Existential deposit paid"
   | "Crowdloan contribution"
   | "Liquid staking token minted"
   | "Liquid staking token redeemed"

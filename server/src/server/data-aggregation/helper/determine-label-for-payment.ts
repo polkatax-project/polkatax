@@ -257,10 +257,6 @@ const callModuleClassifications: CallModuleClassification[] = [
             name: "add_liquidity_and_join_farms",
             label: "Liquidity added" as const,
           },
-          {
-            name: "add_liquidity",
-            label: "Liquidity added" as const,
-          },
         ],
       },
       {
@@ -451,11 +447,11 @@ export const determineLabelForPayment = (
     return portfolioMovement.label;
   }
 
-  const labelFromTransfers = portfolioMovement.transfers
-    .map((t) => t.label)
-    .filter((l) => !!l);
-  if (labelFromTransfers.length === 1) {
-    return labelFromTransfers[0];
+  const labelFromTransfers = new Set(
+    portfolioMovement.transfers.map((t) => t.label).filter((l) => !!l),
+  );
+  if (labelFromTransfers.size === 1) {
+    return labelFromTransfers.values().next().value;
   }
 
   if (portfolioMovement.callModule && portfolioMovement.callModuleFunction) {
@@ -474,12 +470,6 @@ export const determineLabelForPayment = (
     }
   }
 
-  const eventMatch = getEventClassificationRules(chain).find((c) =>
-    portfolioMovement.events.some(
-      (e) => e.eventId === c.eventId && e.moduleId === c.moduleId,
-    ),
-  );
-
   if (
     portfolioMovement.transfers.some((t) => t.amount > 0) &&
     portfolioMovement.transfers.some((t) => t.amount < 0)
@@ -487,7 +477,5 @@ export const determineLabelForPayment = (
     return "Swap";
   }
 
-  if (eventMatch) {
-    return eventMatch.label;
-  }
+  return undefined;
 };

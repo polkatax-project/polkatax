@@ -5,6 +5,7 @@ import {
 import { XcmTransfer } from "../../../blockchain/substrate/model/xcm-transfer";
 import { EventDerivedAssetMovement } from "./event-derived-asset-movement";
 import { EventHandlerContext } from "./event-handler-context";
+import { onAssetRegistryExistentialDepositPaid } from "./on-asset-registry-existential-deposit-paid";
 import { onAssethubSwapExecuted } from "./on-assethub-swap-executed";
 import { onBalancesDeposit } from "./on-balances-deposit";
 import { onBalancesWithdraw } from "./on-balances-withdraw";
@@ -15,6 +16,7 @@ import { onHydrationStableSwapLiquidityAdded } from "./on-hydration-stable-swap-
 import { onHydrationXykRewardClaimed } from "./on-hydration-xyk-reward-claimed";
 import { onMigratedDelegation } from "./on-migrated-delegation";
 import { onReserveRepatriated } from "./on-reserve-repatriated";
+import { onXykLiquidityAdded } from "./on-xyk-liquidity-added";
 import {
   onZenlinkProtcolAssetSwap,
   onZenlinkProtcolLiquidityAdded,
@@ -133,5 +135,15 @@ export const eventConfigs: {
     chains: ["manta"],
     event: "zenlinkprotocolLiquidityAdded",
     handler: (e, context) => onZenlinkProtcolLiquidityAdded(e, context),
+  },
+  {
+    chains: ["hydration", "basilisk"],
+    event: "xykLiquidityAdded",
+    handler: (e, context) => onXykLiquidityAdded(e, context),
+  },
+  {
+    chains: ["hydration", "basilisk"],
+    event: "assetregistryExistentialDepositPaid",
+    handler: (e, context) => onAssetRegistryExistentialDepositPaid(e, context),
   },
 ];

@@ -16,6 +16,7 @@ export const labelToKoinlyTag: Record<Label, KoinlyTag> = {
   Reward: 'Reward',
   'Staking reward': 'Reward',
   'Staking slashed': 'Cost', // treated as expense/loss
+  'Existential deposit paid': 'Cost', // treated as expense/loss
   'Coretime purchase': 'Cost', // business-like expenditure
   'Remove from Pool': 'Remove from Pool',
   'Migrated delegation': undefined,

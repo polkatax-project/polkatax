@@ -201,4 +201,46 @@ describe("Special event handling", () => {
     expect(transfers.length).toBeGreaterThanOrEqual(100);
     verifyEventTransfersAreValid(transfers);
   }, 120_000);
+
+  test("verify hydration xyk LiquidityAdded", async () => {
+    const eventsOfInterest = await subscanApi.searchEvents(
+      "hydration",
+      undefined,
+      "xyk",
+      "LiquidityAdded",
+      0,
+      0,
+    );
+    const transfers = await specialEventsToTransfersService.handleEvents(
+      { token: "HDX", domain: "hydration" },
+      "",
+      eventsOfInterest.list,
+      [],
+      [],
+      true,
+    );
+    expect(transfers.length).toBe(200);
+    verifyEventTransfersAreValid(transfers);
+  }, 120_000);
+
+  test("verify hydration assetregistry ExistentialDepositPaid", async () => {
+    const eventsOfInterest = await subscanApi.searchEvents(
+      "hydration",
+      undefined,
+      "assetregistry",
+      "ExistentialDepositPaid",
+      0,
+      0,
+    );
+    const transfers = await specialEventsToTransfersService.handleEvents(
+      { token: "HDX", domain: "hydration" },
+      "",
+      eventsOfInterest.list,
+      [],
+      [],
+      true,
+    );
+    expect(transfers.length).toBe(100);
+    verifyEventTransfersAreValid(transfers);
+  }, 120_000);
 });
