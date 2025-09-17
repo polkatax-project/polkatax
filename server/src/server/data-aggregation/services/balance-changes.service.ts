@@ -9,6 +9,7 @@ import {
 } from "../../blockchain/substrate/model/subscan-event";
 import { TransactionDetails } from "../../blockchain/substrate/model/transaction";
 import { logger } from "../../logger/logger";
+import { determineForeignAsset } from "../helper/determine-foreign-asset";
 import { extractAssethubAsset } from "../helper/extract-assethub-asset";
 import { FetchPortfolioMovementsRequest } from "../model/fetch-portfolio-movements.request";
 import { PortfolioMovement } from "../model/portfolio-movement";
@@ -63,7 +64,7 @@ export class BalanceChangesService {
     const tokens = await this.subscanService.scanTokensAndAssets(
       request.chain.domain,
     );
-    
+
     await this.fetchAssetconversionAssethub(
       request.chain.domain,
       request.address,
@@ -395,18 +396,7 @@ export class BalanceChangesService {
 
     for (const event of eventDetails) {
       const assetId: MultiLocation = getPropertyValue("asset_id", event);
-      let foreignAsset = foreignAssets.find((a) =>
-        isEqual(a.multi_location, assetId),
-      );
-      if (!foreignAsset && typeof assetId?.interior?.X1 === "object") {
-        const assetIdAlt = {
-          parents: assetId.parents,
-          interior: { X1: [assetId?.interior?.X1] },
-        };
-        foreignAsset = foreignAssets.find((a) =>
-          isEqual(a.multi_location, assetIdAlt),
-        );
-      }
+      const foreignAsset = determineForeignAsset(assetId, foreignAssets);
       if (!foreignAsset) {
         logger.warn(`Foreign asset ${JSON.stringify(assetId)} not found.`);
         continue;

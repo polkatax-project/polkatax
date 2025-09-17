@@ -2,10 +2,27 @@ import { ForeignAsset } from "../../blockchain/substrate/model/foreign-asset";
 import { MultiLocation } from "../../blockchain/substrate/model/multi-location";
 import isEqual from "lodash.isequal";
 
+const convertToCanonicalFormat = (
+  multiLocation: MultiLocation | string | number,
+) => {
+  if (!multiLocation || typeof multiLocation !== "object") {
+    return;
+  }
+  for (let key of ["X1", "X2", "X3"]) {
+    if (
+      multiLocation?.interior?.[key] &&
+      !Array.isArray(multiLocation?.interior?.[key])
+    ) {
+      multiLocation.interior[key] = Object.values(multiLocation.interior[key]);
+    }
+  }
+};
+
 export const determineForeignAsset = (
   multiLocation: MultiLocation | string | number,
   tokens: ForeignAsset[],
 ) => {
+  convertToCanonicalFormat(multiLocation);
   let token = tokens.find(
     (t) =>
       isEqual(multiLocation, t.multi_location) ||
