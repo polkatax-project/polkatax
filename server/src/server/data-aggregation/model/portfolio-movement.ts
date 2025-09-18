@@ -1,14 +1,6 @@
 import { Label } from "../../../common/model/label";
 
-export type Provenance =
-  | "xcm"
-  | "transfer"
-  | "event"
-  | "stakingRewards"
-  | "tx"
-  | "aggregatedData"
-  | "dataPlatformApi"
-  | "deviationCompensation";
+export type Provenance = "dataPlatformApi" | "deviationCompensation";
 
 export interface PortfolioMovement {
   hash?: string;
@@ -49,5 +41,6 @@ export interface TaxableEventTransfer {
   asset_unique_id?: string;
   event_index?: string;
   semanticGroupId?: string;
+  semanticEventIndex?: string;
   label?: Label;
 }

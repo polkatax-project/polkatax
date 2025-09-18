@@ -17,6 +17,7 @@ const splitPortfolioMovement = (
     )
     .map((transfersRecord, idx) => {
       const transfers = Object.values(transfersRecord);
+      const semanticEventIndices = transfers.map((t) => t.semanticEventIndex);
       const isXcm = transfers.some(
         (t) => t.label === "XCM transfer" || t.module === "xcm",
       );
@@ -37,7 +38,9 @@ const splitPortfolioMovement = (
         xcmFeeTokenUniqueId: isXcm
           ? portfolioMovement.xcmFeeTokenUniqueId
           : undefined,
-        events: [],
+        events: portfolioMovement.events.filter((e) =>
+          semanticEventIndices.includes(e.eventIndex),
+        ),
       };
     })
     .filter((p) => !!p);

@@ -18,6 +18,16 @@ export const getPropertyValue = (
   return event.params.find((p) => property.includes(p.name))?.value;
 };
 
+export const getPropertyTypeNameValue = (
+  property: string | string[],
+  event: EventDetails,
+) => {
+  if (!Array.isArray(property)) {
+    property = [property];
+  }
+  return event.params.find((p) => property.includes(p.type_name))?.value;
+};
+
 export const extractAddress = (
   property: string | string[],
   event: EventDetails,

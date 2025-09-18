@@ -55,6 +55,7 @@ describe("StakingRewardsService", () => {
       chainName: "polkadot",
       address: "0xEvmAddress",
       minDate: 1690000000,
+      maxDate: 1700000000
     });
 
     expect(mockSubscanService.mapToSubstrateAccount).toHaveBeenCalledWith(
@@ -65,7 +66,7 @@ describe("StakingRewardsService", () => {
       chainName: "polkadot",
       address: "substrateAddress",
       minDate: 1690000000,
-      maxDate: undefined,
+      maxDate: 1700000000,
     });
 
     expect(result).toEqual([
@@ -73,6 +74,7 @@ describe("StakingRewardsService", () => {
         amount: 1,
         timestamp: 1690000000,
         block: 123,
+        event_id: "Reward",
         hash: "0xabc",
         event_index: "1-1",
         extrinsic_index: "1-1",
@@ -83,6 +85,7 @@ describe("StakingRewardsService", () => {
         amount: -0.5,
         timestamp: 1690000050,
         block: 124,
+        event_id: "Slash",
         hash: "0xdef",
         event_index: "1-2",
         extrinsic_index: "1-2",

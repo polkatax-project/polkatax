@@ -104,51 +104,6 @@ const eventClassifications: EventClassification[] = [
         eventId: "RewardClaimed",
         label: "Reward" as const,
       },
-      {
-        moduleId: "staking",
-        eventId: "RewardsClaimed",
-        label: "Reward" as const,
-      },
-    ],
-  },
-  {
-    chains: ["mythos"],
-    events: [
-      {
-        moduleId: "collatorstaking",
-        eventId: "StakingRewardReceived",
-        label: "Staking reward" as const,
-      },
-    ],
-  },
-  {
-    chains: ["darwinia"],
-    events: [
-      {
-        moduleId: "darwiniastaking",
-        eventId: "RewardAllocated",
-        label: "Staking reward" as const,
-      },
-    ],
-  },
-  {
-    chains: ["robonomics-freemium"],
-    events: [
-      {
-        moduleId: "staking",
-        eventId: "reward",
-        label: "Staking reward" as const,
-      },
-    ],
-  },
-  {
-    chains: ["*"],
-    events: [
-      {
-        moduleId: "parachainstaking",
-        eventId: "Rewarded",
-        label: "Staking reward" as const,
-      },
     ],
   },
 ];
@@ -176,10 +131,6 @@ const callModuleClassifications: CallModuleClassification[] = [
       {
         module: "stablepool",
         functions: [
-          {
-            name: "add_liquidity",
-            label: "Liquidity added" as const,
-          },
           {
             name: "remove_liquidity",
             label: "Liquidity removed" as const,
@@ -215,10 +166,6 @@ const callModuleClassifications: CallModuleClassification[] = [
         module: "stablepool",
         functions: [
           {
-            name: "add_liquidity",
-            label: "Liquidity added" as const,
-          },
-          {
             name: "remove_liquidity",
             label: "Liquidity removed" as const,
           },
@@ -232,10 +179,6 @@ const callModuleClassifications: CallModuleClassification[] = [
       {
         module: "stableswap",
         functions: [
-          {
-            name: "add_liquidity",
-            label: "Liquidity added" as const,
-          },
           {
             name: "add_liquidity_one_asset",
             label: "Liquidity added" as const,
@@ -301,42 +244,6 @@ const callModuleClassifications: CallModuleClassification[] = [
         ],
       },
       {
-        module: "xcmpallet",
-        functions: [
-          {
-            name: "reserve_transfer_assets",
-            label: "XCM transfer" as const,
-          },
-          {
-            name: "transfer_assets_using_type_and_then",
-            label: "XCM transfer" as const,
-          },
-          {
-            name: "limited_reserve_transfer_assets",
-            label: "XCM transfer" as const,
-          },
-          {
-            name: "limited_teleport_assets",
-            label: "XCM transfer" as const,
-          },
-        ],
-        label: "XCM transfer" as const,
-      },
-      {
-        module: "polkadotxcm",
-        functions: [
-          {
-            name: "limited_reserve_transfer_assets",
-            label: "XCM transfer" as const,
-          },
-          {
-            name: "reserve_transfer_assets",
-            label: "XCM transfer" as const,
-          },
-        ],
-        label: "XCM transfer" as const,
-      },
-      {
         module: "evm",
         functions: [
           {
@@ -348,10 +255,6 @@ const callModuleClassifications: CallModuleClassification[] = [
       {
         module: "nominationpools",
         functions: [
-          {
-            name: "claim_payout",
-            label: "Staking reward" as const,
-          },
           {
             name: "bond_extra",
             label: "Stake" as const,
@@ -401,7 +304,6 @@ const callModuleClassifications: CallModuleClassification[] = [
       {
         module: "nominationpools",
         functions: [
-          { name: "claim_payout", label: "Staking reward" as const },
           { name: "withdraw_unbonded", label: "Unstake" as const },
           { name: "join", label: "Stake" as const },
           { name: "bond_extra", label: "Stake" as const },
@@ -454,6 +356,12 @@ export const determineLabelForPayment = (
     return labelFromTransfers.values().next().value;
   }
 
+  const eventMatch = getEventClassificationRules(chain).find((c) =>
+    portfolioMovement.events.some(
+      (e) => e.eventId === c.eventId && e.moduleId === c.moduleId,
+    ),
+  );
+
   if (portfolioMovement.callModule && portfolioMovement.callModuleFunction) {
     const moduleMatch = getCallModuleClassificationRules(chain).find(
       (c) => c.module === portfolioMovement.callModule,
@@ -470,9 +378,13 @@ export const determineLabelForPayment = (
     }
   }
 
+  if (eventMatch) {
+    return eventMatch.label;
+  }
+
   if (
-    portfolioMovement.transfers.some((t) => t.amount > 0) &&
-    portfolioMovement.transfers.some((t) => t.amount < 0)
+    portfolioMovement.transfers.filter((t) => t.amount > 0).length === 1 &&
+    portfolioMovement.transfers.filter((t) => t.amount < 0).length === 1
   ) {
     return "Swap";
   }

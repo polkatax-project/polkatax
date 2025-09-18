@@ -24,7 +24,7 @@ export const toTransfer = (
   return {
     event_id: event.event_id,
     module_id: event.module_id,
-    original_event_id: event.original_event_index,
+    original_event_index: event.original_event_index,
     block: event.block_num,
     hash: event.extrinsic_hash,
     extrinsic_index: event.extrinsic_index,

@@ -260,6 +260,9 @@ export class ReconciliationService {
         transfer.from = transfer.from ?? matchingSemanticTransfer.from;
         transfer.fromChain = matchingSemanticTransfer.fromChain;
         transfer.toChain = matchingSemanticTransfer.destChain;
+        transfer.semanticEventIndex = (
+          matchingSemanticTransfer as EventDerivedTransfer
+        ).original_event_index;
         transfer.semanticGroupId =
           (matchingSemanticTransfer as EventDerivedTransfer).semanticGroupId ??
           (matchingSemanticTransfer as XcmAssetMovement).messageHash;

@@ -17,7 +17,7 @@ export class StakingRewardsAggregatorService {
   private async fetchFromSubscan(
     stakingRewardsRequest: StakingRewardsRequest,
   ): Promise<StakingReward[]> {
-    let { chain, address, minDate } = stakingRewardsRequest;
+    let { chain, address, minDate, maxDate } = stakingRewardsRequest;
     if (isEvmAddress(address)) {
       address =
         (await this.subscanService.mapToSubstrateAccount(
@@ -29,6 +29,7 @@ export class StakingRewardsAggregatorService {
       chainName: chain.domain,
       address,
       minDate,
+      maxDate,
     });
   }
 

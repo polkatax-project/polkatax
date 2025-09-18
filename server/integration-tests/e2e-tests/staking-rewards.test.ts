@@ -39,6 +39,39 @@ describe("Staking rewards amounts", () => {
     expect(totalAmount).toBe(184.17376356100766);
   }, 60_000);
 
+  test("energywebx", async () => {
+    const { totalAmount } = await fetchStakingRewards(
+      "15zPrrWEwuzZ3auTtpeGeWJa8e6Wpvdb1tTXmuwRXX9P1NmD",
+      "energywebx",
+      "USDT",
+      new Date("2025-08-01T00:00:00.000").getTime(),
+      new Date("2025-09-17T00:00:00.000").getTime(),
+    );
+    expect(totalAmount).toBe(0.000024653772072369002);
+  }, 60_000);
+
+  test("mythos", async () => {
+    const { totalAmount } = await fetchStakingRewards(
+      "0x56F17ebFe6B126E9f196e7a87f74e9f026a27A1F",
+      "mythos",
+      "USDT",
+      new Date("2025-08-01T00:00:00.000").getTime(),
+      new Date("2025-09-17T00:00:00.000").getTime(),
+    );
+    expect(totalAmount).toBe(9023.513479731777);
+  }, 60_000);
+
+  test("peaq", async () => {
+    const { totalAmount } = await fetchStakingRewards(
+      "16RzLe5chqj86NNpWUdKAmNJH4QgvEJqu3wE4PeZPFjLY2Xn",
+      "peaq",
+      "USDT",
+      new Date("2025-08-01T00:00:00.000").getTime(),
+      new Date("2025-09-17T00:00:00.000").getTime(),
+    );
+    expect(totalAmount).toBe(0.007934913367749903);
+  }, 60_000);
+
   test("creditcoin", async () => {
     const { rewards } = await fetchStakingRewards(
       "1248rdoFUtNnSM77Udm9AsRx5xeH2kucW1asgYhNdGCU3syf",
