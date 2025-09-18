@@ -127,6 +127,7 @@ let chainsSubscription: Subscription;
 onMounted(() => {
   chainsSubscription = store.subscanChains$.subscribe((c) => {
     supportedChains.value = c.chains
+      .filter(x => !x.excluded)
       .map((x) => x.label)
       .sort((a, b) => (a.toUpperCase() > b.toUpperCase() ? 1 : -1));
   });

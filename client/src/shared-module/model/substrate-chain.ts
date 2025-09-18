@@ -4,6 +4,7 @@ export interface SubstrateChain {
   stakingPallets: string[];
   evm: boolean;
   token: string;
+  excluded: boolean;
 }
 
 export interface SubstrateChains {
