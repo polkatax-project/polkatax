@@ -63,6 +63,26 @@ export class StakingRewardsService {
     );
   }
 
+  private async fetchNominationPoolStakingRewards({
+    chainName,
+    address,
+    minDate,
+    maxDate,
+    token,
+    decimals,
+  }) {
+    return this.fetchStakingReardsViaEvents({
+      chainName,
+      address,
+      minDate,
+      maxDate,
+      module: "nominationpools",
+      event_id: "PaidOut",
+      token,
+      decimals,
+    });
+  }
+
   async fetchStakingRewards({
     chainName,
     address,
@@ -146,6 +166,15 @@ export class StakingRewardsService {
           }));
       }
     })();
+    const nominationPoolRewards = await this.fetchNominationPoolStakingRewards({
+      token,
+      decimals,
+      chainName,
+      address,
+      minDate,
+      maxDate,
+    });
+    nominationPoolRewards.forEach((r) => rewardsSlashes.push(r));
     return rewardsSlashes;
   }
 }
