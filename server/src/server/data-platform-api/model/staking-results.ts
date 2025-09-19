@@ -12,7 +12,6 @@ export interface StakingResultsDetailed {
   nominationPoolResults: [
     {
       blockNumber: number;
-      stakingResultType: string;
       executionDate: string;
       amount: number;
       blockTimestamp: string;

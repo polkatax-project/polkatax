@@ -178,7 +178,7 @@ describe("Special event handling", () => {
       [],
       true,
     );
-    expect(transfers.length).toBeGreaterThanOrEqual(100);
+    expect(transfers.length).toBeGreaterThanOrEqual(200);
     verifyEventTransfersAreValid(transfers);
   }, 120_000);
 

@@ -22,6 +22,7 @@ import {
   onZenlinkProtcolLiquidityAdded,
   onZenlinkProtcolLiquidityRemoved,
 } from "./on-zenlink-protocol-assetswap";
+import { onBifrostRedeemSuccess } from "./on-bifrost-redeem-success";
 
 export const eventConfigs: {
   chains;
@@ -154,5 +155,10 @@ export const eventConfigs: {
     chains: ["manta"],
     event: "zenlinkprotocolLiquidityAdded",
     handler: (e, context) => onZenlinkProtcolLiquidityAdded(e, context),
+  },
+  {
+    chains: ["bifrost", "bifrost-kusama"],
+    event: "vtokenmintingRedeemSuccess",
+    handler: (e, context) => onBifrostRedeemSuccess(e, context),
   },
 ];

@@ -8,7 +8,9 @@ export type Label =
   | 'Existential deposit paid'
   | 'Crowdloan contribution'
   | 'Liquid staking token minted'
+  | 'Liquid staking token rebonded'
   | 'Liquid staking token redeemed'
+  | 'Liquid staking token redeem success'
   | 'XCM transfer'
   | 'Treasury grant'
   | 'Reward'
@@ -18,5 +20,6 @@ export type Label =
   | 'Remove from Pool'
   | 'Migrated delegation'
   | 'Stake'
+  | 'Fee'
   | 'Unstake'
   | 'Reserve repatriated';

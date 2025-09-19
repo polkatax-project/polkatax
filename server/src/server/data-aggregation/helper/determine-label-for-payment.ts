@@ -139,6 +139,14 @@ const callModuleClassifications: CallModuleClassification[] = [
             name: "redeem_proportion",
             label: "Liquidity removed" as const,
           },
+          {
+            name: "remove_liquidity",
+            label: "Liquidity removed" as const,
+          },
+          {
+            name: "add_liquidity",
+            label: "Liquidity added" as const,
+          },
         ],
       },
       {
@@ -159,15 +167,6 @@ const callModuleClassifications: CallModuleClassification[] = [
           {
             name: "claim",
             label: "Reward" as const,
-          },
-        ],
-      },
-      {
-        module: "stablepool",
-        functions: [
-          {
-            name: "remove_liquidity",
-            label: "Liquidity removed" as const,
           },
         ],
       },

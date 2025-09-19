@@ -37,8 +37,22 @@ export const extractZenLinkValues = async (
         .filter((p) => p.type_name === "AssetId")
         .map((p) => p.value?.asset_index);
 
+  const assetTypes = event.params.find((p) => p.type_name === "Vec<AssetId>")
+    ? (
+        event.params.find((p) => p.type_name === "Vec<AssetId>")?.value ?? []
+      ).map((a) => a.asset_type)
+    : event.params
+        .filter((p) => p.type_name === "AssetId")
+        .map((p) => p.value?.asset_type);
+
   const assets = assetIndices
-    .map((a) => tokens.find((t) => t.asset_id === String(a)))
+    .map((a, idx) =>
+      tokens.find(
+        (t) =>
+          (assetTypes[idx] === 0 && t.native) ||
+          (assetTypes[idx] !== 0 && t.asset_id === String(a)),
+      ),
+    )
     .filter((a) => !!a);
   if (addresses.length > 3) {
     throw Error(
@@ -77,29 +91,31 @@ export const onZenlinkProtcolAssetSwap = async (
   /**
    * transfer of native token (asset_id = 0) are already captured via transfer event.
    */
-  const transfers = [];
-  if (assets[0].asset_id !== "0") {
-    transfers.push({
-      event,
-      from: address,
-      rawAmount: amounts[0],
-      token: assets[0],
-    });
-  }
-  if (assets[1].asset_id !== "0") {
-    transfers.push({
-      event,
-      to: address,
-      rawAmount: amounts[1],
-      token: assets[1],
-    });
-  }
+  const transfers: EventDerivedAssetMovement[] = [];
+  transfers.push({
+    event,
+    from: address,
+    rawAmount: amounts[0],
+    token: assets[0],
+    semanticGroupId: event.original_event_index,
+    label: "Swap",
+  });
+  transfers.push({
+    event,
+    to: address,
+    rawAmount: amounts[1],
+    token: assets[1],
+    semanticGroupId: event.original_event_index,
+    label: "Swap",
+  });
   if (assets.length === 3) {
     transfers.push({
       event,
       to: address,
       rawAmount: amounts[2],
       token: assets[2],
+      semanticGroupId: event.original_event_index,
+      label: "Swap",
     });
   }
   return transfers;
@@ -113,15 +129,13 @@ export const onZenlinkProtcolLiquidityRemoved = async (
     tokens,
   });
 
-  return assets
-    .filter((a) => a.asset_id !== "0")
-    .map((_, idx) => ({
-      event,
-      to: address,
-      rawAmount: amounts[idx],
-      token: assets[idx],
-      label: "Liquidity removed",
-    }));
+  return assets.map((_, idx) => ({
+    event,
+    to: address,
+    rawAmount: amounts[idx],
+    token: assets[idx],
+    label: "Liquidity removed",
+  }));
 };
 
 export const onZenlinkProtcolLiquidityAdded = async (
@@ -132,13 +146,11 @@ export const onZenlinkProtcolLiquidityAdded = async (
     tokens,
   });
 
-  return assets
-    .filter((a) => a.asset_id !== "0")
-    .map((_, idx) => ({
-      event,
-      from: address,
-      rawAmount: amounts[idx],
-      token: assets[idx],
-      label: "Liquidity added",
-    }));
+  return assets.map((_, idx) => ({
+    event,
+    from: address,
+    rawAmount: amounts[idx],
+    token: assets[idx],
+    label: "Liquidity added",
+  }));
 };

@@ -7,6 +7,8 @@ import { isEvmAddress } from "../../helper/is-evm-address";
 import isEqual from "lodash.isequal";
 import { getAddress } from "ethers";
 import { determineForeignAsset } from "../../helper/determine-foreign-asset";
+import { isValidSubstrateAddress } from "../../../../common/util/is-valid-address";
+import { convertToCanonicalAddress } from "../../../../common/util/convert-to-canonical-address";
 
 export const getPropertyValue = (
   property: string | string[],
@@ -69,6 +71,9 @@ export const extractForeignAsset = (
 export const mapKeyToCanonicalAddress = (key: string) => {
   if (isEvmAddress(key)) {
     return getAddress(key);
+  }
+  if (isValidSubstrateAddress(key)) {
+    return convertToCanonicalAddress(key);
   }
   return mapPublicKeyToAddress(key);
 };

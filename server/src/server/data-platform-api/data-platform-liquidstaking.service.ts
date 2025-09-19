@@ -4,10 +4,14 @@ import { SubscanService } from "../blockchain/substrate/api/subscan.service";
 import { CurrencyType } from "./model/currency-type";
 import isEqual from "lodash.isequal";
 import { Asset } from "../blockchain/substrate/model/asset";
-import { Transfer } from "../blockchain/substrate/model/raw-transfer";
 import { formatDate } from "../../common/util/date-utils";
 import { toSubscanExtrinsixIndex } from "./helper/to-subscan-extrinsic-id";
 import { parseCETDate } from "./helper/parse-cet-date";
+import { EventDerivedTransfer } from "../data-aggregation/model/event-derived-transfer";
+import {
+  bifrostParseKind,
+  parseBifrostToken,
+} from "../../common/util/parse-bifrost-token";
 
 export class DataPlatformLiquidStakingService {
   constructor(
@@ -25,7 +29,7 @@ export class DataPlatformLiquidStakingService {
     chain: string,
     minDate?: number,
     maxDate: number = this.defaultMaxDate,
-  ): Promise<Transfer[]> {
+  ): Promise<EventDerivedTransfer[]> {
     if (chain !== "bifrost" && chain !== "bifrost-kusama") {
       return [];
     }
@@ -66,7 +70,7 @@ export class DataPlatformLiquidStakingService {
     chain: string,
     minDate: string,
     maxDate: string,
-  ): Promise<Transfer[]> {
+  ): Promise<EventDerivedTransfer[]> {
     logger.info(
       `Entry fetchVtokenMintedEvents for ${address} and chain ${chain}`,
     );
@@ -82,24 +86,56 @@ export class DataPlatformLiquidStakingService {
         ?.liquidStakingResults ?? [];
 
     const tokens = await this.subscanService.scanTokens(chain);
-    const transfers = eventsForChain.map((e, idx) => {
-      const vToken = this.determineVToken(
-        e.currencyType,
-        e.currencyValue,
-        tokens,
-      );
-      if (!vToken) {
-        throw new Error(
-          `vToken for event vtokenmintingMinted ${e.eventId}, ${e.timestamp} could not be determined.`,
-        );
-      }
-      return {
-        ...this.constructGenericTransferInfo(e, vToken),
-        from: undefined,
-        to: address,
-        label: "Liquid staking token minted" as const,
-      };
+    tokens.push({
+      id: "BNC",
+      asset_id: "BNC",
+      symbol: "BNC",
+      unique_id: "BNC",
+      decimals: (await this.subscanService.fetchNativeToken(chain))
+        .token_decimals,
     });
+    const transfers: EventDerivedTransfer[] = eventsForChain.flatMap(
+      (e, idx) => {
+        const fromToken = parseBifrostToken(
+          e.currencyType,
+          e.currencyValue,
+          tokens,
+        );
+        const vToken = this.determineVToken(
+          e.currencyType,
+          e.currencyValue,
+          tokens,
+        );
+        if (!vToken || !fromToken) {
+          throw new Error(
+            `vToken for event vtokenmintingMinted ${e.eventId}, ${e.timestamp} could not be determined.`,
+          );
+        }
+        return [
+          {
+            ...this.constructGenericTransferInfo(e, vToken),
+            from: undefined,
+            to: address,
+            label: "Liquid staking token minted" as const,
+            event_id: "Minted",
+            module_id: "vtokenminting",
+          },
+          {
+            event_id: "Minted",
+            module_id: "vtokenminting",
+            symbol: fromToken.symbol,
+            asset_unique_id: fromToken.unique_id,
+            original_event_index: e.eventId,
+            semanticGroupId: e.eventId,
+            amount: e.amount * 10 ** -vToken.decimals,
+            block: Number(e.eventId.split("-")[0]),
+            timestamp: parseCETDate(e.timestamp),
+            extrinsic_index: toSubscanExtrinsixIndex(e.extrinsicId),
+            label: "Liquid staking token minted" as const,
+          },
+        ] as EventDerivedTransfer[];
+      },
+    );
     logger.info(
       `Exit fetchVtokenMintedEvents with ${transfers.length} entries`,
     );
@@ -111,7 +147,7 @@ export class DataPlatformLiquidStakingService {
     chain: string,
     minDate: string,
     maxDate: string,
-  ): Promise<Transfer[]> {
+  ): Promise<EventDerivedTransfer[]> {
     logger.info(
       `Entry fetchVtokenRedeemedEvents for ${address} and chain ${chain}`,
     );
@@ -127,7 +163,7 @@ export class DataPlatformLiquidStakingService {
         ?.liquidStakingResults ?? [];
 
     const tokens = await this.subscanService.scanTokens(chain);
-    const transfers = eventsForChain.map((e, idx) => {
+    const transfers = eventsForChain.flatMap((e, idx) => {
       const vToken = this.determineVToken(
         e.currencyType,
         e.currencyValue,
@@ -138,12 +174,29 @@ export class DataPlatformLiquidStakingService {
           `vToken for event vtokenmintingRedeemed ${e.eventId}, ${e.timestamp} could not be determined.`,
         );
       }
-      return {
-        ...this.constructGenericTransferInfo(e, vToken),
-        from: address,
-        to: undefined,
-        label: "Liquid staking token redeemed" as const,
-      };
+      return [
+        {
+          ...this.constructGenericTransferInfo(e, vToken),
+          from: address,
+          to: undefined,
+          label: "Liquid staking token redeemed" as const,
+          event_id: "Redeemed",
+          module: "vtokenminting",
+        },
+        {
+          vent_id: "Redeemed",
+          module: "vtokenminting",
+          symbol: vToken.symbol,
+          asset_unique_id: vToken.unique_id,
+          original_event_index: e.eventId,
+          semanticGroupId: "Fee for " + e.eventId,
+          amount: e.redeemFee * 10 ** -vToken.decimals,
+          block: Number(e.eventId.split("-")[0]),
+          timestamp: parseCETDate(e.timestamp),
+          extrinsic_index: toSubscanExtrinsixIndex(e.extrinsicId),
+          label: "Fee" as const,
+        },
+      ] as EventDerivedTransfer[];
     });
 
     logger.info(
@@ -157,7 +210,7 @@ export class DataPlatformLiquidStakingService {
     chain: string,
     minDate: string,
     maxDate: string,
-  ): Promise<Transfer[]> {
+  ): Promise<EventDerivedTransfer[]> {
     logger.info(
       `Entry fetchLiquidStakingRebondedEvents for ${address} and chain ${chain}`,
     );
@@ -188,8 +241,10 @@ export class DataPlatformLiquidStakingService {
         ...this.constructGenericTransferInfo(e, vToken),
         from: undefined,
         to: address,
-        label: "Liquid staking token minted" as const,
-      };
+        label: "Liquid staking token rebonded" as const,
+        event_id: "Rebonded",
+        module: "vtokenminting",
+      } as EventDerivedTransfer;
     });
     logger.info(
       `Exit fetchLiquidStakingRebondedEvents with ${transfers.length} entries`,
@@ -203,22 +258,14 @@ export class DataPlatformLiquidStakingService {
     tokens: Asset[],
   ): Asset {
     let token: Asset;
-    function parseKind(jsonString) {
-      if (typeof jsonString === "string") {
-        const match = jsonString.match(/"__kind"\s*:\s*"([^"]+)"/);
-        if (match) {
-          return match[1]; // The captured value (e.g. "BNC")
-        }
-      }
-      return jsonString; // No match → return original string
-    }
-    const combinedTokenId = { [currencyType]: parseKind(currencyValue) };
+    const parsedCurrencyValue = bifrostParseKind(currencyValue);
+    const combinedTokenId = { [currencyType]: parsedCurrencyValue };
     if (isEqual(combinedTokenId, { Native: "BNC" })) {
       token = tokens.find((t) => isEqual(t.token_id, { VToken: "BNC" }));
     } else {
       const vTokenId = {};
       Object.keys(combinedTokenId).forEach((property) => {
-        vTokenId["V" + property] = Number(combinedTokenId[property]);
+        vTokenId["V" + property] = combinedTokenId[property];
       });
       token = tokens.find((t) => isEqual(t.token_id, vTokenId));
     }
@@ -234,12 +281,14 @@ export class DataPlatformLiquidStakingService {
       extrinsicId: string;
     },
     vToken: Asset,
-  ) {
+  ): Partial<EventDerivedTransfer> {
     const amount =
       Number(e.vestedAmount ?? e.vestedCurrencyAmount) * 10 ** -vToken.decimals;
     return {
       symbol: vToken.symbol,
       asset_unique_id: vToken.unique_id,
+      original_event_index: e.eventId,
+      semanticGroupId: e.eventId,
       amount,
       block: Number(e.eventId.split("-")[0]),
       timestamp: parseCETDate(e.timestamp),

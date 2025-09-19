@@ -11,11 +11,14 @@ export const labelToKoinlyTag: Record<Label, KoinlyTag> = {
   'Crowdloan contribution': 'Add to Pool', // https://intercom.help/koinly/en/articles/9490056-staking-and-farming-tokens
   'Liquid staking token minted': 'Swap', // https://intercom.help/koinly/en/articles/9490056-staking-and-farming-tokens
   'Liquid staking token redeemed': undefined, // https://intercom.help/koinly/en/articles/9490056-staking-and-farming-tokens
+  'Liquid staking token redeem success': undefined,
+  'Liquid staking token rebonded': undefined,
   'XCM transfer': undefined, // treated as transfer, no tag
   'Treasury grant': 'Income', // akin to salary/income
   Reward: 'Reward',
   'Staking reward': 'Reward',
   'Staking slashed': 'Cost', // treated as expense/loss
+  'Fee': 'Cost',
   'Existential deposit paid': 'Cost', // treated as expense/loss
   'Coretime purchase': 'Cost', // business-like expenditure
   'Remove from Pool': 'Remove from Pool',

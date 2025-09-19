@@ -74,9 +74,10 @@ export class DataPlatformStakingService {
     const rewards: StakingReward[] = (stakingResults?.stakingResults || []).map(
       (reward) => rewardToTransfer(reward),
     );
-    (stakingResults?.nominationPoolResults || []).forEach((reward) =>
-      rewardToTransfer(reward),
-    );
+    const nominationPoolRewards: StakingReward[] = (
+      stakingResults?.nominationPoolResults || []
+    ).map((reward) => rewardToTransfer(reward));
+    nominationPoolRewards.forEach((r) => rewards.push(r));
 
     const slashToTransfer = (slash: {
       totalAmount;
@@ -86,7 +87,7 @@ export class DataPlatformStakingService {
         provenance: "dataPlatformApi" as const,
         timestamp: endOfDayUTC(slash.executionDate),
         block: undefined, // TODO: set block and extrinsic index if available
-        extrinsic_index: undefined,
+        extrinsic_index: undefined, // TODO: set block and extrinsic index if available
         symbol,
         amount: -BigNumber(slash.totalAmount)
           .multipliedBy(10 ** -token.token_decimals)

@@ -41,6 +41,8 @@ const splitPortfolioMovement = (
         events: portfolioMovement.events.filter((e) =>
           semanticEventIndices.includes(e.eventIndex),
         ),
+        callModule: undefined,
+        callModuleFunction: undefined,
       };
     })
     .filter((p) => !!p);
