@@ -1,23 +1,21 @@
 # PolkaTax
 
-PolkaTax is a tool to show and export 
+PolkaTax is a tool to show and export:
 
-- accumulated staking rewards 
-- transfers 
-- trades
+- Staking rewards
+- Transfers
+- Trades
 
-PolkaTax supports multiple substrate chains, Ethereum chains (L1 and L2s) and fiat currencies.
+PolkaTax supports multiple Substrate chains but does not analyze EVM transactions.
 
-Data can be shown as graph and table and can be exported in CSV and JSON format.
+Data can be displayed as graphs and tables and can be exported in CSV and JSON formats.
 
-This project does NOT offer a one-click solution to taxation of crypto currencies.
-Rather, the user is encouraged to export the data to CSV for further processing.
-
-Note: At this time, only staking rewards export is supported.
+This project does **not** offer a one-click solution for cryptocurrency taxation.  
+Rather, users are encouraged to export the data to CSV for further processing.
 
 ## Install the dependencies
 
-The project is split into a server and a client folder
+The project is split into a `server` and a `client` folder:
 
 ```bash
 npm install
@@ -56,7 +54,7 @@ npm run lint-fix
 npm run build
 ```
 
-### Run integration tests with playwright
+### Run integration tests with Playwright
 
 ```bash
 npm i -g playwright
@@ -72,105 +70,120 @@ The server-side of the application consists of three distinct services, each run
 
 | Name                     | Function                                                                                      | Port | Port Env                         |
 |--------------------------|-----------------------------------------------------------------------------------------------|------|----------------------------------|
-| crypto-currency-prices   | Fetches current and historical crypto currency prices                                         | 3002 | CRYPTO_CURRENCY_PRICES_PORT     |
+| crypto-currency-prices   | Fetches current and historical cryptocurrency prices                                          | 3002 | CRYPTO_CURRENCY_PRICES_PORT     |
 | fiat-exchange-rates      | Fetches historical exchange rates of all fiat currencies                                      | 3003 | FIAT_EXCHANGE_RATES_PORT        |
-| server                   | Serves the frontend, fetches tax relevant data and enriches data with help of the other two services | 3001 |                                  |
+| server                   | Serves the frontend, fetches tax-relevant data, and enriches data with the help of the other two services | 3001 |                                  |
 
 ### Running the Services
 
 To start all services in parallel, use:
+
 ```bash
 npm run start
 ```
 
 To start a single service, use:
+
 ```bash
 npm run start:<service-name>
 ```
 
 For example:
-To start a single service, use:
+
 ```bash
 npm run start:fiat-exchange-rates 
 ```
 
 To run the app with stubbed services for local testing:
+
 ```bash
 npm run start-with-stubs
 ```
-This will provide dummy values for fiat-to-fiat values, allowing you to test without needing an EXCHANGERATE_HOST_API_KEY.
 
-### Running e2e-test
+This will provide dummy values for fiat-to-fiat conversions, allowing you to test without needing an `EXCHANGERATE_HOST_API_KEY`.
 
-Note: E2E tests make calls to the Subscan API and require a valid SUBSCAN_API_KEY.
+### Running E2E Tests
+
+> Note: E2E tests make calls to the Subscan API and require a valid `SUBSCAN_API_KEY`.
 
 To run the E2E tests, navigate to the `server` folder and execute:
+
 ```bash
 npm run e2e-tests
 ```
 
 ## Prerequisites
-To run the server locally you should provide multiple API keys as environment variables.
-Only the `SUBSCAN_API_KEY` is absolutely mandatory (see stubs in section above). 
 
-| API   |      Environment variable name      |  Required for |
-|----------|:-------------:|:-------------:|
-| exchangerate_host | EXCHANGERATE_HOST_API_KEY | fetching fiat exchange rates |
-| subscan |  SUBSCAN_API_KEY | any substrate related functions |
+To run the server locally, you should provide multiple API keys as environment variables.  
+Only the `SUBSCAN_API_KEY` is mandatory (see stubs section above).  
 
+| API                | Environment Variable Name       | Required for                             |
+|-------------------|:-------------------------------:|-----------------------------------------|
+| exchangerate_host | EXCHANGERATE_HOST_API_KEY       | Fetching fiat exchange rates            |
+| subscan           | SUBSCAN_API_KEY                 | Any Substrate-related functions         |
 
-## Run in production
+> To fetch XCM data, a **paid** Subscan API key is needed.  
+> For testing, it's recommended to ignore XCM by setting the environment variable `XCM_DISABLED` to `true`.
 
-### Production setup
+## Run in Production
 
-In production, several additional environment settings are needed.
+### Production Setup
+
+In production, several additional environment variables are needed.  
 Locally, an in-memory DB is used to store jobs. In production, a proper DB connection must be configured.
 
-Furthermore, there are additional environment variables which are not mandatory but recommended for production:
+Additional environment variables (recommended for production):
 
-| API   |      Environment variable name      |  Required for |
-|----------|:-------------:|:-------------:|
-| exchangerate_host | EXCHANGERATE_HOST_API_KEY | fetching fiat exchange rates |
-| subscan |  SUBSCAN_API_KEY | any substrate related functions |
-| postgres db | POSTGRES_DATABASE | 	flag that determines if PostgreSQL is used to cache jobs / user data |
-| postgres db | DB_PASSWORD | password for the database |
-| rest / postgres db | USE_DATA_PLATFORM_API | flag that determines if pre-collected and aggregated data should be used |
-| zyte | ZYTE_USER | accessing coingecko.com via Zyte proxy |
+| API / Service      | Environment Variable Name       | Required for                                                        |
+|-------------------|:-------------------------------:|--------------------------------------------------------------------|
+| exchangerate_host | EXCHANGERATE_HOST_API_KEY       | Fetching fiat exchange rates                                        |
+| subscan           | SUBSCAN_API_KEY                 | Any Substrate-related functions                                     |
+| postgres db       | POSTGRES_DATABASE               | Flag that determines if PostgreSQL is used to cache jobs/user data |
+| postgres db       | DB_PASSWORD                     | Password for the database                                           |
+| rest / postgres db| USE_DATA_PLATFORM_API           | Flag that determines if pre-collected and aggregated data is used  |
+| zyte              | ZYTE_USER                       | Accessing coingecko.com via Zyte proxy                              |
+| data platform     | USE_DATA_PLATFORM               | Determines if the data platform is used for certain requests       |
+| data platform     | DATA_PLATFORM_PORT              | Defines the port used when fetching from the data platform         |
 
-### Start in production
+### Start in Production
 
-For production environments, first build the application:
+Build the application:
+
 ```bash
 npm run build
 ```
 
-And run with pm2:
+Run with pm2:
+
 ```bash
 cd server
 pm2 start prod.config.js
 ```
 
-## Create substrate chain list
+## Create Substrate Chain List
 
-Run 
+Run:
+
 ```bash
 npm run generate-subscan-chain-list
 ```
-This will generate a new list of substrate chains in the `res/gen/` folder.
 
-## coingecko
+This will generate a new list of Substrate chains in the `res/gen/` folder.
 
-The current implementation uses coingecko, however without API key.
-The reason are the relatively high costs of purchasing a coingecko API key.
-The consequence is that you might encounter errors with code 429 from coingecko if too many requests are made. To mitigate this issue [ZYTE](https://www.zyte.com/) is used in production.
+## Coingecko
 
-## Documentation of Architecture 
+The current implementation uses Coingecko **without an API key**.  
+This avoids the costs of purchasing a Coingecko API key but may result in HTTP 429 errors if too many requests are made.  
+
+In production, [ZYTE](https://www.zyte.com/) is used to mitigate rate-limit issues.
+
+## Documentation of Architecture
 
 [View Architecture Diagram](docs/architecture/architecture.drawio.png)
 
-
-Gradio xml file:
+Gradio XML file:  
 - [Architecture](docs/architecture/architecture.xml)
 
-## Documentation of Data flow
+## Documentation of Data Flow
+
 - [Data Flow](docs/data-flow.md)

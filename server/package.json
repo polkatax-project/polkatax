@@ -19,8 +19,7 @@
     "test": "jest --config jest.unit.config.ts",
     "e2e-tests": "jest --config jest.e2e-test.config.ts --runInBand e2e-tests",
     "canary-tests": "jest --verbose --config jest.canary-test.config.ts --runInBand canary-tests",
-    "fix-errors": "ts-node integration-tests/e2e-tests/validate-ws-endpoints.ts",
-    "canary-find-error": "wallet=15abVnvSgRJFCqhJuvrYSNL5DscRppcog8cyYaVALLU3LFjB chain=hydration token_symbol=vDOT token_id=asset_registry/e71f424e8a6381e4c424c5fac1a5a99d0db79f64 ts-node integration-tests/canary-tests/find-largest-portfolio-error.ts",
+    "fix-errors": "ts-node integration-tests/canary-tests/fix-errors.ts",
     "format": "prettier --write . --ignore-path ../.gitignore",
     "copy-env-to-dist": "cp *.env ./dist && if [ -f .env ]; then cp .env ./dist; fi"
   },
