@@ -147,7 +147,13 @@ const faqItems = computed(() => [
     question: 'Which chains are supported?',
     answer:
       'We currently support the following chains: ' +
-      supportedChains.value.join(', '),
+      supportedChains.value.join(', ') +
+      '. EVM transactions (such as Moonbeam) are not analysed.',
+  },
+  {
+    question: 'Does PolkaTax support both substrate and EVM transactions?',
+    answer:
+      'No. PolkaTax exclusively analyses and exports substrate transactions.',
   },
   {
     question: 'How do I export my transaction data?',
@@ -173,6 +179,23 @@ const faqItems = computed(() => [
     question: 'Can I export specific parts of my data?',
     answer:
       'Yes. The "Staking Rewards" tab lets you export staking data only. In the "Taxable Events" tab, you can filter exports by asset movement type and token.',
+  },
+  {
+    question: 'Why do some tokens show a cost basis of $0 in Koinly?',
+    answer:
+      'PolkaTax currently only exports data from the previous year. This means tokens you acquired before that year are not included in the CSV, and tax software like Koinly may assume you received them for $0, which inflates reported gains. To fix this, you can manually create a deposit in Koinly for each token you already held at the start of the year by going to your wallet, clicking "Add Transaction" → "Deposit", setting the date to the first day of the tax year, entering the number of tokens you held at that time, and providing the original purchase price in fiat currency. This way, Koinly knows these tokens were already owned and calculates gains correctly when you later sell or transfer them.',
+  },
+  {
+    question:
+      'Why does Koinly sometimes show errors or incorrect prices for certain tokens?',
+    answer:
+      'Koinly maintains its own database of recognized tokens. If a token is new, less common, or not included in Koinly’s list, for example vGLMR, it may show an error, be missing, or accidentally map the symbol to the wrong token. To fix this, you can manually create or edit the token in Koinly by going to Settings → Manage Coins → Add Coin, entering the correct token name, symbol, and decimal places, and optionally setting a price source or historical price. This ensures Koinly calculates gains and losses correctly for that token.',
+  },
+  {
+    question: 'What about tokens that have no exchange rate, like LP tokens?',
+    answer:
+      'Some tokens, such as LP tokens (for example, BLP), do not have a direct market price. When exporting data to Koinly, this can cause issues with cost basis or gains calculation. ' +
+      'PolkaTax provides the option to exclude such tokens entirely from your export. However, excluding tokens may affect your tax reporting, so this feature should be used with caution.',
   },
 ]);
 </script>

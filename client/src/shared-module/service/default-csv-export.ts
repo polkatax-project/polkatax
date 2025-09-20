@@ -16,7 +16,10 @@ const getNetWorth = (t: (TaxableEventTransfer | undefined)[]) => {
     .map((fiat) => Math.abs(fiat!))?.[0];
 };
 
-export const exportDefaultCsv = (taxdata: TaxData) => {
+export const generateDefaultCsv = (taxdata: TaxData) => {
+  if (!taxdata || taxdata.values.length === 0) {
+    return '';
+  }
   const parser = new Parser();
   const values: any = [];
   (taxdata.values ?? []).forEach((t: TaxableEvent) => {
@@ -42,7 +45,11 @@ export const exportDefaultCsv = (taxdata: TaxData) => {
       });
     }
   });
-  const csv = parser.parse(values);
+  return parser.parse(values);
+};
+
+export const exportDefaultCsv = (taxdata: TaxData) => {
+  const csv = generateDefaultCsv(taxdata);
   saveAs(
     new Blob([csv], { type: 'text/plain;charset=utf-8' }),
     `tax-data-${taxdata.chain}-${taxdata.address.substring(0, 5)}.csv`

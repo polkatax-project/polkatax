@@ -22,7 +22,10 @@ const getNetWorth = (t: (TaxableEventTransfer | undefined)[]) => {
     .map((fiat) => Math.abs(fiat!))?.[0];
 };
 
-export const exportKoinlyCsv = (taxdata: TaxData) => {
+export const generateKoinlyCSV = (taxdata: TaxData) => {
+  if (!taxdata || taxdata.values.length === 0) {
+    return '';
+  }
   const parser = new Parser();
   const values: any = [];
   (taxdata.values ?? []).forEach((t: TaxableEvent) => {
@@ -70,7 +73,11 @@ export const exportKoinlyCsv = (taxdata: TaxData) => {
       });
     }
   });
-  const csv = parser.parse(values);
+  return parser.parse(values);
+};
+
+export const exportKoinlyCsv = (taxdata: TaxData) => {
+  const csv = generateKoinlyCSV(taxdata);
   saveAs(
     new Blob([csv], { type: 'text/plain;charset=utf-8' }),
     `tax-data-koinly-${taxdata.chain}-${taxdata.address.substring(0, 5)}.csv`
