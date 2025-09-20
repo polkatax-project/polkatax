@@ -1,6 +1,6 @@
 {
   "name": "polkatax",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "",
   "scripts": {
     "build": "rimraf ./server/dist && npm run build --prefix server && npm run build --prefix client && cp -r ./client/dist/spa  ./server/dist/public",
