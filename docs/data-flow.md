@@ -1,29 +1,27 @@
 # Data Flow and Pricing / Conversion Documentation
 
-## 1. Staking Rewards and Slashes
+## 1. Transaction Data, Rewards, Transfers, etc.
 
-- The Node.js backend fetches staking rewards and slash data from the [Subscan API](https://subscan.io) using the Reward/Slash endpoints. E.g. for Moonbeam.
-- For some chains such as Mythos or Peaq, where the Subscan API does not provide direct reward/slash endpoints:
-  - The Node.js backend queries the Subscan API for relevant events, e.g., `collateralstaking/StakingRewardReceived`.
-  - It then cross-references these events with corresponding blockchain transfers to compute rewards.
-- Additionally, there is an **data collector** that processes blockchain events of type `staking/reward` and `staking/slash` as well as `nominationpools/PaidOut` for the following blockchains:
+- The Node.js backend fetches data from the [Subscan API](https://subscan.io), including extrinsics, staking rewards, and events such as `balances/deposited`.
+- Additionally, a **data collector** processes several blockchain events, for example events of type `staking/reward` and `staking/slash`.
+- Currently, the **data collector** operates exclusively on:
   - Polkadot
   - Kusama
   - Hydration
-  - Enjin-relay
-- The data collector captures both:
-  - Solo staking rewards
-  - Staking rewards for nomination pool participants
-  - The collected data is **accumulated per day (UTC timezone)**.
+  - Bifrost
+- The Node.js backend then cross-references asset movement events with semantically meaningful events, such as `stableswap/liquidityAdded` or `staking/rewarded`, to generate a detailed picture of all asset movements.
+
 
 ## 2. Cryptocurrency Prices
 
 - Historical cryptocurrency prices are exported from [CoinGecko](https://coingecko.com).
-- For each (accumulated) staking reward event:
+- For each staking reward event:
   - The corresponding **fiat value at the end of the day (UTC)** is attached.
   - The reward payout value is calculated using this fiat value.
 - If the end-of-day price is not yet available:
   - The fiat value from the previous day is used as a fallback.
+- For some less-frequently used fiat currencies, exchange rates are fetched via [exchangerate.host](https://exchangerate.host).  
+  Token prices in these currencies are then calculated by multiplying the token price in USD by the corresponding fiat exchange rate.
 
 
 ---
@@ -38,8 +36,9 @@
 
 | Purpose                  | API / Service              | Notes                              |
 |--------------------------|---------------------------|----------------------------------|
-| Staking rewards/slashes  | Subscan.io API            |     |
+| Transactions, transfers, rewards etc.  | Subscan.io API            |     |
 | Historical crypto prices | CoinGecko CSV export             | End-of-day prices in selected fiats |
+| Historical fiat exchange rates | exchangerate.host API             | End-of-day prices of fiat currencies |
 
 ---
 
