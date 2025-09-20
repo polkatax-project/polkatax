@@ -53,7 +53,11 @@ combineLatest([useSharedStore().jobs$, blockchain$, wallet$, currency$])
     map((jobResult) => jobResult?.data),
     filter((data) => !!data),
     distinctUntilChanged(
-      (prev, curr) => curr.values.length === prev.values.length
+      (prev, curr) =>
+        curr.values.length === prev.values.length &&
+        curr.chain === prev.chain &&
+        curr.address === prev.address &&
+        curr.currency === prev.currency
     ),
     tap((data) => {
       if (data) {

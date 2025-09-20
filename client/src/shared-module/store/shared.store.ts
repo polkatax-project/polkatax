@@ -225,7 +225,7 @@ export const useSharedStore = defineStore('shared', {
       );
       const newWallets = wallets.filter((w) => w !== job.wallet);
       localStorage.setItem('wallets', JSON.stringify(newWallets));
-      walletsAddresses$.next(wallets);
+      walletsAddresses$.next(newWallets);
       const reqId = wsSendMsg({
         type: 'unsubscribeRequest',
         payload: {

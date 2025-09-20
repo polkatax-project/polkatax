@@ -69,6 +69,11 @@ let subscanChainsSubscription: Subscription;
 let taxDataSubscription: Subscription;
 
 onMounted(() => {
+  store.setCurrency(route.params.currency as string);
+  store.setBlockchain(route.params.blockchain as string);
+  store.setWallet(route.params.wallet as string);
+  store.resetFilters();
+
   subscanChainsSubscription = sharedStore.subscanChains$.subscribe((data) => {
     chains.value = data.chains;
   });
@@ -93,9 +98,4 @@ onBeforeMount(() => {
     taxDataSubscription.unsubscribe();
   }
 });
-
-store.setCurrency(route.params.currency as string);
-store.setBlockchain(route.params.blockchain as string);
-store.setWallet(route.params.wallet as string);
-store.resetFilters();
 </script>

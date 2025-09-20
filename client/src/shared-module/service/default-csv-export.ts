@@ -40,8 +40,15 @@ export const generateDefaultCsv = (taxdata: TaxData) => {
         'Received Currency': extractCurrency(received),
         'Net Worth Amount': getNetWorth([received, sent]) || '',
         'Net Worth Currency': taxdata.currency,
+        Fee: t.feeUsed,
+        'Fee token': t.feeTokenSymbol,
+        'XCM fee': t.xcmFee,
+        'XCM fee token': t.xcmFeeTokenSymbol,
+        'To/From': [sent?.from, received?.from, sent?.to, received?.to]
+          .filter((t) => !!t && t !== taxdata.address)
+          .join('\n'),
         Label: t.label,
-        TxHash: t.extrinsic_index ?? t.block,
+        'TxHash/Block': t.extrinsic_index ?? t.block,
       });
     }
   });
