@@ -30,7 +30,8 @@ export const generateKoinlyCSV = (taxdata: TaxData) => {
   const values: any = [];
   (taxdata.values ?? []).forEach((t: TaxableEvent) => {
     const koinlyTag = mapLabelToKoinlyTag(t.label);
-    const combineTransfers = t.label === 'Swap';
+    const combineTransfers =
+      t.label === 'Swap' || t.label === 'Liquid staking token minted';
 
     if (combineTransfers) {
       const allSent = t.transfers.filter((t) => t.amount < 0);
