@@ -145,11 +145,24 @@ function setExcludedEntries(value: TaxableEvent[]) {
 }
 
 function koinlyExport() {
-  exportKoinlyCsv(taxData.value!);
+  exportKoinlyCsv(getDataForExport());
 }
 
 function csvExport() {
-  exportDefaultCsv(taxData.value!);
+  exportDefaultCsv(getDataForExport());
+}
+
+function getDataForExport() {
+  const excludedIds = excludedEntries.value
+    .map((e) => e.id)
+    .filter((id) => !!id);
+  const values: TaxableEvent[] = taxData.value!.values.filter(
+    (e) => !excludedIds.includes(e.id!)
+  );
+  return {
+    ...taxData.value!,
+    values,
+  };
 }
 
 const userWallets: Ref<string[]> = ref([]);

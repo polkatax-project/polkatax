@@ -22,6 +22,7 @@ export const determineForeignAsset = (
   multiLocation: MultiLocation | string | number,
   tokens: ForeignAsset[],
 ) => {
+  const original = JSON.parse(JSON.stringify(multiLocation))
   convertToCanonicalFormat(multiLocation);
   let token = tokens.find(
     (t) =>
@@ -33,8 +34,8 @@ export const determineForeignAsset = (
     typeof (multiLocation as MultiLocation)?.interior?.X1 === "object"
   ) {
     const assetIdAlt = {
-      parents: (multiLocation as MultiLocation).parents,
-      interior: { X1: [(multiLocation as MultiLocation)?.interior?.X1] },
+      parents: (original as MultiLocation).parents,
+      interior: { X1: [(original as MultiLocation)?.interior?.X1] },
     };
     token = tokens.find((a) => isEqual(a.multi_location, assetIdAlt));
   }

@@ -27,9 +27,7 @@ export const exportKoinlyCsv = (taxdata: TaxData) => {
   const values: any = [];
   (taxdata.values ?? []).forEach((t: TaxableEvent) => {
     const koinlyTag = mapLabelToKoinlyTag(t.label);
-    const combineTransfers = !['Liquidity removed', 'Liquidity added'].includes(
-      t.label!
-    );
+    const combineTransfers = t.label === 'Swap';
 
     if (combineTransfers) {
       const allSent = t.transfers.filter((t) => t.amount < 0);

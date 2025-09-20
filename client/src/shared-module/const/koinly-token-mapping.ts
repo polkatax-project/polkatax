@@ -62,5 +62,5 @@ export const koilyTokenMapping: Record<string, number> = {
   NEURO: 29658069,
   BSX: 2140418,
   KAR: 72323,
-  DED: 32825277
+  DED: 32825277,
 };
