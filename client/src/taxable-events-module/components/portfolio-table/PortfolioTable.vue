@@ -143,6 +143,15 @@ function getSubScanAssetLink(deviation: Deviation) {
       taxData.value!.chain
     }.subscan.io/system_token_detail?unique_id=${deviation.symbol}`;
   }
+  const idParts = deviation.unique_id.split('/');
+  if (idParts?.[0] === 'foreign_assets') {
+    return `https://${taxData.value!.chain}.subscan.io/foreign_assets/${
+      idParts[1]
+    }`;
+  }
+  if (idParts?.[0] === 'standard_assets') {
+    return `https://${taxData.value!.chain}.subscan.io/assets/${idParts[1]}`;
+  }
   return `https://${taxData.value!.chain}.subscan.io/custom_token?unique_id=${
     deviation.unique_id
   }`;
