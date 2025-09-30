@@ -61,7 +61,7 @@ export class WebSocketManager {
     const { wallet, currency, blockchains, syncFromDate, syncUntilDate } =
       msg.payload;
 
-    if (
+    /*if (
       Math.abs(syncFromDate - getBeginningLastYear()) > 25 * 60 * 60 * 1000 ||
       Math.abs(syncUntilDate - getEndOfLastYear()) > 25 * 60 * 60 * 1000
     ) {
@@ -70,7 +70,7 @@ export class WebSocketManager {
         msg: "Sync date invalid",
       });
       return;
-    }
+    }*/
 
     const jobs = await this.jobManager.enqueue(
       msg.reqId,
