@@ -388,6 +388,7 @@ export class ReconciliationService {
       portfolioMovement.transfers = portfolioMovement.transfers.filter(
         (t) => t !== transferMatchingFeeRepayment,
       );
+      portfolioMovement.feeUsed -= transferMatchingFeeRepayment.amount;
     }
 
     if (transferMatchingFee && (matchingTx.tip ?? 0) > 0) {
