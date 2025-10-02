@@ -89,10 +89,6 @@ function annotateRouterSwapRewards(tx: PortfolioMovement) {
     return;
   }
 
-  if (tx.extrinsic_index === "6315500-2") {
-    console.log("TODO:!");
-  }
-
   for (const t of tx.transfers) {
     if (
       !t.label &&
@@ -108,9 +104,6 @@ function annotateRouterSwapRewards(tx: PortfolioMovement) {
 }
 
 function annotateSwapWithFees(tx: PortfolioMovement): void {
-  if (tx.extrinsic_index === "5862392-2") {
-    console.log("TODO:!");
-  }
   // Detect swap events
   const swapEvent = tx.events.find(
     (e: any) =>
