@@ -315,18 +315,6 @@ export class PortfolioMovementCorrectionService {
         blockMax,
       );
 
-      if (
-        process.env["USE_DATA_PLATFORM_API"] === "true" &&
-        (chainInfo.domain === "polkadot" ||
-          chainInfo.domain === "kusama" ||
-          chainInfo.domain === "enjin")
-      ) {
-        logger.info(
-          `Exit fixErrorsAndMissingData. No correction was done due to working with aggregated data.`,
-        );
-        return deviations;
-      }
-
       if (!deviations.find((d) => d.absoluteDeviationTooLarge)) {
         logger.info(
           `Exit fixErrorsAndMissingData. No Meaningful deviations found.`,
