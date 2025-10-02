@@ -284,8 +284,7 @@ export class DeviationZoomer {
         block: endBlock.block_num,
         timestamp: endBlock.timestamp,
         provenance: "deviationCompensation",
-        transfers: [transferData],
-        eventDetails: [],
+        transfers: [transferData]
       });
     }
   }

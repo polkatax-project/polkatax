@@ -21,7 +21,6 @@ export interface PortfolioMovement {
   xcmFeeFiat?: number;
   xcmFeeTokenUniqueId?: string;
   events: { moduleId: string; eventId: string; eventIndex: string }[];
-  eventDetails: EventDetails[];
   label?: Label;
   provenance?: Provenance;
   transfers: TaxableEventTransfer[];
