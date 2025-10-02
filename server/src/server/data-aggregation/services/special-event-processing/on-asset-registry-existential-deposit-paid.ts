@@ -17,6 +17,6 @@ export const onAssetRegistryExistentialDepositPaid = async (
     rawAmount,
     token,
     label: "Existential deposit paid",
-    semanticGroupId: event.original_event_index,
+    semanticGroupId: "Existential deposit paid",
   };
 };

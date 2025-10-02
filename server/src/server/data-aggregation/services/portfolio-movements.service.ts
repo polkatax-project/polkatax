@@ -22,6 +22,8 @@ import { EventDerivedTransfer } from "../model/event-derived-transfer";
 import { BalanceChangesService } from "./balance-changes.service";
 import { isEvmAddress } from "../helper/is-evm-address";
 import { simplifyAssetMovementsSemanticId } from "../helper/simplify-asset-movements";
+import { Account } from "../../blockchain/substrate/model/account";
+import { addLabelsAndSemanticIds } from "../helper/add-semantic-ids";
 
 export async function awaitPromisesAndLog<T>(
   promises: Promise<any>[],
@@ -113,6 +115,44 @@ export class PortfolioMovementsService {
     ];
   }
 
+  private async addTransactionPartnerInfos(
+    address: string,
+    chain: string,
+    portfolioMovements: PortfolioMovement[],
+  ) {
+    const transactionPartnerAddressSet = new Set<string>();
+    portfolioMovements.forEach((p) =>
+      p.transfers.forEach((t) => {
+        if (t.to && t.to !== address) {
+          transactionPartnerAddressSet.add(t.to);
+        }
+        if (t.from && t.from !== address) {
+          transactionPartnerAddressSet.add(t.from);
+        }
+      }),
+    );
+    const transactionPartnerAddresses = [...transactionPartnerAddressSet];
+    const accounts = await Promise.all(
+      transactionPartnerAddresses.map((a) =>
+        this.subscanService.fetchAccount(a, chain),
+      ),
+    );
+    const accountsIndexed: Record<string, Account> = {};
+    accounts.forEach((a) => (accountsIndexed[a.address] = a));
+    portfolioMovements.forEach((p) =>
+      p.transfers.forEach((t) => {
+        if (t.to && accountsIndexed[t.to]) {
+          t.toAddressType = accountsIndexed[t.to].tag_type;
+          t.toAddressName = accountsIndexed[t.to].tag_name;
+        }
+        if (t.from && accountsIndexed[t.from]) {
+          t.fromAddressType = accountsIndexed[t.from].tag_type;
+          t.fromAddressName = accountsIndexed[t.from].tag_name;
+        }
+      }),
+    );
+  }
+
   private async transform(
     request: FetchPortfolioMovementsRequest,
     transactions: TransactionDetails[],
@@ -173,8 +213,9 @@ export class PortfolioMovementsService {
       events,
     );
 
-    portfolioMovements = simplifyAssetMovementsSemanticId(
+    await this.addTransactionPartnerInfos(
       request.address,
+      request.chain.domain,
       portfolioMovements,
     );
 
@@ -196,6 +237,7 @@ export class PortfolioMovementsService {
     logger.info(
       `PortfolioMovementsService: Enter fetchPortfolioMovements for ${request.chain.domain} and wallet ${request.address}`,
     );
+
     this.validate(request);
 
     logger.info(
@@ -216,10 +258,16 @@ export class PortfolioMovementsService {
       dataPlatformTransfers,
     );
 
+    if (request.maxDate) {
+      portfolioMovements = portfolioMovements.filter(
+        (t) => t.timestamp <= request.maxDate,
+      );
+    }
+
     logger.info(
-      `PortfolioMovmentService: Adding labels for ${request.chain.domain} and wallet ${request.address}`,
+      `PortfolioMovmentService: Adding semanticIds and transfer labels for ${request.chain.domain} and wallet ${request.address}`,
     );
-    this.addLabels(request, portfolioMovements);
+    portfolioMovements.forEach((s) => addLabelsAndSemanticIds(s));
 
     logger.info(
       `PortfolioMovmentService: Adding/converting fiat values for ${request.chain.domain} and wallet ${request.address}`,
@@ -229,11 +277,13 @@ export class PortfolioMovementsService {
       portfolioMovements,
     );
 
-    if (request.maxDate) {
-      portfolioMovements = portfolioMovements.filter(
-        (t) => t.timestamp <= request.maxDate,
-      );
-    }
+    logger.info(
+      `PortfolioMovmentService: simplifyAssetMovements for ${request.chain.domain} and wallet ${request.address}`,
+    );
+    portfolioMovements = simplifyAssetMovementsSemanticId(
+      request.address,
+      portfolioMovements,
+    );
 
     logger.info(
       `PortfolioMovmentService: Sorting taxable events ${request.chain.domain} and wallet ${request.address}`,
@@ -242,13 +292,19 @@ export class PortfolioMovementsService {
       (a, b) => a.timestamp - b.timestamp,
     );
 
+
+    logger.info(
+      `PortfolioMovmentService: Adding transaction labels for ${request.chain.domain} and wallet ${request.address}`,
+    );
+    this.addLabels(request, sortedTaxableEvents);
+
     logger.info(
       `PortfolioMovementsService: Exit fetchPortfolioMovements with ${portfolioMovements.length} entries for ${request.chain.domain} and wallet ${request.address}`,
     );
 
     if (process.env["WRITE_RESULTS_TO_DISK"] === "true") {
       fs.writeFileSync(
-        `./logs/${request.chain.domain}-${request.address}.json`,
+        `./logs/simplified/${request.chain.domain}-${request.address}.json`,
         JSON.stringify(sortedTaxableEvents, null, 2),
       );
     }

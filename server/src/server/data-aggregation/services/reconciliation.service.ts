@@ -317,6 +317,7 @@ export class ReconciliationService {
     if (!matchingTx) {
       return;
     }
+    portfolioMovement.eventDetails = matchingTx.event;
     portfolioMovement.callModule = matchingTx.callModule;
     portfolioMovement.callModuleFunction = matchingTx.callModuleFunction;
     const transferMatchingFee = matchingTx

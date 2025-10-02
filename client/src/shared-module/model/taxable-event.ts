@@ -24,7 +24,9 @@ export interface TaxableEventTransfer {
   symbol: string;
   amount: number;
   from: string;
+  fromAddressName?: string;
   to: string;
+  toAddressName?: string;
   extrinsic_index?: string;
   price?: number;
   fiatValue?: number;

@@ -9,8 +9,8 @@ describe("determineLabelForPayment", () => {
     feeUsed: 0,
     feeUsedFiat: 0,
     timestamp: 0,
-    extrinsic_index: 'abc-2'
-  };
+    extrinsic_index: "abc-2"
+  } as any;
 
   it("returns label if portfolioMovement already has one", () => {
     const movement: PortfolioMovement = { ...baseMovement, label: "Reward" };
@@ -77,6 +77,6 @@ describe("determineLabelForPayment", () => {
       callModule: "unknown",
       callModuleFunction: "unknown",
     } as any;
-    expect(determineLabelForPayment("randomchain", movement)).toBeUndefined();
+    expect(determineLabelForPayment("randomchain", movement)).toBe("Transfer");
   });
 });

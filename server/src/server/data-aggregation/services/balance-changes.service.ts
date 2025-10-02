@@ -157,6 +157,7 @@ export class BalanceChangesService {
           extrinsic_index: transfer.extrinsic_index,
           events: [],
           transfers: [],
+          eventDetails: [],
         };
         portfolioMovements.push(movement);
       }
@@ -193,6 +194,7 @@ export class BalanceChangesService {
         extrinsic_index: event.extrinsic_index,
         events: [],
         transfers: [],
+        eventDetails: [],
       };
       portfolioMovements.push(movement);
     }

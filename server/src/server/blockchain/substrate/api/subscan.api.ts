@@ -18,6 +18,8 @@ import { ForeignAsset } from "../model/foreign-asset";
 import { Asset } from "../model/asset";
 import { FetchedDataRepository } from "../../../../common/util/fetched-data.repository";
 import { ResponseCache } from "../../../../common/util/response.cache";
+import { Account } from "../model/account";
+import { mapKeyToCanonicalAddress } from "../../../data-aggregation/services/special-event-processing/helper";
 
 export class SubscanApi {
   private requestHelper: RequestHelper;
@@ -402,6 +404,29 @@ export class SubscanApi {
     return (json?.data?.list ?? []).map((entry) => entry.address);
   }
 
+  async fetchAccount(address: string, chainName: string): Promise<Account> {
+    const json = await this.request(
+      `https://${chainName}.api.subscan.io/api/v2/scan/search`,
+      `post`,
+      {
+        key: address,
+      },
+    );
+    return json?.data?.account
+      ? {
+          ...json?.data?.account,
+          address: mapKeyToCanonicalAddress(
+            json?.data?.account?.account_display?.address,
+          ),
+          tag_type: json?.data?.account?.account_display?.merkle?.tag_type,
+          tag_name:
+            json?.data?.account?.account_display?.merkle?.tag_name ??
+            json?.data?.account?.account_display?.display ??
+            json?.data?.account?.account_display?.people?.display,
+        }
+      : undefined;
+  }
+
   async fetchBalanceHistory(
     address: string,
     chainName: string,
@@ -470,7 +495,7 @@ export class SubscanApi {
       };
     });
     return {
-      list: list.filter((xcm) => xcm.status !== "failed"),
+      list,
       hasNext:
         list.length >= 100 &&
         list[list.length - 1].origin_block_timestamp >= minDate,

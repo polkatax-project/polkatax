@@ -14,6 +14,7 @@ import { Block } from "../model/block";
 import { ForeignAsset } from "../model/foreign-asset";
 import { Asset } from "../model/asset";
 import * as subscanChains from "../../../../../res/gen/subscan-chains.json";
+import { Account } from "../model/account";
 
 export class SubscanService {
   constructor(private subscanApi: SubscanApi) {}
@@ -377,6 +378,17 @@ export class SubscanService {
 
   async fetchAccounts(address: string, chainName: string): Promise<string[]> {
     return this.subscanApi.fetchAccounts(address, chainName);
+  }
+
+  async fetchAccount(
+    address: string,
+    chainName: string,
+  ): Promise<Account | undefined> {
+    try {
+      return this.subscanApi.fetchAccount(address, chainName);
+    } catch (error) {
+      return undefined;
+    }
   }
 
   async fetchForeignAssets(chainName: string): Promise<ForeignAsset[]> {

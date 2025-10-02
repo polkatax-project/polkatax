@@ -109,9 +109,9 @@
       <template v-slot:body-cell-addresses="props">
         <q-td :props="props">
           <div v-for="(item, idx) in props.row.addresses" v-bind:key="idx">
-            <a :href="getSubscanAddressLink(item)" target="_blank"
-              >{{ item.substring(0, 5) }}...</a
-            >
+            <a :href="getSubscanAddressLink(item)" target="_blank">{{
+              props.row.addressNames[item] || item.substring(0, 5) + '...'
+            }}</a>
           </div>
         </q-td>
       </template>
@@ -280,9 +280,14 @@ const rows = computed(() => {
       extrinsic_index: data.extrinsic_index,
       addresses: [
         ...new Set(
-          data.transfers.flatMap((t) => [t.from, t.to]).filter((a) => !!a)
+          data.transfers.flatMap((t) => [t.to, t.from]).filter((a) => !!a)
         ),
       ],
+      addressNames: data.transfers.reduce((curr, next) => {
+        curr[next.to] = next.toAddressName;
+        curr[next.from] = next.fromAddressName;
+        return curr;
+      }, {} as any),
       fees: [
         data.feeUsed ?? 0 > 0
           ? `${formatCryptoAmount(data.feeUsed ?? 0)} ${data.feeTokenSymbol}`

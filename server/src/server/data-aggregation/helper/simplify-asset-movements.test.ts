@@ -1,5 +1,8 @@
 import { describe, expect, it } from "@jest/globals";
-import { PortfolioMovement, TaxableEventTransfer } from "../model/portfolio-movement";
+import {
+  PortfolioMovement,
+  TaxableEventTransfer,
+} from "../model/portfolio-movement";
 import { simplifyAssetMovementsSemanticId } from "./simplify-asset-movements";
 
 describe("simplifyAssetMovementsSemanticId", () => {
@@ -15,10 +18,12 @@ describe("simplifyAssetMovementsSemanticId", () => {
     xcmFeeTokenSymbol: "XCM",
     xcmFeeTokenUniqueId: "xcm",
     timestamp: 0,
-    extrinsic_index: '123-5'
-  };
+    extrinsic_index: "123-5",
+  } as any;
 
-  const mkTransfer = (overrides: Partial<TaxableEventTransfer>): TaxableEventTransfer => ({
+  const mkTransfer = (
+    overrides: Partial<TaxableEventTransfer>,
+  ): TaxableEventTransfer => ({
     semanticGroupId: "sg1",
     symbol: "asset1",
     asset_unique_id: "asset1",
@@ -28,7 +33,7 @@ describe("simplifyAssetMovementsSemanticId", () => {
     to: "bob",
     label: "Treasury grant",
     module: "balances",
-    semanticEventIndex: '0',
+    semanticEventIndex: "0",
     ...overrides,
   });
 
@@ -91,10 +96,10 @@ describe("simplifyAssetMovementsSemanticId", () => {
     const result = simplifyAssetMovementsSemanticId("bob", [movement]);
 
     const xcmMovement = result.find((m) =>
-      m.transfers.some((t) => t.label === "XCM transfer")
+      m.transfers.some((t) => t.label === "XCM transfer"),
     );
     const normalMovement = result.find((m) =>
-      m.transfers.every((t) => t.label !== "XCM transfer")
+      m.transfers.every((t) => t.label !== "XCM transfer"),
     );
 
     expect(xcmMovement?.xcmFee).toBe(5);

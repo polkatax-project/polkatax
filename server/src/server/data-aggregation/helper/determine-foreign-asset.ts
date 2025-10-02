@@ -22,7 +22,7 @@ export const determineForeignAsset = (
   multiLocation: MultiLocation | string | number,
   tokens: ForeignAsset[],
 ) => {
-  const original = JSON.parse(JSON.stringify(multiLocation))
+  const original = JSON.parse(JSON.stringify(multiLocation));
   convertToCanonicalFormat(multiLocation);
   let token = tokens.find(
     (t) =>

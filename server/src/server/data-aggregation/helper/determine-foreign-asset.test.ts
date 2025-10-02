@@ -41,11 +41,14 @@ describe("determineForeignAsset", () => {
 
   it("uses fallback when X1 is object and not initially matched", () => {
     const token = mkForeignAsset({
-      multi_location: { parents: 1, interior: { X1: [ {"Token": "AccountKey"} ] } },
+      multi_location: {
+        parents: 1,
+        interior: { X1: [{ Token: "AccountKey" }] },
+      },
     });
     const altForm: MultiLocation = {
       parents: 1,
-      interior: { X1: { "Token": "AccountKey"} }, // string, should be wrapped
+      interior: { X1: { Token: "AccountKey" } }, // string, should be wrapped
     };
 
     const result = determineForeignAsset(altForm, [token]);

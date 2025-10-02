@@ -21,11 +21,14 @@ export const labelToKoinlyTag: Record<Label, KoinlyTag> = {
   Fee: 'Cost',
   'Existential deposit paid': 'Cost', // treated as expense/loss
   'Coretime purchase': 'Cost', // business-like expenditure
-  'Remove from Pool': 'Remove from Pool',
   'Migrated delegation': undefined,
   'Reserve repatriated': 'Income', // returned funds -> income
   Stake: undefined,
   Unstake: undefined,
+  Transfer: undefined,
+  'CEX transfer': undefined,
+  'DEX fee': undefined,
+  'Account created': undefined,
 };
 
 export const mapLabelToKoinlyTag = (

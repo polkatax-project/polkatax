@@ -1,4 +1,5 @@
 import { Label } from "../../../common/model/label";
+import { EventDetails } from "../../blockchain/substrate/model/subscan-event";
 
 export type Provenance = "dataPlatformApi" | "deviationCompensation";
 
@@ -20,6 +21,7 @@ export interface PortfolioMovement {
   xcmFeeFiat?: number;
   xcmFeeTokenUniqueId?: string;
   events: { moduleId: string; eventId: string; eventIndex: string }[];
+  eventDetails: EventDetails[];
   label?: Label;
   provenance?: Provenance;
   transfers: TaxableEventTransfer[];
@@ -29,7 +31,11 @@ export interface TaxableEventTransfer {
   symbol: string;
   amount: number;
   from: string;
+  fromAddressType?: "Exchange" | string;
   to: string;
+  toAddressType?: "Exchange" | string;
+  toAddressName?: string;
+  fromAddressName?: string;
   extrinsic_index?: string;
   price?: number;
   fiatValue?: number;

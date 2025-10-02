@@ -12,6 +12,26 @@ type EventClassification = {
 
 const eventClassifications: EventClassification[] = [
   {
+    chains: ["*"],
+    events: [
+      {
+        moduleId: "foreignassets",
+        eventId: "Issued",
+        label: "XCM transfer" as const,
+      },
+      {
+        moduleId: "foreignassets",
+        eventId: "Destroyed",
+        label: "XCM transfer" as const,
+      },
+      {
+        moduleId: "system",
+        eventId: "NewAccount",
+        label: "Account created" as const,
+      },
+    ],
+  },
+  {
     chains: ["bifrost", "bifrost-kusama"],
     events: [
       {
@@ -234,6 +254,11 @@ const callModuleClassifications: CallModuleClassification[] = [
         ],
       },
       {
+        module: "polkadotxcm",
+        functions: [],
+        label: "XCM transfer" as const,
+      },
+      {
         module: "childbounties",
         functions: [
           {
@@ -386,6 +411,18 @@ export const determineLabelForPayment = (
     portfolioMovement.transfers.filter((t) => t.amount < 0).length === 1
   ) {
     return "Swap";
+  }
+
+  if (
+    portfolioMovement.transfers.some(
+      (t) => t.toAddressType === "Exchange" || t.fromAddressType === "Exchange",
+    )
+  ) {
+    return "CEX transfer";
+  }
+
+  if (portfolioMovement.transfers.length === 1) {
+    return "Transfer";
   }
 
   return undefined;

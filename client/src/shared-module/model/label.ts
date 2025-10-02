@@ -5,7 +5,7 @@ export type Label =
   | 'Liquidity removed'
   | 'Liquidity added'
   | 'Swap'
-  | 'Existential deposit paid'
+  | 'Existential deposit paid' // only used for events of name 'ExistentialDepositPaid'
   | 'Crowdloan contribution'
   | 'Liquid staking token minted'
   | 'Liquid staking token rebonded'
@@ -17,9 +17,12 @@ export type Label =
   | 'Staking reward'
   | 'Staking slashed'
   | 'Coretime purchase'
-  | 'Remove from Pool'
   | 'Migrated delegation'
   | 'Stake'
   | 'Fee'
   | 'Unstake'
-  | 'Reserve repatriated';
+  | 'CEX transfer' // Used for any transer to or from a centralized exchange
+  | 'Account created'
+  | 'Reserve repatriated'
+  | 'DEX fee'
+  | 'Transfer'; // transfer of an asset which doesn't fall in any of the other categories

@@ -25,7 +25,7 @@ interface Subscription {
 
 export class WebSocketManager {
   private connections: { subscription: Subscription; socket: WebSocket }[] = [];
-  private readonly MAX_WALLETS = 4;
+  private readonly MAX_WALLETS = 10;
 
   constructor(
     private jobManager: JobManager,
@@ -61,16 +61,16 @@ export class WebSocketManager {
     const { wallet, currency, blockchains, syncFromDate, syncUntilDate } =
       msg.payload;
 
-    /*if (
-      Math.abs(syncFromDate - getBeginningLastYear()) > 25 * 60 * 60 * 1000 ||
-      Math.abs(syncUntilDate - getEndOfLastYear()) > 25 * 60 * 60 * 1000
+    if (
+      Math.abs(syncFromDate - getBeginningLastYear()) > 48 * 60 * 60 * 1000 ||
+      Math.abs(syncUntilDate - getEndOfLastYear()) > 48 * 60 * 60 * 1000
     ) {
       this.sendError(socket, {
         code: 400,
         msg: "Sync date invalid",
       });
       return;
-    }*/
+    }
 
     const jobs = await this.jobManager.enqueue(
       msg.reqId,
