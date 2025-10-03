@@ -424,6 +424,8 @@ export const determineLabelForPayment = (
   }
 
   if (
+    // evm chains might misinterpret fees for transfers because we have not transactions
+    !["moonbeam", "moonriver", "neuroweb"].includes(chain) &&
     portfolioMovement.transfers.filter((t) => t.amount > 0).length === 1 &&
     portfolioMovement.transfers.filter((t) => t.amount < 0).length === 1
   ) {
