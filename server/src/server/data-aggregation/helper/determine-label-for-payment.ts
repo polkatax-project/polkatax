@@ -56,7 +56,7 @@ const eventClassifications: EventClassification[] = [
       },
       {
         moduleId: "farming",
-        eventId: "claimed",
+        eventId: "Claimed",
         label: "Reward" as const,
       },
       {
@@ -166,6 +166,23 @@ const callModuleClassifications: CallModuleClassification[] = [
           {
             name: "add_liquidity",
             label: "Liquidity added" as const,
+          },
+        ],
+      },
+      {
+        module: "vtokenminting",
+        functions: [
+          {
+            name: "mint",
+            label: "Liquid staking token minted" as const,
+          },
+          {
+            name: "rebond_by_unlock_id",
+            label: "Liquid staking token rebonded" as const,
+          },
+          {
+            name: "redeem",
+            label: "Liquid staking token redeemed" as const,
           },
         ],
       },

@@ -65,4 +65,5 @@ export interface Transfer {
   asset_unique_id: string;
   coingeckoId?: string;
   label?: Label;
+  event_index: string;
 }

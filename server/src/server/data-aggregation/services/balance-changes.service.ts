@@ -178,8 +178,8 @@ export class BalanceChangesService {
     event: EventDetails,
     symbol: string,
     asset_unique_id: string,
-    from: string,
     to: string,
+    from: string,
     amount: number,
   ) {
     let movement = portfolioMovements.find(

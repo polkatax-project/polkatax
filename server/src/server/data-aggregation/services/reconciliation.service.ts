@@ -98,7 +98,13 @@ export class ReconciliationService {
       });
 
     for (let portfolioMovement of portfolioMovements) {
-      this.matchTransactionFee(portfolioMovement, tokens, indexedTx);
+      this.matchTransactionFee(
+        chain.token,
+        address,
+        portfolioMovement,
+        tokens,
+        indexedTx,
+      );
       this.matchStakingRewards(portfolioMovement, indexedStakingRewards, chain);
       this.matchSemanticTransfers(
         portfolioMovement,
@@ -306,6 +312,8 @@ export class ReconciliationService {
   }
 
   matchTransactionFee(
+    nativeToken: string,
+    wallet: string,
     portfolioMovement: PortfolioMovement,
     tokens: Asset[],
     indexedTx: Record<string, TransactionDetails>,
@@ -319,60 +327,82 @@ export class ReconciliationService {
     }
     portfolioMovement.callModule = matchingTx.callModule;
     portfolioMovement.callModuleFunction = matchingTx.callModuleFunction;
-    const transferMatchingFee = matchingTx
-      ? portfolioMovement.transfers.find(
-          (t) =>
-            !t["reconciled"] &&
-            isVeryCloseTo(
-              -t.amount * 10 ** getDecimals(t.asset_unique_id, tokens),
-              matchingTx.fee,
-            ),
-        )
-      : undefined;
-    if (transferMatchingFee) {
-      const decimals = getDecimals(transferMatchingFee.asset_unique_id, tokens);
-      portfolioMovement.feeUsed = -transferMatchingFee.amount;
-      portfolioMovement.tip = matchingTx.tip / 10 ** decimals;
-      portfolioMovement.feeTokenSymbol = transferMatchingFee.symbol;
-      portfolioMovement.feeTokenUniqueId = transferMatchingFee.asset_unique_id;
-      portfolioMovement.transfers = portfolioMovement.transfers.filter(
-        (t) => t !== transferMatchingFee,
+    /**
+     * Fee event is event with lowest idx.
+     */
+    let feePaymentEvent = matchingTx.event[0];
+    matchingTx.event.forEach((e) => {
+      if (e.event_idx < feePaymentEvent.event_idx) {
+        feePaymentEvent = e;
+      }
+    });
+    if (
+      (feePaymentEvent.module_id === "tokens" &&
+        feePaymentEvent.event_id === "Transfer") ||
+      (feePaymentEvent.module_id === "balances" &&
+        feePaymentEvent.event_id === "Withdraw") ||
+      (feePaymentEvent.module_id === "tokens" &&
+        feePaymentEvent.event_id === "Withdrawn") ||
+      (feePaymentEvent.module_id === "assets" &&
+        feePaymentEvent.event_id === "Withdrawn") ||
+      (feePaymentEvent.module_id === "foreignassets" &&
+        feePaymentEvent.event_id === "Withdrawn")
+    ) {
+      const feePayment = portfolioMovement.transfers.find(
+        (t) => t.event_index === feePaymentEvent.event_index,
       );
+      if (feePayment) {
+        portfolioMovement.feeUsed = -feePayment.amount;
+        portfolioMovement.feeTokenSymbol = feePayment.symbol;
+        portfolioMovement.feeTokenUniqueId = feePayment.asset_unique_id;
+        portfolioMovement.transfers = portfolioMovement.transfers.filter(
+          (t) => t !== feePayment,
+        );
+      }
     } else {
-      /**
-       * Fee event is event with lowest idx.
-       */
-      let feePaymentEvent = matchingTx.event[0];
-      matchingTx.event.forEach((e) => {
-        if (e.event_idx < feePaymentEvent.event_idx) {
-          feePaymentEvent = e;
-        }
-      });
-      if (
-        (feePaymentEvent.module_id === "balances" &&
-          feePaymentEvent.event_id === "Withdraw") ||
-        (feePaymentEvent.module_id === "tokens" &&
-          feePaymentEvent.event_id === "Withdrawn") ||
-        (feePaymentEvent.module_id === "assets" &&
-          feePaymentEvent.event_id === "Withdrawn") ||
-        (feePaymentEvent.module_id === "foreignassets" &&
-          feePaymentEvent.event_id === "Withdrawn")
-      ) {
-        const feePayment = portfolioMovement.transfers.find(
-          (t) => t.event_index === feePaymentEvent.event_index,
+      const transferMatchingFee = matchingTx
+        ? portfolioMovement.transfers.find(
+            (t) =>
+              !t["reconciled"] &&
+              isVeryCloseTo(
+                -t.amount * 10 ** getDecimals(t.asset_unique_id, tokens),
+                matchingTx.fee,
+              ),
+          )
+        : undefined;
+      if (transferMatchingFee) {
+        const decimals = getDecimals(
+          transferMatchingFee.asset_unique_id,
+          tokens,
         );
-        if (feePayment) {
-          portfolioMovement.feeUsed = -feePayment.amount;
-          portfolioMovement.feeTokenSymbol = feePayment.symbol;
-          portfolioMovement.feeTokenUniqueId = feePayment.asset_unique_id;
-          portfolioMovement.transfers = portfolioMovement.transfers.filter(
-            (t) => t !== feePayment,
-          );
-        }
+        portfolioMovement.feeUsed = -transferMatchingFee.amount;
+        portfolioMovement.tip = matchingTx.tip / 10 ** decimals;
+        portfolioMovement.feeTokenSymbol = transferMatchingFee.symbol;
+        portfolioMovement.feeTokenUniqueId =
+          transferMatchingFee.asset_unique_id;
+        portfolioMovement.transfers = portfolioMovement.transfers.filter(
+          (t) => t !== transferMatchingFee,
+        );
       } else {
+        // add fee to a withdrawal event matching the token
         logger.warn(
-          `First event of tx is not withdraw event! ${portfolioMovement.extrinsic_index}`,
+          `First event of tx is not withdraw event! ${portfolioMovement.extrinsic_index} and no transfer matching fee found`,
         );
+        const decimals = getDecimals(nativeToken, tokens);
+        const withDrawalOfNativeToken = portfolioMovement.transfers.find(
+          (t) =>
+            t.asset_unique_id === nativeToken &&
+            t.from === wallet &&
+            !t.to &&
+            -t.amount > matchingTx.fee / 10 ** decimals,
+        );
+        if (withDrawalOfNativeToken) {
+          portfolioMovement.feeUsed = matchingTx.fee / 10 ** decimals;
+          withDrawalOfNativeToken.amount += portfolioMovement.feeUsed;
+          portfolioMovement.tip = matchingTx.tip / 10 ** decimals;
+          portfolioMovement.feeTokenSymbol = nativeToken;
+          portfolioMovement.feeTokenUniqueId = nativeToken;
+        }
       }
     }
 
@@ -391,7 +421,7 @@ export class ReconciliationService {
       portfolioMovement.feeUsed -= transferMatchingFeeRepayment.amount;
     }
 
-    if (transferMatchingFee && (matchingTx.tip ?? 0) > 0) {
+    if (matchingTx.tip ?? 0 > 0) {
       const matchingTip = portfolioMovement.transfers.find(
         (t) => !t["reconciled"] && isVeryCloseTo(-t.amount, matchingTx.tip),
       );

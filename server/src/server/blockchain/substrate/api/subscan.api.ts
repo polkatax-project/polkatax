@@ -583,6 +583,7 @@ export class SubscanApi {
       ...t,
       id: t.transfer_id,
       timestamp: (t.block_timestamp || t.create_at) * 1000,
+      event_index: t.block_num + "-" + t.event_idx,
     }));
     return {
       list,

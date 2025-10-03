@@ -368,6 +368,7 @@ export class SubscanService {
         price,
         asset_type: transfer.asset_type ? transfer.asset_type : undefined,
         asset_unique_id: transfer.asset_unique_id || transfer.contract,
+        event_index: transfer.block_num + "-" + transfer.event_idx,
       };
     });
     logger.info(
