@@ -33,7 +33,7 @@ describe("determineLabelForPayment", () => {
   it("returns event classification label when event matches", () => {
     const movement: PortfolioMovement = {
       ...baseMovement,
-      events: [{ moduleId: "farming", eventId: "claimed", eventIndex: 0 }],
+      events: [{ moduleId: "farming", eventId: "Claimed", eventIndex: 0 }],
     } as any;
     expect(determineLabelForPayment("bifrost", movement)).toBe("Reward");
   });
