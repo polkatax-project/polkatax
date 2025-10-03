@@ -132,11 +132,13 @@ export class PortfolioMovementsService {
       }),
     );
     const transactionPartnerAddresses = [...transactionPartnerAddressSet];
-    const accounts = await Promise.all(
-      transactionPartnerAddresses.map((a) =>
-        this.subscanService.fetchAccount(a, chain),
-      ),
-    );
+    const accounts = (
+      await Promise.all(
+        transactionPartnerAddresses.map((a) =>
+          this.subscanService.fetchAccount(a, chain),
+        ),
+      )
+    ).filter((a) => !!a);
     const accountsIndexed: Record<string, Account> = {};
     accounts.forEach((a) => (accountsIndexed[a.address] = a));
     portfolioMovements.forEach((p) =>
