@@ -104,6 +104,16 @@ function annotateRouterSwapRewards(tx: PortfolioMovement) {
 }
 
 function annotateSwapWithFees(tx: PortfolioMovement): void {
+  // only look at router buy/sell extrinsics
+  if (
+    !(
+      tx.callModule === "router" &&
+      (tx.callModuleFunction === "sell" || tx.callModuleFunction === "buy")
+    )
+  ) {
+    return;
+  }
+
   // Detect swap events
   const swapEvent = tx.events.find(
     (e: any) =>
