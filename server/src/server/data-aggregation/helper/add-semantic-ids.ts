@@ -112,8 +112,8 @@ function annotateSwapWithFees(tx: PortfolioMovement): void {
       (e.moduleId === "router" && e.eventId === "Executed"),
   );
 
-  if (!swapEvent) {
-    // no swap → do nothing
+  if (!swapEvent || tx.transfers.length < 3) {
+    // no swap → do nothing, just two tokens -> don't to anything neither
     return;
   }
 
@@ -130,7 +130,8 @@ function annotateSwapWithFees(tx: PortfolioMovement): void {
       (t.toAddressName.startsWith("modlpy/") ||
         t.toAddressName.startsWith("modl")) &&
       maxAmount > 0 &&
-      Math.abs(t.amount) < 0.01 * maxAmount
+      Math.abs(t.amount) < 0.01 * maxAmount &&
+      !t.label
     ) {
       t.label = "DEX fee";
       t.semanticEventIndex = swapEvent.eventIndex;
