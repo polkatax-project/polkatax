@@ -75,6 +75,11 @@ const eventClassifications: EventClassification[] = [
     chains: ["hydration", "basilisk"],
     events: [
       {
+        moduleId: "referrals",
+        eventId: "claim_rewards",
+        label: "Reward" as const,
+      },
+      {
         moduleId: "omnipoolliquiditymining",
         eventId: "RewardClaimed",
         label: "Reward" as const,

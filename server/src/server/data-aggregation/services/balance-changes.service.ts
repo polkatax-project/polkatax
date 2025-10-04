@@ -1,4 +1,5 @@
 import { convertToCanonicalAddress } from "../../../common/util/convert-to-canonical-address";
+import { isVeryCloseTo } from "../../../common/util/is-very-close-to";
 import { SubscanService } from "../../blockchain/substrate/api/subscan.service";
 import { Asset } from "../../blockchain/substrate/model/asset";
 import { MultiLocation } from "../../blockchain/substrate/model/multi-location";
@@ -83,6 +84,19 @@ export class BalanceChangesService {
     );
     this.addToPortFolioMovements(portfolioMovements, transfers, isMyAccount);
 
+    if (
+      request.chain.domain === "hydration" ||
+      request.chain.domain === "basilisk"
+    ) {
+      await this.fetchHydrationReferralsClaimed(
+        request.chain.domain,
+        request.chain.token,
+        subscanEvents,
+        transactions,
+        portfolioMovements,
+      );
+    }
+
     portfolioMovements = portfolioMovements.sort(
       (a, b) => a.timestamp - b.timestamp,
     );
@@ -90,6 +104,52 @@ export class BalanceChangesService {
       `Exit fetchAllBalanceChanges for ${request.chain.domain} and ${request.address} with ${portfolioMovements.length} entries`,
     );
     return portfolioMovements;
+  }
+
+  private async fetchHydrationReferralsClaimed(
+    chain: string,
+    token: string,
+    subscanEvents: SubscanEvent[],
+    transactions: TransactionDetails[],
+    portfolioMovements: PortfolioMovement[],
+  ) {
+    const eventDetails = await this.fetchMissingEventDetails(
+      chain,
+      subscanEvents,
+      transactions,
+      "referrals",
+      ["Claimed"],
+    );
+    const nativeTokenDecimals =
+      await this.subscanService.fetchNativeToken(chain);
+    eventDetails.forEach((event) => {
+      const address = extractAddress("who", event);
+      const referrerRewards = getPropertyValue("referrer_rewards", event) ?? 0;
+      const tradeRewards = getPropertyValue("trade_rewards", event) ?? 0;
+      const amountRaw = Number(referrerRewards) + Number(tradeRewards);
+      const amount =
+        Number(amountRaw) / 10 ** nativeTokenDecimals.token_decimals;
+      const movement = portfolioMovements.find(
+        (p) => p.extrinsic_index === event.extrinsic_index,
+      );
+      const correspondingTransfer = movement?.transfers?.find(
+        (t) =>
+          isVeryCloseTo(t.amount, amount) &&
+          t.symbol === token &&
+          t.to === address,
+      );
+      if (!correspondingTransfer) {
+        this.update(
+          portfolioMovements,
+          event,
+          token,
+          token,
+          address,
+          undefined,
+          amount,
+        );
+      }
+    });
   }
 
   private async fetchAssetconversionAssethub(

@@ -14,6 +14,7 @@ import { SubscanEvent } from "../../blockchain/substrate/model/subscan-event";
 import { StakingReward } from "../../blockchain/substrate/model/staking-reward";
 import { logger } from "../../logger/logger";
 import { extractXcmFees } from "./special-event-processing/extract-xcm-fees";
+import { isVeryCloseTo } from "../../../common/util/is-very-close-to";
 
 const getDecimals = (assetUniqueId: string, tokens: Asset[]) => {
   return tokens.find((t) => t.unique_id === assetUniqueId)?.decimals;
@@ -24,13 +25,6 @@ const isCloseTo = (a: number, b: number) => {
   const diff = Math.abs(a - b);
   const norm = Math.abs(a) + Math.abs(b);
   return norm === 0 ? diff < 1e-2 : diff / norm < 1e-2;
-};
-
-const isVeryCloseTo = (a: number, b: number) => {
-  if (a === b) return true;
-  const diff = Math.abs(a - b);
-  const norm = Math.abs(a) + Math.abs(b);
-  return norm === 0 ? diff < 1e-6 : diff / norm < 1e-6;
 };
 
 export class ReconciliationService {
