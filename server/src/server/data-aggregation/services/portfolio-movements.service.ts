@@ -294,7 +294,6 @@ export class PortfolioMovementsService {
       (a, b) => a.timestamp - b.timestamp,
     );
 
-
     logger.info(
       `PortfolioMovmentService: Adding transaction labels for ${request.chain.domain} and wallet ${request.address}`,
     );

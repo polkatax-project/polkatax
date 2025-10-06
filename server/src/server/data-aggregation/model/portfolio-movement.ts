@@ -48,4 +48,5 @@ export interface TaxableEventTransfer {
   semanticGroupId?: string;
   semanticEventIndex?: string;
   label?: Label;
+  hash?: string;
 }

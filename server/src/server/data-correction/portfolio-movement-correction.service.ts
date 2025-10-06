@@ -14,7 +14,6 @@ import * as fs from "fs";
 import { Deviation } from "./model/deviation";
 import { DEVIATION_LIMITS } from "./const/deviation-limits";
 import { DeviationLimit } from "./model/deviation-limit";
-import { SubscanEvent } from "../blockchain/substrate/model/subscan-event";
 
 export class PortfolioMovementCorrectionService {
   constructor(

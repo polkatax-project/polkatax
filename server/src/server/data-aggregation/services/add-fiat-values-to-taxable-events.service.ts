@@ -40,13 +40,19 @@ export class AddFiatValuesToTaxableEventsService {
     taxableEvents: PortfolioMovement[],
     quotes: CurrencyQuotes,
   ): PortfolioMovement[] {
-    const taxableStakingRewards = taxableEvents.filter(
-      (t) => t.label === "Staking reward" || t.label === "Staking slashed",
+    const taxableStakingRewards = taxableEvents.filter((p) =>
+      p.transfers.some(
+        (t) => t.label === "Staking reward" || t.label === "Staking slashed",
+      ),
     );
     for (let taxable of taxableStakingRewards) {
       const isoDate = formatDate(new Date(taxable.timestamp));
       if (quotes.quotes?.[isoDate]) {
         taxable.transfers
+          .filter(
+            (t) =>
+              t.label === "Staking reward" || t.label === "Staking slashed",
+          )
           .filter((t) => !t.fiatValue && t.asset_unique_id === nativeToken)
           .forEach((t) => {
             t.price = quotes.quotes[isoDate];

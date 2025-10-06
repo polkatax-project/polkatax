@@ -76,16 +76,24 @@ describe("AddFiatValuesToTaxableEventsService", () => {
         },
         {
           timestamp: "2023-01-01T00:00:00Z",
-          label: "Staking reward",
           transfers: [
-            { asset_unique_id: "DOT", amount: 10, fiatValue: undefined },
+            {
+              asset_unique_id: "DOT",
+              amount: 10,
+              fiatValue: undefined,
+              label: "Staking reward",
+            },
           ],
         },
         {
           timestamp: "2023-01-01T00:00:00Z",
-          label: "Staking slashed",
           transfers: [
-            { asset_unique_id: "DOT", amount: 20, fiatValue: undefined },
+            {
+              asset_unique_id: "DOT",
+              amount: 20,
+              fiatValue: undefined,
+              label: "Staking reward",
+            },
           ],
         },
       ];
@@ -109,8 +117,15 @@ describe("AddFiatValuesToTaxableEventsService", () => {
       const taxableEvents: any = [
         {
           timestamp: "2023-01-01T00:00:00Z",
-          transfers: [],
-          label: "Staking reward",
+          transfers: [
+            {
+              asset_unique_id: "DOT",
+              amount: 2,
+              price: 4,
+              fiatValue: 8,
+              label: "Staking reward",
+            },
+          ],
         },
       ];
       const quotes = { currency: "USD", quotes: {} };

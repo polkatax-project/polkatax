@@ -17,6 +17,7 @@ import {
   getEndOfLastYear,
 } from "../job-management/get-beginning-last-year";
 import { Job } from "../../model/job";
+import { pruneJobResult } from "./helper/prune-jobs-results";
 
 interface Subscription {
   jobId: string;
@@ -227,25 +228,11 @@ export class WebSocketManager {
     );
     if (!matches.length) return;
 
-    const jobDataValues =
-      job?.data?.values && job.status !== "post_processing"
-        ? job.data.values
-        : undefined;
+    const prunedJob = pruneJobResult(job);
 
     const message: WebSocketOutgoingMessage = {
-      reqId: job.reqId,
-      payload: [
-        {
-          ...job,
-          data:
-            job.data && job.status !== "post_processing"
-              ? {
-                  ...job.data,
-                  values: jobDataValues,
-                }
-              : undefined,
-        },
-      ],
+      reqId: prunedJob.reqId,
+      payload: [prunedJob],
       timestamp: Date.now(),
       type: "data",
     };
