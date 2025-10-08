@@ -45,11 +45,12 @@ export interface RawXcmMessage {
 }
 
 export interface XcmTransfer {
-  messageHash: string;
+  xcmMessageHash: string;
   timestamp: number;
   block: number;
   fee: number;
   extrinsic_index?: string;
+  relayChain: string;
   transfers: XcmAssetMovement[];
 }
 
@@ -68,5 +69,6 @@ export interface XcmAssetMovement {
   asset_unique_id: string;
   asset_unique_id_as_given: string;
   module: string;
-  messageHash: string;
+  xcmMessageHash: string;
+  relayChain: string;
 }

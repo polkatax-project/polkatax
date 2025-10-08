@@ -89,16 +89,26 @@ export class XcmService {
       );
       return [];
     }
-    const relayChain = chain.isRelay ? chain.domain : chain.relay;
     const paraId = chain.paraId;
 
-    const token = await this.subscanService.fetchNativeToken(data.chainName);
-    logger.info(`XCM Service: Fetched native Token`);
-    const rawXcmList = await this.subscanService.fetchXcmList(
-      relayChain,
+    const rawXcmListDot = await this.subscanService.fetchXcmList(
+      "polkadot",
       data.address,
       paraId,
       data.minDate,
+    );
+    const rawXcmListKusama = await this.subscanService.fetchXcmList(
+      "kusama",
+      data.address,
+      paraId,
+      data.minDate,
+    );
+    const rawXcmList = [];
+    rawXcmListDot.forEach((xcm) =>
+      rawXcmList.push({ relayChain: "polkadot", xcm }),
+    );
+    rawXcmListKusama.forEach((xcm) =>
+      rawXcmList.push({ relayChain: "kusama", xcm }),
     );
 
     const tokens = await this.subscanService.scanTokensAndAssets(
@@ -106,7 +116,7 @@ export class XcmService {
     );
 
     const xcmList = await Promise.all(
-      rawXcmList.map(async (xcm) => {
+      rawXcmList.map(async ({ relayChain, xcm }) => {
         const from = this.mapAccountIdToAddress(xcm.from_account_id);
         const to = this.mapAccountIdToAddress(xcm.to_account_id);
 
@@ -149,12 +159,13 @@ export class XcmService {
         }
 
         return {
-          messageHash: xcm.message_hash,
+          xcmMessageHash: xcm.message_hash,
           timestamp,
           // xcm.block_num > 0 is indeed needed because occasionally the value is indeed zero.
           block: chain.isRelay && xcm.block_num > 0 ? xcm.block_num : undefined,
           fee: Number(xcm.used_fee),
           extrinsic_index,
+          relayChain,
           transfers: (
             await Promise.all(
               xcm.assets.map(async (a) => {
@@ -211,7 +222,8 @@ export class XcmService {
                   fromChain,
                   destChain,
                   outgoing: fromChain === data.chainName,
-                  messageHash: xcm.message_hash,
+                  xcmMessageHash: xcm.message_hash,
+                  relayChain,
                 };
               }),
             )

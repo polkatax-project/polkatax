@@ -37,7 +37,7 @@ export const toTransfer = (
     asset_unique_id: token.unique_id,
     fromChain: xcm?.transfers[0]?.fromChain,
     destChain: xcm?.transfers[0]?.destChain,
-    messageHash: xcm?.messageHash,
+    xcmMessageHash: xcm?.xcmMessageHash,
     label,
     module: xcm ? "xcm" : undefined,
     semanticGroupId,

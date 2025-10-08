@@ -7,7 +7,7 @@ export interface EventDerivedTransfer extends Transfer {
   original_event_index: string;
   fromChain?: string;
   destChain?: string;
-  messageHash?: string;
+  xcmMessageHash?: string;
   label?: Label;
   semanticGroupId?: string;
 }

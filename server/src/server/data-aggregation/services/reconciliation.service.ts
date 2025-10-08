@@ -1,9 +1,6 @@
 import { SubscanService } from "../../blockchain/substrate/api/subscan.service";
 import { PortfolioMovement } from "../model/portfolio-movement";
-import {
-  Transaction,
-  TransactionDetails,
-} from "../../blockchain/substrate/model/transaction";
+import { TransactionDetails } from "../../blockchain/substrate/model/transaction";
 import { EventDerivedTransfer } from "../model/event-derived-transfer";
 import {
   XcmAssetMovement,
@@ -15,6 +12,7 @@ import { StakingReward } from "../../blockchain/substrate/model/staking-reward";
 import { logger } from "../../logger/logger";
 import { extractXcmFees } from "./special-event-processing/extract-xcm-fees";
 import { isVeryCloseTo } from "../../../common/util/is-very-close-to";
+import * as subscanChains from "../../../../res/gen/subscan-chains.json";
 
 const getDecimals = (assetUniqueId: string, tokens: Asset[]) => {
   return tokens.find((t) => t.unique_id === assetUniqueId)?.decimals;
@@ -105,7 +103,11 @@ export class ReconciliationService {
         indexedTransfers,
         indexedOutgoingXcmTransfers,
       );
-      this.matchIncomingXcmTransfers(portfolioMovement, xcmTransfers);
+      this.matchIncomingXcmTransfers(
+        chain.domain,
+        portfolioMovement,
+        xcmTransfers,
+      );
       this.attachEvents(portfolioMovement, indexedEvents);
       this.handleXcmFees(portfolioMovement, address, indexedTx, tokens);
     }
@@ -118,6 +120,13 @@ export class ReconciliationService {
         logger.warn(s, `Unused staking reward for ${chain.domain}`);
       }
     });
+
+    portfolioMovements.forEach((p) =>
+      p.transfers.forEach((t) => {
+        delete t["reconciled"];
+        delete t["tainted"];
+      }),
+    );
   }
 
   async handleXcmFees(
@@ -165,21 +174,23 @@ export class ReconciliationService {
   }
 
   matchIncomingXcmTransfers(
+    chain: string,
     portfolioMovement: PortfolioMovement,
     xcmTransfers: XcmTransfer[],
   ) {
+    const relayChain = subscanChains.chains.find(
+      (c) => c.domain === chain,
+    )?.relay;
     const remainingTransfers = portfolioMovement.transfers.filter(
       (t) => !t["reconciled"],
     );
-    const timespan = [
-      portfolioMovement.timestamp - 20_000,
-      portfolioMovement.timestamp,
-    ]; // up until 20 seconds ago.
     const relevantXcmTransfers = xcmTransfers.filter(
       (xcm) =>
-        xcm.timestamp >= timespan[0] &&
-        xcm.timestamp <= timespan[1] &&
-        xcm.transfers.some((t) => !t.outgoing),
+        xcm.timestamp >=
+          portfolioMovement.timestamp -
+            (relayChain === xcm.relayChain ? 20_000 : 180_000) &&
+        xcm.timestamp <= portfolioMovement.timestamp &&
+        xcm.transfers.some((t) => !t.outgoing && !t["tainted"]),
     );
     for (let transfer of remainingTransfers) {
       const matchingXcm = relevantXcmTransfers.find((xcm) =>
@@ -204,12 +215,13 @@ export class ReconciliationService {
         transfer.module = "xcm";
         transfer.price = matchingTransfer.price;
         transfer.fiatValue = matchingTransfer.fiatValue;
-        transfer.to = transfer.to ?? matchingTransfer.to;
-        transfer.from = transfer.from ?? matchingTransfer.from;
+        transfer.to = matchingTransfer.to ?? transfer.to;
+        transfer.from = matchingTransfer.from ?? transfer.from;
         transfer.fromChain = matchingTransfer.fromChain;
         transfer.toChain = matchingTransfer.destChain;
-        transfer.semanticGroupId = matchingTransfer.messageHash;
+        transfer.semanticGroupId = matchingTransfer.xcmMessageHash;
         transfer.label = "XCM transfer";
+        transfer.xcmMessageHash = matchingTransfer.xcmMessageHash;
       }
     }
   }
@@ -265,7 +277,7 @@ export class ReconciliationService {
         ).original_event_index;
         transfer.semanticGroupId =
           (matchingSemanticTransfer as EventDerivedTransfer).semanticGroupId ??
-          (matchingSemanticTransfer as XcmAssetMovement).messageHash;
+          (matchingSemanticTransfer as XcmAssetMovement).xcmMessageHash;
         transfer.label =
           (matchingSemanticTransfer as EventDerivedTransfer)?.label ??
           (matchingSemanticTransfer.module === "xcm"
@@ -273,6 +285,13 @@ export class ReconciliationService {
             : undefined);
         transfer["reconciled"] = true;
         matchingSemanticTransfer["tainted"] = true;
+        transfer.xcmMessageHash = (
+          matchingSemanticTransfer as XcmAssetMovement
+        ).xcmMessageHash;
+        if (transfer.label === "XCM transfer") {
+          transfer.to = matchingSemanticTransfer.to ?? transfer.to;
+          transfer.from = matchingSemanticTransfer.from ?? transfer.from;
+        }
       }
     }
   }

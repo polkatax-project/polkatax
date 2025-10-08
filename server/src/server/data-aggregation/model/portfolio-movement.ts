@@ -49,4 +49,5 @@ export interface TaxableEventTransfer {
   semanticEventIndex?: string;
   label?: Label;
   hash?: string;
+  xcmMessageHash?: string;
 }
