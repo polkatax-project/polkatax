@@ -1,0 +1,550 @@
+{
+  "mappings": [
+    {
+      "symbol": "vASTR",
+      "name": "Voucher ASTR",
+      "transferCount": 19351,
+      "uniqueId": "asset_registry/fd895658dd6eabfd9019f65834efc4c63b6904c8",
+      "coingeckoId": "bifrost-voucher-astr",
+      "coingeckoName": "Bifrost Voucher ASTR",
+      "coingeckoSymbol": "vastr",
+      "confidence": 0.922
+    },
+    {
+      "symbol": "MANTA",
+      "name": "Manta Network",
+      "transferCount": 35659,
+      "uniqueId": "asset_registry/fab9531d59f5991a6db9beb184c1927d215687f9",
+      "coingeckoId": "manta-network",
+      "coingeckoName": "Manta Network",
+      "coingeckoSymbol": "manta",
+      "confidence": 1
+    },
+    {
+      "symbol": "ASTR",
+      "name": "Astar",
+      "transferCount": 35637,
+      "uniqueId": "asset_registry/ea24559be2cbc326ea41b94d351d3a49e1ac2b28",
+      "coingeckoId": "astar",
+      "coingeckoName": "Astar",
+      "coingeckoSymbol": "astr",
+      "confidence": 1
+    },
+    {
+      "symbol": "vMANTA",
+      "name": "Voucher MANTA",
+      "transferCount": 17122,
+      "uniqueId": "asset_registry/e89d59ae32013566eed833f0d10590030ef945a0",
+      "coingeckoId": "bifrost-voucher-manta",
+      "coingeckoName": "Bifrost Voucher MANTA",
+      "coingeckoSymbol": "vmanta",
+      "confidence": 0.928
+    },
+    {
+      "symbol": "vBNC",
+      "name": "Voucher BNC",
+      "transferCount": 4441,
+      "uniqueId": "asset_registry/db1fcf649a4261df9eee50712d069dceec582e98",
+      "coingeckoId": "voucher-bnc",
+      "coingeckoName": "Voucher BNC",
+      "coingeckoSymbol": "vbnc",
+      "confidence": 1
+    },
+    {
+      "symbol": "vGLMR",
+      "name": "Voucher GLMR",
+      "transferCount": 11288,
+      "uniqueId": "asset_registry/d19067d9b9e97791072b1481c16faba85545b9c3",
+      "coingeckoId": "voucher-glmr",
+      "coingeckoName": "Voucher GLMR",
+      "coingeckoSymbol": "vglmr",
+      "confidence": 1
+    },
+    {
+      "symbol": "USDT",
+      "name": "Tether USD",
+      "transferCount": 41301,
+      "uniqueId": "asset_registry/c898ba064e5be37507e404eed92c8a909aa4d246",
+      "coingeckoId": "tether",
+      "coingeckoName": "Tether",
+      "coingeckoSymbol": "usdt",
+      "confidence": 0.931
+    },
+    {
+      "symbol": "PINK",
+      "name": "PINK",
+      "transferCount": 3205,
+      "uniqueId": "asset_registry/b46d625dbde0616609d0d1d40b1e570ca80bb7a2",
+      "coingeckoId": "pink",
+      "coingeckoName": "Pink",
+      "coingeckoSymbol": "pink",
+      "confidence": 1
+    },
+    {
+      "symbol": "vDOT",
+      "name": "Voucher DOT",
+      "transferCount": 99167,
+      "uniqueId": "asset_registry/9658598ef1eace56a0662d4a067a260e42b36f2a",
+      "coingeckoId": "voucher-dot",
+      "coingeckoName": "Voucher DOT",
+      "coingeckoSymbol": "vdot",
+      "confidence": 1
+    },
+    {
+      "symbol": "DOT",
+      "name": "Polkadot DOT",
+      "transferCount": 333664,
+      "uniqueId": "asset_registry/551a80e79e02213dd918190892af5034002909c5",
+      "coingeckoId": "polkadot",
+      "coingeckoName": "Polkadot",
+      "coingeckoSymbol": "dot",
+      "confidence": 0.947
+    },
+    {
+      "symbol": "GLMR",
+      "name": "Moonbeam Native Token",
+      "transferCount": 19858,
+      "uniqueId": "asset_registry/548efa1d3486b7caa31fc778eec1983f34a96502",
+      "coingeckoId": "moonbeam",
+      "coingeckoName": "Moonbeam",
+      "coingeckoSymbol": "glmr",
+      "confidence": 0.868
+    },
+    {
+      "symbol": "WETH",
+      "name": "Wrapped ETH",
+      "transferCount": 31,
+      "uniqueId": "asset_registry/50284b2871fd41a18a80fde06f26d2f6a0c5a134",
+      "coingeckoId": "wrapped-eth-taiko",
+      "coingeckoName": "Wrapped ETH (Taiko)",
+      "coingeckoSymbol": "weth",
+      "confidence": 0.935
+    },
+    {
+      "symbol": "INTR",
+      "name": "Interlay",
+      "transferCount": 5,
+      "uniqueId": "asset_registry/3da6e21cd78f9543a17ad430b5133f5da124acf7",
+      "coingeckoId": "interlay",
+      "coingeckoName": "Interlay",
+      "coingeckoSymbol": "intr",
+      "confidence": 1
+    },
+    {
+      "symbol": "USDC",
+      "name": "USD Coin",
+      "transferCount": 3,
+      "uniqueId": "asset_registry/292d7504d3ef7a8dd9c5b63d3e640684c5965463",
+      "coingeckoId": "usd-coin",
+      "coingeckoName": "USDC",
+      "coingeckoSymbol": "usdc",
+      "confidence": 0.9
+    },
+    {
+      "symbol": "FIL",
+      "name": "Filecoin Network Token",
+      "transferCount": 3534,
+      "uniqueId": "asset_registry/21fefd989f35a2988c9288aab9bafa621add893a",
+      "coingeckoId": "filecoin",
+      "coingeckoName": "Filecoin",
+      "coingeckoSymbol": "fil",
+      "confidence": 0.862
+    },
+    {
+      "symbol": "vsBOND-DOT-3366-16-23",
+      "name": "vsBOND-DOT-3366-16-23",
+      "transferCount": 10,
+      "uniqueId": "asset_registry/f5e6ba386377f50731defc20b94491cba791a860"
+    },
+    {
+      "symbol": "vsBOND-DOT-2021-7-14",
+      "name": "vsBOND-DOT-2021-7-14",
+      "transferCount": 107,
+      "uniqueId": "asset_registry/e69a6989dc9cf96849c06f61e81864132a6b0de5"
+    },
+    {
+      "symbol": "BNCS",
+      "name": "bncs-20 inscription token BNCS",
+      "transferCount": 35882,
+      "uniqueId": "asset_registry/e4ab3aa79b62a35c679c7ef86c0c58f829ed260e"
+    },
+    {
+      "symbol": "vsBOND-DOT-2019-7-14",
+      "name": "vsBOND-DOT-2019-7-14",
+      "transferCount": 235,
+      "uniqueId": "asset_registry/d7e41364892078662db15fc00e45b0d50da95426"
+    },
+    {
+      "symbol": "BLP5",
+      "name": "Bifrost Stable Pool Token 5",
+      "transferCount": 1459,
+      "uniqueId": "asset_registry/d796ceeff5ec876b4e4948f22bd1f45b55aa47bf"
+    },
+    {
+      "symbol": "BLP3",
+      "name": "Bifrost Stable Pool Token 3",
+      "transferCount": 1490,
+      "uniqueId": "asset_registry/d4896954a562154390dd917c0326b33ec9fe2afe"
+    },
+    {
+      "symbol": "vsBOND-DOT-3354-15-22",
+      "name": "vsBOND-DOT-3354-15-22",
+      "transferCount": 1,
+      "uniqueId": "asset_registry/cbe6f6f65c23ce988218e2cd385198479bbb87c3"
+    },
+    {
+      "symbol": "vsBOND-DOT-3367-16-23",
+      "name": "vsBOND-DOT-3367-16-23",
+      "transferCount": 79,
+      "uniqueId": "asset_registry/bf94ce42b9f0260c016e976c5bc74a78db602099"
+    },
+    {
+      "symbol": "vsBOND-DOT-2013-8-15",
+      "name": "vsBOND-DOT-2013-8-15",
+      "transferCount": 65,
+      "uniqueId": "asset_registry/b9e572edaf3a698c72d5fcdb1d3614509ecaa8fc"
+    },
+    {
+      "symbol": "vsBOND-DOT-2039-9-16",
+      "name": "vsBOND-DOT-2039-9-16",
+      "transferCount": 75,
+      "uniqueId": "asset_registry/b22231f1705efaf003283779d87c3370930050fc"
+    },
+    {
+      "symbol": "vsBOND-DOT-3359-16-23",
+      "name": "vsBOND-DOT-3359-16-23",
+      "transferCount": 4,
+      "uniqueId": "asset_registry/af8667ebe00f7f8ff5283dff4f1e749d96186792"
+    },
+    {
+      "symbol": "vsBOND-DOT-2034-7-14",
+      "name": "vsBOND-DOT-2034-7-14",
+      "transferCount": 40,
+      "uniqueId": "asset_registry/aee337c84e36efa75758171b2d5b42d402d23dee"
+    },
+    {
+      "symbol": "BLP0",
+      "name": "Bifrost Stable Pool Token 0",
+      "transferCount": 17231,
+      "uniqueId": "asset_registry/ac0d1b4e3b38e566c1269edac0ed36d0a52ffd86"
+    },
+    {
+      "symbol": "vsBOND-DOT-2051-10-17",
+      "name": "vsBOND-DOT-2051-10-17",
+      "transferCount": 2,
+      "uniqueId": "asset_registry/a352b061603b0b180c9f5f2708b2bfe44a8f25f1"
+    },
+    {
+      "symbol": "BLP4",
+      "name": "Bifrost Stable Pool Token 4",
+      "transferCount": 2517,
+      "uniqueId": "asset_registry/a15421587db15f8fd2342101ccbcebae5e31fe77"
+    },
+    {
+      "symbol": "vsBOND-DOT-2027-8-15",
+      "name": "vsBOND-DOT-2027-8-15",
+      "transferCount": 35,
+      "uniqueId": "asset_registry/9b85530550717e4ec9bc4a68441872aa9fec8f03"
+    },
+    {
+      "symbol": "IBTC",
+      "name": "interBTC",
+      "transferCount": 0,
+      "uniqueId": "asset_registry/9982777a48de8046efb368f88d1bc753185c17e4"
+    },
+    {
+      "symbol": "BLP2",
+      "name": "Bifrost Stable Pool Token 2",
+      "transferCount": 5682,
+      "uniqueId": "asset_registry/954799cf9a8db195a86c039749c309dee056f0d5"
+    },
+    {
+      "symbol": "BASE_ETH",
+      "name": "Hyperbridge Base ETH",
+      "transferCount": 0,
+      "uniqueId": "asset_registry/93e1b57c57cde913bb7372e6d79d1278fab9b62d"
+    },
+    {
+      "symbol": "vsBOND-DOT-3345-14-21",
+      "name": "vsBOND-DOT-3345-14-21",
+      "transferCount": 26,
+      "uniqueId": "asset_registry/9172d476746be86efc9275e4815324d5447444df"
+    },
+    {
+      "symbol": "BLP1",
+      "name": "Bifrost Stable Pool Token 1",
+      "transferCount": 781,
+      "uniqueId": "asset_registry/90ebe5dbdf6cbe7be1f7fbf4983f8c8a910bd423"
+    },
+    {
+      "symbol": "vsBOND-DOT-3340-14-21",
+      "name": "vsBOND-DOT-3340-14-21",
+      "transferCount": 71,
+      "uniqueId": "asset_registry/896c8cbdccae544710620471725f2ff577579ed1"
+    },
+    {
+      "symbol": "vsBOND-DOT-2043-8-15",
+      "name": "vsBOND-DOT-2043-8-15",
+      "transferCount": 58,
+      "uniqueId": "asset_registry/8375a2de93a17ee89b704d6847f6f370cba9e912"
+    },
+    {
+      "symbol": "vsBOND-DOT-2025-14-21",
+      "name": "vsBOND-DOT-2025-14-21",
+      "transferCount": 11,
+      "uniqueId": "asset_registry/7e2b6fb0a3f165d92295c2364876f91ac2e8e713"
+    },
+    {
+      "symbol": "vsBOND-DOT-2040-8-15",
+      "name": "vsBOND-DOT-2040-8-15",
+      "transferCount": 108,
+      "uniqueId": "asset_registry/7e2510eaf27d27987c03ce6fac17c42031903a79"
+    },
+    {
+      "symbol": "vsBOND-DOT-3340-13-20",
+      "name": "vsBOND-DOT-3340-13-20",
+      "transferCount": 5,
+      "uniqueId": "asset_registry/745cd7663b6de7b44d12fae3e7d47f24e8a9c61b"
+    },
+    {
+      "symbol": "vsBOND-DOT-2037-8-15",
+      "name": "vsBOND-DOT-2037-8-15",
+      "transferCount": 131,
+      "uniqueId": "asset_registry/73755d03ca8ba12144a2a874683cd612216655e2"
+    },
+    {
+      "symbol": "vsBOND-DOT-2025-15-22",
+      "name": "vsBOND-DOT-2025-15-22",
+      "transferCount": 9,
+      "uniqueId": "asset_registry/6e0ab072167eac9deaf499268407dc07c4c2c0b2"
+    },
+    {
+      "symbol": "vsBOND-DOT-3341-14-21",
+      "name": "vsBOND-DOT-3341-14-21",
+      "transferCount": 0,
+      "uniqueId": "asset_registry/6b786498df566eecdbe0f7acd602f52f993ca702"
+    },
+    {
+      "symbol": "vsBOND-DOT-2000-6-13",
+      "name": "vsBOND-DOT-2000-6-13",
+      "transferCount": 139,
+      "uniqueId": "asset_registry/696ff5394f2910d3fe688896c37f09e260de4889"
+    },
+    {
+      "symbol": "vsBOND-DOT-2090-10-17",
+      "name": "vsBOND-DOT-2090-10-17",
+      "transferCount": 9,
+      "uniqueId": "asset_registry/696418546a36c1b1a89bfc25b3d2782a71f66a32"
+    },
+    {
+      "symbol": "vsBOND-DOT-3363-16-23",
+      "name": "vsBOND-DOT-3363-16-23",
+      "transferCount": 4,
+      "uniqueId": "asset_registry/695e62bdef62f69b6673ad6541caf43d6d6a2396"
+    },
+    {
+      "symbol": "HP_ETH",
+      "name": "Hyperbridge Native ETH",
+      "transferCount": 0,
+      "uniqueId": "asset_registry/6500d82b49e98198e20b40088b3c5ec9fc063b92"
+    },
+    {
+      "symbol": "vsBOND-DOT-2004-6-13",
+      "name": "vsBOND-DOT-2004-6-13",
+      "transferCount": 325,
+      "uniqueId": "asset_registry/642857187454821ad3b78bed0be896891a2215b5"
+    },
+    {
+      "symbol": "DED",
+      "name": "DED",
+      "transferCount": 0,
+      "uniqueId": "asset_registry/62f71480c5a63cbc208347ea1437eb56dce46b6d"
+    },
+    {
+      "symbol": "vsBOND-DOT-3338-13-20",
+      "name": "vsBOND-DOT-3338-13-20",
+      "transferCount": 50,
+      "uniqueId": "asset_registry/61122758808d3e6e252afc3f91ce3ff063dc222f"
+    },
+    {
+      "symbol": "vsBOND-DOT-3356-15-22",
+      "name": "vsBOND-DOT-3356-15-22",
+      "transferCount": 4,
+      "uniqueId": "asset_registry/5f4fcd4988067314475d7bcbc32f20e57b20adf8"
+    },
+    {
+      "symbol": "vsBOND-DOT-2031-7-14",
+      "name": "vsBOND-DOT-2031-7-14",
+      "transferCount": 139,
+      "uniqueId": "asset_registry/5f49df409206c3376417c1f544258915211efeeb"
+    },
+    {
+      "symbol": "vsBOND-DOT-2008-10-17",
+      "name": "vsBOND-DOT-2008-10-17",
+      "transferCount": 10,
+      "uniqueId": "asset_registry/5ed3789781b07d6865063ae831bda91c5808ccc1"
+    },
+    {
+      "symbol": "BLP6",
+      "name": "Bifrost Stable Pool Token 6",
+      "transferCount": 1853,
+      "uniqueId": "asset_registry/5057620559305388eda467decfeaeb929a98913b"
+    },
+    {
+      "symbol": "PEN",
+      "name": "Pendulum",
+      "transferCount": 0,
+      "uniqueId": "asset_registry/4ed92143fca28795b361c05803e85ed007ea70de"
+    },
+    {
+      "symbol": "vsBOND-DOT-2013-6-13",
+      "name": "vsBOND-DOT-2013-6-13",
+      "transferCount": 39,
+      "uniqueId": "asset_registry/4cd8a127e5708e75b2144caf730ae4e3ab72907c"
+    },
+    {
+      "symbol": "vsBOND-DOT-3338-12-19",
+      "name": "vsBOND-DOT-3338-12-19",
+      "transferCount": 13,
+      "uniqueId": "asset_registry/483d826f2b9fcb65e6ae4551409e3b9a47cdb77f"
+    },
+    {
+      "symbol": "WAVE",
+      "name": "Liquid Wave",
+      "transferCount": 0,
+      "uniqueId": "asset_registry/47e0b2aa6f33bbe92070b8ff9a012aecbe84b5e1"
+    },
+    {
+      "symbol": "vsBOND-DOT-2008-7-14",
+      "name": "vsBOND-DOT-2008-7-14",
+      "transferCount": 10,
+      "uniqueId": "asset_registry/47a990be96ab98ba361f69939009b85b78ec6135"
+    },
+    {
+      "symbol": "vsBOND-DOT-2003-7-14",
+      "name": "vsBOND-DOT-2003-7-14",
+      "transferCount": 21,
+      "uniqueId": "asset_registry/464571f8d0c8b1d8a14e38a65a8b1ef1e8f11985"
+    },
+    {
+      "symbol": "vsBOND-DOT-2026-7-14",
+      "name": "vsBOND-DOT-2026-7-14",
+      "transferCount": 87,
+      "uniqueId": "asset_registry/3f6f6011e5064dedb250ad3b1bc1b8a6535f4a04"
+    },
+    {
+      "symbol": "vsBOND-DOT-2021-6-13",
+      "name": "vsBOND-DOT-2021-6-13",
+      "transferCount": 33,
+      "uniqueId": "asset_registry/3653e60e093825e7a0e3a53755127d55c2def058"
+    },
+    {
+      "symbol": "vsBOND-DOT-2035-7-14",
+      "name": "vsBOND-DOT-2035-7-14",
+      "transferCount": 20,
+      "uniqueId": "asset_registry/2f49f077781dd1b257b30853ebed486bd0b49111"
+    },
+    {
+      "symbol": "vsBOND-DOT-3356-16-23",
+      "name": "vsBOND-DOT-3356-16-23",
+      "transferCount": 7,
+      "uniqueId": "asset_registry/2c4d426b6b2726c642345e3d63c2edbe92c7204d"
+    },
+    {
+      "symbol": "ARB_ETH",
+      "name": "Hyperbridge Arbitrum ETH",
+      "transferCount": 0,
+      "uniqueId": "asset_registry/29889c0e01a7a2738c4657efbddfc1cc70da628c"
+    },
+    {
+      "symbol": "vsBOND-DOT-3340-12-19",
+      "name": "vsBOND-DOT-3340-12-19",
+      "transferCount": 24,
+      "uniqueId": "asset_registry/28d22ccdbaa14681fa68551234021e24cf8753aa"
+    },
+    {
+      "symbol": "vsBOND-DOT-2015-6-13",
+      "name": "vsBOND-DOT-2015-6-13",
+      "transferCount": 48,
+      "uniqueId": "asset_registry/243b8293250bcfe5389486bcd7a071b1fa1c660c"
+    },
+    {
+      "symbol": "ETH",
+      "name": "Native ETH",
+      "transferCount": 0,
+      "uniqueId": "asset_registry/1fb5706275357dd5d75eabcd1891e47717d501e5"
+    },
+    {
+      "symbol": "vsBOND-DOT-2018-6-13",
+      "name": "vsBOND-DOT-2018-6-13",
+      "transferCount": 18,
+      "uniqueId": "asset_registry/1efcfaccf6ca39b4f936007cbbd0aa4062f48491"
+    },
+    {
+      "symbol": "vsBOND-DOT-2032-7-14",
+      "name": "vsBOND-DOT-2032-7-14",
+      "transferCount": 174,
+      "uniqueId": "asset_registry/1d3eb4ccd6cb8ecba4fccf49b2719667097e1dd4"
+    },
+    {
+      "symbol": "vsBOND-DOT-2036-7-14",
+      "name": "vsBOND-DOT-2036-7-14",
+      "transferCount": 21,
+      "uniqueId": "asset_registry/1d11e2a2c49c2c3b92d83f96a00115a863d29a19"
+    },
+    {
+      "symbol": "vsBOND-DOT-2011-16-23",
+      "name": "vsBOND-DOT-2011-16-23",
+      "transferCount": 12,
+      "uniqueId": "asset_registry/1c2e2e08525de96c7da6029d3d931926b3adbae5"
+    },
+    {
+      "symbol": "vsBOND-DOT-2006-6-13",
+      "name": "vsBOND-DOT-2006-6-13",
+      "transferCount": 397,
+      "uniqueId": "asset_registry/1b31c214fa2abb25fbaad1b0b0642ec4e6bea29a"
+    },
+    {
+      "symbol": "vFIL",
+      "name": "Voucher FIL",
+      "transferCount": 2350,
+      "uniqueId": "asset_registry/1aebe2f7d214c9ca51dda167b11b797b728ab1c1"
+    },
+    {
+      "symbol": "vsBOND-DOT-3370-16-23",
+      "name": "vsBOND-DOT-3370-16-23",
+      "transferCount": 3,
+      "uniqueId": "asset_registry/198329fafe50972d7788b477916019c173b5323e"
+    },
+    {
+      "symbol": "vsBOND-DOT-2013-7-14",
+      "name": "vsBOND-DOT-2013-7-14",
+      "transferCount": 30,
+      "uniqueId": "asset_registry/1834efc038ae3cafb08b6a722a49b6e8e350ba26"
+    },
+    {
+      "symbol": "vsBOND-DOT-2027-7-14",
+      "name": "vsBOND-DOT-2027-7-14",
+      "transferCount": 6,
+      "uniqueId": "asset_registry/17c90f976ca90f4e438ced2a1ae07b7a5f2646ab"
+    },
+    {
+      "symbol": "OP_ETH",
+      "name": "Hyperbridge Optimistic ETH",
+      "transferCount": 0,
+      "uniqueId": "asset_registry/0619ae787797d7b60841365d3c0c5337d94ca5f6"
+    },
+    {
+      "symbol": "vsBOND-DOT-2030-8-15",
+      "name": "vsBOND-DOT-2030-8-15",
+      "transferCount": 321,
+      "uniqueId": "asset_registry/029c247856f5fc4aa819965bdb9a08fbfa1c2c17"
+    },
+    {
+      "symbol": "vsDOT",
+      "name": "Voucher Slot DOT",
+      "transferCount": 8149,
+      "uniqueId": "asset_registry/025686862e2cb233a76cf2af72764b9abd686136"
+    }
+  ]
+}

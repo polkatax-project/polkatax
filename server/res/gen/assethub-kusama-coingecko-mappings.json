@@ -1,0 +1,1475 @@
+{
+  "mappings": [
+    {
+      "symbol": "CRY",
+      "name": "CRYPTONITAS",
+      "transferCount": 4,
+      "uniqueId": "standard_assets/61"
+    },
+    {
+      "symbol": "GAME",
+      "name": "gamedao.co",
+      "transferCount": 4,
+      "uniqueId": "standard_assets/555"
+    },
+    {
+      "symbol": "JAM",
+      "name": "JAM DUNA on Kusama",
+      "transferCount": 2335,
+      "uniqueId": "standard_assets/1107"
+    },
+    {
+      "symbol": "SPOT",
+      "name": "Spot access token",
+      "transferCount": 13,
+      "uniqueId": "standard_assets/1441"
+    },
+    {
+      "symbol": "USDT",
+      "name": "TetherUSDT",
+      "transferCount": 2,
+      "uniqueId": "standard_assets/2000",
+      "coingeckoId": "tether",
+      "coingeckoName": "Tether",
+      "coingeckoSymbol": "usdt",
+      "confidence": 0.914
+    },
+    {
+      "symbol": "WOOD",
+      "name": "WOOD",
+      "transferCount": 2,
+      "uniqueId": "standard_assets/2993"
+    },
+    {
+      "symbol": "GRAIN",
+      "name": "GRAIN Token",
+      "transferCount": 4,
+      "uniqueId": "standard_assets/3000"
+    },
+    {
+      "symbol": "",
+      "name": "",
+      "transferCount": 3,
+      "uniqueId": "standard_assets/3002"
+    },
+    {
+      "symbol": "TAKE",
+      "name": "Dot Take Tokens",
+      "transferCount": 6,
+      "uniqueId": "standard_assets/5797867"
+    },
+    {
+      "symbol": "RMRK",
+      "name": "RMRK.app",
+      "transferCount": 14983,
+      "uniqueId": "standard_assets/8",
+      "coingeckoId": "rmrk",
+      "coingeckoName": "RMRK",
+      "coingeckoSymbol": "rmrk",
+      "confidence": 0.9
+    },
+    {
+      "symbol": "BILL",
+      "name": "BILLCOIN",
+      "transferCount": 159,
+      "uniqueId": "standard_assets/223"
+    },
+    {
+      "symbol": "USDt",
+      "name": "Tether USD",
+      "transferCount": 7,
+      "uniqueId": "standard_assets/19840",
+      "coingeckoId": "tether",
+      "coingeckoName": "Tether",
+      "coingeckoSymbol": "usdt",
+      "confidence": 0.931
+    },
+    {
+      "symbol": "USDt",
+      "name": "Tether USD",
+      "transferCount": 13753,
+      "uniqueId": "standard_assets/1984",
+      "coingeckoId": "tether",
+      "coingeckoName": "Tether",
+      "coingeckoSymbol": "usdt",
+      "confidence": 0.931
+    },
+    {
+      "symbol": "dUSD",
+      "name": "decent",
+      "transferCount": 360,
+      "uniqueId": "standard_assets/50000002"
+    },
+    {
+      "symbol": "USDC",
+      "name": "USD Coin (Polkadot)",
+      "transferCount": 4,
+      "uniqueId": "standard_foreign_assets/8f957c0a0eac9f3c940ac2b63fe3aaa7c11eb774",
+      "coingeckoId": "usd-coin",
+      "coingeckoName": "USDC",
+      "coingeckoSymbol": "usdc"
+    },
+    {
+      "symbol": "USDt",
+      "name": "Tether USD (Polkadot)",
+      "transferCount": 3,
+      "uniqueId": "standard_foreign_assets/d5114b027508ff3513f6177aa25c8637db333d59",
+      "coingeckoId": "tether",
+      "coingeckoName": "Tether",
+      "coingeckoSymbol": "usdt",
+      "confidence": 0.843
+    },
+    {
+      "symbol": "TEER",
+      "name": "Integritee TEER",
+      "transferCount": 5,
+      "uniqueId": "standard_foreign_assets/902f1494c4b366fb6e93970e8d7e7da6fb6a18f0",
+      "coingeckoId": "integritee",
+      "coingeckoName": "Integritee",
+      "coingeckoSymbol": "teer",
+      "confidence": 0.945
+    },
+    {
+      "symbol": "DOT",
+      "name": "Polkadot",
+      "transferCount": 16,
+      "uniqueId": "standard_foreign_assets/6b6c4aeeed1aa8195a86a0a400a8ef89cd9d1237",
+      "coingeckoId": "polkadot",
+      "coingeckoName": "Polkadot",
+      "coingeckoSymbol": "dot",
+      "confidence": 1
+    },
+    {
+      "symbol": "KSM",
+      "name": "KSM",
+      "transferCount": 0,
+      "uniqueId": "KSM"
+    },
+    {
+      "symbol": "TNKR",
+      "name": "InvArch Tinkernet",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/117"
+    },
+    {
+      "symbol": "L T",
+      "name": "Listen Token",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/1"
+    },
+    {
+      "symbol": "PNN",
+      "name": "Polkanuannuan",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/2"
+    },
+    {
+      "symbol": "Meow",
+      "name": "Catsama",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/3"
+    },
+    {
+      "symbol": "HAPPY",
+      "name": "Happy",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/4"
+    },
+    {
+      "symbol": "BEER",
+      "name": "BeerCoin",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/5"
+    },
+    {
+      "symbol": "ZKPD",
+      "name": "ZKP DAO",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/6"
+    },
+    {
+      "symbol": "DOS",
+      "name": "DogeSeven",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/7"
+    },
+    {
+      "symbol": "TOT",
+      "name": "TakeTime",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/9"
+    },
+    {
+      "symbol": "USDC",
+      "name": "USDC",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/10"
+    },
+    {
+      "symbol": "USDT",
+      "name": "USDT",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/11"
+    },
+    {
+      "symbol": "BUSD",
+      "name": "BUSD",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/12"
+    },
+    {
+      "symbol": "LN",
+      "name": "LuckyNumber",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/13"
+    },
+    {
+      "symbol": "DOT",
+      "name": "Polkadot",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/14"
+    },
+    {
+      "symbol": "Web3",
+      "name": "Web3",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/15"
+    },
+    {
+      "symbol": "ARIS",
+      "name": "PolarisDAO",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/16"
+    },
+    {
+      "symbol": "MEME",
+      "name": "MEME",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/17"
+    },
+    {
+      "symbol": "HEI",
+      "name": "HEIHEI",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/18"
+    },
+    {
+      "symbol": "SHOT",
+      "name": "Shot",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/19"
+    },
+    {
+      "symbol": "BFKK",
+      "name": "Berlin FKK Paradise😎",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/20"
+    },
+    {
+      "symbol": "ELEV",
+      "name": "ELEVATE_DAO",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/21"
+    },
+    {
+      "symbol": "STH",
+      "name": "Smoothie",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/22"
+    },
+    {
+      "symbol": "KOJO",
+      "name": "DLTKOJO",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/23"
+    },
+    {
+      "symbol": "test",
+      "name": "PolkaTest",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/24"
+    },
+    {
+      "symbol": "BABE",
+      "name": "Polkababes",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/25"
+    },
+    {
+      "symbol": "BUNGA",
+      "name": "BUNGA BUNGA",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/26"
+    },
+    {
+      "symbol": "RUNE",
+      "name": "Valhello.app",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/27"
+    },
+    {
+      "symbol": "LAC",
+      "name": "Ladycoin",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/28"
+    },
+    {
+      "symbol": "CODES",
+      "name": "COUPONS",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/29"
+    },
+    {
+      "symbol": "GOL",
+      "name": "Fucho",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/30"
+    },
+    {
+      "symbol": "ki",
+      "name": "Genki",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/31"
+    },
+    {
+      "symbol": "FAV",
+      "name": "Favor",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/32"
+    },
+    {
+      "symbol": "BUSSY",
+      "name": "Ladyboi",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/33"
+    },
+    {
+      "symbol": "PLX",
+      "name": "PLX",
+      "transferCount": 7,
+      "uniqueId": "standard_assets/34"
+    },
+    {
+      "symbol": "LUCKY",
+      "name": "Lucky Friday",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/35"
+    },
+    {
+      "symbol": "RRT",
+      "name": "Ruined Records Token",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/36"
+    },
+    {
+      "symbol": "MNCH",
+      "name": "Munchkin",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/37"
+    },
+    {
+      "symbol": "ENT",
+      "name": "Entropy",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/38"
+    },
+    {
+      "symbol": "DSCAN",
+      "name": "DotScanner.com",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/39"
+    },
+    {
+      "symbol": "ERIC",
+      "name": "Eric",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/40"
+    },
+    {
+      "symbol": "GOOSE",
+      "name": "GooseCoin",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/41"
+    },
+    {
+      "symbol": "NRNF",
+      "name": "No Risk - No Fun",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/42"
+    },
+    {
+      "symbol": "TTT",
+      "name": "Tricky-NFT.art Treasure Token",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/43"
+    },
+    {
+      "symbol": "ADVNCE",
+      "name": "Most Advanced Coin",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/44"
+    },
+    {
+      "symbol": "CRIB",
+      "name": "CRIB",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/45"
+    },
+    {
+      "symbol": "FAN",
+      "name": "FANARIA",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/46"
+    },
+    {
+      "symbol": "EUR",
+      "name": "Euro",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/47"
+    },
+    {
+      "symbol": "LWOOF",
+      "name": "Jacques le Woof",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/48"
+    },
+    {
+      "symbol": "DIAN",
+      "name": "ENDIANNESS",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/49"
+    },
+    {
+      "symbol": "PROMO",
+      "name": "PromoTeam",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/50"
+    },
+    {
+      "symbol": "STONE",
+      "name": "STONE",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/51"
+    },
+    {
+      "symbol": "MTS",
+      "name": "DIVING",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/55"
+    },
+    {
+      "symbol": "GAV",
+      "name": "GavCoin",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/60"
+    },
+    {
+      "symbol": "oh!",
+      "name": "oh!",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/64"
+    },
+    {
+      "symbol": "DAI",
+      "name": "DAI",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/66"
+    },
+    {
+      "symbol": "ADVERT",
+      "name": "Fanaria on Twitter: @FanariaNFT",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/68"
+    },
+    {
+      "symbol": "NICE",
+      "name": "NICE",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/69"
+    },
+    {
+      "symbol": "KRSU",
+      "name": "KarasuCoin",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/70"
+    },
+    {
+      "symbol": "OAK",
+      "name": "OAK Network Token",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/71"
+    },
+    {
+      "symbol": "cipher",
+      "name": "ohzomdmrkyc.gybvn",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/75"
+    },
+    {
+      "symbol": "Crypto",
+      "name": "Crypto",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/77"
+    },
+    {
+      "symbol": "BIT",
+      "name": "Basically Indivisible Token",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/80"
+    },
+    {
+      "symbol": "TEMU",
+      "name": "DEDY",
+      "transferCount": 2,
+      "uniqueId": "standard_assets/81"
+    },
+    {
+      "symbol": "DED",
+      "name": "DOTisDED",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/85"
+    },
+    {
+      "symbol": "XEXR",
+      "name": "Xexr",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/87"
+    },
+    {
+      "symbol": "BTC",
+      "name": "BTC",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/88"
+    },
+    {
+      "symbol": "",
+      "name": "",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/89"
+    },
+    {
+      "symbol": "SATS",
+      "name": "Satoshi",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/90"
+    },
+    {
+      "symbol": "TMJ",
+      "name": "Tamo Junto",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/91"
+    },
+    {
+      "symbol": "BITCOIN",
+      "name": "BITCOIN",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/99"
+    },
+    {
+      "symbol": "Chralt",
+      "name": "Chralt",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/100"
+    },
+    {
+      "symbol": "---",
+      "name": " ---",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/101"
+    },
+    {
+      "symbol": "DRX",
+      "name": "DREx distributed renewable ",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/102"
+    },
+    {
+      "symbol": "NO1",
+      "name": "NO1",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/111"
+    },
+    {
+      "symbol": "OAT",
+      "name": "Other Asset Token",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/120"
+    },
+    {
+      "symbol": "NFT",
+      "name": "NFT",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/123"
+    },
+    {
+      "symbol": "Abc",
+      "name": "Abc",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/138"
+    },
+    {
+      "symbol": "Tokens",
+      "name": "Tokens",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/168"
+    },
+    {
+      "symbol": "$URMOM",
+      "name": "URMOM",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/169"
+    },
+    {
+      "symbol": "KST",
+      "name": "Kusama Test",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/177"
+    },
+    {
+      "symbol": "ZLK",
+      "name": "Zenlink Network Token",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/188"
+    },
+    {
+      "symbol": "SIX",
+      "name": "HEINEKEN",
+      "transferCount": 1,
+      "uniqueId": "standard_assets/200"
+    },
+    {
+      "symbol": "JQT",
+      "name": "joequant",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/213"
+    },
+    {
+      "symbol": "LOVE",
+      "name": "LOVE",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/214"
+    },
+    {
+      "symbol": "PNEO",
+      "name": "Planet Neo Token",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/222"
+    },
+    {
+      "symbol": "SIK",
+      "name": "SikCoin",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/224"
+    },
+    {
+      "symbol": "",
+      "name": "",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/233"
+    },
+    {
+      "symbol": "BLACK",
+      "name": "BLACK",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/252"
+    },
+    {
+      "symbol": "PWS",
+      "name": "PolkaWarriors",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/300"
+    },
+    {
+      "symbol": "Token",
+      "name": "Token",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/333"
+    },
+    {
+      "symbol": "345",
+      "name": "345",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/345"
+    },
+    {
+      "symbol": "uni",
+      "name": "uni",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/360"
+    },
+    {
+      "symbol": "time",
+      "name": "time",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/365"
+    },
+    {
+      "symbol": "wETH",
+      "name": "wETH",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/374"
+    },
+    {
+      "symbol": "KAA",
+      "name": "KAA test",
+      "transferCount": 20,
+      "uniqueId": "standard_assets/377"
+    },
+    {
+      "symbol": "KODA",
+      "name": "KODA",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/383"
+    },
+    {
+      "symbol": "MAXI",
+      "name": "MAXI",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/404"
+    },
+    {
+      "symbol": "BLAZE",
+      "name": "BLAZE",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/420"
+    },
+    {
+      "symbol": "$DED",
+      "name": "DOT is DED",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/500"
+    },
+    {
+      "symbol": "e299a5e299a5e299a5",
+      "name": "Love",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/520"
+    },
+    {
+      "symbol": "CHRWNA",
+      "name": "Chrawnna Coin",
+      "transferCount": 3,
+      "uniqueId": "standard_assets/567"
+    },
+    {
+      "symbol": "KUSA",
+      "name": "KUS",
+      "transferCount": 414,
+      "uniqueId": "standard_assets/569"
+    },
+    {
+      "symbol": "EREN",
+      "name": "Eren Yilmaz",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/598"
+    },
+    {
+      "symbol": "BAD",
+      "name": "Evil Corp",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/666"
+    },
+    {
+      "symbol": "GRB",
+      "name": "GEAR BONUS",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/677"
+    },
+    {
+      "symbol": "GEAR",
+      "name": "GEAR NETWORK",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/678"
+    },
+    {
+      "symbol": "DRG",
+      "name": "Dragon",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/711"
+    },
+    {
+      "symbol": "TSM",
+      "name": "Test Me",
+      "transferCount": 4,
+      "uniqueId": "standard_assets/756"
+    },
+    {
+      "symbol": "bLd",
+      "name": "bLd",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/759"
+    },
+    {
+      "symbol": "GOD",
+      "name": "Heaven",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/777"
+    },
+    {
+      "symbol": "TBUX",
+      "name": "Teddy Bucks",
+      "transferCount": 1,
+      "uniqueId": "standard_assets/813"
+    },
+    {
+      "symbol": "Byte",
+      "name": "Endianness",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/823"
+    },
+    {
+      "symbol": "YAYOI",
+      "name": "YAYOI",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/841"
+    },
+    {
+      "symbol": "LUCK",
+      "name": "LUCK",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/888"
+    },
+    {
+      "symbol": "911",
+      "name": "911",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/911"
+    },
+    {
+      "symbol": "WGTL",
+      "name": "WagTool",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/969"
+    },
+    {
+      "symbol": "CBDC",
+      "name": "CBDC",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/999"
+    },
+    {
+      "symbol": "SPARK",
+      "name": "SPARK TOKEN",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/1000"
+    },
+    {
+      "symbol": "MTVD",
+      "name": "Mantiev Token",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/1111"
+    },
+    {
+      "symbol": "OAT",
+      "name": "Other Asset",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/1121"
+    },
+    {
+      "symbol": "XEN",
+      "name": "XEntropy",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/1123"
+    },
+    {
+      "symbol": "WITEK",
+      "name": "WitekCoin",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/1155"
+    },
+    {
+      "symbol": "GOD",
+      "name": "GOD",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/1225"
+    },
+    {
+      "symbol": "KSM",
+      "name": "Kusama",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/1234"
+    },
+    {
+      "symbol": "GCT",
+      "name": "Gacy Test",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/1311"
+    },
+    {
+      "symbol": "TACP",
+      "name": "TestACP",
+      "transferCount": 6,
+      "uniqueId": "standard_assets/1313"
+    },
+    {
+      "symbol": "TIP",
+      "name": "Test In Prod",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/1337"
+    },
+    {
+      "symbol": "HYDR",
+      "name": "Hydrogen line",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/1420"
+    },
+    {
+      "symbol": "bcd",
+      "name": "bcd",
+      "transferCount": 1,
+      "uniqueId": "standard_assets/1526"
+    },
+    {
+      "symbol": "STRGZN",
+      "name": "Stargazing",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/1607"
+    },
+    {
+      "symbol": "ali",
+      "name": "ali",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/1688"
+    },
+    {
+      "symbol": "BKNRY",
+      "name": "BABY KNRY",
+      "transferCount": 281,
+      "uniqueId": "standard_assets/1899"
+    },
+    {
+      "symbol": "web3",
+      "name": "Jeff3",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/1985"
+    },
+    {
+      "symbol": "ADVERT2",
+      "name": "Fanaria - Most Advanced NFT",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/1999"
+    },
+    {
+      "symbol": "WOOD",
+      "name": "RMRK Metaverse Wood",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/2001"
+    },
+    {
+      "symbol": "GOLD",
+      "name": "RMRK Metaverse Gold",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/2002"
+    },
+    {
+      "symbol": "WAVE",
+      "name": "wave network",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/2021"
+    },
+    {
+      "symbol": "FLMG",
+      "name": "Flamingo",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/2025"
+    },
+    {
+      "symbol": "RWS",
+      "name": "Robonomics web Services",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/2048"
+    },
+    {
+      "symbol": "Android",
+      "name": "DoAndroidsDreamOfElectricSheep?",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/2049"
+    },
+    {
+      "symbol": "CUT",
+      "name": "Carbon Unit Token",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/2050"
+    },
+    {
+      "symbol": "XRT",
+      "name": "Robonomics",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/2077"
+    },
+    {
+      "symbol": "BLK",
+      "name": "BlackHole",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/2121"
+    },
+    {
+      "symbol": "Tsn",
+      "name": "Testiranje",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/2323"
+    },
+    {
+      "symbol": "HOOT",
+      "name": "Jellied Owls",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/2820"
+    },
+    {
+      "symbol": "DUCK",
+      "name": "DUCK Currency",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/3001"
+    },
+    {
+      "symbol": "ACT",
+      "name": "AutomatedCoffeeToken",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/3077"
+    },
+    {
+      "symbol": "MVPW",
+      "name": "MVP Workshop",
+      "transferCount": 13,
+      "uniqueId": "standard_assets/3327"
+    },
+    {
+      "symbol": "A42",
+      "name": "Attic42",
+      "transferCount": 5,
+      "uniqueId": "standard_assets/3328"
+    },
+    {
+      "symbol": "fast",
+      "name": "fast",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/3721"
+    },
+    {
+      "symbol": "KAI ",
+      "name": "HAPPY",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/3913"
+    },
+    {
+      "symbol": "GMK",
+      "name": "GoldMark",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/3943"
+    },
+    {
+      "symbol": "VHM",
+      "name": "drhuongtx",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/6789"
+    },
+    {
+      "symbol": "CHAOS",
+      "name": "expectchaos.com",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/6967"
+    },
+    {
+      "symbol": "PEPE",
+      "name": "Pepe",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/7373"
+    },
+    {
+      "symbol": "lucky7",
+      "name": "lucky7",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/7777"
+    },
+    {
+      "symbol": "top",
+      "name": "top",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/8848"
+    },
+    {
+      "symbol": "ZHE",
+      "name": "ZHE WORLD",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/8888"
+    },
+    {
+      "symbol": "KPOTS",
+      "name": "KPOTS",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/9000"
+    },
+    {
+      "symbol": "BTC",
+      "name": "BTC",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/9999"
+    },
+    {
+      "symbol": "KVC",
+      "name": "1KV.CLUB",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/11111"
+    },
+    {
+      "symbol": "DREX",
+      "name": "Drexall",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/12345"
+    },
+    {
+      "symbol": "",
+      "name": "",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/13000"
+    },
+    {
+      "symbol": "RON",
+      "name": "RON",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/22060"
+    },
+    {
+      "symbol": "INTRN",
+      "name": "👶☕ intern coin 🥶🌝",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/42069"
+    },
+    {
+      "symbol": "CHAOS",
+      "name": "Chaos",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/69420"
+    },
+    {
+      "symbol": "ORDER",
+      "name": "Order",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/69421"
+    },
+    {
+      "symbol": "b00bs",
+      "name": "b00bs",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/80085"
+    },
+    {
+      "symbol": "KSMFS",
+      "name": "Kusama File Coin",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/80815"
+    },
+    {
+      "symbol": "RUEPP",
+      "name": "RUEPP Coin",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/80816"
+    },
+    {
+      "symbol": "FRALEY",
+      "name": "FRALEY Coin",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/80817"
+    },
+    {
+      "symbol": "BAILEGO",
+      "name": "SHIBATALES",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/88888"
+    },
+    {
+      "symbol": "LUL",
+      "name": "TEST123231",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/95834"
+    },
+    {
+      "symbol": "DMX",
+      "name": "DummyXC20",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/123456"
+    },
+    {
+      "symbol": "DMO",
+      "name": "Demo",
+      "transferCount": 1,
+      "uniqueId": "standard_assets/131313"
+    },
+    {
+      "symbol": "STM",
+      "name": "STATEMINE",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/220204"
+    },
+    {
+      "symbol": "RTT",
+      "name": "Retreat",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/314159"
+    },
+    {
+      "symbol": "BQE",
+      "name": "Bloque",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/668169"
+    },
+    {
+      "symbol": "DEFI",
+      "name": "DeFi The World",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/777777"
+    },
+    {
+      "symbol": "SWC",
+      "name": "Swap.Cash",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/838767"
+    },
+    {
+      "symbol": "CUBO",
+      "name": "Virto CUBO",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/862812"
+    },
+    {
+      "symbol": "VCOP",
+      "name": "VIrto COP",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/863012"
+    },
+    {
+      "symbol": "ETAR",
+      "name": "Educational Tarantula",
+      "transferCount": 1,
+      "uniqueId": "standard_assets/2284739"
+    },
+    {
+      "symbol": "SHIB",
+      "name": "Polka SHIBA INU",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/4206969"
+    },
+    {
+      "symbol": "belove",
+      "name": "belove",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/5201314"
+    },
+    {
+      "symbol": "king",
+      "name": "king",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/7777777"
+    },
+    {
+      "symbol": "YSBC",
+      "name": "Your Stable Coin",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/50000001"
+    },
+    {
+      "symbol": "USDd",
+      "name": "Digital Dollar",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/50000003"
+    },
+    {
+      "symbol": "PRIME",
+      "name": "MAX PRIME",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/4294967291"
+    },
+    {
+      "symbol": "LGT",
+      "name": "Longevity",
+      "transferCount": 1,
+      "uniqueId": "standard_assets/50000006"
+    },
+    {
+      "symbol": "NWEST",
+      "name": "NWEST",
+      "transferCount": 2,
+      "uniqueId": "standard_assets/50000000"
+    },
+    {
+      "symbol": "TKY",
+      "name": "TurkeyCoin",
+      "transferCount": 1,
+      "uniqueId": "standard_assets/50000005"
+    },
+    {
+      "symbol": "TEST45",
+      "name": "TESTINGV45",
+      "transferCount": 1,
+      "uniqueId": "standard_assets/50000004"
+    },
+    {
+      "symbol": "DOG",
+      "name": "Polkadog",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/0"
+    },
+    {
+      "symbol": "USDT",
+      "name": "Tether USDt",
+      "transferCount": 0,
+      "uniqueId": "standard_foreign_assets/a713586200214506f7a0582655aec9fec6acc721"
+    },
+    {
+      "symbol": "sUSDe",
+      "name": "Ethena Staked USDe",
+      "transferCount": 0,
+      "uniqueId": "standard_foreign_assets/018af2a62c5c7fdb43a461147ea7c9041941cffb"
+    },
+    {
+      "symbol": "USDC",
+      "name": "USDC",
+      "transferCount": 0,
+      "uniqueId": "standard_foreign_assets/7d0abd4e76e86720198b8a796ba17ae82a685d33"
+    },
+    {
+      "symbol": "TBTC",
+      "name": "tBTC",
+      "transferCount": 0,
+      "uniqueId": "standard_foreign_assets/2e02935ab8e2bd0b90e284f68c5a107dbadfb9dc"
+    },
+    {
+      "symbol": "WUD",
+      "name": "GAVUN WUD",
+      "transferCount": 0,
+      "uniqueId": "standard_foreign_assets/bfb4cf8ef439dd41786176fcacede4b260beca78"
+    },
+    {
+      "symbol": "LINK",
+      "name": "Chainlink",
+      "transferCount": 0,
+      "uniqueId": "standard_foreign_assets/d0e6300bab5469f324fe664b0bf21cf5f2f8f87f"
+    },
+    {
+      "symbol": "CGT",
+      "name": "Curio Gas Token",
+      "transferCount": 0,
+      "uniqueId": "standard_foreign_assets/db15bab8bd13e12a4925085a498147b225f6df3d"
+    },
+    {
+      "symbol": "LBTC",
+      "name": "Lombard Staked BTC",
+      "transferCount": 0,
+      "uniqueId": "standard_foreign_assets/0ba7188bac283de23104433b9e725c5b02cacdbe"
+    },
+    {
+      "symbol": "WSTETH",
+      "name": "Lido wstETH",
+      "transferCount": 0,
+      "uniqueId": "standard_foreign_assets/5b2a6970872ba4c44a22e183c6fa77e2e3e1d9dc"
+    },
+    {
+      "symbol": "MYTH",
+      "name": "Mythos",
+      "transferCount": 0,
+      "uniqueId": "standard_foreign_assets/7a81ab71bce09308b642abecb9a82a7fa98c0701"
+    },
+    {
+      "symbol": "ETH",
+      "name": "Ether",
+      "transferCount": 0,
+      "uniqueId": "standard_foreign_assets/877d1d7ee6601a669377933448fc532271b09d87"
+    },
+    {
+      "symbol": "TONCOIN",
+      "name": "TON Coin",
+      "transferCount": 0,
+      "uniqueId": "standard_foreign_assets/b66478e461142f83e539b43993636efa510bd430"
+    },
+    {
+      "symbol": "SKY",
+      "name": "Sky",
+      "transferCount": 0,
+      "uniqueId": "standard_foreign_assets/c178f5e035ad00b6c38754399b70fa98e26d6678"
+    },
+    {
+      "symbol": "WETH",
+      "name": "WETH",
+      "transferCount": 0,
+      "uniqueId": "standard_foreign_assets/deac15bbdda52478ec41e4617f502c0d9e749376"
+    },
+    {
+      "symbol": "SHIB",
+      "name": "Shiba Inu",
+      "transferCount": 0,
+      "uniqueId": "standard_foreign_assets/e0a7733fe8921760a4bde99261ae78261fc99331"
+    },
+    {
+      "symbol": "FREN",
+      "name": "FREN",
+      "transferCount": 0,
+      "uniqueId": "standard_foreign_assets/ebdfa90a5ca64d6f62ce105ab12bb211caa71807"
+    },
+    {
+      "symbol": "KILT",
+      "name": "KILT",
+      "transferCount": 0,
+      "uniqueId": "standard_foreign_assets/a946845301f7074084d5e3d3a87007dff7ad781c"
+    },
+    {
+      "symbol": "PEPE",
+      "name": "Pepe",
+      "transferCount": 0,
+      "uniqueId": "standard_foreign_assets/24dff4961cdff7789e1c812d2068b87159910ba3"
+    },
+    {
+      "symbol": "AAVE",
+      "name": "Aave",
+      "transferCount": 0,
+      "uniqueId": "standard_foreign_assets/270b166ea26194536be5aff5cb064f98a5a5f292"
+    },
+    {
+      "symbol": "EURC",
+      "name": "EURC",
+      "transferCount": 0,
+      "uniqueId": "standard_foreign_assets/513007c213541c8f2dc8b400d2ba9239e14bb728"
+    },
+    {
+      "symbol": "sUSDS",
+      "name": "Savings USDS",
+      "transferCount": 0,
+      "uniqueId": "standard_foreign_assets/a1aa401dd145424e1ccf8edbd863e918a4fbc5b6"
+    },
+    {
+      "symbol": "MOVR",
+      "name": "MOVR Token",
+      "transferCount": 0,
+      "uniqueId": "standard_foreign_assets/5c6a653c27662b72c16ac7d7a221f1e7a67205b6"
+    },
+    {
+      "symbol": "TNKR",
+      "name": "Tinkernet",
+      "transferCount": 0,
+      "uniqueId": "standard_foreign_assets/5313f30266cfb0423967113a5c72af681f34ece8"
+    },
+    {
+      "symbol": "DAI",
+      "name": "Dai",
+      "transferCount": 0,
+      "uniqueId": "standard_foreign_assets/7084423f66962da4a145678a69b0206389fd9e20"
+    },
+    {
+      "symbol": "LDO",
+      "name": "Lido DAO",
+      "transferCount": 0,
+      "uniqueId": "standard_foreign_assets/7952137990006e2c0dfad9b535ec1fbd2328bd17"
+    },
+    {
+      "symbol": "WBTC",
+      "name": "Wrapped Bitcoin",
+      "transferCount": 0,
+      "uniqueId": "standard_foreign_assets/a9527bda4c3163b0980291b1a76c4ee071cc8514"
+    },
+    {
+      "symbol": "TBTC",
+      "name": "tBTC",
+      "transferCount": 0,
+      "uniqueId": "standard_foreign_assets/f54eb83d5b91ad6d55aff560ec4864efc8860ad2"
+    }
+  ]
+}

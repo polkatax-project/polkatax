@@ -11,4 +11,6 @@ export interface Asset {
   currency_id?: string; // often just the symbol
   token_id?: string;
   multi_location?: MultiLocation;
+  transfer_count?: number;
+  metadata?: { name: string };
 }

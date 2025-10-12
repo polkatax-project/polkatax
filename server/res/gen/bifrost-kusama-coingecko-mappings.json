@@ -1,0 +1,340 @@
+{
+  "mappings": [
+    {
+      "symbol": "ZLK",
+      "name": "Zenlink Network Token",
+      "transferCount": 193221,
+      "uniqueId": "asset_registry/f66a5cfd4ed4c4ba9d6506130b034d9bc3fe75ff",
+      "coingeckoId": "zenlink-network-token",
+      "coingeckoName": "Zenlink Network",
+      "coingeckoSymbol": "zlk",
+      "confidence": 0.952
+    },
+    {
+      "symbol": "SDN",
+      "name": "Shiden",
+      "transferCount": 0,
+      "uniqueId": "asset_registry/ea24559be2cbc326ea41b94d351d3a49e1ac2b28",
+      "coingeckoId": "shiden",
+      "coingeckoName": "Shiden Network",
+      "coingeckoSymbol": "sdn",
+      "confidence": 0.876
+    },
+    {
+      "symbol": "vBNC",
+      "name": "Voucher BNC",
+      "transferCount": 11165,
+      "uniqueId": "asset_registry/db1fcf649a4261df9eee50712d069dceec582e98",
+      "coingeckoId": "voucher-bnc",
+      "coingeckoName": "Voucher BNC",
+      "coingeckoSymbol": "vbnc",
+      "confidence": 1
+    },
+    {
+      "symbol": "KBTC",
+      "name": "kintsugiBTC",
+      "transferCount": 1758,
+      "uniqueId": "asset_registry/c898ba064e5be37507e404eed92c8a909aa4d246",
+      "coingeckoId": "kintsugi-btc",
+      "coingeckoName": "Kintsugi BTC",
+      "coingeckoSymbol": "kbtc",
+      "confidence": 1
+    },
+    {
+      "symbol": "KAR",
+      "name": "Karura",
+      "transferCount": 13004,
+      "uniqueId": "asset_registry/a31d0de96ab7a2e3e1219f408163b17074e88663",
+      "coingeckoId": "karura",
+      "coingeckoName": "Karura",
+      "coingeckoSymbol": "kar",
+      "confidence": 1
+    },
+    {
+      "symbol": "vKSM",
+      "name": "Voucher KSM",
+      "transferCount": 45823,
+      "uniqueId": "asset_registry/67236bb57594bcc614b7e5b20410c2c5aa7dc868",
+      "coingeckoId": "voucher-ksm",
+      "coingeckoName": "Voucher KSM",
+      "coingeckoSymbol": "vksm",
+      "confidence": 1
+    },
+    {
+      "symbol": "USDT",
+      "name": "Tether USD",
+      "transferCount": 34562,
+      "uniqueId": "asset_registry/551a80e79e02213dd918190892af5034002909c5",
+      "coingeckoId": "tether",
+      "coingeckoName": "Tether",
+      "coingeckoSymbol": "usdt",
+      "confidence": 0.931
+    },
+    {
+      "symbol": "KINT",
+      "name": "Kintsugi",
+      "transferCount": 724,
+      "uniqueId": "asset_registry/548efa1d3486b7caa31fc778eec1983f34a96502",
+      "coingeckoId": "kintsugi",
+      "coingeckoName": "Kintsugi",
+      "coingeckoSymbol": "kint",
+      "confidence": 1
+    },
+    {
+      "symbol": "KSM",
+      "name": "Kusama",
+      "transferCount": 277330,
+      "uniqueId": "asset_registry/42143ac2073520066e25b865fbf26a7fe57b9715",
+      "coingeckoId": "kusama",
+      "coingeckoName": "Kusama",
+      "coingeckoSymbol": "ksm",
+      "confidence": 1
+    },
+    {
+      "symbol": "MOVR",
+      "name": "Moonriver Native Token",
+      "transferCount": 15562,
+      "uniqueId": "asset_registry/3279ef23c7534c3f20a3390c671b563bfe68e2a9",
+      "coingeckoId": "moonriver",
+      "coingeckoName": "Moonriver",
+      "coingeckoSymbol": "movr",
+      "confidence": 0.878
+    },
+    {
+      "symbol": "PHA",
+      "name": "Phala Native Token",
+      "transferCount": 1437,
+      "uniqueId": "asset_registry/1d634bde9a0b197bfafc3493df89fd73cece0979",
+      "coingeckoId": "pha",
+      "coingeckoName": "PHALA",
+      "coingeckoSymbol": "pha",
+      "confidence": 0.826
+    },
+    {
+      "symbol": "RMRK",
+      "name": "RMRK Token",
+      "transferCount": 8638,
+      "uniqueId": "asset_registry/0173cb6b45d41145a8a92ccb9ab459c48798f2de",
+      "coingeckoId": "rmrk",
+      "coingeckoName": "RMRK",
+      "coingeckoSymbol": "rmrk",
+      "confidence": 0.864
+    },
+    {
+      "symbol": "vsBOND-KSM-2102-20-27",
+      "name": "vsBOND-KSM-2102-20-27",
+      "transferCount": 10,
+      "uniqueId": "asset_registry/fb31dead6f2fb83fe64a6181cd51563bcae72ef3"
+    },
+    {
+      "symbol": "vsBOND-KSM-2259-27-34",
+      "name": "vsBOND-KSM-2259-27-34",
+      "transferCount": 0,
+      "uniqueId": "asset_registry/e5895a24c624ae91f6bb55289398a27632899330"
+    },
+    {
+      "symbol": "vsBOND-KSM-2100-18-25",
+      "name": "vsBOND-KSM-2100-18-25",
+      "transferCount": 264,
+      "uniqueId": "asset_registry/e53a29305cea2ffe690f0466985e6e41a2cc9d28"
+    },
+    {
+      "symbol": "vsBOND-KSM-2102-21-28",
+      "name": "vsBOND-KSM-2102-21-28",
+      "transferCount": 11,
+      "uniqueId": "asset_registry/e0b01656776c1a74f5c2400d867c2e505d67ccd3"
+    },
+    {
+      "symbol": "vsBOND-KSM-2085-15-22",
+      "name": "vsBOND-KSM-2085-15-22",
+      "transferCount": 169,
+      "uniqueId": "asset_registry/d7654ea53f08037938ed3f005904fee562f172b2"
+    },
+    {
+      "symbol": "vsKSM",
+      "name": "Voucher Slot KSM",
+      "transferCount": 8109,
+      "uniqueId": "asset_registry/d4cda3b60a5a864624158f5f2c4b78f191b375d3"
+    },
+    {
+      "symbol": "BLP3",
+      "name": "Bifrost Stable Pool Token 3",
+      "transferCount": 153,
+      "uniqueId": "asset_registry/d4896954a562154390dd917c0326b33ec9fe2afe"
+    },
+    {
+      "symbol": "vsBOND-KSM-2241-28-35",
+      "name": "vsBOND-KSM-2241-28-35",
+      "transferCount": 51,
+      "uniqueId": "asset_registry/cad3a87ff8611702026b4437f0dfcf8bd5ddab0e"
+    },
+    {
+      "symbol": "vsBOND-KSM-2095-17-24",
+      "name": "vsBOND-KSM-2095-17-24",
+      "transferCount": 182,
+      "uniqueId": "asset_registry/be1ce47f9a2ec6671f9a7bd05d99d403cc735b40"
+    },
+    {
+      "symbol": "vsBOND-BNC-2001-13-20",
+      "name": "vsBOND-BNC-2001-13-20",
+      "transferCount": 4797,
+      "uniqueId": "asset_registry/ba49225229ee02fb1bb70ce831b50000b63d28c6"
+    },
+    {
+      "symbol": "BLP0",
+      "name": "Bifrost Stable Pool Token 0",
+      "transferCount": 3909,
+      "uniqueId": "asset_registry/ac0d1b4e3b38e566c1269edac0ed36d0a52ffd86"
+    },
+    {
+      "symbol": "vsBOND-KSM-2090-15-22",
+      "name": "vsBOND-KSM-2090-15-22",
+      "transferCount": 120,
+      "uniqueId": "asset_registry/a4742279882d30d18e6dfa18182d420f90760f35"
+    },
+    {
+      "symbol": "vsBOND-KSM-2127-23-30",
+      "name": "vsBOND-KSM-2127-23-30",
+      "transferCount": 1,
+      "uniqueId": "asset_registry/a0eac8fc2327c8eae78f3e4c6bb3d708ef8bbfa3"
+    },
+    {
+      "symbol": "vsBOND-KSM-2106-19-26",
+      "name": "vsBOND-KSM-2106-19-26",
+      "transferCount": 179,
+      "uniqueId": "asset_registry/9d4f4910870025d97234d7f0c343ae9d51658eee"
+    },
+    {
+      "symbol": "vsBOND-KSM-2088-15-22",
+      "name": "vsBOND-KSM-2088-15-22",
+      "transferCount": 469,
+      "uniqueId": "asset_registry/9c083628e18288972f8e17a9957edbef27dffe93"
+    },
+    {
+      "symbol": "vsBOND-KSM-2262-28-35",
+      "name": "vsBOND-KSM-2262-28-35",
+      "transferCount": 0,
+      "uniqueId": "asset_registry/9849b55f4cf9420b03ef7470f76280a4b66a7db7"
+    },
+    {
+      "symbol": "BLP2",
+      "name": "Bifrost Stable Pool Token 2",
+      "transferCount": 2969,
+      "uniqueId": "asset_registry/954799cf9a8db195a86c039749c309dee056f0d5"
+    },
+    {
+      "symbol": "BLP1",
+      "name": "Bifrost Stable Pool Token 1",
+      "transferCount": 1500,
+      "uniqueId": "asset_registry/90ebe5dbdf6cbe7be1f7fbf4983f8c8a910bd423"
+    },
+    {
+      "symbol": "vsBOND-KSM-2119-22-29",
+      "name": "vsBOND-KSM-2119-22-29",
+      "transferCount": 42,
+      "uniqueId": "asset_registry/8e1349c02090d867d6fbab0f4245d50ddf6939b8"
+    },
+    {
+      "symbol": "vsBOND-KSM-2096-17-24",
+      "name": "vsBOND-KSM-2096-17-24",
+      "transferCount": 504,
+      "uniqueId": "asset_registry/8db7bc3c232d3cc0a99f05e82b9fe15c489262de"
+    },
+    {
+      "symbol": "vsBOND-KSM-2118-22-29",
+      "name": "vsBOND-KSM-2118-22-29",
+      "transferCount": 22,
+      "uniqueId": "asset_registry/862eacb09636abae4a8d0345d8f94c99ef6a757e"
+    },
+    {
+      "symbol": "vsBOND-KSM-2125-23-30",
+      "name": "vsBOND-KSM-2125-23-30",
+      "transferCount": 104,
+      "uniqueId": "asset_registry/7f4aad2df3230f8e68c76ea08c869ca82f1899c5"
+    },
+    {
+      "symbol": "vsBOND-KSM-2101-18-25",
+      "name": "vsBOND-KSM-2101-18-25",
+      "transferCount": 521,
+      "uniqueId": "asset_registry/71dc09d402ef912e2e8c7a3ec6ccf5c38e6646ca"
+    },
+    {
+      "symbol": "vsBOND-KSM-2114-20-27",
+      "name": "vsBOND-KSM-2114-20-27",
+      "transferCount": 148,
+      "uniqueId": "asset_registry/65fcabc63295981d037975efb9c94390a492e3ca"
+    },
+    {
+      "symbol": "vsBOND-KSM-2092-15-22",
+      "name": "vsBOND-KSM-2092-15-22",
+      "transferCount": 352,
+      "uniqueId": "asset_registry/5e4f2bfbde6e3e580dcc92c1b1b3e6730b5feffb"
+    },
+    {
+      "symbol": "vsBOND-KSM-2110-28-34",
+      "name": "vsBOND-KSM-2110-28-34",
+      "transferCount": 0,
+      "uniqueId": "asset_registry/5a66ed75aef3e8c5b277010142aba73738b1953f"
+    },
+    {
+      "symbol": "vsBOND-KSM-2087-17-24",
+      "name": "vsBOND-KSM-2087-17-24",
+      "transferCount": 269,
+      "uniqueId": "asset_registry/53c93497c2c4489f2a4a788a18aab13607528239"
+    },
+    {
+      "symbol": "vsBOND-KSM-2256-27-34",
+      "name": "vsBOND-KSM-2256-27-34",
+      "transferCount": 83,
+      "uniqueId": "asset_registry/4f9e1e50e698188af095462c728dbd791b09e5bb"
+    },
+    {
+      "symbol": "vsBOND-KSM-2121-22-29",
+      "name": "vsBOND-KSM-2121-22-29",
+      "transferCount": 75,
+      "uniqueId": "asset_registry/41edcd79e487254c0706bdec2968a8735ba446f7"
+    },
+    {
+      "symbol": "vMOVR",
+      "name": "Voucher MOVR",
+      "transferCount": 3561,
+      "uniqueId": "asset_registry/3cd94b678231d3d121a9f92387fb606a13e33b1a"
+    },
+    {
+      "symbol": "vsBOND-KSM-2011-19-26",
+      "name": "vsBOND-KSM-2011-19-26",
+      "transferCount": 90,
+      "uniqueId": "asset_registry/32aeaec043bf41a88744e41a91571a4cf2fba5ae"
+    },
+    {
+      "symbol": "KUSD",
+      "name": "Karura Dollar",
+      "transferCount": 40938,
+      "uniqueId": "asset_registry/2d066619522686c7ab069e8960fbabb305c2d65b"
+    },
+    {
+      "symbol": "MGX",
+      "name": "Mangata Native Token",
+      "transferCount": 0,
+      "uniqueId": "asset_registry/21fefd989f35a2988c9288aab9bafa621add893a"
+    },
+    {
+      "symbol": "vsBOND-KSM-2124-23-30",
+      "name": "vsBOND-KSM-2124-23-30",
+      "transferCount": 77,
+      "uniqueId": "asset_registry/1d2f6e518b081bd9de6ae71f086c12603be587a5"
+    },
+    {
+      "symbol": "vsBOND-KSM-2129-24-31",
+      "name": "vsBOND-KSM-2129-24-31",
+      "transferCount": 112,
+      "uniqueId": "asset_registry/0aa3f521d65985311ba9046a818408e9d07e5e0a"
+    },
+    {
+      "symbol": "vsBOND-KSM-2102-19-26",
+      "name": "vsBOND-KSM-2102-19-26",
+      "transferCount": 3,
+      "uniqueId": "asset_registry/06db8df65b7a624fb7060e7add5c90f057089e51"
+    }
+  ]
+}

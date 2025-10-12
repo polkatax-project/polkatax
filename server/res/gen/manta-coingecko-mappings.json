@@ -1,0 +1,314 @@
+{
+  "mappings": [
+    {
+      "symbol": "MANTA",
+      "name": "MANTA",
+      "transferCount": 0,
+      "uniqueId": "MANTA",
+      "coingeckoId": "manta-network",
+      "coingeckoName": "Manta Network",
+      "coingeckoSymbol": "manta",
+      "confidence": 0.86
+    },
+    {
+      "symbol": "DOT",
+      "name": "Polkadot",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/0",
+      "coingeckoId": "polkadot",
+      "coingeckoName": "Polkadot",
+      "coingeckoSymbol": "dot",
+      "confidence": 1
+    },
+    {
+      "symbol": "Tether USD",
+      "name": "USDT",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/1",
+      "coingeckoId": "tether",
+      "coingeckoName": "Tether",
+      "coingeckoSymbol": "usdt"
+    },
+    {
+      "symbol": "ACA",
+      "name": "Acala",
+      "transferCount": 10,
+      "uniqueId": "standard_assets/11",
+      "coingeckoId": "acala",
+      "coingeckoName": "Acala",
+      "coingeckoSymbol": "aca",
+      "confidence": 1
+    },
+    {
+      "symbol": "LDOT",
+      "name": "Liquid DOT",
+      "transferCount": 4,
+      "uniqueId": "standard_assets/12"
+    },
+    {
+      "symbol": "ARB.aca.arb",
+      "name": "Arbitrum (via Acala Wormhole, Arbitrum One Origin)",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/13",
+      "coingeckoId": "coingeckoId",
+      "coingeckoSymbol": "arb",
+      "coingeckoName": "Arbitrum"
+    },
+    {
+      "symbol": "BUSD.aca.bsc",
+      "name": "Binance USD (via Acala Wormhole, BSC Origin)",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/14",
+      "coingeckoId": "binance-usd",
+      "coingeckoName": "binance-usd",
+      "coingeckoSymbol": "BUSD"
+    },
+    {
+      "symbol": "LDO",
+      "name": "Lido (via Acala Wormhole)",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/15",
+      "coingeckoId": "lido-dao-wormhole",
+      "coingeckoName": "Lido DAO (Wormhole)",
+      "coingeckoSymbol": "ldo",
+      "confidence": 0.882
+    },
+    {
+      "symbol": "SHIB",
+      "name": "Shiba Inu (via Acala Wormhole)",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/16",
+      "coingeckoId": "shiba-inu-wormhole",
+      "coingeckoName": "Shiba Inu (Wormhole)",
+      "coingeckoSymbol": "shib",
+      "confidence": 0.921
+    },
+    {
+      "symbol": "UNI",
+      "name": "Uniswap (via Acala Wormhole)",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/17",
+      "coingeckoId": "uniswap-wormhole",
+      "coingeckoName": "Uniswap (Wormhole)",
+      "coingeckoSymbol": "uni",
+      "confidence": 0.917
+    },
+    {
+      "symbol": "LINK",
+      "name": "Chainlink (via Acala Wormhole)",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/18",
+      "coingeckoId": "chainlink",
+      "coingeckoName": "Chainlink",
+      "coingeckoSymbol": "link",
+      "confidence": 0.85
+    },
+    {
+      "symbol": "APE",
+      "name": "Apecoin (via Acala Wormhole)",
+      "transferCount": 4,
+      "uniqueId": "standard_assets/19",
+      "coingeckoId": "apecoin",
+      "coingeckoName": "ApeCoin",
+      "coingeckoSymbol": "ape",
+      "confidence": 0.829
+    },
+    {
+      "symbol": "ARB.aca.eth",
+      "name": "Arbitrum (via Acala Wormhole, Ethereum Origin)",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/20",
+      "coingeckoId": "coingeckoId",
+      "coingeckoSymbol": "arb",
+      "coingeckoName": "Arbitrum"
+    },
+    {
+      "symbol": "BUSD.aca.eth",
+      "name": "Binance USD (via Acala Wormhole, Ethereum Origin)",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/21",
+      "coingeckoId": "binance-usd",
+      "coingeckoName": "binance-usd",
+      "coingeckoSymbol": "BUSD"
+    },
+    {
+      "symbol": "USDT.aca.eth",
+      "name": "USDT (via Acala Wormhole, Ethereum Origin)",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/22",
+      "coingeckoId": "tether",
+      "coingeckoName": "Tether",
+      "coingeckoSymbol": "usdt"
+    },
+    {
+      "symbol": "DAI.aca.eth",
+      "name": "Dai Stable (via Acala Wormhole, Ethereum Origin)",
+      "transferCount": 5,
+      "uniqueId": "standard_assets/23",
+      "coingeckoId": "dai",
+      "coingeckoName": "dai",
+      "coingeckoSymbol": "dai"
+    },
+    {
+      "symbol": "USDC.aca.eth",
+      "name": "USD Coin (via Acala Wormhole, Ethereum Origin)",
+      "transferCount": 6,
+      "uniqueId": "standard_assets/24",
+      "coingeckoId": "usdc",
+      "coingeckoName": "usdc",
+      "coingeckoSymbol": "usdc"
+    },
+    {
+      "symbol": "MATIC.aca.poly",
+      "name": "Matic (via Acala Wormhole, Polygon Origin)",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/25",
+      "coingeckoId": "matic-network",
+      "coingeckoSymbol": "matic",
+      "coingeckoName": "Polygon"
+    },
+    {
+      "symbol": "WBTC.aca.eth",
+      "name": "Wrapped Bitcoin (via Acala Wormhole, Eth Origin)",
+      "transferCount": 5,
+      "uniqueId": "standard_assets/26",
+      "coingeckoId": "wrapped-btc-wormhole",
+      "coingeckoSymbol": "wbtc",
+      "coingeckoName": "Wrapped BTC (Wormhole)"
+    },
+    {
+      "symbol": "WETH.aca.eth",
+      "name": "Wrapped Ether (via Acala Wormhole, Eth Origin)",
+      "transferCount": 4,
+      "uniqueId": "standard_assets/27",
+      "coingeckoId": "weth",
+      "coingeckoSymbol": "weth",
+      "coingeckoName": "weth"
+    },
+    {
+      "symbol": "MATIC.aca.eth",
+      "name": "Matic (via Acala Wormhole, Eth Origin)",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/28",
+      "coingeckoId": "matic-network",
+      "coingeckoSymbol": "matic",
+      "coingeckoName": "Polygon"
+    },
+    {
+      "symbol": "WBNB",
+      "name": "Wrapped BNB (via Acala Wormhole)",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/29",
+      "coingeckoId": "wbnb",
+      "coingeckoName": "Wrapped BNB",
+      "coingeckoSymbol": "wbnb",
+      "confidence": 0.859
+    },
+    {
+      "symbol": "BNC",
+      "name": "Bifrost",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/30",
+      "coingeckoId": "bifrost-native-coin",
+      "coingeckoName": "Bifrost",
+      "coingeckoSymbol": "bnc",
+      "confidence": 1
+    },
+    {
+      "symbol": "DAI.MRL.ETH",
+      "name": "DAI Stablecoin (MRL)",
+      "transferCount": 5,
+      "uniqueId": "standard_assets/31",
+      "coingeckoId": "dai",
+      "coingeckoName": "dai",
+      "coingeckoSymbol": "dai"
+    },
+    {
+      "symbol": "WETH.MRL.ETH",
+      "name": "Wrapped Ether (MRL)",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/32",
+      "coingeckoId": "weth",
+      "coingeckoSymbol": "weth",
+      "coingeckoName": "weth"
+    },
+    {
+      "symbol": "USDC.MRL.ETH",
+      "name": "USD Coin (MRL)",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/33",
+      "coingeckoId": "usd-coin",
+      "coingeckoName": "USDC",
+      "coingeckoSymbol": "usdc"
+    },
+    {
+      "symbol": "TBTC.MRL.ETH",
+      "name": "tBTC v2 (MRL)",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/34",
+      "coingeckoId": "tbtc",
+      "coingeckoName": "tbtc",
+      "coingeckoSymbol": "tBTC"
+    },
+    {
+      "symbol": "WBNB.MRL.BSC",
+      "name": "Wrapped BNB (MRL)",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/35"
+    },
+    {
+      "symbol": "LP-DOT-MANTA",
+      "name": "LP-DOT-MANTA",
+      "transferCount": 212,
+      "uniqueId": "standard_assets/36"
+    },
+    {
+      "symbol": "LP-GLMR-MANTA",
+      "name": "LP-GLMR-MANTA",
+      "transferCount": 105,
+      "uniqueId": "standard_assets/37"
+    },
+    {
+      "symbol": "LP-USDT-MANTA",
+      "name": "LP-USDT-MANTA",
+      "transferCount": 278,
+      "uniqueId": "standard_assets/38"
+    },
+    {
+      "symbol": "MANDEX",
+      "name": "MantaDex",
+      "transferCount": 909,
+      "uniqueId": "standard_assets/1000000000"
+    },
+    {
+      "symbol": "USDT",
+      "name": "Tether USD",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/9",
+      "coingeckoId": "tether",
+      "coingeckoName": "Tether",
+      "coingeckoSymbol": "usdt",
+      "confidence": 0.931
+    },
+    {
+      "symbol": "DOT",
+      "name": "Polkadot",
+      "transferCount": 26,
+      "uniqueId": "standard_assets/8",
+      "coingeckoId": "polkadot",
+      "coingeckoName": "Polkadot",
+      "coingeckoSymbol": "dot",
+      "confidence": 1
+    },
+    {
+      "symbol": "GLMR",
+      "name": "Moonbeam",
+      "transferCount": 11,
+      "uniqueId": "standard_assets/10",
+      "coingeckoId": "moonbeam",
+      "coingeckoName": "Moonbeam",
+      "coingeckoSymbol": "glmr",
+      "confidence": 1
+    }
+  ]
+}

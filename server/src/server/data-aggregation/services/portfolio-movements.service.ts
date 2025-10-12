@@ -14,7 +14,6 @@ import { Transfer } from "../../blockchain/substrate/model/raw-transfer";
 import { StakingReward } from "../../blockchain/substrate/model/staking-reward";
 import { TransactionDetails } from "../../blockchain/substrate/model/transaction";
 import { StakingRewardsAggregatorService } from "./staking-rewards-aggregator.service";
-import { AddFiatValuesToTaxableEventsService } from "./add-fiat-values-to-taxable-events.service";
 import { DataPlatformLiquidStakingService } from "../../data-platform-api/data-platform-liquidstaking.service";
 import * as fs from "fs";
 import { ReconciliationService } from "./reconciliation.service";
@@ -54,7 +53,6 @@ export class PortfolioMovementsService {
     private xcmService: XcmService,
     private stakingRewardsAggregatorService: StakingRewardsAggregatorService,
     private specialEventsToTransfersService: SpecialEventsToTransfersService,
-    private addFiatValuesToTaxableEventsService: AddFiatValuesToTaxableEventsService,
     private dataPlatformLiquidStakingService: DataPlatformLiquidStakingService,
     private balanceChangesService: BalanceChangesService,
     private reconciliationService: ReconciliationService,
@@ -270,14 +268,6 @@ export class PortfolioMovementsService {
       `PortfolioMovmentService: Adding semanticIds and transfer labels for ${request.chain.domain} and wallet ${request.address}`,
     );
     portfolioMovements.forEach((s) => addLabelsAndSemanticIds(s));
-
-    logger.info(
-      `PortfolioMovmentService: Adding/converting fiat values for ${request.chain.domain} and wallet ${request.address}`,
-    );
-    await this.addFiatValuesToTaxableEventsService.addFiatValues(
-      request,
-      portfolioMovements,
-    );
 
     logger.info(
       `PortfolioMovmentService: simplifyAssetMovements for ${request.chain.domain} and wallet ${request.address}`,

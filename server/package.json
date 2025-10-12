@@ -19,7 +19,8 @@
     "test": "jest --config jest.unit.config.ts",
     "e2e-tests": "jest --config jest.e2e-test.config.ts --runInBand e2e-tests",
     "canary-tests": "jest --verbose --config jest.canary-test.config.ts --runInBand canary-tests",
-    "fix-errors": "ts-node integration-tests/canary-tests/fix-errors.ts",
+    "fix-errors": "ts-node integration-tests/test.ts",
+    "map-coingecko-ids": "ts-node src/generators/map-asset-to-coingecko-id",
     "format": "prettier --write . --ignore-path ../.gitignore",
     "copy-env-to-dist": "cp *.env ./dist && if [ -f .env ]; then cp .env ./dist; fi"
   },

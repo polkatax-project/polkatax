@@ -1,0 +1,505 @@
+{
+  "mappings": [
+    {
+      "symbol": "WETH",
+      "name": "Wrapped Ether (Portal)",
+      "transferCount": 377,
+      "uniqueId": "asset_registry/ec028d77a59ddefc0040b9249490b27a5092437f",
+      "coingeckoId": "wrapped-eth-taiko",
+      "coingeckoName": "Wrapped ETH (Taiko)",
+      "coingeckoSymbol": "weth",
+      "confidence": 0.894
+    },
+    {
+      "symbol": "ARB",
+      "name": "Arbitrum (Portal)",
+      "transferCount": 4,
+      "uniqueId": "asset_registry/e7f8909b6471b9b625d6716b1c3e54ea6ed67e25",
+      "coingeckoId": "arbitrum",
+      "coingeckoName": "Arbitrum",
+      "coingeckoSymbol": "arb",
+      "confidence": 0.91
+    },
+    {
+      "symbol": "Nemo",
+      "name": "Nemo",
+      "transferCount": 2378,
+      "uniqueId": "asset_registry/e4d7270bcecb79c5077cd638e426ce647cd12a02",
+      "coingeckoId": "nemo-sum",
+      "coingeckoName": "Nemo Sum",
+      "coingeckoSymbol": "nemo",
+      "confidence": 0.9
+    },
+    {
+      "symbol": "UNI",
+      "name": "Uniswap (Portal)",
+      "transferCount": 0,
+      "uniqueId": "asset_registry/e386e6c1fbee1b728ab5c428793b24a3aa45542b",
+      "coingeckoId": "uniswap",
+      "coingeckoName": "Uniswap",
+      "coingeckoSymbol": "uni",
+      "confidence": 0.9
+    },
+    {
+      "symbol": "LP-USDT/LOTY",
+      "name": "LP-USDT/LOTY",
+      "transferCount": 4,
+      "uniqueId": "asset_registry/e231c656c292b9bac890a7b51877dfe78e570a63"
+    },
+    {
+      "symbol": "USDT",
+      "name": "Tether USD",
+      "transferCount": 33462,
+      "uniqueId": "asset_registry/e15e76b3ba2848c70db6226bcfc661c0c9f7a509",
+      "coingeckoId": "tether",
+      "coingeckoName": "Tether",
+      "coingeckoSymbol": "usdt",
+      "confidence": 0.931
+    },
+    {
+      "symbol": "aSEED",
+      "name": "aUSD SEED",
+      "transferCount": 333357,
+      "uniqueId": "asset_registry/d1885b2457a878174ad404f31c2e6af691bdf054",
+      "coingeckoId": "ausd-seed-karura",
+      "coingeckoName": "aUSD SEED (Karura)",
+      "coingeckoSymbol": "aseed",
+      "confidence": 0.91
+    },
+    {
+      "symbol": "BUSDbs",
+      "name": "Binance USD (Portal from BSC)",
+      "transferCount": 15,
+      "uniqueId": "asset_registry/cdaf89060bc02008c5118a157f4cb166c6675d9d",
+      "coingeckoId": "binance-usd",
+      "coingeckoName": "binance-usd",
+      "coingeckoSymbol": "BUSD"
+    },
+    {
+      "symbol": "UNQ",
+      "name": "Unique Network",
+      "transferCount": 139964,
+      "uniqueId": "asset_registry/cc8acb74237ef69afdab68151bf07a6fdcaa7bf3",
+      "coingeckoId": "unique-network",
+      "coingeckoName": "Unique Network",
+      "coingeckoSymbol": "unq",
+      "confidence": 1
+    },
+    {
+      "symbol": "JitoSOL",
+      "name": "Jito Staked SOL",
+      "transferCount": 732,
+      "uniqueId": "asset_registry/c581784afa41758fb0ae199e23c884958b265fb4",
+      "coingeckoId": "jito-staked-sol",
+      "coingeckoName": "Jito Staked SOL",
+      "coingeckoSymbol": "jitosol",
+      "confidence": 1
+    },
+    {
+      "symbol": "LP-ACA/USDCet",
+      "name": "LP-ACA/USDCet",
+      "transferCount": 2825,
+      "uniqueId": "asset_registry/c41ddcd6282a87b80f89930a3656c5425f749841"
+    },
+    {
+      "symbol": "LcDOT",
+      "name": "Liquid Crowdloan DOT",
+      "transferCount": 207591,
+      "uniqueId": "asset_registry/bfa7a23dc17bb490d4032c78cbc87babb4eb6f74"
+    },
+    {
+      "symbol": "LP-ACA/DAMN",
+      "name": "LP-ACA/DAMN",
+      "transferCount": 1,
+      "uniqueId": "asset_registry/bc6f2a15eb00bec825594b2334fbe297d9a02d6c"
+    },
+    {
+      "symbol": "LP-ACA/LOVA",
+      "name": "LP-ACA/LOVA",
+      "transferCount": 1,
+      "uniqueId": "asset_registry/bba7d9b1710bae0c2156b04eda3db39e923c4786"
+    },
+    {
+      "symbol": "GLMR",
+      "name": "Moonbeam",
+      "transferCount": 121,
+      "uniqueId": "asset_registry/b94c58ff9cd092353ff3d8901c310559fd04a4d1",
+      "coingeckoId": "moonbeam",
+      "coingeckoName": "Moonbeam",
+      "coingeckoSymbol": "glmr",
+      "confidence": 1
+    },
+    {
+      "symbol": "USDCet",
+      "name": "USD Coin (Portal from Ethereum)",
+      "transferCount": 23894,
+      "uniqueId": "asset_registry/b0bcf612a980d7a09169f958e718fd94ec97b156",
+      "coingeckoId": "usd-coin-wormhole-from-ethereum",
+      "coingeckoName": "Bridged USD Coin (Wormhole Ethereum)",
+      "coingeckoSymbol": "usdcet",
+      "confidence": 0.858
+    },
+    {
+      "symbol": "LP-DOT/LOTY",
+      "name": "LP-DOT/LOTY",
+      "transferCount": 7,
+      "uniqueId": "asset_registry/b03737f2f3dca0e38bbbe4b43f9caef165052ae3"
+    },
+    {
+      "symbol": "DOT",
+      "name": "Polkadot",
+      "transferCount": 743638,
+      "uniqueId": "asset_registry/b025a485e041bae59c2453dc19ed03c465809955",
+      "coingeckoId": "polkadot",
+      "coingeckoName": "Polkadot",
+      "coingeckoSymbol": "dot",
+      "confidence": 1
+    },
+    {
+      "symbol": "IBTC",
+      "name": "interBTC",
+      "transferCount": 4236,
+      "uniqueId": "asset_registry/aabd49a83097fcee603183944eb72799fb174841",
+      "coingeckoId": "interbtc",
+      "coingeckoName": "interBTC",
+      "coingeckoSymbol": "ibtc",
+      "confidence": 1
+    },
+    {
+      "symbol": "LP-DOT/UNQ",
+      "name": "LP-DOT/UNQ",
+      "transferCount": 30,
+      "uniqueId": "asset_registry/a9a314d068260d9778d93733455c57ea96fc294f"
+    },
+    {
+      "symbol": "LP-aSEED/IBTC",
+      "name": "LP-aSEED/IBTC",
+      "transferCount": 1,
+      "uniqueId": "asset_registry/a91ebce11523ecfaa01712b3ef2c7abc2252514c"
+    },
+    {
+      "symbol": "LP-LDOT/JitoSOL",
+      "name": "LP-LDOT/JitoSOL",
+      "transferCount": 326,
+      "uniqueId": "asset_registry/a521063aef8b2f6ea0ca6cb56401497021a21947"
+    },
+    {
+      "symbol": "SHIB",
+      "name": "Shiba Inu (Portal)",
+      "transferCount": 0,
+      "uniqueId": "asset_registry/a4de8374354155218779cfdf478360447554eab9",
+      "coingeckoId": "shiba-inu",
+      "coingeckoName": "Shiba Inu",
+      "coingeckoSymbol": "shib",
+      "confidence": 0.91
+    },
+    {
+      "symbol": "LP-ACA/USDT",
+      "name": "LP-ACA/USDT",
+      "transferCount": 1181,
+      "uniqueId": "asset_registry/9d9477c45308fc9d5077cb9be873d0781139029d"
+    },
+    {
+      "symbol": "DAMN",
+      "name": "DAMN",
+      "transferCount": 4254,
+      "uniqueId": "asset_registry/943dc6b4ffbcc80821c8c6ae1e6d0090fa888d24"
+    },
+    {
+      "symbol": "LDO",
+      "name": "Lido DAO (Portal)",
+      "transferCount": 0,
+      "uniqueId": "asset_registry/93f8a06630811b559a39f73fa9a5b042cd021716",
+      "coingeckoId": "lido-dao",
+      "coingeckoName": "Lido DAO",
+      "coingeckoSymbol": "ldo",
+      "confidence": 0.9
+    },
+    {
+      "symbol": "LDOT",
+      "name": "Liquid DOT",
+      "transferCount": 255094,
+      "uniqueId": "asset_registry/934f06b2df35222826190260463f2857c8bbf640"
+    },
+    {
+      "symbol": "WBTC",
+      "name": "Wrapped Bitcoin",
+      "transferCount": 54,
+      "uniqueId": "asset_registry/9342c47a8e13146e524a9074dd00c48ca8086e69",
+      "coingeckoId": "wrapped-bitcoin",
+      "coingeckoName": "Wrapped Bitcoin",
+      "coingeckoSymbol": "wbtc",
+      "confidence": 1
+    },
+    {
+      "symbol": "PDEX",
+      "name": "Polkadex",
+      "transferCount": 0,
+      "uniqueId": "asset_registry/915a78e03c87e4917f356937cc6488908106d9d0",
+      "coingeckoId": "polkadex",
+      "coingeckoName": "Polkadex",
+      "coingeckoSymbol": "pdex",
+      "confidence": 1
+    },
+    {
+      "symbol": "USDC",
+      "name": "USD Coin",
+      "transferCount": 20,
+      "uniqueId": "asset_registry/8b7e75b39d3ba0cd72510df1309d6141e06255e0",
+      "coingeckoId": "usd-coin",
+      "coingeckoName": "USDC",
+      "coingeckoSymbol": "usdc",
+      "confidence": 0.9
+    },
+    {
+      "symbol": "INTR",
+      "name": "Interlay",
+      "transferCount": 27278,
+      "uniqueId": "asset_registry/89a9f7b84fbb9caf06131cc002748b368017b85f",
+      "coingeckoId": "interlay",
+      "coingeckoName": "Interlay",
+      "coingeckoSymbol": "intr",
+      "confidence": 1
+    },
+    {
+      "symbol": "DAI",
+      "name": "DAI Stablecoin (Portal)",
+      "transferCount": 700,
+      "uniqueId": "asset_registry/7889f58a6d302752348048fbd593046b1f949298",
+      "coingeckoId": "dai",
+      "coingeckoName": "dai",
+      "coingeckoSymbol": "dai",
+      "confidence": 0.871
+    },
+    {
+      "symbol": "ETH",
+      "name": "Ether",
+      "transferCount": 0,
+      "uniqueId": "asset_registry/70a64e7a419c1d2a6043522b540221b1d3272293",
+      "coingeckoId": "ethereum",
+      "coingeckoName": "Ethereum",
+      "coingeckoSymbol": "eth",
+      "confidence": 0.918
+    },
+    {
+      "symbol": "LP-ACA/Nemo",
+      "name": "LP-ACA/Nemo",
+      "transferCount": 30,
+      "uniqueId": "asset_registry/67b9d69c95a5541cf0eeb5703b08d11b4ffd4500"
+    },
+    {
+      "symbol": "CRUet",
+      "name": "Crust Network (Portal from Ethereum)",
+      "transferCount": 0,
+      "uniqueId": "asset_registry/65c90556173b7d2defe70afbd2e519422abe9a09"
+    },
+    {
+      "symbol": "tDOT",
+      "name": "Taiga DOT",
+      "transferCount": 28348,
+      "uniqueId": "asset_registry/55ff486ef5b51969c0b6624552f592dd1c6a1490"
+    },
+    {
+      "symbol": "ASTR",
+      "name": "Astar Native Token",
+      "transferCount": 49,
+      "uniqueId": "asset_registry/52d3258b10d977774a6e90e4e68ff7b6e6bd2293",
+      "coingeckoId": "astar",
+      "coingeckoName": "Astar",
+      "coingeckoSymbol": "astr",
+      "confidence": 0.826
+    },
+    {
+      "symbol": "PHA",
+      "name": "Phala Token",
+      "transferCount": 7,
+      "uniqueId": "asset_registry/4d883980df470183645c630bfe6799cb59e28f22",
+      "coingeckoId": "pha",
+      "coingeckoName": "PHALA",
+      "coingeckoSymbol": "pha",
+      "confidence": 0.885
+    },
+    {
+      "symbol": "APE",
+      "name": "ApeCoin (Portal)",
+      "transferCount": 8,
+      "uniqueId": "asset_registry/4ad9fd011b816fdeccf01dc8c3a5d7c80eb3d2c3",
+      "coingeckoId": "apecoin",
+      "coingeckoName": "ApeCoin",
+      "coingeckoSymbol": "ape",
+      "confidence": 0.9
+    },
+    {
+      "symbol": "LP-aSEED/LcDOT",
+      "name": "LP-aSEED/LcDOT",
+      "transferCount": 451,
+      "uniqueId": "asset_registry/472ce5d427137a09b9c26f6eda75a1d5943aa765"
+    },
+    {
+      "symbol": "LP-DOT/LcDOT",
+      "name": "LP-DOT/LcDOT",
+      "transferCount": 564,
+      "uniqueId": "asset_registry/46d6899b1658c9cb19253d5549ae234153605bec"
+    },
+    {
+      "symbol": "LP-aSEED/INTR",
+      "name": "LP-aSEED/INTR",
+      "transferCount": 23,
+      "uniqueId": "asset_registry/44e456a64af21009496af7f9284814133646b948"
+    },
+    {
+      "symbol": "WETHah",
+      "name": "Wrapped Ether (Asset Hub)",
+      "transferCount": 0,
+      "uniqueId": "asset_registry/42ba4be6b0ae6390e1d17f607c077801efed60c7",
+      "coingeckoId": "bridged-weth",
+      "coingeckoName": "Bridged WETH",
+      "coingeckoSymbol": "weth"
+    },
+    {
+      "symbol": "LINK",
+      "name": "Chainlink (Portal)",
+      "transferCount": 0,
+      "uniqueId": "asset_registry/40c53db7ed55ddd77f462abd7114e372875b6a4d",
+      "coingeckoId": "chainlink",
+      "coingeckoName": "Chainlink",
+      "coingeckoSymbol": "link",
+      "confidence": 0.918
+    },
+    {
+      "symbol": "CFG",
+      "name": "Centrifuge",
+      "transferCount": 0,
+      "uniqueId": "asset_registry/3e6e3844735ed8728df14fc35ac2cc55cb509507",
+      "coingeckoId": "centrifuge-2",
+      "coingeckoName": "Centrifuge",
+      "coingeckoSymbol": "cfg",
+      "confidence": 1
+    },
+    {
+      "symbol": "TAI",
+      "name": "Taiga",
+      "transferCount": 29,
+      "uniqueId": "asset_registry/372aeb325611b0f846b7261a2f467cf8ee5ba0c6",
+      "coingeckoId": "tainet",
+      "coingeckoName": "TaiNet",
+      "coingeckoSymbol": "tai",
+      "confidence": 0.833
+    },
+    {
+      "symbol": "LOVA",
+      "name": "AIWeb3",
+      "transferCount": 4544,
+      "uniqueId": "asset_registry/2aff316c06380d24c457558c92bd089096705e92"
+    },
+    {
+      "symbol": "CRU",
+      "name": "Crust Parachain Native Token",
+      "transferCount": 0,
+      "uniqueId": "asset_registry/2478b65e80766869c1ad938aa3ae20d6f527b0b1",
+      "coingeckoId": "crust-network",
+      "coingeckoName": "Crust Network",
+      "coingeckoSymbol": "cru",
+      "confidence": 0.786
+    },
+    {
+      "symbol": "HDX",
+      "name": "Hydration",
+      "transferCount": 0,
+      "uniqueId": "asset_registry/23bc60e99103041867c71cc65d7e580391a377ff",
+      "coingeckoId": "hydradx",
+      "coingeckoName": "Hydration",
+      "coingeckoSymbol": "hdx",
+      "confidence": 1
+    },
+    {
+      "symbol": "LP-aSEED/LDOT",
+      "name": "LP-aSEED/LDOT",
+      "transferCount": 172,
+      "uniqueId": "asset_registry/2169441d671c91f033c05200e2e35dc43defb935"
+    },
+    {
+      "symbol": "LP-ACA/aSEED",
+      "name": "LP-ACA/aSEED",
+      "transferCount": 600,
+      "uniqueId": "asset_registry/1dea1ec6a961ca03a782bc8b62f1dc1e88f335fb"
+    },
+    {
+      "symbol": "USDTet",
+      "name": "Tether USD (Portal from Ethereum)",
+      "transferCount": 0,
+      "uniqueId": "asset_registry/1d9518b9d793bcb9b3722274b75d86d56f2d710d",
+      "coingeckoId": "tether",
+      "coingeckoSymbol": "usdt",
+      "coingeckoName": "Tether"
+    },
+    {
+      "symbol": "EQD",
+      "name": "Equilibrium USD",
+      "transferCount": 0,
+      "uniqueId": "asset_registry/15130413755b6bafe734e70a26fb8b24eba0dc27"
+    },
+    {
+      "symbol": "EQ",
+      "name": "Equilibrium",
+      "transferCount": 0,
+      "uniqueId": "asset_registry/11bf06ab60b3b2ecb8588e40b230123689bf359a",
+      "coingeckoId": "equilibrium-token",
+      "coingeckoName": "Equilibrium",
+      "coingeckoSymbol": "eq",
+      "confidence": 1
+    },
+    {
+      "symbol": "TAP",
+      "name": "Tapio",
+      "transferCount": 0,
+      "uniqueId": "asset_registry/0f27b76390e3b83c58e0a05efb67d23a1c32bc75"
+    },
+    {
+      "symbol": "WBTC",
+      "name": "Wrapped Bitcoin (Portal)",
+      "transferCount": 60,
+      "uniqueId": "asset_registry/0a7708e84bf9ae09649e5065d2e92beaa28dd438",
+      "coingeckoId": "wrapped-bitcoin",
+      "coingeckoName": "Wrapped Bitcoin",
+      "coingeckoSymbol": "wbtc",
+      "confidence": 0.944
+    },
+    {
+      "symbol": "MATICpo",
+      "name": "MATIC (Portal from Polygon)",
+      "transferCount": 5,
+      "uniqueId": "asset_registry/0730cdd4501dcc8481abd7b99bf7910bcaf3b9fb",
+      "coingeckoId": "matic-wormhole",
+      "coingeckoName": "MATIC (Wormhole)",
+      "coingeckoSymbol": "maticpo",
+      "confidence": 0.809
+    },
+    {
+      "symbol": "PARA",
+      "name": "Parallel",
+      "transferCount": 14,
+      "uniqueId": "asset_registry/0275355923b57e21b8ec1ae90139e353a6a64417",
+      "coingeckoId": "paratoken-2",
+      "coingeckoName": "Para",
+      "coingeckoSymbol": "para",
+      "confidence": 0.88
+    },
+    {
+      "symbol": "PINK",
+      "name": "PINK",
+      "transferCount": 96452,
+      "uniqueId": "asset_registry/005766f32105258910e55fd870562ffeb185669f",
+      "coingeckoId": "pink",
+      "coingeckoName": "Pink",
+      "coingeckoSymbol": "pink",
+      "confidence": 1
+    },
+    {
+      "symbol": "LOTY",
+      "name": "LOTY",
+      "transferCount": 1271,
+      "uniqueId": "asset_registry/df4667dd55454ccca83e77fefe9a2a7a113e59bd"
+    }
+  ]
+}

@@ -1,0 +1,558 @@
+{
+  "mappings": [
+    {
+      "symbol": "LP-aSEED/RMRK",
+      "name": "LP-aSEED/RMRK",
+      "transferCount": 0,
+      "uniqueId": "asset_registry/fcf39ea18cc61ea8b236b4dc1366a691cd27df6a"
+    },
+    {
+      "symbol": "LP-KSM/ARIS",
+      "name": "LP-KSM/ARIS",
+      "transferCount": 0,
+      "uniqueId": "asset_registry/f9fa7e6e9069251b6efa6b2f663882114310f2e3"
+    },
+    {
+      "symbol": "DAI",
+      "name": "DAI Stablecoin (Portal)",
+      "transferCount": 188,
+      "uniqueId": "asset_registry/f9bf9ab80daf3819a49fe0db9c5d57fcabd268fa",
+      "coingeckoId": "dai",
+      "coingeckoName": "dai",
+      "coingeckoSymbol": "dai",
+      "confidence": 0.871
+    },
+    {
+      "symbol": "ARBet",
+      "name": "Arbitrum (Portal from Ethereum)",
+      "transferCount": 5,
+      "uniqueId": "asset_registry/f779c63ed7aacefd27850bf4e2e501ea27ccace0"
+    },
+    {
+      "symbol": "BNC",
+      "name": "Bifrost Native Token",
+      "transferCount": 165873,
+      "uniqueId": "asset_registry/ed6b30ee71e4e37e1b6a0e77e2accb05757826bd",
+      "coingeckoId": "bifrost-native-coin",
+      "coingeckoName": "Bifrost",
+      "coingeckoSymbol": "bnc",
+      "confidence": 0.857
+    },
+    {
+      "symbol": "LDO",
+      "name": "Lido DAO (Portal from Ethereum)",
+      "transferCount": 8,
+      "uniqueId": "asset_registry/ed1f667799d535666043f4467ca61a197632cbc0",
+      "coingeckoId": "lido-dao",
+      "coingeckoName": "Lido DAO",
+      "coingeckoSymbol": "ldo",
+      "confidence": 0.82
+    },
+    {
+      "symbol": "LP-aSEED/KINT",
+      "name": "LP-aSEED/KINT",
+      "transferCount": 2,
+      "uniqueId": "asset_registry/e85a3ea80050991749c3de5c309023aeb5199b82"
+    },
+    {
+      "symbol": "AIR",
+      "name": "Altair",
+      "transferCount": 46666,
+      "uniqueId": "asset_registry/e15e76b3ba2848c70db6226bcfc661c0c9f7a509",
+      "coingeckoId": "altair",
+      "coingeckoName": "Altair",
+      "coingeckoSymbol": "air",
+      "confidence": 1
+    },
+    {
+      "symbol": "LIT",
+      "name": "Litmus Native Token",
+      "transferCount": 0,
+      "uniqueId": "asset_registry/df4667dd55454ccca83e77fefe9a2a7a113e59bd",
+      "coingeckoId": "litentry",
+      "coingeckoName": "Litentry",
+      "coingeckoSymbol": "lit",
+      "confidence": 0.778
+    },
+    {
+      "symbol": "LP-aSEED/KSM",
+      "name": "LP-aSEED/KSM",
+      "transferCount": 4,
+      "uniqueId": "asset_registry/db6cf0495c545d23666ba5841b36f81a3d614f01"
+    },
+    {
+      "symbol": "SHIB",
+      "name": "Shiba Inu (Portal from Ethereum)",
+      "transferCount": 5,
+      "uniqueId": "asset_registry/dacb0c761d44179ffa572e10231031d30a05b071",
+      "coingeckoId": "shiba-inu",
+      "coingeckoName": "Shiba Inu",
+      "coingeckoSymbol": "shib",
+      "confidence": 0.831
+    },
+    {
+      "symbol": "MATICpo",
+      "name": "MATIC (Portal from Polygon)",
+      "transferCount": 0,
+      "uniqueId": "asset_registry/d8f3763c02e7f6d0eb4860a34dab03edf4f56bb7",
+      "coingeckoId": "matic-wormhole",
+      "coingeckoName": "MATIC (Wormhole)",
+      "coingeckoSymbol": "maticpo",
+      "confidence": 0.809
+    },
+    {
+      "symbol": "UNI",
+      "name": "Uniswap (Portal from Ethereum)",
+      "transferCount": 5,
+      "uniqueId": "asset_registry/d081ead1a3c061c479cf3d0c87e1409817428f9e",
+      "coingeckoId": "uniswap",
+      "coingeckoName": "Uniswap",
+      "coingeckoSymbol": "uni",
+      "confidence": 0.82
+    },
+    {
+      "symbol": "KMA",
+      "name": "Calamari",
+      "transferCount": 0,
+      "uniqueId": "asset_registry/cc8acb74237ef69afdab68151bf07a6fdcaa7bf3"
+    },
+    {
+      "symbol": "APE",
+      "name": "ApeCoin (Portal from Ethereum)",
+      "transferCount": 6,
+      "uniqueId": "asset_registry/cb2f0d8e407aa7a48b646298c65644b08e778db4",
+      "coingeckoId": "apecoin",
+      "coingeckoName": "ApeCoin",
+      "coingeckoSymbol": "ape",
+      "confidence": 0.82
+    },
+    {
+      "symbol": "3USD",
+      "name": "Taiga 3USD",
+      "transferCount": 6523,
+      "uniqueId": "asset_registry/c5f585e8563a34f7c4921e41f50f9e9bdb1eaa64",
+      "coingeckoId": "l3usd",
+      "coingeckoName": "L3USD",
+      "coingeckoSymbol": "l3usd",
+      "confidence": 0.75
+    },
+    {
+      "symbol": "BUSDet",
+      "name": "Binance USD (Portal from Ethereum)",
+      "transferCount": 5,
+      "uniqueId": "asset_registry/beeba4ba234674529fcb0dea8b1c81b2633544b0"
+    },
+    {
+      "symbol": "ARB",
+      "name": "Arbitrum (Portal from Arbitrum)",
+      "transferCount": 0,
+      "uniqueId": "asset_registry/bdd77127fd8b77743e86708cfe820db1f6bc5c91",
+      "coingeckoId": "arbitrum",
+      "coingeckoName": "Arbitrum",
+      "coingeckoSymbol": "arb",
+      "confidence": 0.831
+    },
+    {
+      "symbol": "LP-aSEED/LKSM",
+      "name": "LP-aSEED/LKSM",
+      "transferCount": 1,
+      "uniqueId": "asset_registry/ba8170bc444bee5e3e82dd743a75725aec3ad807"
+    },
+    {
+      "symbol": "RMRK",
+      "name": "RMRK",
+      "transferCount": 30582,
+      "uniqueId": "asset_registry/b94c58ff9cd092353ff3d8901c310559fd04a4d1",
+      "coingeckoId": "rmrk",
+      "coingeckoName": "RMRK",
+      "coingeckoSymbol": "rmrk",
+      "confidence": 1
+    },
+    {
+      "symbol": "LP-KAR/aSEED",
+      "name": "LP-KAR/aSEED",
+      "transferCount": 1,
+      "uniqueId": "asset_registry/b3e97b98b34a2181344e0d864db93edd81aa71d3"
+    },
+    {
+      "symbol": "LP-TAI/tKSM",
+      "name": "LP-TAI/tKSM",
+      "transferCount": 0,
+      "uniqueId": "asset_registry/b18f4e1ae4cd6f0dabdfe4544256b577442b4c11"
+    },
+    {
+      "symbol": "MOVR",
+      "name": "Moonriver",
+      "transferCount": 5,
+      "uniqueId": "asset_registry/aabd49a83097fcee603183944eb72799fb174841",
+      "coingeckoId": "moonriver",
+      "coingeckoName": "Moonriver",
+      "coingeckoSymbol": "movr",
+      "confidence": 1
+    },
+    {
+      "symbol": "LT",
+      "name": "Listen",
+      "transferCount": 0,
+      "uniqueId": "asset_registry/943dc6b4ffbcc80821c8c6ae1e6d0090fa888d24"
+    },
+    {
+      "symbol": "CSM",
+      "name": "Crust Shadow Native Token",
+      "transferCount": 41208,
+      "uniqueId": "asset_registry/9342c47a8e13146e524a9074dd00c48ca8086e69",
+      "coingeckoId": "crust-storage-market",
+      "coingeckoName": "Crust Shadow",
+      "coingeckoSymbol": "csm",
+      "confidence": 0.894
+    },
+    {
+      "symbol": "USDCet",
+      "name": "USD Coin (Portal from Ethereum)",
+      "transferCount": 56402,
+      "uniqueId": "asset_registry/9236154e57bbee58727d531ae885f81b5d98375e",
+      "coingeckoId": "usd-coin-wormhole-from-ethereum",
+      "coingeckoName": "Bridged USD Coin (Wormhole Ethereum)",
+      "coingeckoSymbol": "usdcet",
+      "confidence": 0.858
+    },
+    {
+      "symbol": "TUR",
+      "name": "Turing",
+      "transferCount": 0,
+      "uniqueId": "asset_registry/915a78e03c87e4917f356937cc6488908106d9d0"
+    },
+    {
+      "symbol": "GENS",
+      "name": "Genshiro Native Token",
+      "transferCount": 0,
+      "uniqueId": "asset_registry/8b7e75b39d3ba0cd72510df1309d6141e06255e0"
+    },
+    {
+      "symbol": "KBTC",
+      "name": "Kintsugi Wrapped BTC",
+      "transferCount": 11839,
+      "uniqueId": "asset_registry/89d1b03b76f8d2efebe0ed27d6f576ecd02eec7e",
+      "coingeckoId": "kintsugi-btc",
+      "coingeckoName": "Kintsugi BTC",
+      "coingeckoSymbol": "kbtc",
+      "confidence": 0.9
+    },
+    {
+      "symbol": "HKO",
+      "name": "Heiko",
+      "transferCount": 3,
+      "uniqueId": "asset_registry/89a9f7b84fbb9caf06131cc002748b368017b85f"
+    },
+    {
+      "symbol": "BNBet",
+      "name": "Binance Coin (Portal from Ethereum)",
+      "transferCount": 13,
+      "uniqueId": "asset_registry/87e0ae2d9a7575ff45a557c738e14bd2ba043d33"
+    },
+    {
+      "symbol": "USDTet",
+      "name": "Tether USD (Portal from Ethereum)",
+      "transferCount": 0,
+      "uniqueId": "asset_registry/87a502fe226ad53d5b7a73e18f2b7446e8745212",
+      "coingeckoId": "tether",
+      "coingeckoSymbol": "usdt",
+      "coingeckoName": "Tether"
+    },
+    {
+      "symbol": "LINK",
+      "name": "Chainlink (Portal from Ethereum)",
+      "transferCount": 6,
+      "uniqueId": "asset_registry/83485c8becfb57d13bb5d3512d64652fbbe94e57",
+      "coingeckoId": "chainlink",
+      "coingeckoName": "Chainlink",
+      "coingeckoSymbol": "link",
+      "confidence": 0.841
+    },
+    {
+      "symbol": "BUSDbs",
+      "name": "Binance USD (Portal from BSC)",
+      "transferCount": 1,
+      "uniqueId": "asset_registry/82717026b4e0acd18bcc8e22de9d3c0cdcaf0a39",
+      "coingeckoId": "binance-usd",
+      "coingeckoName": "binance-usd",
+      "coingeckoSymbol": "BUSD"
+    },
+    {
+      "symbol": "LP-aSEED/PHA",
+      "name": "LP-aSEED/PHA",
+      "transferCount": 0,
+      "uniqueId": "asset_registry/81472f49854bee6f8dca681ff61f486212c2759c"
+    },
+    {
+      "symbol": "WETH",
+      "name": "Wrapped Ether (Portal from Ethereum)",
+      "transferCount": 11,
+      "uniqueId": "asset_registry/6d9e074607437c7a49591730aa0334785797f621",
+      "coingeckoId": "bridged-weth",
+      "coingeckoName": "Bridged WETH",
+      "coingeckoSymbol": "weth",
+      "confidence": 0.86
+    },
+    {
+      "symbol": "aSEED",
+      "name": "aUSD SEED",
+      "transferCount": 183981,
+      "uniqueId": "asset_registry/6509461e2e3c83d51b4252e89c94dad0ae53829a",
+      "coingeckoId": "ausd-seed-karura",
+      "coingeckoName": "aUSD SEED (Karura)",
+      "coingeckoSymbol": "aseed",
+      "confidence": 0.91
+    },
+    {
+      "symbol": "LP-KAR/USDCet",
+      "name": "LP-KAR/USDCet",
+      "transferCount": 47,
+      "uniqueId": "asset_registry/60c00655cba70fcdf5364d03b92e8d50235fb509"
+    },
+    {
+      "symbol": "LP-aSEED/AIR",
+      "name": "LP-aSEED/AIR",
+      "transferCount": 0,
+      "uniqueId": "asset_registry/5e54556d8a6cd98c1f486f4304d14cf092a109a9"
+    },
+    {
+      "symbol": "KINT",
+      "name": "Kintsugi Native Token",
+      "transferCount": 180535,
+      "uniqueId": "asset_registry/5712f317a4239c5f7ab0eec6064cc24221f290b5",
+      "coingeckoId": "kintsugi",
+      "coingeckoName": "Kintsugi",
+      "coingeckoSymbol": "kint",
+      "confidence": 0.868
+    },
+    {
+      "symbol": "tKSM",
+      "name": "Taiga KSM",
+      "transferCount": 29498,
+      "uniqueId": "asset_registry/55ff486ef5b51969c0b6624552f592dd1c6a1490"
+    },
+    {
+      "symbol": "QTZ",
+      "name": "Quartz",
+      "transferCount": 264507,
+      "uniqueId": "asset_registry/52d3258b10d977774a6e90e4e68ff7b6e6bd2293",
+      "coingeckoId": "quartz",
+      "coingeckoName": "Quartz",
+      "coingeckoSymbol": "qtz",
+      "confidence": 1
+    },
+    {
+      "symbol": "NEER",
+      "name": "Metaverse.Network Pioneer",
+      "transferCount": 39,
+      "uniqueId": "asset_registry/4d883980df470183645c630bfe6799cb59e28f22"
+    },
+    {
+      "symbol": "KICO",
+      "name": "KICO",
+      "transferCount": 0,
+      "uniqueId": "asset_registry/42ba4be6b0ae6390e1d17f607c077801efed60c7"
+    },
+    {
+      "symbol": "KSM",
+      "name": "Kusama",
+      "transferCount": 605243,
+      "uniqueId": "asset_registry/42143ac2073520066e25b865fbf26a7fe57b9715",
+      "coingeckoId": "kusama",
+      "coingeckoName": "Kusama",
+      "coingeckoSymbol": "ksm",
+      "confidence": 1
+    },
+    {
+      "symbol": "LP-aSEED/CSM",
+      "name": "LP-aSEED/CSM",
+      "transferCount": 0,
+      "uniqueId": "asset_registry/3eb0bd05111c41ae7cce651ebe8261842aad6baa"
+    },
+    {
+      "symbol": "EQD",
+      "name": "Equilibrium USD",
+      "transferCount": 0,
+      "uniqueId": "asset_registry/3e6e3844735ed8728df14fc35ac2cc55cb509507"
+    },
+    {
+      "symbol": "LP-aSEED/QTZ",
+      "name": "LP-aSEED/QTZ",
+      "transferCount": 0,
+      "uniqueId": "asset_registry/3adbacaaa55e60692d05f5927e45a5ef5dcd00b3"
+    },
+    {
+      "symbol": "LP-aSEED/KBTC",
+      "name": "LP-aSEED/KBTC",
+      "transferCount": 1,
+      "uniqueId": "asset_registry/38fd5e3ca42d28a2f0dafa46c0294163b4bea893"
+    },
+    {
+      "symbol": "LKSM",
+      "name": "Liquid KSM",
+      "transferCount": 236685,
+      "uniqueId": "asset_registry/3604609c5e75e0ef4cc5c81dce5b8eb6fefbe114",
+      "coingeckoId": "liquid-ksm",
+      "coingeckoName": "Liquid KSM",
+      "coingeckoSymbol": "lksm",
+      "confidence": 1
+    },
+    {
+      "symbol": "waUSD",
+      "name": "Acala Dollar (Portal)",
+      "transferCount": 1,
+      "uniqueId": "asset_registry/355b062d90c8a5d4168caa8d99dd9ff4b8eb44cc"
+    },
+    {
+      "symbol": "MATICet",
+      "name": "MATIC (Portal from Ethereum)",
+      "transferCount": 7,
+      "uniqueId": "asset_registry/307835108dddd7ae55e50e1c4688b3f65e796621"
+    },
+    {
+      "symbol": "VSKSM",
+      "name": "Bifrost Voucher Slot KSM",
+      "transferCount": 8,
+      "uniqueId": "asset_registry/2d3034bdc162683d85f2a66745d34b298ab97634"
+    },
+    {
+      "symbol": "WBTC",
+      "name": "Wrapped BTC (Portal from Ethereum)",
+      "transferCount": 6,
+      "uniqueId": "asset_registry/2b167b79546010367a2d7c9c32b0c4ac607da271",
+      "coingeckoId": "wrapped-btc-wormhole",
+      "coingeckoName": "Wrapped BTC (Wormhole)",
+      "coingeckoSymbol": "wbtc",
+      "confidence": 0.836
+    },
+    {
+      "symbol": "SDN",
+      "name": "Shiden Native Token",
+      "transferCount": 6,
+      "uniqueId": "asset_registry/2aff316c06380d24c457558c92bd089096705e92",
+      "coingeckoId": "shiden",
+      "coingeckoName": "Shiden Network",
+      "coingeckoSymbol": "sdn",
+      "confidence": 0.85
+    },
+    {
+      "symbol": "LP-KSM/RMRK",
+      "name": "LP-KSM/RMRK",
+      "transferCount": 0,
+      "uniqueId": "asset_registry/286557797d8f1bedb6f9af30ac176fcfd4f90806"
+    },
+    {
+      "symbol": "LP-KAR/LKSM",
+      "name": "LP-KAR/LKSM",
+      "transferCount": 5,
+      "uniqueId": "asset_registry/27e8e595b76be0313276d2f1b4a66bb362ae03ef"
+    },
+    {
+      "symbol": "BSX",
+      "name": "Basilisk",
+      "transferCount": 22,
+      "uniqueId": "asset_registry/2478b65e80766869c1ad938aa3ae20d6f527b0b1",
+      "coingeckoId": "basilisk",
+      "coingeckoName": "Basilisk",
+      "coingeckoSymbol": "bsx",
+      "confidence": 1
+    },
+    {
+      "symbol": "PCHU",
+      "name": "Pichiu",
+      "transferCount": 1,
+      "uniqueId": "asset_registry/23bc60e99103041867c71cc65d7e580391a377ff",
+      "coingeckoId": "ponzichu",
+      "coingeckoName": "Ponzichu",
+      "coingeckoSymbol": "pchu",
+      "confidence": 0.8
+    },
+    {
+      "symbol": "BNB",
+      "name": "Binance Coin (Portal from BSC)",
+      "transferCount": 0,
+      "uniqueId": "asset_registry/22b583aa840e3e02abda0451a14123d272d01fc2",
+      "coingeckoId": "binance-coin-wormhole",
+      "coingeckoName": "Binance Coin (Wormhole)",
+      "coingeckoSymbol": "bnb",
+      "confidence": 0.861
+    },
+    {
+      "symbol": "LP-KSM/LKSM",
+      "name": "LP-KSM/LKSM",
+      "transferCount": 1,
+      "uniqueId": "asset_registry/1ea2baad4c20e352f4f8f9a364254e6f3f767178"
+    },
+    {
+      "symbol": "PHA",
+      "name": "Phala Native Token",
+      "transferCount": 34096,
+      "uniqueId": "asset_registry/1d634bde9a0b197bfafc3493df89fd73cece0979",
+      "coingeckoId": "pha",
+      "coingeckoName": "PHALA",
+      "coingeckoSymbol": "pha",
+      "confidence": 0.826
+    },
+    {
+      "symbol": "LP-KAR/QTZ",
+      "name": "LP-KAR/QTZ",
+      "transferCount": 0,
+      "uniqueId": "asset_registry/1909eab360cef613407cbf5579135c4fce0526d4"
+    },
+    {
+      "symbol": "TEER",
+      "name": "Integritee Trusted Execution Environment",
+      "transferCount": 2,
+      "uniqueId": "asset_registry/15130413755b6bafe734e70a26fb8b24eba0dc27",
+      "coingeckoId": "integritee",
+      "coingeckoName": "Integritee",
+      "coingeckoSymbol": "teer",
+      "confidence": 0.82
+    },
+    {
+      "symbol": "LP-aSEED/BNC",
+      "name": "LP-aSEED/BNC",
+      "transferCount": 1,
+      "uniqueId": "asset_registry/1299b7b821eeb8d6a5c1cc0e33f3795addbe7773"
+    },
+    {
+      "symbol": "LP-KAR/KSM",
+      "name": "LP-KAR/KSM",
+      "transferCount": 11,
+      "uniqueId": "asset_registry/11fbe82a55b423af80fb7ca6434af6203a27e779"
+    },
+    {
+      "symbol": "USDT",
+      "name": "Tether USD",
+      "transferCount": 28785,
+      "uniqueId": "asset_registry/11bf06ab60b3b2ecb8588e40b230123689bf359a",
+      "coingeckoId": "tether",
+      "coingeckoName": "Tether",
+      "coingeckoSymbol": "usdt",
+      "confidence": 0.931
+    },
+    {
+      "symbol": "ARIS",
+      "name": "PolarisDAO",
+      "transferCount": 46444,
+      "uniqueId": "asset_registry/0275355923b57e21b8ec1ae90139e353a6a64417"
+    },
+    {
+      "symbol": "CRAB",
+      "name": "Crab Parachain Token",
+      "transferCount": 2,
+      "uniqueId": "asset_registry/005766f32105258910e55fd870562ffeb185669f",
+      "coingeckoId": "crab",
+      "coingeckoName": "CRAB",
+      "coingeckoSymbol": "crab",
+      "confidence": 0.79
+    },
+    {
+      "symbol": "TAI",
+      "name": "Taiga",
+      "transferCount": 39445,
+      "uniqueId": "asset_registry/f27c0736695f617f58eea0f33f27bb7a9e169663"
+    }
+  ]
+}

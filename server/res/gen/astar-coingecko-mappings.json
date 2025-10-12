@@ -1,0 +1,424 @@
+{
+  "mappings": [
+    {
+      "symbol": "ASTR",
+      "name": "ASTR",
+      "transferCount": 0,
+      "uniqueId": "ASTR",
+      "coingeckoId": "astar",
+      "coingeckoName": "Astar",
+      "coingeckoSymbol": "astr",
+      "confidence": 0.871
+    },
+    {
+      "symbol": "xcATOM",
+      "name": "Cosmos Hub",
+      "transferCount": 23,
+      "uniqueId": "standard_assets/100002",
+      "coingeckoId": "cosmos",
+      "coingeckoName": "Cosmos Hub",
+      "coingeckoSymbol": "atom",
+      "confidence": 1
+    },
+    {
+      "symbol": "CLV",
+      "name": "Clover Finance",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/18446744073709551625",
+      "coingeckoId": "clover-finance",
+      "coingeckoName": "Clover Finance",
+      "coingeckoSymbol": "clv",
+      "confidence": 1
+    },
+    {
+      "symbol": "DOT",
+      "name": "Polkadot",
+      "transferCount": 290595,
+      "uniqueId": "standard_assets/340282366920938463463374607431768211455",
+      "coingeckoId": "polkadot",
+      "coingeckoName": "Polkadot",
+      "coingeckoSymbol": "dot",
+      "confidence": 1
+    },
+    {
+      "symbol": "GLMR",
+      "name": "Glimmer",
+      "transferCount": 2973,
+      "uniqueId": "standard_assets/18446744073709551619"
+    },
+    {
+      "symbol": "USDC",
+      "name": "USD Coin",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/4294969281",
+      "coingeckoId": "usd-coin",
+      "coingeckoName": "USDC",
+      "coingeckoSymbol": "usdc",
+      "confidence": 0.9
+    },
+    {
+      "symbol": "RING",
+      "name": "Darwinia Native Token",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/18446744073709551627",
+      "coingeckoId": "darwinia-network-native-token",
+      "coingeckoName": "RingDAO",
+      "coingeckoSymbol": "ring",
+      "confidence": 0.75
+    },
+    {
+      "symbol": "EQ",
+      "name": "Equilibrium Native Token",
+      "transferCount": 2,
+      "uniqueId": "standard_assets/18446744073709551628",
+      "coingeckoId": "equilibrium-token",
+      "coingeckoName": "Equilibrium",
+      "coingeckoSymbol": "eq",
+      "confidence": 0.894
+    },
+    {
+      "symbol": "xcPEN",
+      "name": "Pendulum",
+      "transferCount": 2,
+      "uniqueId": "standard_assets/18446744073709551634",
+      "coingeckoId": "pendulum-chain",
+      "coingeckoName": "Pendulum",
+      "coingeckoSymbol": "pen",
+      "confidence": 1
+    },
+    {
+      "symbol": "XLM.s",
+      "name": "Stellar Lumen",
+      "transferCount": 1,
+      "uniqueId": "standard_assets/18446744073709551635",
+      "coingeckoId": "stellar",
+      "coingeckoName": "Stellar",
+      "coingeckoSymbol": "xlm",
+      "confidence": 0.772
+    },
+    {
+      "symbol": "EURC.s",
+      "name": "Stellar EURC",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/18446744073709551636"
+    },
+    {
+      "symbol": "vGLMR",
+      "name": "Voucher GLMR",
+      "transferCount": 2,
+      "uniqueId": "standard_assets/18446744073709551637",
+      "coingeckoId": "voucher-glmr",
+      "coingeckoName": "Voucher GLMR",
+      "coingeckoSymbol": "vglmr",
+      "confidence": 1
+    },
+    {
+      "symbol": "vMANTA",
+      "name": "Voucher MANTA",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/18446744073709551638",
+      "coingeckoId": "bifrost-voucher-manta",
+      "coingeckoName": "Bifrost Voucher MANTA",
+      "coingeckoSymbol": "vmanta",
+      "confidence": 0.928
+    },
+    {
+      "symbol": "FIL",
+      "name": "Filecoin Network Token",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/18446744073709551639",
+      "coingeckoId": "filecoin",
+      "coingeckoName": "Filecoin",
+      "coingeckoSymbol": "fil",
+      "confidence": 0.862
+    },
+    {
+      "symbol": "vASTR",
+      "name": "Voucher ASTR",
+      "transferCount": 21678,
+      "uniqueId": "standard_assets/18446744073709551632",
+      "coingeckoId": "bifrost-voucher-astr",
+      "coingeckoName": "Bifrost Voucher ASTR",
+      "coingeckoSymbol": "vastr",
+      "confidence": 0.922
+    },
+    {
+      "symbol": "PINK",
+      "name": "PINK",
+      "transferCount": 14900,
+      "uniqueId": "standard_assets/18446744073709551633",
+      "coingeckoId": "pink",
+      "coingeckoName": "Pink",
+      "coingeckoSymbol": "pink",
+      "confidence": 1
+    },
+    {
+      "symbol": "HDX",
+      "name": "HydraDX",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/18446744073709551630",
+      "coingeckoId": "hydradx",
+      "coingeckoName": "Hydration",
+      "coingeckoSymbol": "hdx",
+      "confidence": 0.871
+    },
+    {
+      "symbol": "IBTC",
+      "name": "interBTC",
+      "transferCount": 747,
+      "uniqueId": "standard_assets/18446744073709551620",
+      "coingeckoId": "interbtc",
+      "coingeckoName": "interBTC",
+      "coingeckoSymbol": "ibtc",
+      "confidence": 1
+    },
+    {
+      "symbol": "BNC",
+      "name": "Bifrost Native Coin",
+      "transferCount": 13885,
+      "uniqueId": "standard_assets/18446744073709551623",
+      "coingeckoId": "bifrost-native-coin",
+      "coingeckoName": "Bifrost",
+      "coingeckoSymbol": "bnc",
+      "confidence": 0.864
+    },
+    {
+      "symbol": "USDT",
+      "name": "Tether USD",
+      "transferCount": 381035,
+      "uniqueId": "standard_assets/4294969280",
+      "coingeckoId": "tether",
+      "coingeckoName": "Tether",
+      "coingeckoSymbol": "usdt",
+      "confidence": 0.931
+    },
+    {
+      "symbol": "ACA",
+      "name": "Acala",
+      "transferCount": 5510,
+      "uniqueId": "standard_assets/18446744073709551616",
+      "coingeckoId": "acala",
+      "coingeckoName": "Acala",
+      "coingeckoSymbol": "aca",
+      "confidence": 1
+    },
+    {
+      "symbol": "xcINJ",
+      "name": "Injective",
+      "transferCount": 3619,
+      "uniqueId": "standard_assets/100001",
+      "coingeckoId": "injective-protocol",
+      "coingeckoName": "Injective",
+      "coingeckoSymbol": "inj",
+      "confidence": 1
+    },
+    {
+      "symbol": "vDOT",
+      "name": "Voucher DOT",
+      "transferCount": 17839,
+      "uniqueId": "standard_assets/18446744073709551624",
+      "coingeckoId": "voucher-dot",
+      "coingeckoName": "Voucher DOT",
+      "coingeckoSymbol": "vdot",
+      "confidence": 1
+    },
+    {
+      "symbol": "PHA",
+      "name": "Phala Token",
+      "transferCount": 10121,
+      "uniqueId": "standard_assets/18446744073709551622",
+      "coingeckoId": "pha",
+      "coingeckoName": "PHALA",
+      "coingeckoSymbol": "pha",
+      "confidence": 0.885
+    },
+    {
+      "symbol": "UNQ",
+      "name": "Unique Network",
+      "transferCount": 4631,
+      "uniqueId": "standard_assets/18446744073709551631",
+      "coingeckoId": "unique-network",
+      "coingeckoName": "Unique Network",
+      "coingeckoSymbol": "unq",
+      "confidence": 1
+    },
+    {
+      "symbol": "INTR",
+      "name": "INTR",
+      "transferCount": 17986,
+      "uniqueId": "standard_assets/18446744073709551621",
+      "coingeckoId": "interlay",
+      "coingeckoName": "Interlay",
+      "coingeckoSymbol": "intr",
+      "confidence": 0.82
+    },
+    {
+      "symbol": "lish",
+      "name": "lishay",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/669"
+    },
+    {
+      "symbol": "ALGM",
+      "name": "Algem",
+      "transferCount": 10,
+      "uniqueId": "standard_assets/1323"
+    },
+    {
+      "symbol": "ASTR",
+      "name": "love",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/1324"
+    },
+    {
+      "symbol": "MASTR",
+      "name": "love",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/1325"
+    },
+    {
+      "symbol": "aASTR",
+      "name": "aASTR",
+      "transferCount": 4,
+      "uniqueId": "standard_assets/1326"
+    },
+    {
+      "symbol": "CHAI",
+      "name": "UNCHAIN",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/1327"
+    },
+    {
+      "symbol": "ALGM",
+      "name": "Algem",
+      "transferCount": 13,
+      "uniqueId": "standard_assets/1328"
+    },
+    {
+      "symbol": "PPC",
+      "name": "puripuricoin",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/1329"
+    },
+    {
+      "symbol": "MMC",
+      "name": "MochiMochiCoin",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/1330"
+    },
+    {
+      "symbol": "sDOT",
+      "name": "stakedDOT",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/1331"
+    },
+    {
+      "symbol": "sDOT",
+      "name": "sDOT",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/1332"
+    },
+    {
+      "symbol": "ASTR",
+      "name": "love",
+      "transferCount": 1,
+      "uniqueId": "standard_assets/1333"
+    },
+    {
+      "symbol": "TOK",
+      "name": "Token",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/1334"
+    },
+    {
+      "symbol": "MDOT",
+      "name": "Mock Polkadot",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/1335"
+    },
+    {
+      "symbol": "TDOT",
+      "name": "Test Polkadot",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/1336"
+    },
+    {
+      "symbol": "XC20",
+      "name": "DEMOASSET",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/1337"
+    },
+    {
+      "symbol": "TST",
+      "name": "TestToken",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/1338"
+    },
+    {
+      "symbol": "TST",
+      "name": "test token",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/1339"
+    },
+    {
+      "symbol": "MAR",
+      "name": "Mario",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/9999"
+    },
+    {
+      "symbol": "lish",
+      "name": "lishay",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/13245"
+    },
+    {
+      "symbol": "CUBO",
+      "name": "VirtoCubo",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/862812"
+    },
+    {
+      "symbol": "VSC",
+      "name": "VirtoSwapCash",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/868367"
+    },
+    {
+      "symbol": "LDOT",
+      "name": "Liquid DOT",
+      "transferCount": 4,
+      "uniqueId": "standard_assets/18446744073709551618"
+    },
+    {
+      "symbol": "vsDOT",
+      "name": "Voucher Slot DOT",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/18446744073709551626"
+    },
+    {
+      "symbol": "EQD",
+      "name": "Equilibrium USD",
+      "transferCount": 11005,
+      "uniqueId": "standard_assets/18446744073709551629"
+    },
+    {
+      "symbol": "vFIL",
+      "name": "Voucher FIL",
+      "transferCount": 0,
+      "uniqueId": "standard_assets/18446744073709551640"
+    },
+    {
+      "symbol": "GAME",
+      "name": "GameDAO",
+      "transferCount": 177,
+      "uniqueId": "standard_assets/18446744073709551641"
+    },
+    {
+      "symbol": "aSEED",
+      "name": "aUSD SEED",
+      "transferCount": 8248,
+      "uniqueId": "standard_assets/18446744073709551617"
+    }
+  ]
+}

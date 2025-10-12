@@ -1,0 +1,144 @@
+{
+  "mappings": [
+    {
+      "symbol": "BSX",
+      "name": "",
+      "transferCount": 0,
+      "uniqueId": "asset_registry/fb96549631c835eb239cd614cc6b5cb7d295121a",
+      "coingeckoId": "basilisk",
+      "coingeckoName": "basilisk",
+      "coingeckoSymbol": "bsx",
+      "confidence": 1
+    },
+    {
+      "symbol": "wBTC",
+      "name": "",
+      "transferCount": 0,
+      "uniqueId": "asset_registry/e7001334d9d19559a8bb0dd6015f16e31d15566c",
+      "coingeckoId": "wrapped-bitcoin",
+      "coingeckoName": "Wrapped Bitcoin",
+      "coingeckoSymbol": "wbtc",
+      "confidence": 1
+    },
+    {
+      "symbol": "KSM",
+      "name": "",
+      "transferCount": 137275,
+      "uniqueId": "asset_registry/ddfe163345d338193ac2bdc183f8e9dcff904b43",
+      "coingeckoId": "kusama",
+      "coingeckoName": "Kusama",
+      "coingeckoSymbol": "ksm",
+      "confidence": 1
+    },
+    {
+      "symbol": "USDT",
+      "name": "",
+      "transferCount": 24858,
+      "uniqueId": "asset_registry/c24c173dae0e230c94ab301f276b5ad1366e71c1",
+      "coingeckoId": "tether",
+      "coingeckoName": "Tether",
+      "coingeckoSymbol": "usdt",
+      "confidence": 1
+    },
+    {
+      "symbol": "DAI",
+      "name": "",
+      "transferCount": 0,
+      "uniqueId": "asset_registry/7c12b5f75af904d7adffb56a0611ab308d8698c4",
+      "coingeckoId": "dai",
+      "coingeckoName": "dai",
+      "coingeckoSymbol": "dai",
+      "confidence": 1
+    },
+    {
+      "symbol": "TNKR",
+      "name": "",
+      "transferCount": 117836,
+      "uniqueId": "asset_registry/7316b3d5fef9b3562d32f7c39f154a3bc3ab9c58",
+      "coingeckoId": "tinkernet",
+      "coingeckoName": "Tinkernet",
+      "coingeckoSymbol": "tnkr",
+      "confidence": 1
+    },
+    {
+      "symbol": "QTZ",
+      "name": "",
+      "transferCount": 0,
+      "uniqueId": "asset_registry/6274ffa5fc725b14117efd415c065ced8d3c5587",
+      "coingeckoId": "quartz",
+      "coingeckoName": "Quartz",
+      "coingeckoSymbol": "qtz",
+      "confidence": 1
+    },
+    {
+      "symbol": "USDCet",
+      "name": "",
+      "transferCount": 2,
+      "uniqueId": "asset_registry/4b581cdce6283495fd4934ce574ac47e92881c64",
+      "coingeckoId": "usd-coin-wormhole-from-ethereum",
+      "coingeckoName": "Bridged USD Coin (Wormhole Ethereum)",
+      "coingeckoSymbol": "usdcet",
+      "confidence": 1
+    },
+    {
+      "symbol": "wETH",
+      "name": "",
+      "transferCount": 0,
+      "uniqueId": "asset_registry/47ab9979443fb7ed1c193d06773333ba7876094f",
+      "coingeckoId": "arbitrum-bridged-weth-arbitrum-nova",
+      "coingeckoName": "Arbitrum Bridged WETH (Arbitrum Nova)",
+      "coingeckoSymbol": "weth",
+      "confidence": 1
+    },
+    {
+      "symbol": "XRT",
+      "name": "",
+      "transferCount": 18135,
+      "uniqueId": "asset_registry/399fcd69b06a4f8e2ba3ec7fb9cb3c6d3dc687a8",
+      "coingeckoId": "robonomics-network",
+      "coingeckoName": "Robonomics Network",
+      "coingeckoSymbol": "xrt",
+      "confidence": 1
+    },
+    {
+      "symbol": "TEER",
+      "name": "",
+      "transferCount": 2471,
+      "uniqueId": "asset_registry/1a0092b5af6d86bcb51d99bec0cffdbc19824481",
+      "coingeckoId": "integritee",
+      "coingeckoName": "Integritee",
+      "coingeckoSymbol": "teer",
+      "confidence": 1
+    },
+    {
+      "symbol": "CGT",
+      "name": "",
+      "transferCount": 0,
+      "uniqueId": "asset_registry/f38e1bcab2b7a9b4ea5fa8403af6f8891d5d1115"
+    },
+    {
+      "symbol": "XON",
+      "name": "",
+      "transferCount": 0,
+      "uniqueId": "asset_registry/d11dc2a1c4265f6f4f24eaf2393803c6eefccd40"
+    },
+    {
+      "symbol": "wUSDT",
+      "name": "",
+      "transferCount": 0,
+      "uniqueId": "asset_registry/c4a2d99bc28d236098a095277b7eb0718d6be068"
+    },
+    {
+      "symbol": "aUSD",
+      "name": "",
+      "transferCount": 8595,
+      "uniqueId": "asset_registry/bcac9d1d8eab3713ae489224d0130c9468e7a0e3"
+    },
+    {
+      "symbol": "BAJU",
+      "name": "",
+      "transferCount": 209,
+      "uniqueId": "asset_registry/6495e9a03887911b82a0d07eb98fe970be6990d7"
+    }
+  ]
+}
