@@ -102,9 +102,9 @@
         </div>
 
         <!-- CTA -->
-        <q-intersection transition="fade" once>
-          <div class="content-wrapper text-center">
-            <div class="q-pa-xl cta text-white">
+        <div class="features-section content-wrapper">
+          <div class="section-title text-center">
+            <div class="bg-grey-1">
               <div class="text-h6 q-mb-sm">
                 Ready to Simplify Your Crypto Taxes?
               </div>
@@ -112,17 +112,15 @@
                 Use PolkaTax for accurate, compliant tax reporting.
               </p>
               <q-btn
-                label="Get Started for Free"
-                color="white"
-                text-color="primary"
+                label="Launch app"
+                color="primary"
                 size="lg"
-                class="launchbutton"
                 data-testid="launch-button2"
                 to="/wallets"
               />
             </div>
           </div>
-        </q-intersection>
+        </div>
 
         <!-- FOOTER -->
         <AppFooter />
@@ -197,10 +195,6 @@ const features = [
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
 }
 
-a:hover.launchbutton {
-  color: rgba(230, 0, 122, 0.8) !important;
-}
-
 .q-card {
   transition: all 0.3s ease;
   border-radius: 20px;
@@ -223,13 +217,6 @@ a:hover.launchbutton {
 .hover-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
-}
-
-.cta {
-  background: linear-gradient(to right, #ec4899, #8b5cf6);
-  border-radius: 16px;
-  padding: 2rem;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
 }
 
 a {
