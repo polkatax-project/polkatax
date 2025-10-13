@@ -1,40 +1,38 @@
 <template>
-  <q-header elevated class="text-white gradient-bg" height-hint="98">
+  <q-header height-hint="98" class="bg-grey-1">
     <q-toolbar class="flex justify-between">
       <!-- Left section: Logo or Back button + title -->
       <div class="row items-center q-py-xs" style="min-width: 250px">
         <a href="/"
-          ><img src="/white.ico" class="header-logo" v-if="!parentRoute"
+          ><img src="/favicon.ico" class="header-logo" v-if="!parentRoute"
         /></a>
         <q-btn
           class="q-mr-sm"
           v-if="parentRoute"
           outline
-          color="white"
+          color="black"
           label="Back"
           :to="parentRoute"
         />
         <div
-          class="text-h5 text-no-wrap ellipsis text-bold"
+          class="text-h5 text-no-wrap ellipsis text-bold text-black"
           data-testid="title"
         >
           {{ route.name }}
         </div>
       </div>
 
-      <!-- Center section: Tabs -->
-      <div class="col-grow flex justify-center">
+      <!-- Right section: Currency dropdown -->
+      <div class="row items-center text-black">
         <q-tabs align="left" class="desktop-only">
           <q-route-tab to="/wallets" label="Wallets" />
           <q-route-tab to="/tutorial-faq" label="Tutorial & FAQ" />
         </q-tabs>
-      </div>
 
-      <!-- Right section: Currency dropdown -->
-      <div class="row items-center">
         <q-btn
           flat
           dense
+          color="black"
           round
           icon="settings"
           aria-label="Settings"

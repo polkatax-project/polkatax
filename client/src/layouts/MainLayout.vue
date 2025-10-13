@@ -1,5 +1,5 @@
 <template>
-  <q-layout view="hHh lpR fFf">
+  <q-layout view="hHh lpR fFf" class="bg-grey-1">
     <AppHeader show-bread-crumbs />
     <q-page-container style="min-height: 70vh">
       <router-view />
@@ -16,10 +16,8 @@
         </q-card-actions>
       </q-card>
     </q-dialog>
-    <q-footer elevated>
-      <AppFooter />
-    </q-footer>
   </q-layout>
+  <AppFooter />
 </template>
 
 <script setup lang="ts">

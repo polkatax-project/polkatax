@@ -3,12 +3,12 @@
     <q-page-container>
       <q-page class="q-gutter-y-xl">
         <!-- HERO -->
-        <div class="gradient-bg">
+        <div class="bg-grey-1">
           <div class="flex items-center q-pa-sm">
-            <img src="white.ico" style="height: 3rem; margin: 5px" />
-            <div class="text-h5 text-bold text-white">PolkaTax</div>
+            <img src="favicon.ico" style="height: 3rem; margin: 5px" />
+            <div class="text-h5 text-bold">PolkaTax</div>
           </div>
-          <div class="q-pa-xl text-center text-white">
+          <div class="q-pa-xl text-center">
             <q-intersection transition="fade" once>
               <div class="text-h3 text-bold q-mb-md">
                 Simplify Your Substrate Tax Reporting
@@ -20,12 +20,10 @@
             </p>
             <q-btn
               label="Launch App"
-              color="white"
-              text-color="primary"
+              color="primary"
               size="lg"
               to="/wallets"
               data-testid="launch-button"
-              class="launchbutton"
             />
           </div>
         </div>
@@ -127,9 +125,7 @@
         </q-intersection>
 
         <!-- FOOTER -->
-        <div class="q-py-lg bg-grey-9">
-          <AppFooter />
-        </div>
+        <AppFooter />
       </q-page>
     </q-page-container>
   </q-layout>

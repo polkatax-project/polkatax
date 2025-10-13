@@ -1,8 +1,8 @@
 <template>
   <q-layout view="hHh lpR fFf">
     <AppHeader />
-    <q-page-container>
-      <q-page>
+    <q-page-container class="bg-grey-1">
+      <q-page class="bg-grey-1">
         <!-- TUTORIAL VIDEO -->
         <div style="max-width: 900px" class="q-mx-auto q-my-lg">
           <q-card
@@ -105,9 +105,7 @@
         </div>
       </q-page>
     </q-page-container>
-    <q-footer elevated>
-      <AppFooter />
-    </q-footer>
+    <AppFooter />
   </q-layout>
 </template>
 
