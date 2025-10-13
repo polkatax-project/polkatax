@@ -5,7 +5,12 @@
       <div>Wallet: {{ route.params.wallet }}</div>
       <div>Time frame: {{ taxData?.fromDate }} - {{ taxData?.toDate }}</div>
     </div>
-    <q-tabs v-model="tab" active-color="primary" indicator-color="primary">
+    <q-tabs
+      v-model="tab"
+      active-color="primary"
+      indicator-color="primary"
+      class="bg-grey-1"
+    >
       <q-tab name="events" icon="receipt_long" label="All Taxable Events">
       </q-tab>
       <q-tab
@@ -29,16 +34,16 @@
     </q-tabs>
     <q-separator />
     <q-tab-panels v-model="tab" animated>
-      <q-tab-panel name="events">
+      <q-tab-panel name="events" class="bg-grey-1">
         <TaxableEventsTable />
         <AssetMovementSummaryTable />
       </q-tab-panel>
 
-      <q-tab-panel name="rewards">
+      <q-tab-panel name="rewards" class="bg-grey-1">
         <StakingRewards />
       </q-tab-panel>
 
-      <q-tab-panel name="portfolio">
+      <q-tab-panel name="portfolio" class="bg-grey-1">
         <PortfolioTable />
       </q-tab-panel>
     </q-tab-panels>

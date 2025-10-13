@@ -40,14 +40,12 @@ const routes: RouteRecordRaw[] = [
       {
         path: '',
         redirect: 'wallets',
-        meta: { breadcrumbs: [breadcrumbs.wallets] },
       },
       {
         name: 'Wallets',
         path: 'wallets',
         component: () =>
           import('src/wallets-module/components/WalletsDashboard.vue'),
-        meta: { breadcrumbs: [breadcrumbs.wallets] },
       },
       {
         name: 'Connected Blockchains',
