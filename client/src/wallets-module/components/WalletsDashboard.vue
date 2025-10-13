@@ -44,35 +44,6 @@
     </div>
 
     <div class="q-my-md" v-if="wallets && wallets.length > 0">
-      <div class="flex items-center justify-center">
-      <q-card class="q-mb-lg q-pa-lg">
-        <q-card-section>
-          <div
-            class="flex justify-center align-center items-center row-xl row-md row-lg row-sm column-xs"
-          >
-            <q-btn
-              color="primary"
-              label="Connect Wallet"
-              data-testid="submit"
-              @click="showWalletSelectionDialog = true"
-            />
-            <div class="q-mx-md">OR</div>
-            <address-input
-              v-model="store.address"
-              @enter-pressed="startSyncing"
-            />
-            <q-btn
-              color="primary"
-              label="Add"
-              class="q-ml-lg-xs q-ml-md-xs q-ml-xl-xs q-ml-sm-xs q-mt-xs-xs"
-              data-testid="submit"
-              @click="startSyncing"
-              :disable="isDisabled"
-            />
-          </div>
-        </q-card-section>
-      </q-card>
-      </div>
       <q-table
         :rows="wallets"
         :columns="columns"
@@ -141,7 +112,21 @@
           </q-tr>
         </template>
       </q-table>
+      <div class="q-my-sm">
+        <q-btn
+          rounded
+          label="Add wallet"
+          icon="add"
+          data-testid="submit"
+          @click="showAddWalletDialog = true"
+        />
+      </div>
     </div>
+    <add-wallet
+      v-model:show-dialog="showAddWalletDialog"
+      @show-wallet-selection-dialog="showWalletSelectionDialog = true"
+      @add-wallet="startSyncing"
+    />
     <wallet-selection v-model:show-dialog="showWalletSelectionDialog" />
   </q-page>
 </template>
@@ -153,6 +138,7 @@ import { computed, onMounted, onUnmounted, Ref, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useSharedStore } from '../../shared-module/store/shared.store';
 import { isValidAddress } from '../../shared-module/util/is-valid-address';
+import AddWallet from './add-wallet/AddWallet.vue';
 import WalletSelection from './wallet-selection/WalletSelection.vue';
 import { useQuasar } from 'quasar';
 import { JobResult } from '../../shared-module/model/job-result';
@@ -167,6 +153,7 @@ const wallets: Ref<WalletRow[] | undefined> = ref(undefined);
 
 const walletAddresses: Ref<string[]> = ref([]);
 const showWalletSelectionDialog = ref(false);
+const showAddWalletDialog = ref(false);
 
 let walletAddressesSub: Subscription;
 let jobsSubscription: Subscription;
@@ -235,7 +222,7 @@ async function startSyncing() {
     if (tooManyWallets) {
       showMaxWalletsReachedNotif($q);
     } else {
-      store.address = ''
+      store.address = '';
     }
   }
 }

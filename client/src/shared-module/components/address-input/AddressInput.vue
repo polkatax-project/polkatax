@@ -22,7 +22,7 @@
         v-slot:hint
       >
         <div class="text-caption text-grey-7 hint">
-          Hint: Results are shown using the default address format ({{
+          Addresses shown in default format ({{
             convertToCanonicalAddress(props.modelValue.trim()).substring(0, 4)
           }}...)
         </div>
