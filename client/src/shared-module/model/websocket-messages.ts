@@ -7,7 +7,7 @@ export interface WebSocketOutGoingMessage {
     currency: string;
     blockchains?: string[];
     syncFromDate: number;
-    syncUntilDate: number;
+    syncUntilDate?: number;
   };
 }
 

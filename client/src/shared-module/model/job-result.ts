@@ -3,7 +3,7 @@ import { TaxData } from './tax-data';
 
 export interface JobResult {
   wallet: string;
-  syncUntilDate: number;
+  syncUntilDate?: number;
   currency: string;
   error?: any;
   data?: TaxData;

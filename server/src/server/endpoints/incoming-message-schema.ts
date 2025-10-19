@@ -8,7 +8,6 @@ export const WalletInfoSchema = z.object({
   currency: z.string(),
   blockchains: z.array(z.string()).optional(),
   syncFromDate: z.number(),
-  syncUntilDate: z.number(),
 });
 
 export const WebSocketIncomingMessageSchema = z.object({

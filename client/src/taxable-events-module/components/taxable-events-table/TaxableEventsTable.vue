@@ -23,15 +23,10 @@
           <div class="text-h6">Taxable events</div>
           <div class="flex justify-between">
             <div>
-              <q-btn
-                color="primary"
-                class="q-mr-sm"
-                data-testid="csvExport"
-                @click="csvExport"
+              <q-btn class="q-mr-sm" data-testid="csvExport" @click="csvExport"
                 >Export CSV
               </q-btn>
               <q-btn
-                color="primary"
                 class="q-mr-sm"
                 data-testid="koinlyExport"
                 @click="koinlyExport"

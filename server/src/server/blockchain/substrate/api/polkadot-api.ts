@@ -175,7 +175,8 @@ export class PolkadotApi {
       native?: boolean;
     }[]
   > {
-    const values = await (this.apiAt?.call?.currenciesApi?.accounts !== undefined
+    const values = await (this.apiAt?.call?.currenciesApi?.accounts !==
+    undefined
       ? this.getCurrenciesBalance(address, assets)
       : this.getTokenBalances(address, assets));
     const nativeBalance = await this.getNativeTokenBalance(address);

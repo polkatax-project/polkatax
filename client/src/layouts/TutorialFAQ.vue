@@ -171,7 +171,7 @@ const faqItems = computed(() => [
   {
     question: 'What kind of data is shown or exported?',
     answer:
-      'The application currently displays and exports staking rewards, transfers, swaps, liquid token minting, and more from multiple Substrate-based chains for the previous year.',
+      'The application currently displays and exports staking rewards, transfers, swaps, liquid token minting, and more from multiple Substrate-based chains.',
   },
   {
     question: 'Can I export specific parts of my data?',
@@ -181,7 +181,12 @@ const faqItems = computed(() => [
   {
     question: 'Why do some tokens show a cost basis of $0 in Koinly?',
     answer:
-      'PolkaTax currently only exports data from the previous year. This means tokens you acquired before that year are not included in the CSV, and tax software like Koinly may assume you received them for $0, which inflates reported gains. To fix this, you can manually create a deposit in Koinly for each token you already held at the start of the year by going to your wallet, clicking "Add Transaction" → "Deposit", setting the date to the first day of the tax year, entering the number of tokens you held at that time, and providing the original purchase price in fiat currency. This way, Koinly knows these tokens were already owned and calculates gains correctly when you later sell or transfer them.',
+      'PolkaTax currently only exports data starting from beginning of 2024. This means tokens you acquired before that year are not included in the CSV, and tax software like Koinly may assume you received them for $0, which inflates reported gains. To fix this, you can manually create a deposit in Koinly for each token you already held at the start of the year by going to your wallet, clicking "Add Transaction" → "Deposit", setting the date to the first day of the tax year, entering the number of tokens you held at that time, and providing the original purchase price in fiat currency. This way, Koinly knows these tokens were already owned and calculates gains correctly when you later sell or transfer them.',
+  },
+  {
+    question: 'Why isn’t the data up to date?',
+    answer:
+      'To maintain data accuracy, PolkaTax synchronizes information up to a recent point in the past (for example, about one month ago). This delay allows the system to correctly handle new blockchain features or special events, such as the AssetHub migration, before processing the latest data.',
   },
   {
     question:
