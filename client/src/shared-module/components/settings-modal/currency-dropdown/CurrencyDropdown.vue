@@ -1,6 +1,6 @@
 <template>
   <div>
-    <q-btn-dropdown style="background-color: #dc5cf6">
+    <q-btn-dropdown>
       <template v-slot:label>
         <div :style="{ opacity: currency ? 1 : 0 }">
           <span v-html="currency?.flag ?? '&#x1F1FA;&#x1F1F8;'" />

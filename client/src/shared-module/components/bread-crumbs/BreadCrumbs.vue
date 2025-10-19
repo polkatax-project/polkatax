@@ -1,14 +1,14 @@
 <template>
-  <q-breadcrumbs class="text-white text-lg text-lg" active-color="white">
+  <q-breadcrumbs class="text-lg text-lg" active-color="black">
     <template v-slot:separator>
-      <q-icon size="1.5em" name="chevron_right" color="white" />
+      <q-icon size="1.5em" name="chevron_right" color="black" />
     </template>
     <q-breadcrumbs-el
       v-for="breadcrumb in breadcrumbs"
       :data-testid="'breadcrumb-' + breadcrumb.label"
       v-bind:key="breadcrumb.label"
       :label="breadcrumb.label"
-      class="text-white"
+      class="text-black"
       style="font-size: 1rem"
       :to="breadcrumb.route"
     />

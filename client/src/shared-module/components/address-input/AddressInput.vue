@@ -2,11 +2,10 @@
   <div class="row items-center">
     <q-input
       class="address-input"
-      filled
       no-error-icon
       :model-value="props.modelValue"
       @update:model-value="onAddressChanged"
-      label="Enter Wallet address"
+      label="Paste wallet address"
       data-testid="wallet-input"
       @keyup.enter="onEnterPressed"
       aria-describedby="wallet-info-tooltip"
@@ -23,23 +22,10 @@
         v-slot:hint
       >
         <div class="text-caption text-grey-7 hint">
-          Hint: All results are shown using the canonical address format. ({{
+          Addresses shown in default format ({{
             convertToCanonicalAddress(props.modelValue.trim()).substring(0, 4)
           }}...)
         </div>
-      </template>
-      <template v-slot:after>
-        <q-icon name="info" aria-describedby="wallet-info-tooltip">
-          <q-tooltip
-            anchor="top middle"
-            self="bottom middle"
-            :offset="[10, 10]"
-            class="text-body2"
-          >
-            Copy the wallet address from your browser extension and paste it
-            here
-          </q-tooltip>
-        </q-icon>
       </template>
     </q-input>
   </div>
