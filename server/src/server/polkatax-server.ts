@@ -82,6 +82,9 @@ export const polkataxServer = {
       registerXcmEndpoint(fastify, DIContainer);
     }
 
+    fastify.server.headersTimeout = 120_000; 
+    fastify.server.requestTimeout = 120_000;
+
     fastify.listen(
       { port: Number(process.env["PORT"] || 3001), host: "0.0.0.0" },
       (err) => {
