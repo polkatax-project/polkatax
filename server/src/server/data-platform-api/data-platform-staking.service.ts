@@ -9,6 +9,7 @@ import { StakingResultsDetailed } from "./model/staking-results";
 import { toSubscanExtrinsixIndex } from "./helper/to-subscan-extrinsic-id";
 import { parseCETDate } from "./helper/parse-cet-date";
 import { StakingReward } from "../blockchain/substrate/model/staking-reward";
+import { formatDate } from "../../common/util/date-utils";
 
 function endOfDayUTC(dateStr: string): number {
   const dateTimeStr = `${dateStr}T23:59:59.999Z`;
@@ -24,15 +25,19 @@ export class DataPlatformStakingService {
   async fetchStakingRewardsForChain(
     address: string,
     chain: string,
-    minDate: string = `${new Date().getUTCFullYear() - 1}-01-01`,
-    maxDate: string = `${new Date().getUTCFullYear() - 1}-12-31`,
+    minDate: number,
+    maxDate: number = Date.now(),
   ): Promise<StakingReward[]> {
     logger.info(`Entry fetchStakingRewards for ${address} and chain ${chain}`);
+    const oneDay = 24 * 3600 * 60 * 1000;
+    const minDateFormatted = formatDate(new Date(minDate - oneDay));
+    const maxDateFormatted = formatDate(new Date(maxDate + oneDay));
+
     const { stakingResults, chainSlashes } = await this.fetchRewards(
       address,
       chain,
-      minDate,
-      maxDate,
+      minDateFormatted,
+      maxDateFormatted,
     );
     const rewards = await this.mapToDataPlatformStakingRewards(
       address,

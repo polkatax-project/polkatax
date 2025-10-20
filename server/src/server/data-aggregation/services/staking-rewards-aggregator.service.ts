@@ -40,6 +40,8 @@ export class StakingRewardsAggregatorService {
       await this.dataPlatformStakingService.fetchStakingRewardsForChain(
         stakingRewardsRequest.address,
         stakingRewardsRequest.chain.domain,
+        stakingRewardsRequest.minDate,
+        stakingRewardsRequest.maxDate
       );
     return rewards;
   }
