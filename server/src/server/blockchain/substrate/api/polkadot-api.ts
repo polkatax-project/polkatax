@@ -175,6 +175,39 @@ export class PolkadotApi {
       native?: boolean;
     }[]
   > {
+    const values = await (this.apiAt?.call?.currenciesApi?.accounts !==
+    undefined
+      ? this.getCurrenciesBalance(address, assets)
+      : this.getTokenBalances(address, assets));
+    const nativeBalance = await this.getNativeTokenBalance(address);
+    const nativeToken = assets.find((a) => a.native);
+
+    if (nativeToken) {
+      const decMul = 10 ** nativeToken.decimals;
+      values.push({
+        asset_unique_id: nativeToken.unique_id,
+        symbol: nativeToken.symbol,
+        balance: nativeBalance / decMul,
+        native: true,
+      });
+    } else {
+      logger.warn("No native token in portfolio of " + address);
+    }
+
+    return values;
+  }
+
+  async getTokenBalances(
+    address: string,
+    assets: Asset[],
+  ): Promise<
+    {
+      asset_unique_id: string;
+      symbol: string;
+      balance: number;
+      native?: boolean;
+    }[]
+  > {
     function convert(balanceInfo: Record<string, any>): {
       asset_unique_id: string;
       symbol: string;
@@ -204,24 +237,38 @@ export class PolkadotApi {
       return tokenBalances;
     }
 
-    const values = convert(
-      await this.apiAt.query.tokens.accounts.entries(address),
-    );
-    const nativeBalance = await this.getNativeTokenBalance(address);
-    const nativeToken = assets.find((a) => a.native);
+    return convert(await this.apiAt.query.tokens.accounts.entries(address));
+  }
 
-    if (nativeToken) {
-      const decMul = 10 ** nativeToken.decimals;
-      values.push({
-        asset_unique_id: nativeToken.unique_id,
-        symbol: nativeToken.symbol,
-        balance: nativeBalance / decMul,
-        native: true,
-      });
-    } else {
-      logger.warn("No native token in portfolio of " + address);
-    }
-
-    return values;
+  async getCurrenciesBalance(
+    address: string,
+    assets: Asset[],
+  ): Promise<
+    {
+      asset_unique_id: string;
+      symbol: string;
+      balance: number;
+      native?: boolean;
+    }[]
+  > {
+    const balanceInfo = (await this.apiAt.call.currenciesApi.accounts(
+      address,
+    )) as any;
+    return Object.values(balanceInfo.toJSON())
+      .map((value) => {
+        const token = assets.find((a) => a.token_id === value[0]);
+        if (!token) {
+          return;
+        }
+        return {
+          asset_unique_id: token.unique_id,
+          symbol: token.symbol,
+          balance:
+            (Number(BigInt(value[1].free) ?? 0n) +
+              Number(BigInt(value[1].reserved) ?? 0)) /
+            10 ** token.decimals,
+        };
+      })
+      .filter((t) => !!t);
   }
 }

@@ -1,5 +1,5 @@
 <template>
-  <q-btn-dropdown color="primary" label="Always hide tokens">
+  <q-btn-dropdown label="Always hide tokens">
     <div v-for="token in hiddenTokens" v-bind:key="token.name">
       <q-checkbox
         :model-value="token.value"

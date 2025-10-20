@@ -1,5 +1,5 @@
 <template>
-  <q-btn-dropdown color="primary" label="Transaction type">
+  <q-btn-dropdown label="Transaction type">
     <div
       v-for="filter in Object.entries(eventTypeFilter)"
       v-bind:key="filter[0]"

@@ -1,5 +1,5 @@
 <template>
-  <q-btn-dropdown color="primary" label="Only show transfers with...">
+  <q-btn-dropdown label="Only show transfers with...">
     <div v-for="token in tokenFilter" v-bind:key="token.name">
       <q-checkbox
         :model-value="token.value"

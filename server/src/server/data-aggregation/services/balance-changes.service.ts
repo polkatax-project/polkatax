@@ -17,6 +17,7 @@ import { PortfolioMovement } from "../model/portfolio-movement";
 import {
   extractAddress,
   getPropertyValue,
+  mapKeyToCanonicalAddress,
 } from "./special-event-processing/helper";
 import isEqual from "lodash.isequal";
 
@@ -61,7 +62,6 @@ export class BalanceChangesService {
       transactions,
       portfolioMovements,
     );
-
     const tokens = await this.subscanService.scanTokensAndAssets(
       request.chain.domain,
     );
@@ -91,6 +91,20 @@ export class BalanceChangesService {
       await this.fetchHydrationReferralsClaimed(
         request.chain.domain,
         request.chain.token,
+        subscanEvents,
+        transactions,
+        portfolioMovements,
+      );
+      await this.fetchHydrationBroadcastSwapped3(
+        request.chain.domain,
+        subscanEvents,
+        transactions,
+        portfolioMovements,
+        tokens,
+      );
+      await this.fetchCurrencyMovements(
+        request.chain,
+        request.address,
         subscanEvents,
         transactions,
         portfolioMovements,
@@ -148,6 +162,74 @@ export class BalanceChangesService {
           undefined,
           amount,
         );
+      }
+    });
+  }
+
+  private async fetchHydrationBroadcastSwapped3(
+    chain: string,
+    subscanEvents: SubscanEvent[],
+    transactions: TransactionDetails[],
+    portfolioMovements: PortfolioMovement[],
+    assets: Asset[],
+  ) {
+    const eventDetails = await this.fetchMissingEventDetails(
+      chain,
+      subscanEvents,
+      transactions,
+      "broadcast",
+      ["Swapped3", "Swapped2"],
+    );
+    eventDetails.forEach((event) => {
+      const transfers =
+        portfolioMovements.find(
+          (p) => p.extrinsic_index === event.extrinsic_index,
+        )?.transfers || [];
+
+      const address = extractAddress("swapper", event);
+
+      const inputs = getPropertyValue("inputs", event) ?? 0;
+      for (const input of inputs) {
+        const token = assets.find((a) => a.token_id === input.asset);
+        const amount = -(input.amount / 10 ** token.decimals);
+        const movementExists = transfers.find(
+          (t) =>
+            t.asset_unique_id === token.unique_id &&
+            isVeryCloseTo(t.amount, amount),
+        );
+        if (!movementExists) {
+          this.update(
+            portfolioMovements,
+            event,
+            token.symbol,
+            token.unique_id,
+            undefined,
+            address,
+            amount,
+          );
+        }
+      }
+
+      const outputs = getPropertyValue("outputs", event) ?? 0;
+      for (const output of outputs) {
+        const token = assets.find((a) => a.token_id === output.asset);
+        const amount = output.amount / 10 ** token.decimals;
+        const movementExists = transfers.find(
+          (t) =>
+            t.asset_unique_id === token.unique_id &&
+            isVeryCloseTo(t.amount, amount),
+        );
+        if (!movementExists) {
+          this.update(
+            portfolioMovements,
+            event,
+            token.symbol,
+            token.unique_id,
+            address,
+            undefined,
+            amount,
+          );
+        }
       }
     });
   }
@@ -361,6 +443,81 @@ export class BalanceChangesService {
     }
     logger.info(
       `Exit BalancesChangesService.fetchBalanceMovements for ${chain.domain} and ${address}} with ${eventDetails.length} entries`,
+    );
+  }
+
+  async fetchCurrencyMovements(
+    chain: { domain: string; token: string },
+    address: string,
+    events: SubscanEvent[],
+    transactions: TransactionDetails[],
+    portfolioMovements: PortfolioMovement[],
+  ): Promise<void> {
+    logger.info(
+      `Entry BalancesChangesService.fetchCurrencyMovements for ${chain.domain} and ${address}. SubscanEvents: ${events.length}`,
+    );
+    const assets = await this.subscanService.scanTokens(chain.domain);
+    const eventDetails = await this.fetchMissingEventDetails(
+      chain.domain,
+      events,
+      transactions,
+      "currencies",
+      ["Withdrawn", "Deposited", "Transferred"],
+    );
+    for (const event of eventDetails) {
+      const assetId = getPropertyValue("currency_id", event);
+      const asset = assets.find((a) => a.token_id == assetId);
+      if (!asset || asset.asset_id === chain.token) {
+        continue;
+      }
+      let amount = 0;
+      let to = undefined;
+      let from = undefined;
+      switch (event.event_id) {
+        case "Withdrawn":
+          amount -= getPropertyValue("amount", event) * 10 ** -asset.decimals;
+          from = address;
+          break;
+        case "Deposited":
+          to = address;
+          amount += getPropertyValue("amount", event) * 10 ** -asset.decimals;
+          break;
+        case "Transferred":
+          to = mapKeyToCanonicalAddress(getPropertyValue("to", event));
+          from = mapKeyToCanonicalAddress(getPropertyValue("from", event));
+          amount =
+            (to === address ? 1 : -1) *
+            getPropertyValue("amount", event) *
+            10 ** -asset.decimals;
+          break;
+        default:
+          continue;
+      }
+      const existingTransfers =
+        portfolioMovements.find(
+          (p) => p.extrinsic_index === event.extrinsic_index,
+        )?.transfers ?? [];
+      const existsAlready = existingTransfers.find(
+        (t) =>
+          t.to === to &&
+          t.from === from &&
+          isVeryCloseTo(amount, t.amount) &&
+          t.asset_unique_id === asset.unique_id,
+      );
+      if (!existsAlready) {
+        this.update(
+          portfolioMovements,
+          event,
+          asset.symbol,
+          asset.unique_id,
+          to,
+          from,
+          amount,
+        );
+      }
+    }
+    logger.info(
+      `Exit BalancesChangesService.fetchCurrencyMovements for ${chain.domain} and ${address}} with ${eventDetails.length} entries`,
     );
   }
 

@@ -187,12 +187,11 @@ export const useSharedStore = defineStore('shared', {
             wallet: canonicaAddress,
             currency: currency,
             syncFromDate: getBeginningOfLastYear(),
-            syncUntilDate: getEndOfLastYear(),
           },
         });
       }
       this.addWallets(canonicaAddresses);
-      const jobs = await firstValueFrom(jobs$);
+      const jobs: JobResult[] = await firstValueFrom(jobs$);
       const walletsWithoutJobs = canonicaAddresses.filter(
         (a) => !jobs.find((j) => j.wallet === a)
       );
@@ -204,7 +203,6 @@ export const useSharedStore = defineStore('shared', {
           status: 'pending',
           lastModified: new Date().getTime(),
           syncFromDate: getBeginningOfLastYear(),
-          syncUntilDate: getEndOfLastYear(),
         };
       });
       jobs.push(...dummyJobs);

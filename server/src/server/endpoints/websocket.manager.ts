@@ -12,12 +12,11 @@ import { convertToCanonicalAddress } from "../../common/util/convert-to-canonica
 import { isValidEvmAddress } from "../../common/util/is-valid-address";
 import * as subscanChains from "../../../res/gen/subscan-chains.json";
 import { createJobId } from "../job-management/helper/create-job-id";
-import {
-  getBeginningLastYear,
-  getEndOfLastYear,
-} from "../job-management/get-beginning-last-year";
+import { getBeginningLastYear } from "../job-management/get-beginning-last-year";
 import { Job } from "../../model/job";
 import { pruneJobResult } from "./helper/prune-jobs-results";
+
+const MAX_SYNC_DATE = new Date("2025-10-01T00:00:00.000Z").getTime();
 
 interface Subscription {
   jobId: string;
@@ -59,13 +58,9 @@ export class WebSocketManager {
     socket: WebSocket,
     msg: WebSocketIncomingMessage,
   ): Promise<void> {
-    const { wallet, currency, blockchains, syncFromDate, syncUntilDate } =
-      msg.payload;
+    const { wallet, currency, blockchains, syncFromDate } = msg.payload;
 
-    if (
-      Math.abs(syncFromDate - getBeginningLastYear()) > 48 * 60 * 60 * 1000 ||
-      Math.abs(syncUntilDate - getEndOfLastYear()) > 48 * 60 * 60 * 1000
-    ) {
+    if (Math.abs(syncFromDate - getBeginningLastYear()) > 48 * 60 * 60 * 1000) {
       this.sendError(socket, {
         code: 400,
         msg: "Sync date invalid",
@@ -78,7 +73,7 @@ export class WebSocketManager {
       wallet,
       currency,
       syncFromDate,
-      syncUntilDate,
+      MAX_SYNC_DATE,
       blockchains,
     );
 
@@ -92,7 +87,7 @@ export class WebSocketManager {
     socket: WebSocket,
     msg: WebSocketIncomingMessage,
   ): Promise<void> {
-    const { wallet, currency, syncFromDate, syncUntilDate } = msg.payload;
+    const { wallet, currency, syncFromDate } = msg.payload;
     subscanChains.chains.forEach((chain) => {
       this.removeSubscription(socket, {
         wallet,
@@ -100,7 +95,7 @@ export class WebSocketManager {
           wallet,
           currency,
           syncFromDate,
-          syncUntilDate,
+          syncUntilDate: MAX_SYNC_DATE,
           blockchain: chain.domain,
         }),
       });
