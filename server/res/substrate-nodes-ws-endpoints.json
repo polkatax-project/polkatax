@@ -106,7 +106,6 @@
     "wss://nexus.ibp.network",
     "wss://nexus.dotters.network"
   ],
-  "integritee": ["wss://polkadot.api.integritee.network"],
   "logion": ["wss://para-rpc01.logion.network"],
   "nodle": [
     "wss://nodle-rpc.dwellir.com",
