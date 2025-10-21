@@ -15,6 +15,7 @@ import { ForeignAsset } from "../model/foreign-asset";
 import { Asset } from "../model/asset";
 import * as subscanChains from "../../../../../res/gen/subscan-chains.json";
 import { Account } from "../model/account";
+import { stripNullBytes } from "../../../../common/util/strip-null-bytes";
 
 export class SubscanService {
   constructor(private subscanApi: SubscanApi) {}
@@ -386,7 +387,7 @@ export class SubscanService {
     chainName: string,
   ): Promise<Account | undefined> {
     try {
-      return this.subscanApi.fetchAccount(address, chainName);
+      return stripNullBytes(this.subscanApi.fetchAccount(address, chainName));
     } catch (error) {
       return undefined;
     }
