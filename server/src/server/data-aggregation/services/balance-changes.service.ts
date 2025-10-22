@@ -12,6 +12,7 @@ import { TransactionDetails } from "../../blockchain/substrate/model/transaction
 import { logger } from "../../logger/logger";
 import { determineForeignAsset } from "../helper/determine-foreign-asset";
 import { extractAssethubAsset } from "../helper/extract-assethub-asset";
+import { applyTreasuryAwardedAdjustment } from "../helper/treasury-awarded-adjustement";
 import { FetchPortfolioMovementsRequest } from "../model/fetch-portfolio-movements.request";
 import { PortfolioMovement } from "../model/portfolio-movement";
 import {
@@ -80,7 +81,10 @@ export class BalanceChangesService {
       ...request,
     });
     transfers = transfers.filter(
-      (t) => t.timestamp >= request.minDate && t.timestamp <= request.maxDate,
+      (t) =>
+        t.timestamp >= request.minDate &&
+        t.timestamp <= request.maxDate &&
+        t.from !== t.to,
     );
     this.addToPortFolioMovements(portfolioMovements, transfers, isMyAccount);
 
@@ -114,6 +118,12 @@ export class BalanceChangesService {
     portfolioMovements = portfolioMovements.sort(
       (a, b) => a.timestamp - b.timestamp,
     );
+
+    /**
+     * Fix for 20390400-0. There's a deposit and transfer -> duplicate
+     */
+    applyTreasuryAwardedAdjustment(portfolioMovements, subscanEvents);
+
     logger.info(
       `Exit fetchAllBalanceChanges for ${request.chain.domain} and ${request.address} with ${portfolioMovements.length} entries`,
     );
