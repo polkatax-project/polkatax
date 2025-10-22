@@ -409,7 +409,14 @@ export class BalanceChangesService {
       events,
       transactions,
       "balances",
-      ["Withdraw", "Burned", "Deposit", "Minted", "ReserveRepatriated"],
+      [
+        "Withdraw",
+        "Burned",
+        "Deposit",
+        "Minted",
+        "ReserveRepatriated",
+        "Slashed",
+      ],
     );
     const nativeToken = await this.subscanService.fetchNativeToken(
       chain.domain,
@@ -422,6 +429,7 @@ export class BalanceChangesService {
       switch (event.event_id) {
         case "Withdraw":
         case "Burned":
+        case "Slashed":
           amount -= getPropertyValue("amount", event) * 10 ** -decimals;
           from = address;
           break;

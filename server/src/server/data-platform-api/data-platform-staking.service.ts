@@ -6,15 +6,13 @@ import { SubscanService } from "../blockchain/substrate/api/subscan.service";
 import * as subscanChains from "../../../res/gen/subscan-chains.json";
 import { ChainSlashes } from "./model/chain-slashes";
 import { StakingResultsDetailed } from "./model/staking-results";
-import { toSubscanExtrinsixIndex } from "./helper/to-subscan-extrinsic-id";
+import {
+  toSubscanEventIndex,
+  toSubscanExtrinsixIndex,
+} from "./helper/to-subscan-extrinsic-id";
 import { parseCETDate } from "./helper/parse-cet-date";
 import { StakingReward } from "../blockchain/substrate/model/staking-reward";
 import { formatDate } from "../../common/util/date-utils";
-
-function endOfDayUTC(dateStr: string): number {
-  const dateTimeStr = `${dateStr}T23:59:59.999Z`;
-  return new Date(dateTimeStr).getTime();
-}
 
 export class DataPlatformStakingService {
   constructor(
@@ -85,21 +83,29 @@ export class DataPlatformStakingService {
     nominationPoolRewards.forEach((r) => rewards.push(r));
 
     const slashToTransfer = (slash: {
-      totalAmount;
-      executionDate;
+      eventId?: string;
+      amount?: number;
+      blockNumber?: number;
+      blockTimestamp?: string;
+      executionDate?: string;
+      totalAmount?: number;
     }): StakingReward => {
       return {
         provenance: "dataPlatformApi" as const,
-        timestamp: endOfDayUTC(slash.executionDate),
-        block: undefined, // TODO: set block and extrinsic index if available
-        extrinsic_index: undefined, // TODO: set block and extrinsic index if available
+        timestamp: parseCETDate(slash.executionDate ?? slash.blockTimestamp),
+        block: slash.blockNumber,
+        extrinsic_index: slash.blockNumber
+          ? slash.blockNumber + "-0"
+          : undefined,
         symbol,
-        amount: -BigNumber(slash.totalAmount)
+        amount: -BigNumber(slash.totalAmount ?? slash.amount)
           .multipliedBy(10 ** -token.token_decimals)
           .toNumber(),
         asset_unique_id: symbol,
         hash: undefined,
-        event_index: undefined,
+        event_index: slash.eventId
+          ? toSubscanEventIndex(slash.eventId)
+          : undefined,
       };
     };
     (chainSlashes?.balanceSlashingResults || []).forEach((slash) => {

@@ -41,7 +41,7 @@ export class StakingRewardsAggregatorService {
         stakingRewardsRequest.address,
         stakingRewardsRequest.chain.domain,
         stakingRewardsRequest.minDate,
-        stakingRewardsRequest.maxDate
+        stakingRewardsRequest.maxDate,
       );
     return rewards;
   }

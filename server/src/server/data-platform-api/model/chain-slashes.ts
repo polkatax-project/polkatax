@@ -2,8 +2,12 @@ export interface ChainSlashes {
   chainType: string;
   stakingSlashingResults: [
     {
-      executionDate: string;
-      totalAmount: number;
+      blockNumber: number;
+      blockTimestamp: string;
+      eventId: string;
+      amount: number;
+      executionDate?: string;
+      totalAmount?: number;
     },
   ];
   balanceSlashingResults: [
