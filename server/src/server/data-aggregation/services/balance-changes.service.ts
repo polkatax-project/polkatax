@@ -115,6 +115,14 @@ export class BalanceChangesService {
       );
     }
 
+    await this.fetchDelegatedStakingMigratedDelegation(
+      request.chain,
+      request.address,
+      subscanEvents,
+      transactions,
+      portfolioMovements,
+    );
+
     portfolioMovements = portfolioMovements.sort(
       (a, b) => a.timestamp - b.timestamp,
     );
@@ -751,6 +759,58 @@ export class BalanceChangesService {
     }
     logger.info(
       `Exit BalancesChangesService.fetchTokenMovements for ${chain.domain} and ${address} with ${eventDetails.length} entries`,
+    );
+  }
+
+  async fetchDelegatedStakingMigratedDelegation(
+    chain: { domain: string; token: string },
+    address: string,
+    events: SubscanEvent[],
+    transactions: TransactionDetails[],
+    portfolioMovements: PortfolioMovement[],
+  ): Promise<void> {
+    logger.info(
+      `Entry BalancesChangesService.fetchDelegatedStakingMigratedDelegation for ${chain.domain} and ${address}. SubscanEvents: ${events.length}`,
+    );
+    const eventDetails = await this.fetchMissingEventDetails(
+      chain.domain,
+      events,
+      transactions,
+      "delegatedstaking",
+      ["MigratedDelegation", "Released"],
+    );
+    const nativeToken = await this.subscanService.fetchNativeToken(
+      chain.domain,
+    );
+    const decimals = nativeToken.token_decimals;
+    for (const event of eventDetails) {
+      let amount = 0;
+      let to = undefined;
+      let from = undefined;
+      switch (event.event_id) {
+        case "MigratedDelegation":
+          to = extractAddress("delegator", event);
+          amount = getPropertyValue("amount", event) * 10 ** -decimals;
+          break;
+        case "Released":
+          from = extractAddress("delegator", event);
+          amount = -getPropertyValue("amount", event) * 10 ** -decimals;
+          break;
+      }
+      if (to === address || from === address) {
+        this.update(
+          portfolioMovements,
+          event,
+          chain.token,
+          chain.token,
+          to,
+          from,
+          amount,
+        );
+      }
+    }
+    logger.info(
+      `Exit BalancesChangesService.fetchDelegatedStakingMigratedDelegation for ${chain.domain} and ${address}} with ${eventDetails.length} entries`,
     );
   }
 }
