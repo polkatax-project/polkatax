@@ -12,6 +12,7 @@ import { TransactionDetails } from "../../blockchain/substrate/model/transaction
 import { logger } from "../../logger/logger";
 import { determineForeignAsset } from "../helper/determine-foreign-asset";
 import { extractAssethubAsset } from "../helper/extract-assethub-asset";
+import { readHydratinEvmLog } from "../helper/read-hydration-evm-log";
 import { applyTreasuryAwardedAdjustment } from "../helper/treasury-awarded-adjustement";
 import { FetchPortfolioMovementsRequest } from "../model/fetch-portfolio-movements.request";
 import { PortfolioMovement } from "../model/portfolio-movement";
@@ -107,6 +108,13 @@ export class BalanceChangesService {
         tokens,
       );
       await this.fetchCurrencyMovements(
+        request.chain,
+        request.address,
+        subscanEvents,
+        transactions,
+        portfolioMovements,
+      );
+      await this.fetchHydrationEvmLogs(
         request.chain,
         request.address,
         subscanEvents,
@@ -811,6 +819,128 @@ export class BalanceChangesService {
     }
     logger.info(
       `Exit BalancesChangesService.fetchDelegatedStakingMigratedDelegation for ${chain.domain} and ${address}} with ${eventDetails.length} entries`,
+    );
+  }
+
+  async fetchHydrationEvmLogs(
+    chain: { domain: string; token: string },
+    address: string,
+    events: SubscanEvent[],
+    transactions: TransactionDetails[],
+    portfolioMovements: PortfolioMovement[],
+  ): Promise<void> {
+    logger.info(
+      `Entry BalancesChangesService.fetchHydrationEvmLogs for ${chain.domain} and ${address}. SubscanEvents: ${events.length}`,
+    );
+    const eventDetails = transactions.flatMap((t) =>
+      t.event.filter((e) => e.module_id === "evm" && e.event_id === "Log"),
+    );
+    const tokens = await this.subscanService.scanTokens(chain.domain);
+    const hollar = tokens.find(
+      (t) =>
+        t.unique_id ===
+        "asset_registry/aac89c40628a35265f632940b678104349122a9f",
+    );
+    for (const event of eventDetails) {
+      try {
+        const data = readHydratinEvmLog(event);
+        if (data) {
+          const token =
+            tokens.find((t) => data.tokenId && t.token_id === data.tokenId) ??
+            (data.reserve === "0x531a654d1696ED52e7275A8cede955E82620f99a"
+              ? hollar
+              : undefined);
+          data.tokenSymbol = token?.symbol;
+          const correspondingAToken = tokens.find(
+            (t) => token.symbol && t.symbol === "a" + token.symbol,
+          );
+          const transfers =
+            portfolioMovements.find(
+              (p) => p.extrinsic_index === event.extrinsic_index,
+            )?.transfers || [];
+          const movementExists = (amount, someToken) =>
+            transfers.find(
+              (t) =>
+                t.asset_unique_id === someToken.unique_id &&
+                isVeryCloseTo(t.amount, amount),
+            );
+          switch (data.name) {
+            case "Supply":
+              const amount =
+                Math.abs(Number(data.amount)) *
+                10 ** -(correspondingAToken?.decimals ?? 1);
+              if (
+                correspondingAToken &&
+                !movementExists(amount, correspondingAToken)
+              ) {
+                this.update(
+                  portfolioMovements,
+                  event,
+                  correspondingAToken.symbol,
+                  correspondingAToken.unique_id,
+                  address,
+                  undefined,
+                  amount,
+                );
+              }
+              break;
+            case "Withdraw":
+              const withDrawAmount =
+                -Math.abs(Number(data.amount)) *
+                10 ** -(correspondingAToken?.decimals ?? 1);
+              if (
+                correspondingAToken &&
+                !movementExists(withDrawAmount, correspondingAToken)
+              ) {
+                this.update(
+                  portfolioMovements,
+                  event,
+                  correspondingAToken.symbol,
+                  correspondingAToken.unique_id,
+                  undefined,
+                  address,
+                  withDrawAmount,
+                );
+              }
+              break;
+            case "Borrow":
+              const borrowAount =
+                Math.abs(Number(data.amount)) * 10 ** -(token?.decimals ?? 1);
+              if (token && !movementExists(borrowAount, token)) {
+                this.update(
+                  portfolioMovements,
+                  event,
+                  token.symbol,
+                  token.unique_id,
+                  address,
+                  undefined,
+                  borrowAount,
+                );
+              }
+              break;
+            case "Repay":
+              const repayAmount =
+                -Math.abs(Number(data.amount)) * 10 ** -(token?.decimals ?? 1);
+              if (token && !movementExists(repayAmount, token)) {
+                this.update(
+                  portfolioMovements,
+                  event,
+                  token.symbol,
+                  token.unique_id,
+                  undefined,
+                  address,
+                  repayAmount,
+                );
+              }
+          }
+        }
+      } catch (error) {
+        logger.info(error);
+        // nothing to do.
+      }
+    }
+    logger.info(
+      `Entry BalancesChangesService.fetchHydrationEvmLogs for ${chain.domain} and ${address}.`,
     );
   }
 }
