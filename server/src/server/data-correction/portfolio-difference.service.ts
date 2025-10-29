@@ -125,7 +125,7 @@ export class PortfolioDifferenceService {
     this.assetsCache[minKey] = portfolioAtMinBlock;
 
     const maxKey = generateKey(
-      [chain.domain, address, minBlock],
+      [chain.domain, address, maxBlock],
       relevantTokens,
     );
     const portfolioAtMaxBlock =
