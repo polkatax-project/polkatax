@@ -14,6 +14,7 @@ import * as fs from "fs";
 import { Deviation } from "./model/deviation";
 import { DEVIATION_LIMITS } from "./const/deviation-limits";
 import { DeviationLimit } from "./model/deviation-limit";
+import { determineMinMaxBlock } from "../data-aggregation/helper/determine-min-max-block";
 
 export class PortfolioMovementCorrectionService {
   constructor(
@@ -51,44 +52,6 @@ export class PortfolioMovementCorrectionService {
       }
     });
     return deviationLimits;
-  }
-
-  async determineMinMaxBlock(
-    chainInfo: { domain: string; token: string },
-    portfolioMovements: PortfolioMovement[],
-    minDate: number,
-    maxDate: number,
-  ): Promise<{ blockMin: number; blockMax: number }> {
-    const FIVE_MINUTES = 5 * 60 * 60 * 1000;
-    // assuming ascending order by timestamp
-    const minBlockInData = (portfolioMovements[0] as PortfolioMovement)?.block;
-    const maxBlockInData = (
-      portfolioMovements[portfolioMovements.length - 1] as PortfolioMovement
-    )?.block;
-    const firstPortfolioMovmenetCloseToMinDate =
-      Math.abs(minDate - portfolioMovements[0].timestamp) < FIVE_MINUTES;
-    const lastPortfolioMovmenetCloseToMaxDate =
-      Math.abs(
-        maxDate - portfolioMovements[portfolioMovements.length - 1].timestamp,
-      ) < FIVE_MINUTES;
-
-    const blockMin =
-      minBlockInData > 0 && firstPortfolioMovmenetCloseToMinDate
-        ? minBlockInData - 1
-        : await this.blockTimeService.findBlock(
-            chainInfo.domain,
-            minDate + FIVE_MINUTES,
-            FIVE_MINUTES,
-          );
-    const blockMax =
-      maxBlockInData > 0 && lastPortfolioMovmenetCloseToMaxDate
-        ? maxBlockInData
-        : await this.blockTimeService.findBlock(
-            chainInfo.domain,
-            maxDate - FIVE_MINUTES,
-            FIVE_MINUTES,
-          );
-    return { blockMin, blockMax };
   }
 
   private async calculateDeviationWithRetry(
@@ -296,11 +259,12 @@ export class PortfolioMovementCorrectionService {
           )) || address;
       }
 
-      const { blockMin, blockMax } = await this.determineMinMaxBlock(
+      const { blockMin, blockMax } = await determineMinMaxBlock(
         chainInfo,
         portfolioMovements,
         minDate,
         maxDate,
+        this.blockTimeService,
       );
 
       const acceptedDeviations = await this.determineAdequateMaxDeviations();

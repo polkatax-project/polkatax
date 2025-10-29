@@ -7,6 +7,8 @@ import { StakingRewardsAggregatorService } from "./services/staking-rewards-aggr
 import { PortfolioMovementsService } from "./services/portfolio-movements.service";
 import { BalanceChangesService } from "./services/balance-changes.service";
 import { ReconciliationService } from "./services/reconciliation.service";
+import { AutoAccruingTokenService } from "./services/auto-accruing-token.service";
+import { PortfolioService } from "./services/portfolio.service";
 
 export const registerServices = (container: AwilixContainer) => {
   container.register({
@@ -20,5 +22,7 @@ export const registerServices = (container: AwilixContainer) => {
     cryptoCurrencyPricesService: asClass(CryptoCurrencyPricesService),
     fiatExchangeRateService: asClass(FiatExchangeRateService),
     portfolioMovementsService: asClass(PortfolioMovementsService),
+    portfolioService: asClass(PortfolioService),
+    autoAccruingTokenService: asClass(AutoAccruingTokenService),
   });
 };

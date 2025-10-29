@@ -25,4 +25,5 @@ export type Label =
   | "Account created"
   | "Reserve repatriated"
   | "DEX fee"
+  | "Interest payment"
   | "Transfer"; // transfer of an asset which doesn't fall in any of the other categories

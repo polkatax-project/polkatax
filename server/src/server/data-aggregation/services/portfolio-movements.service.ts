@@ -24,6 +24,7 @@ import { isEvmAddress } from "../helper/is-evm-address";
 import { simplifyAssetMovementsSemanticId } from "../helper/simplify-asset-movements";
 import { Account } from "../../blockchain/substrate/model/account";
 import { addLabelsAndSemanticIds } from "../helper/add-semantic-ids";
+import { AutoAccruingTokenService } from "./auto-accruing-token.service";
 
 export async function awaitPromisesAndLog<T>(
   promises: Promise<any>[],
@@ -58,6 +59,7 @@ export class PortfolioMovementsService {
     private dataPlatformLiquidStakingService: DataPlatformLiquidStakingService,
     private balanceChangesService: BalanceChangesService,
     private reconciliationService: ReconciliationService,
+    private autoAccruingTokenService: AutoAccruingTokenService,
   ) {}
 
   private validate(request: FetchPortfolioMovementsRequest) {
@@ -285,6 +287,20 @@ export class PortfolioMovementsService {
     portfolioMovements = simplifyAssetMovementsSemanticId(
       request.address,
       portfolioMovements,
+    );
+
+    portfolioMovements = portfolioMovements.sort(
+      (a, b) => a.timestamp - b.timestamp,
+    );
+    logger.info(
+      `PortfolioMovmentService: autoAccruingTokens for ${request.chain.domain} and wallet ${request.address}`,
+    );
+    await this.autoAccruingTokenService.adjust(
+      request.chain,
+      request.address,
+      portfolioMovements,
+      request.minDate,
+      request.maxDate,
     );
 
     logger.info(
