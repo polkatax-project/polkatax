@@ -97,7 +97,8 @@ export class PortfolioService {
   ): Promise<PortfolioEntry[]> {
     const tokens = (await this.subscanApi.scanTokens(chainInfo.domain))
       .filter((t) => t.currency_id !== chainInfo.token)
-      .filter((t) => !!t.symbol);
+      .filter((t) => !!t.symbol)
+      .filter((t) => !t.symbol.startsWith("vsBOND-DOT-")); // balance is always zero for these tokens!
 
     const nativeToken = await this.subscanApi.fetchNativeToken(
       chainInfo.domain,

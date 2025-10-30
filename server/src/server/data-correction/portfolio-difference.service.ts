@@ -155,7 +155,8 @@ export class PortfolioDifferenceService {
   ): Promise<PortfolioDifference[]> {
     const tokens = (await this.subscanApi.scanTokens(chainInfo.domain))
       .filter((t) => t.currency_id !== chainInfo.token)
-      .filter((t) => !!t.symbol);
+      .filter((t) => !!t.symbol)
+      .filter((t) => !t.symbol.startsWith("vsBOND-DOT-"));
 
     const nativeToken = await this.subscanApi.fetchNativeToken(
       chainInfo.domain,
