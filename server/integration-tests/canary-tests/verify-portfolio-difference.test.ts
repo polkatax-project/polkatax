@@ -84,6 +84,7 @@ const verifyPortfolioChanges = async (
       chain: chainInfo,
       address: address,
       currency: "USD",
+      maxDate: Date.now(),
       minDate: minDate.getTime(),
     })) as {
       portfolioMovements: PortfolioMovement[];
