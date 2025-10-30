@@ -178,6 +178,9 @@ export class AutoAccruingTokenService {
     if (autoAccruingTokens[chainInfo.domain] === undefined) {
       return;
     }
+    if (portfolioMovements.length === 0) {
+      return;
+    }
     if (isEvmAddress(address)) {
       address =
         (await this.subscanService.mapToSubstrateAccount(
