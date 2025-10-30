@@ -1,9 +1,6 @@
 import { SubscanApi } from "../blockchain/substrate/api/subscan.api";
-import { PolkadotApi } from "../blockchain/substrate/api/polkadot-api";
 import * as subscanChains from "../../../res/gen/subscan-chains.json";
-import { logger } from "../logger/logger";
-
-const POLKADOT_API_TIMEOUT = 30_000;
+import { PortfolioService } from "../data-aggregation/services/portfolio.service";
 
 export interface PortfolioDifference {
   symbol: string;
@@ -32,17 +29,16 @@ const generateKey = (shortElements: (string | number)[], obj?: any) => {
 };
 
 export class PortfolioDifferenceService {
-  private polkadotApi: PolkadotApi | undefined;
-
-  constructor(private subscanApi: SubscanApi) {}
+  constructor(
+    private subscanApi: SubscanApi,
+    private portfolioService: PortfolioService,
+  ) {}
 
   assetsCache: Record<
     string,
     {
       asset_unique_id: string;
-      symbol: string;
       balance: number;
-      native?: boolean;
     }[]
   > = {};
 
@@ -72,93 +68,6 @@ export class PortfolioDifferenceService {
       );
       return assetDiff;
     }
-  }
-
-  async fetchPortfolioAssets(
-    chain: string,
-    minBlock: number,
-    maxBlock: number,
-    address: string,
-    relevantTokens: {
-      unique_id: string;
-      symbol: string;
-      decimals: number;
-      asset_id: string;
-      native: boolean;
-    }[],
-  ) {
-    const key1 = generateKey(
-      [chain, address, minBlock],
-      relevantTokens.map((r) => r.unique_id),
-    );
-    const key2 = generateKey(
-      [chain, address, maxBlock],
-      relevantTokens.map((r) => r.unique_id),
-    );
-
-    const fetchAssetsViaApi = async (block: number, key: string) => {
-      const start = new Date();
-      this.polkadotApi = this.polkadotApi ?? new PolkadotApi(chain);
-      await this.polkadotApi.setApiAtWithTimeout(block, POLKADOT_API_TIMEOUT);
-      const portfolio = await this.polkadotApi.getAssetPortfolioWithTimeout(
-        address,
-        relevantTokens,
-        POLKADOT_API_TIMEOUT,
-      );
-      logger.debug(
-        `Fetched Portfolio in ${(new Date().getTime() - start.getTime()) / 1000} seconds`,
-      );
-      this.assetsCache[key] = portfolio;
-      return portfolio;
-    };
-
-    const portfolioAtMinBlock =
-      this.assetsCache[key1] ?? (await fetchAssetsViaApi(minBlock, key1));
-    const portfolioAtMaxBlock =
-      this.assetsCache[key2] ?? (await fetchAssetsViaApi(maxBlock, key2));
-    return { portfolioAtMinBlock, portfolioAtMaxBlock };
-  }
-
-  private async fetchPortfolios<T>(
-    domain: string,
-    minBlock: number,
-    maxBlock: number,
-    address: string,
-    tokens: T[],
-    getPortfolioFn: (
-      api: PolkadotApi,
-      address: string,
-      tokens: T[],
-    ) => Promise<
-      {
-        asset_unique_id: string;
-        symbol: string;
-        balance: number;
-        native?: boolean;
-      }[]
-    >,
-  ) {
-    const key1 = generateKey([domain, address, minBlock], tokens);
-    const key2 = generateKey([domain, address, maxBlock], tokens);
-
-    const fetchViaApi = async (block: number, key: string) => {
-      const start = new Date();
-      this.polkadotApi = this.polkadotApi ?? new PolkadotApi(domain);
-      await this.polkadotApi.setApiAtWithTimeout(block, POLKADOT_API_TIMEOUT);
-      const portfolio = await getPortfolioFn(this.polkadotApi, address, tokens);
-      logger.debug(
-        `Fetched Portfolio in ${(new Date().getTime() - start.getTime()) / 1000} seconds`,
-      );
-      this.assetsCache[key] = portfolio;
-      return portfolio;
-    };
-
-    const portfolioAtMinBlock =
-      this.assetsCache[key1] ?? (await fetchViaApi(minBlock, key1));
-    const portfolioAtMaxBlock =
-      this.assetsCache[key2] ?? (await fetchViaApi(maxBlock, key2));
-
-    return { portfolioAtMinBlock, portfolioAtMaxBlock };
   }
 
   private calculateDiffs<T extends { unique_id: string; asset_id: any }>(
@@ -195,48 +104,40 @@ export class PortfolioDifferenceService {
     minBlock: number,
     maxBlock: number,
   ): Promise<PortfolioDifference[]> {
-    const portfolioNow = await this.subscanApi.fetchAccountTokens(
-      chain.domain,
+    const relevantTokens = await this.portfolioService.fetchAssetsInPortfolio(
+      chain,
       address,
     );
-    const mergedPortfolio = [
-      ...(portfolioNow.builtin ?? []),
-      ...((portfolioNow.native ?? []).map((n) => ({ ...n, native: true })) ??
-        []),
-      ...(portfolioNow.assets ?? []),
-    ];
 
-    const relevantTokens = mergedPortfolio
-      .filter((b) => b.unique_id.startsWith("standard_assets/") || b.native)
-      .map((b) => ({
-        unique_id: b.unique_id,
-        symbol: b.symbol,
-        decimals: b.decimals,
-        asset_id: b.asset_id,
-        native: b.native,
-      }));
-
-    if (!relevantTokens.find((t) => t.native)) {
-      const nativeToken = await this.subscanApi.fetchNativeToken(chain.domain);
-      relevantTokens.push({
-        unique_id: chain.token,
-        symbol: chain.token,
-        decimals: nativeToken.token_decimals,
-        asset_id: chain.token,
-        native: true,
-      });
-    }
-
-    const { portfolioAtMinBlock, portfolioAtMaxBlock } =
-      await this.fetchPortfolios(
+    const minKey = generateKey(
+      [chain.domain, address, minBlock],
+      relevantTokens,
+    );
+    const portfolioAtMinBlock =
+      this.assetsCache[minKey] ??
+      (await this.portfolioService.fetchPortfolioByType(
         chain.domain,
         minBlock,
+        address,
+        relevantTokens,
+        "assets",
+      ));
+    this.assetsCache[minKey] = portfolioAtMinBlock;
+
+    const maxKey = generateKey(
+      [chain.domain, address, maxBlock],
+      relevantTokens,
+    );
+    const portfolioAtMaxBlock =
+      this.assetsCache[maxKey] ??
+      (await this.portfolioService.fetchPortfolioByType(
+        chain.domain,
         maxBlock,
         address,
         relevantTokens,
-        (api, addr, tokens) =>
-          api.getAssetPortfolioWithTimeout(addr, tokens, POLKADOT_API_TIMEOUT),
-      );
+        "assets",
+      ));
+    this.assetsCache[minKey] = portfolioAtMinBlock;
 
     return this.calculateDiffs(
       relevantTokens,
@@ -270,16 +171,25 @@ export class PortfolioDifferenceService {
       native: true,
     });
 
-    const { portfolioAtMinBlock, portfolioAtMaxBlock } =
-      await this.fetchPortfolios(
-        chainInfo.domain,
-        minBlock,
-        maxBlock,
+    const minKey = generateKey([chainInfo.domain, address, minBlock]);
+    const portfolioAtMinBlock =
+      this.assetsCache[minKey] ??
+      (await this.portfolioService.fetchTokenPortfolio(
+        chainInfo,
         address,
-        tokens,
-        (api, addr, toks) =>
-          api.getTokenPortfolioWithTimeout(addr, toks, POLKADOT_API_TIMEOUT),
-      );
+        minBlock,
+      ));
+    this.assetsCache[minKey] = portfolioAtMinBlock;
+
+    const maxKey = generateKey([chainInfo.domain, address, maxBlock]);
+    const portfolioAtMaxBlock =
+      this.assetsCache[maxKey] ??
+      (await this.portfolioService.fetchTokenPortfolio(
+        chainInfo,
+        address,
+        maxBlock,
+      ));
+    this.assetsCache[maxKey] = portfolioAtMaxBlock;
 
     return this.calculateDiffs(
       tokens,
@@ -290,9 +200,6 @@ export class PortfolioDifferenceService {
   }
 
   disconnectApi() {
-    if (this.polkadotApi) {
-      this.polkadotApi.disconnect();
-      this.polkadotApi = undefined;
-    }
+    this.portfolioService.disconnectApi();
   }
 }
