@@ -31,6 +31,18 @@ const knownChainProperties = [
   { domain: "centrifuge", tokenPallet: false },
   { domain: "altair", tokenPallet: false },
   { domain: "phala", excluded: true },
+  {
+    domain: "kusama",
+    standardStaking: true,
+    delegatedStaking: true,
+    stakingPallets: ["Staking", "DelegatedStaking"],
+  },
+  {
+    domain: "assethub-kusama",
+    standardStaking: true,
+    delegatedStaking: true,
+    stakingPallets: ["Staking", "DelegatedStaking"],
+  },
 ];
 
 const fetchParaChainIds = async (): Promise<

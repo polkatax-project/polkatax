@@ -24,6 +24,7 @@ export class ResponseCache {
     method,
     body?,
     cacheDurationInHours?: number,
+    apiKey?: string,
   ): Promise<T | null> {
     const key = this.fetchedDataRepository.generateCacheKey(url, method, body);
     if (this.pendingRequests[key]) {
@@ -45,7 +46,7 @@ export class ResponseCache {
     }
 
     try {
-      const json = await this.requestHelper.req(url, method, body);
+      const json = await this.requestHelper.req(url, method, body, apiKey);
       this.pendingRequests[key].next(json);
       await this.fetchedDataRepository.storeFetchedResult(
         url,

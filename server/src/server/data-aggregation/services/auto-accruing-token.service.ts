@@ -192,6 +192,6 @@ export class AutoAccruingTokenService {
       maxDate,
     );
     await this.addInterest(chainInfo, address, portfolioMovements, blocks);
-    this.portfolioService.disconnectApi()
+    this.portfolioService.disconnectApi();
   }
 }
