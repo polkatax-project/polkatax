@@ -1,4 +1,5 @@
 import { RequestHelper } from "../../common/util/request.helper";
+import { BalanceEvent } from "./model/balance-event";
 import { ChainSlashes } from "./model/chain-slashes";
 import { LiquidStakingMintedInfos } from "./model/liquid-staking-minted-infos";
 import { LiquidStakingRebondedInfos } from "./model/liquid-staking-rebonded-infos";
@@ -93,5 +94,24 @@ export class DataPlatformApi {
         endDate,
       },
     );
+  }
+
+  async fetchBalanceEvents(
+    chainType: string,
+    accountId: string,
+    startDate: string,
+    endDate: string,
+  ): Promise<BalanceEvent[]> {
+    const result = await this.requestHelper.req(
+      `http://localhost:${process.env["DATA_PLATFORM_PORT"] || 9090}/api/balances/list-movements`,
+      "POST",
+      {
+        accountId,
+        startDate,
+        endDate,
+        chainType,
+      },
+    );
+    return result?.chainBalanceMovements?.balanceMovementResults ?? [];
   }
 }

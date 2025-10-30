@@ -21,15 +21,13 @@ export interface EventDetails {
   extrinsic_index?: string;
   timestamp?: number;
   original_event_index?: string;
-  params: [
-    {
-      type: string;
-      type_name: string;
-      value: any;
-      values?: any[];
-      name: string;
-    },
-  ];
+  params: {
+    type?: string;
+    type_name?: string;
+    value: any;
+    values?: any[];
+    name: string;
+  }[];
   extrinsic_hash: string;
   finalized: boolean;
 }

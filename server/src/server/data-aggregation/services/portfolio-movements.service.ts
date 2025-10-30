@@ -264,7 +264,7 @@ export class PortfolioMovementsService {
 
     if (request.maxDate) {
       portfolioMovements = portfolioMovements.filter(
-        (t) => t.timestamp <= request.maxDate,
+        (t) => t.timestamp >= request.minDate && t.timestamp <= request.maxDate,
       );
     }
 
