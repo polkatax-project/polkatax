@@ -3,11 +3,16 @@ import { HttpError } from "../error/HttpError";
 export class RequestHelper {
   defaultHeader = {};
 
-  async req(url, method, body?): Promise<any> {
+  async req(
+    url: string,
+    method: string,
+    body?: any,
+    apiKey?: string,
+  ): Promise<any> {
     const response = await this.handleError(
       fetch(url, {
         method: method,
-        headers: this.defaultHeader,
+        headers: { ...this.defaultHeader, "x-api-key": apiKey },
         body: body ? JSON.stringify(body) : undefined,
       }),
       body ? JSON.stringify(body) : "",

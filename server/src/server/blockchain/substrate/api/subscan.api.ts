@@ -34,7 +34,6 @@ export class SubscanApi {
     this.requestHelper = new RequestHelper();
     this.requestHelper.defaultHeader = {
       "Content-Type": "application/json",
-      "x-api-key": process.env["SUBSCAN_API_KEY"],
     };
     this.responseCache = new ResponseCache(
       new FetchedDataRepository(),
@@ -85,15 +84,16 @@ export class SubscanApi {
       }
     }
     return this.retry(() =>
-      throttledApiCall(() =>
+      throttledApiCall((apiKey) =>
         cacheDurationInHours
           ? this.responseCache.fetchAndStoreData(
               url,
               method,
               body,
               cacheDurationInHours,
+              apiKey,
             )
-          : this.requestHelper.req(url, method, body),
+          : this.requestHelper.req(url, method, body, apiKey),
       ),
     );
   }
