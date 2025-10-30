@@ -9,6 +9,7 @@ import {
   SubscanEvent,
 } from "../../blockchain/substrate/model/subscan-event";
 import { TransactionDetails } from "../../blockchain/substrate/model/transaction";
+import { DataPlatformBalanceEventsService } from "../../data-platform-api/data-platform-balance-events.service";
 import { logger } from "../../logger/logger";
 import { determineForeignAsset } from "../helper/determine-foreign-asset";
 import { extractAssethubAsset } from "../helper/extract-assethub-asset";
@@ -24,7 +25,10 @@ import {
 import isEqual from "lodash.isequal";
 
 export class BalanceChangesService {
-  constructor(private subscanService: SubscanService) {}
+  constructor(
+    private subscanService: SubscanService,
+    private dataPlatformBalanceEventsService: DataPlatformBalanceEventsService,
+  ) {}
 
   async fetchAllBalanceChanges(
     request: FetchPortfolioMovementsRequest,
@@ -42,6 +46,8 @@ export class BalanceChangesService {
       subscanEvents,
       transactions,
       portfolioMovements,
+      request.minDate,
+      request.maxDate,
     );
     await this.fetchAssetMovements(
       request.chain,
@@ -381,6 +387,7 @@ export class BalanceChangesService {
     transactions: TransactionDetails[],
     moduleId: string,
     eventIds: string[],
+    existingEventDetails: Partial<EventDetails>[] = [],
   ): Promise<EventDetails[]> {
     const relevantEventIdxs = new Set(
       events
@@ -397,6 +404,9 @@ export class BalanceChangesService {
     const eventIdxAlreadyAvailable = new Set(
       eventDetailsFromTx.map((e) => e.event_index),
     );
+    existingEventDetails.forEach((e) =>
+      eventIdxAlreadyAvailable.add(e.event_index),
+    );
 
     const eventsToFetch = events.filter(
       (e) =>
@@ -406,8 +416,12 @@ export class BalanceChangesService {
 
     const eventDetails: EventDetails[] =
       await this.subscanService.fetchEventDetails(chain, eventsToFetch);
-    eventDetails.forEach((e) => eventDetailsFromTx.push(e));
-    return eventDetailsFromTx;
+    eventDetailsFromTx.forEach((e) => eventDetails.push(e));
+    const idsAlreadyAvailable = eventDetails.map((e) => e.event_index);
+    existingEventDetails
+      .filter((e) => !idsAlreadyAvailable.includes(e.event_index))
+      .forEach((e) => eventDetails.push(e as EventDetails));
+    return eventDetails;
   }
 
   async fetchBalanceMovements(
@@ -416,10 +430,22 @@ export class BalanceChangesService {
     events: SubscanEvent[],
     transactions: TransactionDetails[],
     portfolioMovements: PortfolioMovement[],
+    minDate: number,
+    maxDate: number,
   ): Promise<void> {
     logger.info(
       `Entry BalancesChangesService.fetchBalanceMovements for ${chain.domain} and ${address}. SubscanEvents: ${events.length}`,
     );
+    const platformBalanceEvents =
+      process.env["USE_DATA_PLATFORM_API_FOR_BALANCE_MOVEMENTS"] === "true" &&
+      (chain.domain === "kusama" || chain.domain === "polkadot")
+        ? await this.dataPlatformBalanceEventsService.fetchBalanceEvents(
+            address,
+            chain.domain,
+            minDate,
+            maxDate,
+          )
+        : [];
     const eventDetails = await this.fetchMissingEventDetails(
       chain.domain,
       events,
@@ -433,6 +459,7 @@ export class BalanceChangesService {
         "ReserveRepatriated",
         "Slashed",
       ],
+      platformBalanceEvents,
     );
     const nativeToken = await this.subscanService.fetchNativeToken(
       chain.domain,
@@ -935,7 +962,6 @@ export class BalanceChangesService {
           }
         }
       } catch (error) {
-        logger.info(error);
         // nothing to do.
       }
     }
