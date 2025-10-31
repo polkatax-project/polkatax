@@ -19,7 +19,7 @@ export const createLogger = (fileName: string) => {
               },
             },
             {
-              level: "info",
+              level: process.env.LOG_LEVEL || "info",
               target: "pino-pretty",
               options: {},
             },

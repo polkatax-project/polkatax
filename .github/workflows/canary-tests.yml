@@ -24,5 +24,6 @@ jobs:
         working-directory: server
         run: npm run canary-tests
         env:
+          LOG_LEVEL: warn
           SUBSCAN_API_KEY: ${{ secrets.SUBSCAN_PRO_API_KEY }}
           ZYTE_USER: ${{ secrets.ZYTE_USER }}
