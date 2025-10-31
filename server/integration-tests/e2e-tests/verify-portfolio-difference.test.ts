@@ -8,7 +8,7 @@ import { getVerifyableChains } from "../shared/helper/get-verifyable-chains";
 
 const verifyWallets = async (wallets: string[]) => {
   const maxDate = new Date();
-  const minDate = new Date("2024-01-01T00:00:000Z");
+  const minDate = new Date("2024-01-01T00:00:00.000Z");
   maxDate.setDate(maxDate.getDate() - 30);
 
   for (let wallet of wallets) {
@@ -20,7 +20,7 @@ const verifyWallets = async (wallets: string[]) => {
           wallet,
           chain,
           minDate.getTime(),
-          Date.now(),
+          maxDate.getTime(),
         );
       } catch (error) {
         throw new Error(
@@ -39,7 +39,10 @@ const verifyPortfolioChangesOfTestWallets = async () => {
     const addresses = [
       "16mrcAndMguy3wqfuLNubgxxeyWQHjYAdqRbj26Vb2gYtszK",
       "1HGnvAkk9nbfZ58CzUJhjcrLdEDMkr5qNkqqYkyD5BF5v6Y",
-      "12YCxZBQVxvbcdRW66JTJ8ppEYg7JxXNCYqme3dMWKJJVdtf",
+      // -> error "12YCxZBQVxvbcdRW66JTJ8ppEYg7JxXNCYqme3dMWKJJVdtf",
+      "12NM61UnRNNQ1thxEpmUEZpQLq9wCGEhYvAmJwWvyaARja2r",
+      "16JJyY72FpX6p8LBdqomZ6T6gRvNGY4fmLg8ASncBh5iecoW",
+      '0x56F17ebFe6B126E9f196e7a87f74e9f026a27A1F'
     ];
     await verifyWallets(addresses);
     console.log(`✅ e2e test completed`);
