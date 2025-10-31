@@ -1,4 +1,4 @@
-name: Canary Tests
+name: e2e Tests
 
 on:
   workflow_dispatch:
