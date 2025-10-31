@@ -24,6 +24,20 @@ import {
 } from "./special-event-processing/helper";
 import isEqual from "lodash.isequal";
 
+const movementExistsAlready = (
+  portfolioMovements: PortfolioMovement[],
+  extrinsic_index: string,
+  unique_id: string,
+  amount: number,
+) => {
+  const transfers =
+    portfolioMovements.find((p) => p.extrinsic_index === extrinsic_index)
+      ?.transfers || [];
+  return transfers.find(
+    (t) => t.asset_unique_id === unique_id && isVeryCloseTo(t.amount, amount),
+  );
+};
+
 export class BalanceChangesService {
   constructor(
     private subscanService: SubscanService,
@@ -299,15 +313,24 @@ export class BalanceChangesService {
               );
             } else {
               const amount = -Number(entry.col2) / 10 ** token.decimals;
-              this.update(
-                portfolioMovements,
-                event,
-                token.symbol,
-                token.unique_id,
-                sender,
-                undefined,
-                amount,
-              );
+              if (
+                !movementExistsAlready(
+                  portfolioMovements,
+                  event.extrinsic_index,
+                  token.unique_id,
+                  amount,
+                )
+              ) {
+                this.update(
+                  portfolioMovements,
+                  event,
+                  token.symbol,
+                  token.unique_id,
+                  sender,
+                  undefined,
+                  amount,
+                );
+              }
             }
           });
       }
@@ -707,7 +730,7 @@ export class BalanceChangesService {
           to = address;
           amount +=
             getPropertyValue(["amount", "balance"], event) *
-            (10 * -foreignAsset.decimals);
+            10 ** -foreignAsset.decimals;
           break;
         case "Issued":
           to = address;
@@ -881,16 +904,6 @@ export class BalanceChangesService {
           const correspondingAToken = tokens.find(
             (t) => token.symbol && t.symbol === "a" + token.symbol,
           );
-          const transfers =
-            portfolioMovements.find(
-              (p) => p.extrinsic_index === event.extrinsic_index,
-            )?.transfers || [];
-          const movementExists = (amount, someToken) =>
-            transfers.find(
-              (t) =>
-                t.asset_unique_id === someToken.unique_id &&
-                isVeryCloseTo(t.amount, amount),
-            );
           switch (data.name) {
             case "Supply":
               const amount =
@@ -898,7 +911,12 @@ export class BalanceChangesService {
                 10 ** -(correspondingAToken?.decimals ?? 1);
               if (
                 correspondingAToken &&
-                !movementExists(amount, correspondingAToken)
+                !movementExistsAlready(
+                  portfolioMovements,
+                  event.extrinsic_index,
+                  correspondingAToken.unique_id,
+                  amount,
+                )
               ) {
                 this.update(
                   portfolioMovements,
@@ -917,7 +935,12 @@ export class BalanceChangesService {
                 10 ** -(correspondingAToken?.decimals ?? 1);
               if (
                 correspondingAToken &&
-                !movementExists(withDrawAmount, correspondingAToken)
+                !movementExistsAlready(
+                  portfolioMovements,
+                  event.extrinsic_index,
+                  correspondingAToken.unique_id,
+                  withDrawAmount,
+                )
               ) {
                 this.update(
                   portfolioMovements,
@@ -933,7 +956,15 @@ export class BalanceChangesService {
             case "Borrow":
               const borrowAount =
                 Math.abs(Number(data.amount)) * 10 ** -(token?.decimals ?? 1);
-              if (token && !movementExists(borrowAount, token)) {
+              if (
+                token &&
+                !movementExistsAlready(
+                  portfolioMovements,
+                  event.extrinsic_index,
+                  token.unique_id,
+                  borrowAount,
+                )
+              ) {
                 this.update(
                   portfolioMovements,
                   event,
@@ -948,7 +979,15 @@ export class BalanceChangesService {
             case "Repay":
               const repayAmount =
                 -Math.abs(Number(data.amount)) * 10 ** -(token?.decimals ?? 1);
-              if (token && !movementExists(repayAmount, token)) {
+              if (
+                token &&
+                !movementExistsAlready(
+                  portfolioMovements,
+                  event.extrinsic_index,
+                  token.unique_id,
+                  repayAmount,
+                )
+              ) {
                 this.update(
                   portfolioMovements,
                   event,

@@ -1,0 +1,35 @@
+name: e2e Tests
+
+on:
+  workflow_dispatch:
+
+jobs:
+  canary-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Install Server Dependencies
+        working-directory: server
+        run: npm install
+
+      - name: Run e2e Tests jest
+        working-directory: server
+        run: npm run e2e-tests:jest
+        env:
+          SUBSCAN_API_KEY: ${{ secrets.SUBSCAN_PRO_API_KEY }}
+          ZYTE_USER: ${{ secrets.ZYTE_USER }}
+
+      - name: Run e2e Tests data
+        working-directory: server
+        run: npm run e2e-tests:data
+        env:
+          SUBSCAN_API_KEY: ${{ secrets.SUBSCAN_PRO_API_KEY }}
+          ZYTE_USER: ${{ secrets.ZYTE_USER }}

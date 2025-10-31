@@ -283,6 +283,10 @@ export class PortfolioMovementCorrectionService {
           `Exit fixErrorsAndMissingData. No Meaningful deviations found.`,
         );
         return deviations;
+      } else {
+        logger.warn(
+          `Exit fixErrorsAndMissingData. Deviations found for ${chainInfo.domain} and ${address}`,
+        );
       }
 
       if (process.env["WRITE_RESULTS_TO_DISK"] === "true") {
