@@ -1,7 +1,6 @@
 import { FastifyInstance } from "fastify";
 import { startStub as cryptoPricesStub } from "../../../src/crypto-currency-prices/stub";
 import { startStub as fiatPricesStub } from "../../../src/fiat-exchange-rates/stub";
-import { SubscanEvent } from "../../../src/server/blockchain/substrate/model/subscan-event";
 import { PortfolioMovement } from "../../../src/server/data-aggregation/model/portfolio-movement";
 import { createDIContainer } from "../../../src/server/di-container";
 import { PortfolioMovementsService } from "../../../src/server/data-aggregation/services/portfolio-movements.service";
@@ -21,7 +20,7 @@ export const stopStubs = async () => {
 
 export const fetchPortfolioMovements = async (
   address: string,
-  chain: { domain: string; label: string; token: string },
+  chain: { domain: string; token: string },
   minDate?: number,
   maxDate?: number,
 ): Promise<{

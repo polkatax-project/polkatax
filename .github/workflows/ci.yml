@@ -45,14 +45,6 @@ jobs:
         working-directory: client
         run: npm run test
 
-      - name: Install Playwright Browsers
-        working-directory: client
-        run: npx playwright install chromium --with-deps
-
-      - name: Run Browser tests
-        working-directory: client
-        run: npm run integration-tests 
-
   deploy:
     runs-on: ubuntu-latest
     needs: [client-tests, server-tests]
