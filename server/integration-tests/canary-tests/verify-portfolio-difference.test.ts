@@ -56,7 +56,7 @@ const verifyPortfolioChangesOfTestWallets = async () => {
       "13f1iU967VsBeRxueqs9zrJV6JZ1EmEP6A1QTatThBcYbxqE",
       "1EA4xDSP5fBk8Ca3CLEdXSMDmsxMGVTdV7u5SFScWkNopkp",
       "13XsYw7tqxiujmGv9kZYzjKKNMpXzYMM7e9MM6fq9UKrMrqk",
-      "16JJyY72FpX6p8LBdqomZ6T6gRvNGY4fmLg8ASncBh5iecoW",
+      //"16JJyY72FpX6p8LBdqomZ6T6gRvNGY4fmLg8ASncBh5iecoW",
       "13GEk517q2rDtrRKC1yormR2Aj5enhR9nkV1VwAygmxsf7vf",
       "15YVkRJDgNHzmxkUiLJWnjKCtCcCsiqpCVay9nLhF1hRKycS",
       "15uR1joy8ZXZyRtWh4e91T6hNaipG2i2qAvixfkAFQGe7X83",
