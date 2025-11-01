@@ -7,7 +7,7 @@ import { SubscanService } from "../../src/server/blockchain/substrate/api/subsca
 import { SubscanApi } from "../../src/server/blockchain/substrate/api/subscan.api";
 import { verifyEventTransfersAreValid } from "./util/verify-transfer-valid";
 
-describe.skip("Special event handling", () => {
+describe("Special event handling", () => {
   let subscanApi: SubscanApi = new SubscanApi();
   let subscanService: SubscanService = new SubscanService(subscanApi);
   let specialEventsToTransfersService: SpecialEventsToTransfersService =
