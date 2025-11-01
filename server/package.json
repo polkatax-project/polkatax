@@ -18,8 +18,8 @@
     "generate-subscan-chain-list": "ts-node src/generators/generate-subscan-chain-list.ts",
     "test": "jest --config jest.unit.config.ts",
     "e2e-tests:jest": "jest --config jest.e2e-test.config.ts --runInBand e2e-tests",
-    "e2e-tests:data": "ts-node integration-tests/e2e-tests/verify-portfolio-difference.test.ts",
-    "canary-tests": "ts-node integration-tests/canary-tests/verify-portfolio-difference.test.ts",
+    "e2e-tests:data": "ts-node integration-tests/e2e-tests/verify-portfolio-difference.ts",
+    "canary-tests": "ts-node integration-tests/canary-tests/verify-portfolio-difference.ts",
     "fix-errors": "ts-node integration-tests/canary-tests/fix-errors.ts",
     "format": "prettier --write . --ignore-path ../.gitignore",
     "copy-env-to-dist": "cp *.env ./dist && if [ -f .env ]; then cp .env ./dist; fi"
