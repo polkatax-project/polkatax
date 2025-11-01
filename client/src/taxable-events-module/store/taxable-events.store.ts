@@ -85,6 +85,23 @@ combineLatest([useSharedStore().jobs$, blockchain$, wallet$, currency$])
   )
   .subscribe((data) => taxData$.next(data));
 
+const currentYear = new Date().getFullYear();
+const dateRange$ = new BehaviorSubject({
+  from: `${currentYear - 1}-01-01`,
+  to: `${currentYear}-12-31`,
+});
+combineLatest([dateRange$, taxData$.pipe(filter((t) => !!t))]).subscribe(
+  ([dateRange, taxData]) => {
+    if (dateRange.from < taxData.fromDate || dateRange.to > taxData.toDate) {
+      dateRange.from =
+        dateRange.from < taxData.fromDate ? taxData.fromDate : dateRange.from;
+      dateRange.to =
+        dateRange.to > taxData.toDate ? taxData.toDate : dateRange.to;
+      dateRange$.next(dateRange);
+    }
+  }
+);
+
 const stakingRewards$ = new ReplaySubject<Rewards>(1);
 combineLatest([useSharedStore().jobs$, blockchain$, wallet$, currency$])
   .pipe(
@@ -114,12 +131,21 @@ combineLatest([useSharedStore().jobs$, blockchain$, wallet$, currency$])
   .subscribe((data) => stakingRewards$.next(data));
 
 const visibleTaxData$ = new ReplaySubject<TaxData>(1);
-combineLatest([taxData$, eventTypeFilter$, tokenFilter$, hiddenTokens$])
+combineLatest([
+  taxData$,
+  eventTypeFilter$,
+  tokenFilter$,
+  hiddenTokens$,
+  dateRange$,
+])
   .pipe(
-    map(([taxData, eventTypeFilter, tokenFilter, hiddenTokens]) => {
+    map(([taxData, eventTypeFilter, tokenFilter, hiddenTokens, dateRange]) => {
       const tokenFilterActive = tokenFilter.some((t) => t.value);
       const hiddenTokensActive = hiddenTokens.some((t) => t.value);
       let visibleTaxableEvents = taxData?.values
+        .filter(
+          (v) => v.isoDate! >= dateRange.from && v.isoDate! <= dateRange.to
+        )
         .filter((v) => {
           const isStakingReward = v.label === 'Staking reward';
           const incomingTransfer =
@@ -176,6 +202,7 @@ export const useTaxableEventStore = defineStore('taxable-events', {
     hiddenTokens$: Observable<{ name: string; value: boolean }[]>;
     eventTypeFilter$: Observable<Record<string, boolean>>;
     stakingRewards$: Observable<Rewards>;
+    dateRange$: Observable<{ from: string; to: string }>;
   } => {
     return {
       taxData$,
@@ -185,6 +212,7 @@ export const useTaxableEventStore = defineStore('taxable-events', {
       hiddenTokens$: hiddenTokens$.asObservable(),
       eventTypeFilter$: eventTypeFilter$.asObservable(),
       stakingRewards$,
+      dateRange$,
     };
   },
   actions: {
@@ -246,6 +274,9 @@ export const useTaxableEventStore = defineStore('taxable-events', {
     },
     async setExcludedEntries(entries: TaxableEvent[]) {
       excludedEntries$.next(entries);
+    },
+    setDateRange(range: { from: string; to: string }) {
+      dateRange$.next(range);
     },
   },
 });

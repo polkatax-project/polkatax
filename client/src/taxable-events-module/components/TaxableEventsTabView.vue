@@ -3,7 +3,17 @@
     <div class="q-ma-sm text-center">
       <div class="text-bold">{{ chainName }}</div>
       <div>Wallet: {{ route.params.wallet }}</div>
-      <div>Time frame: {{ taxData?.fromDate }} - {{ taxData?.toDate }}</div>
+      <div>
+        Time frame:
+        <q-btn
+          @click="
+            () => {
+              showDateRangeModal = !showDateRangeModal;
+            }
+          "
+          >{{ dateRange?.from }} - {{ dateRange?.to }}</q-btn
+        >
+      </div>
     </div>
     <q-tabs
       v-model="tab"
@@ -48,6 +58,28 @@
       </q-tab-panel>
     </q-tab-panels>
   </div>
+  <q-dialog
+    :model-value="showDateRangeModal"
+    @update:model-value="
+      () => {
+        showDateRangeModal = false;
+      }
+    "
+  >
+    <q-card style="width: 50%; max-width: 400px">
+      <q-card-section>
+        <div class="text-h6">Settings</div>
+      </q-card-section>
+
+      <q-card-section>
+        <DateRangePicker
+          @update:model-value="onUpdateDateRange"
+          :maxDate="maxDate"
+          :dateRange="dateRange"
+        />
+      </q-card-section>
+    </q-card>
+  </q-dialog>
 </template>
 <script setup lang="ts">
 import TaxableEventsTable from './taxable-events-table/TaxableEventsTable.vue';
@@ -61,6 +93,7 @@ import { useSharedStore } from '../../shared-module/store/shared.store';
 import { SubstrateChain } from '../../shared-module/model/substrate-chain';
 import { TaxData } from '../../shared-module/model/tax-data';
 import { Subscription } from 'rxjs';
+import DateRangePicker from '../../shared-module/components/date-range-picker/DateRangePicker.vue';
 
 const tab = ref('events');
 
@@ -68,10 +101,19 @@ const store = useTaxableEventStore();
 const route = useRoute();
 const chains: Ref<SubstrateChain[]> = ref([]);
 const taxData: Ref<TaxData | undefined> = ref(undefined);
+const dateRange: Ref<{ from: string; to: string } | undefined> = ref(undefined);
 
 const sharedStore = useSharedStore();
 let subscanChainsSubscription: Subscription;
 let taxDataSubscription: Subscription;
+let dateRangeSubscription: Subscription;
+
+const showDateRangeModal = ref(false);
+
+function onUpdateDateRange(newRange: { from: string; to: string }) {
+  showDateRangeModal.value = false;
+  store.setDateRange(newRange);
+}
 
 onMounted(() => {
   store.setCurrency(route.params.currency as string);
@@ -86,6 +128,10 @@ onMounted(() => {
   taxDataSubscription = store.visibleTaxData$.subscribe((data) => {
     taxData.value = data;
   });
+
+  dateRangeSubscription = store.dateRange$.subscribe((data) => {
+    dateRange.value = data;
+  });
 });
 
 const chainName = computed(() => {
@@ -96,11 +142,12 @@ const chainName = computed(() => {
 });
 
 onBeforeMount(() => {
-  if (subscanChainsSubscription) {
-    subscanChainsSubscription.unsubscribe();
-  }
-  if (taxDataSubscription) {
-    taxDataSubscription.unsubscribe();
-  }
+  subscanChainsSubscription?.unsubscribe();
+  taxDataSubscription?.unsubscribe();
+  dateRangeSubscription?.unsubscribe();
+});
+
+const maxDate = computed(() => {
+  return taxData.value?.toDate;
 });
 </script>
