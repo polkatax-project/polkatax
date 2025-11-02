@@ -19,6 +19,7 @@ node_modules
 server/public
 server/*.env
 server/dist
+server/logs 
 
 server/res/gen/fiat-currencies-quotes/*.json
 server/res/gen/crypto-currencies-quotes/*.json
