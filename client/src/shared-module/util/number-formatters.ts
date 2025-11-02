@@ -30,7 +30,11 @@ export const formatCurrency = (value: number | undefined, currency: string) => {
 };
 
 export const formatCryptoAmount = (value: number): string => {
-  if (value === null || value === undefined) {
+  return (value < 0 ? '-' : '') + formatAbsCryptoAmount(Math.abs(value))
+};
+
+const formatAbsCryptoAmount = (value: number): string => {
+  if (value === null || value === undefined || isNaN(value)) {
     return '-';
   }
 

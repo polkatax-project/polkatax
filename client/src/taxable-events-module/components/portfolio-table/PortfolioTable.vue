@@ -110,7 +110,7 @@ const columns = computed(() => {
       align: 'right',
       label: 'Balance change',
       field: (row: PortfolioEntry) =>
-        formatCryptoAmount(row.rangeEnd - row.rangeStart),
+        formatCryptoAmount((row.rangeEnd ?? 0) - (row.rangeStart ?? 0)),
       sortable: false,
     },
   ];
