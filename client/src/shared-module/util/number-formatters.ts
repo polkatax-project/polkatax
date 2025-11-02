@@ -65,8 +65,5 @@ export const formatCryptoAmount = (value: number): string => {
     });
   }
 
-  return value.toLocaleString(undefined, {
-    minimumFractionDigits: 6,
-    maximumFractionDigits: 8,
-  });
+  return '0';
 };

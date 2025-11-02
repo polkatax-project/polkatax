@@ -19,6 +19,8 @@ import { isTaxableEventVisible } from '../helper/is-taxable-event-visible';
 import { allTokensHidden, isTokenHidden } from '../helper/is-token-hidden';
 import { calculateRewardSummary } from '../service/calculate-reward-summary';
 import { groupRewardsByDay } from '../service/group-rewards-by-day';
+import { calculatePortfolio, Portfolio } from '../service/portfolio.service';
+
 const blockchain$ = new ReplaySubject<string>(1);
 const wallet$ = new ReplaySubject<string>(1);
 const currency$ = new ReplaySubject<string>(1);
@@ -110,6 +112,13 @@ combineLatest([dateRange$, taxData$.pipe(filter((t) => !!t))]).subscribe(
         dateRange.to > taxData.toDate ? taxData.toDate : dateRange.to;
       dateRange$.next(dateRange);
     }
+  }
+);
+
+const portfolio$ = new ReplaySubject<Portfolio>(1);
+combineLatest([dateRange$, taxData$.pipe(filter((t) => !!t))]).subscribe(
+  ([dateRange, taxData]) => {
+    portfolio$.next(calculatePortfolio(taxData, dateRange.from, dateRange.to));
   }
 );
 
@@ -209,6 +218,7 @@ export const useTaxableEventStore = defineStore('taxable-events', {
     eventTypeFilter$: Observable<Record<string, boolean>>;
     stakingRewards$: Observable<Rewards>;
     dateRange$: Observable<{ from: string; to: string }>;
+    portfolio$: Observable<Portfolio>;
   } => {
     return {
       taxData$,
@@ -219,6 +229,7 @@ export const useTaxableEventStore = defineStore('taxable-events', {
       eventTypeFilter$: eventTypeFilter$.asObservable(),
       stakingRewards$,
       dateRange$,
+      portfolio$,
     };
   },
   actions: {

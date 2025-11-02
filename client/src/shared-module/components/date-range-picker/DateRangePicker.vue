@@ -8,7 +8,7 @@
         <q-btn @click="setAll()" color="primary">Max</q-btn>
       </div>
     </div>
-    <q-btn class="q-mt-xs" @click="update">Apply</q-btn>
+    <q-btn class="q-mt-md" @click="update">Apply</q-btn>
   </div>
 </template>
 <script setup lang="ts">

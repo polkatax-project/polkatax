@@ -18,6 +18,9 @@ export interface TaxableEvent {
   label?: Label;
   isoDate?: string;
   transfers: TaxableEventTransfer[];
+  feeTokenUniqueId?: string;
+  xcmFeeTokenUniqueId?: string;
+  xcmFeeFiat?: number;
 }
 
 export interface TaxableEventTransfer {

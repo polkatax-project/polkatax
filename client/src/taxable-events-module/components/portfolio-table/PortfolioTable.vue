@@ -1,17 +1,5 @@
 <template>
   <div class="q-pa-md content q-mx-auto">
-    <div style="max-width: 600px; margin: 0 auto; text-align: left">
-      <strong>Balance Differences</strong>
-      <p>
-        This table compares actual token balance changes with those calculated
-        from transactions. Unexplained differences mostly occur because:
-      </p>
-      <ul>
-        <li>Some cross-chain (XCM) transfers may not be fully recognized.</li>
-        <li>XCM Transaction fees are not yet included.</li>
-      </ul>
-    </div>
-
     <q-table
       :rows="rows"
       :columns="columns"
@@ -50,115 +38,124 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, Ref, ref } from 'vue';
 import { useTaxableEventStore } from '../../store/taxable-events.store';
-import { TaxData } from '../../../shared-module/model/tax-data';
 import {
   formatCryptoAmount,
   formatCurrency,
 } from '../../../shared-module/util/number-formatters';
-import { Deviation } from '../../../shared-module/model/deviation';
 import { Subscription } from 'rxjs';
+import { Portfolio, PortfolioEntry } from '../../service/portfolio.service';
 
 const store = useTaxableEventStore();
-const taxData: Ref<TaxData | undefined> = ref(undefined);
-let taxDataSubscription: Subscription;
+const portfolio: Ref<Portfolio | undefined> = ref(undefined);
+let portfolioSubscription: Subscription;
 
 onMounted(() => {
-  taxDataSubscription = store.taxData$.subscribe(async (data) => {
-    taxData.value = data;
-    taxData.value.deviations.sort((a, b) => (a.symbol > b.symbol ? 1 : -1));
+  portfolioSubscription = store.portfolio$.subscribe(async (data) => {
+    portfolio.value = data;
+    portfolio.value.balances.sort((a, b) => (a.symbol > b.symbol ? 1 : -1));
   });
 });
 
 onUnmounted(() => {
-  if (taxDataSubscription) {
-    taxDataSubscription.unsubscribe();
-  }
+  portfolioSubscription?.unsubscribe();
 });
 
-const columns = computed(() => [
-  {
-    name: 'warn',
-    label: '',
-    align: 'left',
-    field: (row: Deviation) => (row.absoluteDeviationTooLarge ? '⚠️' : ''),
-    sortable: true,
-  },
-  {
-    name: 'symbol',
-    label: 'Token',
-    align: 'left',
-    field: (row: Deviation) => row.symbol,
-    sortable: true,
-  },
-  {
-    name: 'balanceBefore',
-    align: 'right',
-    label: `Balance on ${taxData.value?.fromDate}`,
-    field: (row: Deviation) => formatCryptoAmount(row.balanceBefore ?? 0),
-    sortable: true,
-  },
-  {
-    name: 'balanceAfter',
-    align: 'right',
-    label: `Balance on ${taxData.value?.toDate}`,
-    field: (row: Deviation) => formatCryptoAmount(row.balanceAfter ?? 0),
-    sortable: true,
-  },
-  {
-    name: 'fees',
-    align: 'right',
-    label: 'Fees',
-    field: (row: Deviation) =>
-      `${formatCryptoAmount(row.fees)}` +
-      (row.feesFiat > 0
-        ? ` (${formatCurrency(row.feesFiat, taxData.value?.currency ?? 'USD')})`
-        : ''),
-    sortable: false,
-  },
-  {
-    name: 'balance-change',
-    align: 'right',
-    label: 'Balance change',
-    field: (row: Deviation) => formatCryptoAmount(row.diff),
-    sortable: false,
-  },
-  {
-    name: 'expected-balance-change',
-    align: 'right',
-    label: 'Expected balance change',
-    field: (row: Deviation) => formatCryptoAmount(row.expectedDiff),
-    sortable: false,
-  },
-  {
-    name: 'unexplained-balance-change',
-    align: 'right',
-    label: 'Unexplained balance change',
-    sortable: false,
-  },
-]);
+const columns = computed(() => {
+  const cols = [
+    {
+      name: 'warn',
+      label: '',
+      align: 'left',
+      field: (row: PortfolioEntry) =>
+        row.absoluteDeviationTooLarge ? '⚠️' : '',
+      sortable: true,
+    },
+    {
+      name: 'symbol',
+      label: 'Token',
+      align: 'left',
+      field: (row: PortfolioEntry) => row.symbol,
+      sortable: true,
+    },
+    {
+      name: 'balanceBefore',
+      align: 'right',
+      label: `Balance on ${portfolio.value?.rangeStartDate}`,
+      field: (row: PortfolioEntry) => formatCryptoAmount(row.rangeStart ?? 0),
+      sortable: true,
+    },
+    {
+      name: 'balanceAfter',
+      align: 'right',
+      label: `Balance on ${portfolio.value?.rangeEndDate}`,
+      field: (row: PortfolioEntry) => formatCryptoAmount(row.rangeEnd ?? 0),
+      sortable: true,
+    },
+    {
+      name: 'fees',
+      align: 'right',
+      label: 'Fees',
+      field: (row: PortfolioEntry) =>
+        `${formatCryptoAmount(row.fees)}` +
+        (row.feesFiat > 0
+          ? ` (${formatCurrency(
+              row.feesFiat,
+              portfolio.value?.currency ?? 'USD'
+            )})`
+          : ''),
+      sortable: false,
+    },
+    {
+      name: 'balance-change',
+      align: 'right',
+      label: 'Balance change',
+      field: (row: PortfolioEntry) =>
+        formatCryptoAmount(row.rangeEnd - row.rangeStart),
+      sortable: false,
+    },
+  ];
+  if (!portfolio.value?.customRange) {
+    cols.push({
+      name: 'expected-balance-change',
+      align: 'right',
+      label: 'Expected balance change',
+      field: (row: PortfolioEntry) => formatCryptoAmount(row.expectedDiff),
+      sortable: false,
+    });
+    cols.push({
+      name: 'unexplained-balance-change',
+      align: 'right',
+      field: (row: PortfolioEntry) =>
+        formatCryptoAmount(Math.abs(row.deviation)),
+      label: 'Unexplained balance change',
+      sortable: false,
+    });
+  }
+  return cols;
+});
 
-function getSubScanAssetLink(deviation: Deviation) {
+function getSubScanAssetLink(deviation: PortfolioEntry) {
   if (deviation.symbol === deviation.unique_id) {
     return `https://${
-      taxData.value!.chain
+      portfolio.value!.chain
     }.subscan.io/system_token_detail?unique_id=${deviation.symbol}`;
   }
   const idParts = deviation.unique_id.split('/');
   if (idParts?.[0] === 'foreign_assets') {
-    return `https://${taxData.value!.chain}.subscan.io/foreign_assets/${
+    return `https://${portfolio.value!.chain}.subscan.io/foreign_assets/${
       idParts[1]
     }`;
   }
   if (idParts?.[0] === 'standard_assets') {
-    return `https://${taxData.value!.chain}.subscan.io/assets/${idParts[1]}`;
+    return `https://${portfolio.value!.chain}.subscan.io/assets/${idParts[1]}`;
   }
-  return `https://${taxData.value!.chain}.subscan.io/custom_token?unique_id=${
+  return `https://${portfolio.value!.chain}.subscan.io/custom_token?unique_id=${
     deviation.unique_id
   }`;
 }
 
 const rows = computed(() => {
-  return (taxData.value?.deviations ?? []).filter(
+  return (portfolio.value?.balances ?? []).filter(
     (d) =>
       d.deviation > 0 ||
       d.balanceAfter > 0 ||

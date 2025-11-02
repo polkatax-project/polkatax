@@ -68,7 +68,7 @@
   >
     <q-card style="width: 50%; max-width: 400px">
       <q-card-section>
-        <div class="text-h6">Settings</div>
+        <div class="text-h6">Time frame</div>
       </q-card-section>
 
       <q-card-section>
