@@ -17,6 +17,8 @@ import { Rewards } from '../../shared-module/model/rewards';
 import { JobResult } from '../../shared-module/model/job-result';
 import { isTaxableEventVisible } from '../helper/is-taxable-event-visible';
 import { allTokensHidden, isTokenHidden } from '../helper/is-token-hidden';
+import { calculateRewardSummary } from '../service/calculate-reward-summary';
+import { groupRewardsByDay } from '../service/group-rewards-by-day';
 const blockchain$ = new ReplaySubject<string>(1);
 const wallet$ = new ReplaySubject<string>(1);
 const currency$ = new ReplaySubject<string>(1);
@@ -40,25 +42,34 @@ const excludedEntries$: BehaviorSubject<TaxableEvent[]> = new BehaviorSubject<
 >([]);
 
 const taxData$ = new ReplaySubject<TaxData>(1);
-combineLatest([useSharedStore().jobs$, blockchain$, wallet$, currency$])
+const currentJob$ = combineLatest([
+  useSharedStore().jobs$,
+  blockchain$,
+  wallet$,
+  currency$,
+]).pipe(
+  map(([jobs, blockchain, wallet, currency]) => {
+    return jobs.find(
+      (j) =>
+        j.blockchain === blockchain &&
+        j.wallet === wallet &&
+        j.currency === currency
+    );
+  }),
+  filter((job) => !!job),
+  distinctUntilChanged(
+    (prev, curr) =>
+      (curr.data?.values ?? []).length === (prev.data?.values ?? []).length &&
+      curr.data?.chain === prev.data?.chain &&
+      curr.data?.address === prev.data?.address &&
+      curr.data?.currency === prev.data?.currency
+  )
+);
+
+currentJob$
   .pipe(
-    map(([jobs, blockchain, wallet, currency]) => {
-      return jobs.find(
-        (j) =>
-          j.blockchain === blockchain &&
-          j.wallet === wallet &&
-          j.currency === currency
-      );
-    }),
     map((jobResult) => jobResult?.data),
     filter((data) => !!data),
-    distinctUntilChanged(
-      (prev, curr) =>
-        curr.values.length === prev.values.length &&
-        curr.chain === prev.chain &&
-        curr.address === prev.address &&
-        curr.currency === prev.currency
-    ),
     tap((data) => {
       if (data) {
         const tokens: string[] = [];
@@ -103,30 +114,25 @@ combineLatest([dateRange$, taxData$.pipe(filter((t) => !!t))]).subscribe(
 );
 
 const stakingRewards$ = new ReplaySubject<Rewards>(1);
-combineLatest([useSharedStore().jobs$, blockchain$, wallet$, currency$])
+combineLatest([currentJob$, dateRange$])
   .pipe(
-    map(([jobs, blockchain, wallet, currency]) => {
-      return jobs.find(
-        (j) =>
-          j.blockchain === blockchain &&
-          j.wallet === wallet &&
-          j.currency === currency
+    filter(([j]) => !!j),
+    map(([job, dateRange]) => {
+      const rewards = (job.stakingRewards?.values ?? []).filter(
+        (v) => v.isoDate! >= dateRange.from && v.isoDate! <= dateRange.to
       );
-    }),
-    filter((j) => !!j),
-    map((job) => ({
-      values: job.stakingRewards?.values ?? [],
-      summary: job.stakingRewardsSummary!,
-      dailyValues: job.dailyStakingRewards!,
-      currency: job?.currency,
-      address: job?.wallet,
-      chain: job?.blockchain,
-      token: (job as JobResult)?.stakingRewards?.token || '',
-    })),
-    distinctUntilChanged(
-      (prev, curr) =>
-        (curr?.values ?? []).length === (prev?.values ?? []).length
-    )
+      const summary = calculateRewardSummary(rewards);
+      const dailyValues = groupRewardsByDay(rewards);
+      return {
+        values: rewards,
+        summary,
+        dailyValues,
+        currency: job?.currency,
+        address: job?.wallet,
+        chain: job?.blockchain,
+        token: (job as JobResult)?.stakingRewards?.token || '',
+      };
+    })
   )
   .subscribe((data) => stakingRewards$.next(data));
 

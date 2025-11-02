@@ -21,8 +21,6 @@ import { convertToCanonicalAddress } from '../util/convert-to-canonical-address'
 import { isValidEvmAddress } from '../util/is-valid-address';
 import { getAddress } from 'ethers';
 import { extractStakingRewards } from './helper/extract-staking-rewards';
-import { calculateRewardSummary } from './helper/calculate-reward-summary';
-import { groupRewardsByDay } from './helper/group-rewards-by-day';
 import { getBeginningOfLastYear } from './helper/get-beginning-of-last-year';
 import { getEndOfLastYear } from './helper/get-end-of-last-year';
 import { SubstrateChains } from '../model/substrate-chain';
@@ -66,12 +64,6 @@ wsMsgReceived$
         newJobResult.data.values = addIsoDate(newJobResult.data.values);
         newJobResult.data = addMetaData(newJobResult, newJobResult.data.values);
         newJobResult.stakingRewards = extractStakingRewards(newJobResult.data);
-        newJobResult.stakingRewardsSummary = calculateRewardSummary(
-          newJobResult.stakingRewards.values
-        );
-        newJobResult.dailyStakingRewards = groupRewardsByDay(
-          newJobResult.stakingRewards.values
-        );
       }
       jobs = jobs.filter(
         (j) =>
