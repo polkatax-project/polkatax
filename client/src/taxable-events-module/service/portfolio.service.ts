@@ -39,14 +39,16 @@ export function calculatePortfolio(
       taxData.toDate,
       deviation,
       taxData.values,
-      rangeStartDate
+      rangeStartDate,
+      false
     );
     const rangeEnd = calculateBalanceAndFees(
       taxData.fromDate,
       taxData.toDate,
       deviation,
       taxData.values,
-      rangeEndDate
+      rangeEndDate,
+      true
     );
     deviation.rangeStart = rangeStart.balance;
     deviation.rangeEnd = rangeEnd.balance;
@@ -69,7 +71,8 @@ function calculateBalanceAndFees(
   endDate: string,
   deviation: Deviation,
   values: TaxableEvent[],
-  targetDate: string
+  targetDate: string,
+  inclusive: boolean
 ) {
   if (startDate === targetDate) {
     return { balance: deviation.balanceBefore, fees: 0, feesFiat: 0 };
@@ -82,7 +85,11 @@ function calculateBalanceAndFees(
     };
   }
   const uniqueId = deviation.unique_id;
-  const relevantEvents = values.filter((v) => v.isoDate! <= targetDate);
+  const relevantEvents = values.filter(
+    (v) =>
+      (inclusive && v.isoDate! <= targetDate) ||
+      (!inclusive && v.isoDate! < targetDate)
+  );
   const fees = relevantEvents
     .filter((p) => p.feeTokenUniqueId === uniqueId)
     .reduce((curr, p) => curr + (p?.feeUsed ?? 0) + (p?.tip ?? 0), 0);
