@@ -21,6 +21,16 @@ export function calculatePortfolio(
   rangeStartDate: string,
   rangeEndDate: string
 ): Portfolio {
+  if (!taxData.deviations) {
+    return {
+      balances: [],
+      rangeEndDate,
+      rangeStartDate,
+      currency: taxData.currency,
+      chain: taxData.chain,
+      customRange: false,
+    };
+  }
   const clone: (Deviation & { rangeStart: number; rangeEnd: number })[] =
     JSON.parse(JSON.stringify(taxData.deviations));
   for (const deviation of clone) {

@@ -30,7 +30,7 @@ export const formatCurrency = (value: number | undefined, currency: string) => {
 };
 
 export const formatCryptoAmount = (value: number): string => {
-  return (value < 0 ? '-' : '') + formatAbsCryptoAmount(Math.abs(value))
+  return (value < 0 ? '-' : '') + formatAbsCryptoAmount(Math.abs(value));
 };
 
 const formatAbsCryptoAmount = (value: number): string => {
