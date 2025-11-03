@@ -122,17 +122,11 @@ export class BalanceChangesService {
       );
       await this.fetchHydrationBroadcastSwapped3(
         request.chain.domain,
-        subscanEvents,
-        transactions,
-        portfolioMovements,
-        tokens,
-      );
-      await this.fetchCurrencyMovements(
-        request.chain,
         request.address,
         subscanEvents,
         transactions,
         portfolioMovements,
+        tokens,
       );
       await this.fetchHydrationEvmLogs(
         request.chain,
@@ -214,6 +208,7 @@ export class BalanceChangesService {
 
   private async fetchHydrationBroadcastSwapped3(
     chain: string,
+    address: string,
     subscanEvents: SubscanEvent[],
     transactions: TransactionDetails[],
     portfolioMovements: PortfolioMovement[],
@@ -226,18 +221,42 @@ export class BalanceChangesService {
       "broadcast",
       ["Swapped3", "Swapped2"],
     );
-    eventDetails.forEach((event) => {
+    for (const event of eventDetails) {
       const transfers =
         portfolioMovements.find(
           (p) => p.extrinsic_index === event.extrinsic_index,
         )?.transfers || [];
 
-      const address = extractAddress("swapper", event);
+      const swapper = extractAddress("swapper", event);
+      if (swapper !== address) {
+        continue;
+      }
+      const inputs = getPropertyValue("inputs", event) ?? [];
+      const feesRaw = getPropertyValue("fees", event) ?? [];
+      const fees = [];
+      for (const fee of feesRaw) {
+        const token = assets.find((a) => a.token_id === fee.asset);
+        const amount = fee.amount / 10 ** token.decimals;
+        if (fees.length === 0) {
+          fees.push({ amount, token });
+        }
+      }
 
-      const inputs = getPropertyValue("inputs", event) ?? 0;
       for (const input of inputs) {
         const token = assets.find((a) => a.token_id === input.asset);
-        const amount = -(input.amount / 10 ** token.decimals);
+        let amount = -(input.amount / 10 ** token.decimals);
+        if (
+          transfers.find(
+            (t) =>
+              t.asset_unique_id === token.unique_id &&
+              isVeryCloseTo(t.amount, amount),
+          )
+        ) {
+          continue;
+        }
+        fees
+          .filter((f) => f.token.unique_id === token.unique_id)
+          .forEach((f) => (amount -= f.amount));
         const movementExists = transfers.find(
           (t) =>
             t.asset_unique_id === token.unique_id &&
@@ -277,7 +296,7 @@ export class BalanceChangesService {
           );
         }
       }
-    });
+    }
   }
 
   private async fetchAssetconversionAssethub(
@@ -891,6 +910,11 @@ export class BalanceChangesService {
         t.unique_id ===
         "asset_registry/aac89c40628a35265f632940b678104349122a9f",
     );
+    const HUSDT = tokens.find(
+      (t) =>
+        t.unique_id ===
+        "asset_registry/13d27f12a8581ff3e9bb196b07e1dd3841927085",
+    );
     for (const event of eventDetails) {
       try {
         const data = readHydratinEvmLog(event);
@@ -901,9 +925,16 @@ export class BalanceChangesService {
               ? hollar
               : undefined);
           data.tokenSymbol = token?.symbol;
-          const correspondingAToken = tokens.find(
+          let correspondingAToken = tokens.find(
             (t) => token.symbol && t.symbol === "a" + token.symbol,
           );
+          // 2-Pool-USDT maps to HUSDT token
+          if (
+            token.unique_id ===
+            "asset_registry/6c505df96f1faab539199949572820b2c90f6959"
+          ) {
+            correspondingAToken = HUSDT;
+          }
           switch (data.name) {
             case "Supply":
               const amount =

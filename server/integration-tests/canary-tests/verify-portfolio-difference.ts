@@ -56,7 +56,7 @@ const verifyPortfolioChangesOfTestWallets = async () => {
       "13f1iU967VsBeRxueqs9zrJV6JZ1EmEP6A1QTatThBcYbxqE",
       "1EA4xDSP5fBk8Ca3CLEdXSMDmsxMGVTdV7u5SFScWkNopkp",
       "13XsYw7tqxiujmGv9kZYzjKKNMpXzYMM7e9MM6fq9UKrMrqk",
-      // --> "16JJyY72FpX6p8LBdqomZ6T6gRvNGY4fmLg8ASncBh5iecoW",
+      "16JJyY72FpX6p8LBdqomZ6T6gRvNGY4fmLg8ASncBh5iecoW",
       "13GEk517q2rDtrRKC1yormR2Aj5enhR9nkV1VwAygmxsf7vf",
       "15YVkRJDgNHzmxkUiLJWnjKCtCcCsiqpCVay9nLhF1hRKycS",
       "15uR1joy8ZXZyRtWh4e91T6hNaipG2i2qAvixfkAFQGe7X83",
@@ -64,11 +64,11 @@ const verifyPortfolioChangesOfTestWallets = async () => {
       "12WGkKdAbWyksSMGXFNfXmhVTdcRfazeLx5qNg7mw7ThP9Zj",
       "15DE5wsjaXtFMu4vSy9aqovBm8NWmd3PGUziQPbSZWJmiASJ",
       "12YCxZBQVxvbcdRW66JTJ8ppEYg7JxXNCYqme3dMWKJJVdtf",
-      // --> '12WWjrZGuVxyk5AyFeDGaN45J1FJ6MesXRxhmY41rhKxL961',
-      '15oF4uVJwmo4TdGW7VfQxNLavjCXviqxT9S1MgbjMNHr6Sp5',
-      '1NUuRnRKayAxnswLiFFzdM1rzqyLGLEZ1Fr9ugecfV4hzyD',
-      '0x7041617A1bFF5a973366340b03F6CD024470B7d1',
-      '0x56F17ebFe6B126E9f196e7a87f74e9f026a27A1F'
+      "12WWjrZGuVxyk5AyFeDGaN45J1FJ6MesXRxhmY41rhKxL961",
+      "15oF4uVJwmo4TdGW7VfQxNLavjCXviqxT9S1MgbjMNHr6Sp5",
+      "1NUuRnRKayAxnswLiFFzdM1rzqyLGLEZ1Fr9ugecfV4hzyD",
+      "0x7041617A1bFF5a973366340b03F6CD024470B7d1",
+      "0x56F17ebFe6B126E9f196e7a87f74e9f026a27A1F",
     ];
     await verifyWallets(addresses);
     console.log(`✅ Canary completed`);
