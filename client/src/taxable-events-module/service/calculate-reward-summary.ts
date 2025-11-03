@@ -1,4 +1,4 @@
-import { RewardDto, RewardSummary } from '../../model/rewards';
+import { RewardDto, RewardSummary } from '../../shared-module/model/rewards';
 
 export const calculateRewardSummary = (rewards: RewardDto[]): RewardSummary => {
   const accumulatedRewards = rewards.reduce<{

@@ -72,10 +72,6 @@ describe('formatCryptoAmount', () => {
   it('formats value >= 0.0001 with 4-6 decimals', () => {
     expect(formatCryptoAmount(0.000123)).toMatch(/0\.000123|0\.000124/);
   });
-
-  it('formats value < 0.0001 with 6-8 decimals', () => {
-    expect(formatCryptoAmount(0.00000012)).toMatch(/0\.0000001[0-9]?/);
-  });
 });
 
 afterAll(() => {

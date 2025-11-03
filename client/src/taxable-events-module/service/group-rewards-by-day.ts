@@ -1,4 +1,4 @@
-import { DailyRewards, RewardDto } from '../../model/rewards';
+import { DailyRewards, RewardDto } from '../../shared-module/model/rewards';
 
 export function groupRewardsByDay(rewards: RewardDto[]): DailyRewards {
   return rewards.reduce<{

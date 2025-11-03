@@ -29,7 +29,7 @@ export const labelToKoinlyTag: Record<Label, KoinlyTag> = {
   'CEX transfer': undefined,
   'DEX fee': undefined,
   'Account created': undefined,
-  'Interest payment': 'Income'
+  'Interest payment': 'Income',
 };
 
 export const mapLabelToKoinlyTag = (
