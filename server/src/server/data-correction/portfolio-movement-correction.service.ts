@@ -54,7 +54,7 @@ export class PortfolioMovementCorrectionService {
     return deviationLimits;
   }
 
-  private async calculateDeviationWithRetry(
+  async calculateDeviationWithRetry(
     chainInfo: { domain: string; token: string },
     address: string,
     portfolioMovements: PortfolioMovement[],
@@ -238,6 +238,7 @@ export class PortfolioMovementCorrectionService {
     portfolioMovements: PortfolioMovement[],
     minDate: number,
     maxDate: number,
+    deviationsLimits?: DeviationLimit[],
   ): Promise<Deviation[]> {
     logger.info(
       `Enter fixErrorsAndMissingData for ${chainInfo.domain}, ${address}`,
@@ -267,7 +268,8 @@ export class PortfolioMovementCorrectionService {
         this.blockTimeService,
       );
 
-      const acceptedDeviations = await this.determineAdequateMaxDeviations();
+      const acceptedDeviations =
+        deviationsLimits ?? (await this.determineAdequateMaxDeviations());
 
       const deviations = await this.calculateDeviationWithRetry(
         chainInfo,
@@ -285,7 +287,7 @@ export class PortfolioMovementCorrectionService {
         return deviations;
       } else {
         logger.warn(
-          `Exit fixErrorsAndMissingData. Deviations found for ${chainInfo.domain} and ${address}`,
+          `fixErrorsAndMissingData; Deviations found for ${chainInfo.domain} and ${address}`,
         );
       }
 
@@ -330,6 +332,12 @@ export class PortfolioMovementCorrectionService {
         );
       }
 
+      if (!deviationsAfterFix.find((d) => d.absoluteDeviationTooLarge)) {
+        logger.warn(
+          `fixErrorsAndMissingData; Deviations after fix remain ${chainInfo.domain} and ${address}`,
+        );
+      }
+
       logger.info(
         `Exit fixErrorsAndMissingData for ${chainInfo.domain}, ${address}`,
       );
@@ -337,6 +345,10 @@ export class PortfolioMovementCorrectionService {
     } finally {
       this.portfolioChangeValidationService.disconnectApi();
     }
+  }
+
+  async disconnect() {
+    await this.portfolioChangeValidationService.disconnectApi();
   }
 
   async fixErrorsAndMissingDataRecursively(

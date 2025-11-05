@@ -4,6 +4,8 @@ import { startStub as fiatPricesStub } from "../../../src/fiat-exchange-rates/st
 import { PortfolioMovement } from "../../../src/server/data-aggregation/model/portfolio-movement";
 import { createDIContainer } from "../../../src/server/di-container";
 import { PortfolioMovementsService } from "../../../src/server/data-aggregation/services/portfolio-movements.service";
+import { determineMinMaxBlock } from "../../../src/server/data-aggregation/helper/determine-min-max-block";
+import { BlockTimeService } from "../../../src/server/blockchain/substrate/services/block-time.service";
 
 let cryptoPriceServer: FastifyInstance;
 let fiatPriceServer: FastifyInstance;
@@ -25,8 +27,8 @@ export const fetchPortfolioMovements = async (
   maxDate?: number,
 ): Promise<{
   portfolioMovements: PortfolioMovement[];
-  minBlock?: number;
-  maxBlock?: number;
+  blockMin?: number;
+  blockMax?: number;
 }> => {
   const container = createDIContainer();
   try {
@@ -46,15 +48,18 @@ export const fetchPortfolioMovements = async (
     if (portfolioMovements.length === 0) {
       return { portfolioMovements: [] };
     }
-    const minBlock = portfolioMovements.reduce(
-      (curr, next) => Math.min(curr, next.block ?? Number.MAX_SAFE_INTEGER),
-      Number.MAX_SAFE_INTEGER,
+
+    const blockTimeService: BlockTimeService =
+      container.resolve("blockTimeService");
+    const { blockMin, blockMax } = await determineMinMaxBlock(
+      chain,
+      portfolioMovements,
+      minDate,
+      maxDate,
+      blockTimeService,
     );
-    const maxBlock = portfolioMovements.reduce(
-      (curr, next) => Math.max(curr, next.block ?? 0),
-      0,
-    );
-    return { portfolioMovements, minBlock, maxBlock };
+
+    return { portfolioMovements, blockMin, blockMax };
   } catch (error) {
     console.log(error);
   }

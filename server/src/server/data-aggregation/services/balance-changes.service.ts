@@ -315,43 +315,42 @@ export class BalanceChangesService {
       ["SwapExecuted"],
     );
     assetConversionEvents.forEach((event) => {
-      const sender = extractAddress("who", event);
-      if (sender === address) {
-        const amountIn = getPropertyValue("amount_in", event);
+      const who = extractAddress("who", event);
+      if (who === address) {
         const route: { col1: any; col2: string }[] = getPropertyValue(
           "path",
           event,
         );
-        route
-          .filter((r) => r.col2 === amountIn) // r.col2 === amountOut is delibarately ignored because there's a matching deposit...
-          .forEach((entry) => {
-            const token = extractAssethubAsset(entry.col1, tokens);
-            if (!token) {
-              logger.warn(
-                `Could not extract token in assetconversion with id ${entry.col1}`,
-              );
-            } else {
-              const amount = -Number(entry.col2) / 10 ** token.decimals;
-              if (
-                !movementExistsAlready(
-                  portfolioMovements,
-                  event.extrinsic_index,
-                  token.unique_id,
-                  amount,
-                )
-              ) {
-                this.update(
-                  portfolioMovements,
-                  event,
-                  token.symbol,
-                  token.unique_id,
-                  sender,
-                  undefined,
-                  amount,
-                );
-              }
-            }
-          });
+        for (let idx of [0, route.length - 1]) {
+          const entry = route[idx];
+          const token = extractAssethubAsset(entry.col1, tokens);
+          if (!token) {
+            logger.warn(
+              `Could not extract token in assetconversion with id ${entry.col1}`,
+            );
+            continue;
+          }
+          const amount =
+            ((idx === 0 ? -1 : 1) * Number(entry.col2)) / 10 ** token.decimals;
+          if (
+            !movementExistsAlready(
+              portfolioMovements,
+              event.extrinsic_index,
+              token.unique_id,
+              amount,
+            )
+          ) {
+            this.update(
+              portfolioMovements,
+              event,
+              token.symbol,
+              token.unique_id,
+              amount < 0 ? who : undefined,
+              amount > 0 ? who : undefined,
+              amount,
+            );
+          }
+        }
       }
     });
   }
