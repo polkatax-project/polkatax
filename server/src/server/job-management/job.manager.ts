@@ -122,9 +122,10 @@ export class JobManager {
         const jobProcessor: JobProcessor =
           this.DIContainer.resolve("jobProcessor");
         job = await jobProcessor.process(job);
-
-        await this.jobsService.setToPostProcessing(job);
-        this.postProcessingStream.next(job.id);
+        if (job.status !== "error") {
+          await this.jobsService.setToPostProcessing(job);
+          this.postProcessingStream.next(job.id);
+        }
         const allPendingJobs = await this.jobsService.fetchAllPendingJobs();
         logger.info("Remaining pending jobs:" + allPendingJobs.length);
       } catch (error) {
