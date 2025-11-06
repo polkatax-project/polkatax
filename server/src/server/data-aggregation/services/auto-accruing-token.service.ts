@@ -18,6 +18,13 @@ const autoAccruingTokens: Record<
 > = {
   hydration: [
     {
+      name: "Hydrated Dollar",
+      symbol: "HOLLAR",
+      decimals: 18,
+      unique_id: "asset_registry/aac89c40628a35265f632940b678104349122a9f",
+      token_id: 222,
+    },
+    {
       name: "aUSDT",
       symbol: "aUSDT",
       decimals: 6,

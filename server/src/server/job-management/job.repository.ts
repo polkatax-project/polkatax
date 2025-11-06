@@ -166,6 +166,7 @@ export class JobRepository {
     const values = [error, new Date(), jobId];
     const client = await this.getClient();
     await client.query(query, values);
+    await this.notifyPendingJobsChanged();
     await this.notifyJobChanged(jobId);
   }
 

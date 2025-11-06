@@ -422,6 +422,7 @@ export class ReconciliationService {
     const transferMatchingFeeRepayment = portfolioMovement.transfers.find(
       (t) =>
         !t["reconciled"] &&
+        (matchingTx?.feeUsed ?? 0) > 0 &&
         isVeryCloseTo(
           t.amount * 10 ** getDecimals(t.asset_unique_id, tokens),
           matchingTx?.fee - matchingTx?.feeUsed,

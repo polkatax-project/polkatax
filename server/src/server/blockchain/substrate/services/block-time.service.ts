@@ -15,23 +15,25 @@ export class BlockTimeService {
     tolerance,
     depth = 0,
   ): Promise<number> {
-    const estimate = this.estimateBlockNum(minBlock, maxBlock, date);
+    const { estimate, min, max } = await this.estimateBlockNum(
+      minBlock,
+      maxBlock,
+      date,
+      chainName,
+    );
     if (depth > MAX_DEPTH) {
       logger.info(
         `Exit findBlock: Block for date ${date} on ${chainName} could not be found in ${MAX_DEPTH} steps. Returning: ${estimate}`,
       );
       return estimate;
     }
-    const currentBlock: Block = await this.subscanApi.fetchBlock(
-      chainName,
-      estimate,
-    );
+    const currentBlock = await this.subscanApi.fetchBlock(chainName, estimate);
     if (Math.abs(currentBlock.timestamp - date) > tolerance) {
       if (currentBlock?.timestamp > date) {
         return this.searchBlock(
           chainName,
           date,
-          minBlock,
+          min,
           currentBlock,
           tolerance,
           depth + 1,
@@ -41,7 +43,7 @@ export class BlockTimeService {
           chainName,
           date,
           currentBlock,
-          maxBlock,
+          max,
           tolerance,
           depth + 1,
         );
@@ -50,24 +52,47 @@ export class BlockTimeService {
     return currentBlock.block_num;
   }
 
-  private estimateBlockNum(
+  private async estimateBlockNum(
     beforeBlock: Block,
     afterBlock: Block,
     date: number,
-  ): number {
+    chainName: string,
+  ): Promise<{ estimate: number; min: Block; max: Block }> {
     const timeDiffRel =
       (date - beforeBlock.timestamp) /
       (afterBlock.timestamp - beforeBlock.timestamp);
-    return Math.min(
-      afterBlock.block_num,
-      Math.max(
-        1,
-        Math.round(
-          beforeBlock.block_num +
-            (afterBlock.block_num - beforeBlock.block_num) * timeDiffRel,
+    return {
+      estimate: Math.min(
+        afterBlock.block_num,
+        Math.max(
+          1,
+          Math.round(
+            beforeBlock.block_num +
+              (afterBlock.block_num - beforeBlock.block_num) * timeDiffRel,
+          ),
         ),
       ),
-    );
+      min:
+        timeDiffRel > 0.95
+          ? await this.subscanApi.fetchBlock(
+              chainName,
+              Math.floor(
+                (afterBlock.block_num - beforeBlock.block_num) / 2 +
+                  beforeBlock.block_num,
+              ),
+            )
+          : beforeBlock,
+      max:
+        timeDiffRel < 0.05
+          ? await this.subscanApi.fetchBlock(
+              chainName,
+              Math.floor(
+                (afterBlock.block_num - beforeBlock.block_num) / 2 +
+                  beforeBlock.block_num,
+              ),
+            )
+          : afterBlock,
+    };
   }
 
   async findBlock(

@@ -8,7 +8,7 @@ export const determineMinMaxBlock = async (
   maxDate: number,
   blockTimeService: BlockTimeService,
 ): Promise<{ blockMin: number; blockMax: number }> => {
-  const FIVE_MINUTES = 5 * 60 * 60 * 1000;
+  const FIVE_MINUTES = 5 * 60 * 1000;
   // assuming ascending order by timestamp
   const minBlockInData = (portfolioMovements[0] as PortfolioMovement)?.block;
   const maxBlockInData = (

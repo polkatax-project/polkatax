@@ -1,5 +1,4 @@
 import { DEVIATION_LIMITS } from "../../../src/server/data-correction/const/deviation-limits";
-import { PortfolioChangeValidationService } from "../../../src/server/data-correction/portfolio-change-validation.service";
 import { createDIContainer } from "../../../src/server/di-container";
 import { fetchPortfolioMovements } from "./fetch-portfolio-movements";
 import { PortfolioMovementCorrectionService } from "../../../src/server/data-correction/portfolio-movement-correction.service";
@@ -10,25 +9,26 @@ export const verifyPortfolioChanges = async (
   chainInfo: { domain: string; token: string },
   minDate: number,
   maxDate: number,
+  deviationLimits = DEVIATION_LIMITS,
 ) => {
   const container = createDIContainer();
-  const { portfolioMovements, minBlock, maxBlock } =
+  const { portfolioMovements, blockMax, blockMin } =
     await fetchPortfolioMovements(address, chainInfo, minDate, maxDate);
   if (portfolioMovements.length === 0) {
     return;
   }
-  const portfolioChangeValidationService: PortfolioChangeValidationService =
-    container.resolve("portfolioChangeValidationService");
+
+  const portfolioMovementCorrectionService: PortfolioMovementCorrectionService =
+    container.resolve("portfolioMovementCorrectionService");
   const deviations =
-    await portfolioChangeValidationService.calculateDeviationFromExpectation(
+    await portfolioMovementCorrectionService.calculateDeviationWithRetry(
       chainInfo,
       address,
       portfolioMovements,
-      DEVIATION_LIMITS,
-      minBlock,
-      maxBlock,
+      deviationLimits,
+      blockMin,
+      blockMax,
     );
-  await portfolioChangeValidationService.disconnectApi();
   deviations.forEach((d) => {
     if (d.absoluteDeviationTooLarge) {
       console.log(
@@ -39,24 +39,29 @@ export const verifyPortfolioChanges = async (
   });
   if (deviations.some((d) => d.absoluteDeviationTooLarge)) {
     fs.writeFileSync(
-      "./integration-tests/out-temp/portfolio-movements.json",
+      "./integration-tests/out-temp/deviations.json",
+      JSON.stringify(deviations, null, 2),
+    );
+    fs.writeFileSync(
+      `./integration-tests/out-temp/${address}-${chainInfo.domain}-portfolio-movements.json`,
       JSON.stringify(portfolioMovements, null, 2),
     );
-    const portfolioMovementCorrectionService: PortfolioMovementCorrectionService =
-      container.resolve("portfolioMovementCorrectionService");
+
     await portfolioMovementCorrectionService.fixErrorsAndMissingData(
       chainInfo,
       address,
       portfolioMovements,
       minDate,
       maxDate,
+      deviationLimits,
     );
     fs.writeFileSync(
-      "./integration-tests/out-temp/portfolio-movements-fixed.json",
+      `./integration-tests/out-temp/${address}-${chainInfo.domain}-portfolio-movements-fixed.json`,
       JSON.stringify(portfolioMovements, null, 2),
     );
     throw new Error(
       `Deviation from expectation too large for ${address} and ${chainInfo.domain}`,
     );
   }
+  await portfolioMovementCorrectionService.disconnect();
 };

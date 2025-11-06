@@ -21,10 +21,9 @@ export class JobProcessor {
     );
 
     if (!chain) {
-      await this.jobsService.setError(
-        { code: 400, msg: `Chain ${job.blockchain} not found` },
-        job.id,
-      );
+      job.status = "error";
+      job.error = { code: 400, msg: `Chain ${job.blockchain} not found` };
+      await this.jobsService.setError(job.error, job.id);
       return job;
     }
 
