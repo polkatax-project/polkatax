@@ -69,5 +69,8 @@ const formatAbsCryptoAmount = (value: number): string => {
     });
   }
 
-  return '0';
+  return value.toLocaleString(undefined, {
+    minimumFractionDigits: 6,
+    maximumFractionDigits: 6,
+  });
 };
