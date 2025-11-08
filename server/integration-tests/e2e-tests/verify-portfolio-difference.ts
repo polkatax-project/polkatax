@@ -102,8 +102,8 @@ const verifyPortfolioChangesOfTestWallets = async () => {
         "1NUuRnRKayAxnswLiFFzdM1rzqyLGLEZ1Fr9ugecfV4hzyD",
         "0x7041617A1bFF5a973366340b03F6CD024470B7d1",
       ];
-
-    await verifyWallets(addresses, deviationLimits);
+    const relevantAddresses = addresses.splice(Number(process.env['FROM'] ?? 0), Number(process.env['COUNT'] ?? addresses.length))
+    await verifyWallets(relevantAddresses, deviationLimits);
     console.log(`✅ e2e test completed`);
   } finally {
     await stopStubs();
