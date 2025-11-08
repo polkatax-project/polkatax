@@ -4,10 +4,9 @@ on:
   workflow_dispatch:
 
 jobs:
-  e2e-tests:
+  # 1️⃣ First job
+  e2e-tests-events:
     runs-on: ubuntu-latest
-    timeout-minutes: 720
-
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
@@ -35,3 +34,19 @@ jobs:
           LOG_LEVEL: warn
           SUBSCAN_API_KEY: ${{ secrets.SUBSCAN_PRO_API_KEY }}
           ZYTE_USER: ${{ secrets.ZYTE_USER }}
+
+  # 2️⃣ Second job (runs AFTER e2e-tests-events)
+  e2e-tests-data-part-1:
+    needs: e2e-tests-events      
+    uses: ./.github/workflows/e2e-part.yml
+    with:
+      count: "15"
+    secrets: inherit
+
+  # 3️⃣ Third job (runs AFTER part-1)
+  e2e-tests-data-part-2:
+    needs: e2e-tests-data-part-1  
+    uses: ./.github/workflows/e2e-part.yml
+    with:
+      from: "15"
+    secrets: inherit
